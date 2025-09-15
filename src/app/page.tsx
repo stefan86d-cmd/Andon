@@ -5,9 +5,20 @@ import { StatsCards } from "@/components/dashboard/stats-cards";
 import { ReportIssueDialog } from "@/components/dashboard/report-issue-dialog";
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
-import { issues, stats } from "@/lib/data";
+import { issues, stats, users, productionLines } from "@/lib/data";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function Home() {
+  // To test different user roles, change 'current' to 'operator'
+  const currentUser = users.current; 
+
+  const userIssues =
+    currentUser.role === "admin"
+      ? issues
+      : issues.filter((issue) => issue.productionLineId === currentUser.productionLineId);
+
+  const currentProductionLine = productionLines.find(line => line.id === currentUser.productionLineId);
+
   return (
     <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
       <Sidebar />
@@ -24,9 +35,25 @@ export default function Home() {
             </ReportIssueDialog>
           </div>
           
-          <StatsCards stats={stats} />
-          
-          <IssuesDataTable issues={issues} />
+          {currentUser.role === 'admin' ? (
+            <>
+              <StatsCards stats={stats} />
+              <IssuesDataTable issues={userIssues} />
+            </>
+          ) : (
+            <div className="flex flex-col gap-4">
+               <Card>
+                <CardHeader>
+                  <CardTitle>Your Production Line</CardTitle>
+                  <CardDescription>Details about your assigned work area.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-2xl font-bold">{currentProductionLine?.name || 'No line assigned'}</p>
+                </CardContent>
+              </Card>
+              <IssuesDataTable issues={userIssues} />
+            </div>
+          )}
           
         </main>
       </div>

@@ -1,4 +1,4 @@
-import type { Issue, Priority, Status } from "@/lib/types";
+import type { Issue, Priority, Status, User } from "@/lib/types";
 import {
   Table,
   TableBody,
@@ -42,6 +42,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { formatDistanceToNow } from "date-fns";
+import { users } from "@/lib/data";
 
 const priorityIcons: Record<Priority, React.ElementType> = {
   low: ArrowDownCircle,
@@ -71,9 +72,9 @@ const statusLabels: Record<Status, string> = {
     archived: "Archived",
 };
 
-const StatusSelector = ({ status }: { status: Status }) => (
-  <Select defaultValue={status}>
-    <SelectTrigger className="w-36 h-8 text-xs focus:ring-0 focus:ring-offset-0 border-0 shadow-none bg-transparent">
+const StatusSelector = ({ status, isOperator }: { status: Status, isOperator: boolean }) => (
+  <Select defaultValue={status} disabled={isOperator}>
+    <SelectTrigger className="w-36 h-8 text-xs focus:ring-0 focus:ring-offset-0 border-0 shadow-none bg-transparent disabled:opacity-100 disabled:cursor-default">
       <SelectValue placeholder="Status" />
     </SelectTrigger>
     <SelectContent>
@@ -94,12 +95,14 @@ const StatusSelector = ({ status }: { status: Status }) => (
 
 
 export function IssuesDataTable({ issues }: { issues: Issue[] }) {
+  const currentUser = users.current;
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Recent Issues</CardTitle>
+        <CardTitle>{currentUser.role === 'admin' ? 'Recent Issues' : 'Recent Issues on Your Line'}</CardTitle>
         <CardDescription>
-          A list of recently reported issues on the production line.
+          {currentUser.role === 'admin' ? 'A list of recently reported issues on the production line.' : 'Issues reported on your assigned production line.'}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -112,9 +115,11 @@ export function IssuesDataTable({ issues }: { issues: Issue[] }) {
               <TableHead>Status</TableHead>
               <TableHead>Reported</TableHead>
               <TableHead>Reported By</TableHead>
-              <TableHead>
-                <span className="sr-only">Actions</span>
-              </TableHead>
+              {currentUser.role === 'admin' && (
+                <TableHead>
+                  <span className="sr-only">Actions</span>
+                </TableHead>
+              )}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -134,7 +139,7 @@ export function IssuesDataTable({ issues }: { issues: Issue[] }) {
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <StatusSelector status={issue.status} />
+                    <StatusSelector status={issue.status} isOperator={currentUser.role === 'operator'} />
                   </TableCell>
                   <TableCell>
                     {formatDistanceToNow(issue.reportedAt, { addSuffix: true })}
@@ -148,25 +153,28 @@ export function IssuesDataTable({ issues }: { issues: Issue[] }) {
                         <span>{issue.reportedBy.name}</span>
                     </div>
                   </TableCell>
-                  <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          aria-haspopup="true"
-                          size="icon"
-                          variant="ghost"
-                        >
-                          <MoreHorizontal className="h-4 w-4" />
-                          <span className="sr-only">Toggle menu</span>
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem>View Details</DropdownMenuItem>
-                        <DropdownMenuItem>Assign</DropdownMenuItem>
-                        <DropdownMenuItem>Archive</DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
+                  {currentUser.role === 'admin' && (
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            aria-haspopup="true"
+                            size="icon"
+                            variant="ghost"
+                          >
+                            <MoreHorizontal className="h-4 w-4" />
+                            <span className="sr-only">Toggle menu</span>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem>View Details</DropdownMenuItem>
+                          <DropdownMenuItem>Assign</DropdownMenuItem>
+                          <DropdownMenuItem>Resolve</DropdownMenuItem>
+                          <DropdownMenuItem>Archive</DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  )}
                 </TableRow>
               );
             })}

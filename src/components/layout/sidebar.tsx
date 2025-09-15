@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { Package2 } from "lucide-react";
 import { SidebarNav } from "./sidebar-nav";
+import { users } from "@/lib/data";
 
 export function Sidebar() {
+  const currentUser = users.current;
   return (
     <div className="hidden border-r bg-card md:block">
       <div className="flex h-full max-h-screen flex-col gap-2">
@@ -13,7 +15,7 @@ export function Sidebar() {
           </Link>
         </div>
         <div className="flex-1">
-            <SidebarNav />
+            <SidebarNav userRole={currentUser.role} />
         </div>
       </div>
     </div>

@@ -7,21 +7,27 @@ import {
   Settings,
   Package2,
   HardHat,
-  Bell,
+  Users,
+  Factory,
 } from "lucide-react";
 import { usePathname } from 'next/navigation'
 import { cn } from "@/lib/utils";
 import { Badge } from "../ui/badge";
+import type { Role } from "@/lib/types";
 
-const navItems = [
-    { href: "/", icon: LayoutDashboard, label: "Dashboard" },
-    { href: "/issues", icon: HardHat, label: "Issues", badge: "27" },
-    { href: "/reports", icon: BarChart3, label: "Reports" },
-    { href: "/settings", icon: Settings, label: "Settings" },
+const allNavItems = [
+    { href: "/", icon: LayoutDashboard, label: "Dashboard", roles: ['admin', 'operator'] },
+    { href: "/issues", icon: HardHat, label: "All Issues", badge: "27", roles: ['admin'] },
+    { href: "/my-issues", icon: HardHat, label: "My Line Issues", roles: ['operator'] },
+    { href: "/lines", icon: Factory, label: "Production Lines", roles: ['admin'] },
+    { href: "/users", icon: Users, label: "User Management", roles: ['admin'] },
+    { href: "/reports", icon: BarChart3, label: "Reports", roles: ['admin'] },
+    { href: "/settings", icon: Settings, label: "Settings", roles: ['admin', 'operator'] },
 ]
 
-export function SidebarNav({ isMobile = false }: { isMobile?: boolean }) {
+export function SidebarNav({ isMobile = false, userRole }: { isMobile?: boolean, userRole: Role }) {
     const pathname = usePathname()
+    const navItems = allNavItems.filter(item => item.roles.includes(userRole));
 
     return (
         <nav className={cn("grid items-start px-2 text-sm font-medium lg:px-4", isMobile && "px-4" )}>

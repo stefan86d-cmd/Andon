@@ -1,7 +1,16 @@
+export type Role = "admin" | "operator";
+
 export type User = {
   name: string;
   email: string;
   avatarUrl: string;
+  role: Role;
+  productionLineId?: string;
+};
+
+export type ProductionLine = {
+  id: string;
+  name: string;
 };
 
 export type Priority = "low" | "medium" | "high" | "critical";
@@ -12,6 +21,7 @@ export type Issue = {
   id: string;
   title: string;
   location: string;
+  productionLineId: string;
   priority: Priority;
   status: Status;
   reportedAt: Date;
