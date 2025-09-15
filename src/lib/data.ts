@@ -1,15 +1,51 @@
 import type { User, Issue, StatCard, ProductionLine } from "@/lib/types";
 
 export const productionLines: ProductionLine[] = [
-  { id: "line-1", name: "Assembly Line 1" },
-  { id: "line-2", name: "Assembly Line 2" },
-  { id: "line-3", name: "Assembly Line 3" },
-  { id: "fab-bay-1", name: "Fabrication Bay 1" },
-  { id: "fab-bay-2", name: "Fabrication Bay 2" },
-  { id: "welding-1", name: "Welding Station 1" },
-  { id: "packaging", name: "Packaging Area" },
-  { id: "finishing", name: "Finishing Department" },
-  { id: "warehouse", name: "Warehouse" },
+  { 
+    id: "line-1", 
+    name: "Assembly Line 1",
+    workstations: ["Phase 1: Component Prep", "Phase 2: Main Assembly", "Phase 3: Initial QA"],
+  },
+  { 
+    id: "line-2", 
+    name: "Assembly Line 2",
+    workstations: ["Phase 1: Sub-Assembly A", "Phase 2: Sub-Assembly B", "Phase 3: Final Assembly"],
+  },
+  { 
+    id: "line-3", 
+    name: "Assembly Line 3",
+    workstations: ["Phase 1: Frame Welding", "Phase 2: Body Panel Attachment", "Phase 3: Inspection"],
+  },
+  { 
+    id: "fab-bay-1", 
+    name: "Fabrication Bay 1",
+    workstations: ["Cutting Station", "Bending Station", "Drilling Station"],
+  },
+  { 
+    id: "fab-bay-2", 
+    name: "Fabrication Bay 2",
+    workstations: ["Stamping Press", "Laser Cutter"],
+  },
+  { 
+    id: "welding-1", 
+    name: "Welding Station 1",
+    workstations: ["Manual MIG", "Robotic TIG", "Spot Welding"],
+  },
+  { 
+    id: "packaging", 
+    name: "Packaging Area",
+    workstations: ["Station 1", "Station 2", "Station 3", "Station 4", "Station 5"],
+  },
+  { 
+    id: "finishing", 
+    name: "Finishing Department",
+    workstations: ["Sanding", "Painting", "Polishing"],
+  },
+  { 
+    id: "warehouse", 
+    name: "Warehouse",
+    workstations: ["Receiving", "Shipping", "Inventory"],
+  },
 ];
 
 export const users: { [key: string]: User } = {

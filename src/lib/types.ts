@@ -11,6 +11,7 @@ export type User = {
 export type ProductionLine = {
   id: string;
   name: string;
+  workstations: string[];
 };
 
 export type Priority = "low" | "medium" | "high" | "critical";
