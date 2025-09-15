@@ -1,4 +1,6 @@
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+"use client";
+
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -8,14 +10,21 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuPortal,
+  DropdownMenuSubContent
 } from "@/components/ui/dropdown-menu";
 import { users } from "@/lib/data";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import Image from 'next/image';
+import { useTheme } from "next-themes";
+import { Moon, Sun } from "lucide-react";
 
 export function UserNav() {
   const currentUser = users.current;
   const avatarImage = PlaceHolderImages.find(p => p.id === 'user-avatar');
+  const { setTheme } = useTheme()
 
   return (
     <DropdownMenu>
@@ -50,6 +59,27 @@ export function UserNav() {
           <DropdownMenuItem>Profile</DropdownMenuItem>
           <DropdownMenuItem>Settings</DropdownMenuItem>
         </DropdownMenuGroup>
+        <DropdownMenuSeparator />
+        <DropdownMenuSub>
+          <DropdownMenuSubTrigger>
+            <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+            <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+            <span className="ml-2">Theme</span>
+          </DropdownMenuSubTrigger>
+          <DropdownMenuPortal>
+            <DropdownMenuSubContent>
+              <DropdownMenuItem onClick={() => setTheme("light")}>
+                Light
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setTheme("dark")}>
+                Dark
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setTheme("system")}>
+                System
+              </DropdownMenuItem>
+            </DropdownMenuSubContent>
+          </DropdownMenuPortal>
+        </DropdownMenuSub>
         <DropdownMenuSeparator />
         <DropdownMenuItem>Log out</DropdownMenuItem>
       </DropdownMenuContent>
