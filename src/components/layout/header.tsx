@@ -1,5 +1,4 @@
-import { Bell, Package2, Search } from "lucide-react";
-
+import { Bell, Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,6 +7,7 @@ import { UserNav } from "@/components/layout/user-nav";
 import Link from "next/link";
 import { SidebarNav } from "./sidebar-nav";
 import { users } from "@/lib/data";
+import { Logo } from "./logo";
 
 export function Header() {
   const currentUser = users.current;
@@ -16,7 +16,7 @@ export function Header() {
       <Sheet>
         <SheetTrigger asChild>
           <Button variant="outline" size="icon" className="shrink-0 md:hidden">
-            <Package2 className="h-5 w-5" />
+            <Logo />
             <span className="sr-only">Toggle navigation menu</span>
           </Button>
         </SheetTrigger>
