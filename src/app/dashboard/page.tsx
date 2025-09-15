@@ -9,7 +9,7 @@ import { PlusCircle } from "lucide-react";
 
 export default function Home() {
   // To test different user roles, change 'operator' to 'current' for admin view
-  const currentUser = users.current; 
+  const currentUser = users.operator; 
 
   const userIssues =
     currentUser.role === "admin"
