@@ -55,10 +55,10 @@ const issueFormSchema = z.object({
 type IssueFormValues = z.infer<typeof issueFormSchema>;
 
 const categories = [
-    { id: 'it', label: 'IT Problem', placeholderId: 'category-it' },
-    { id: 'logistics', label: 'Logistics', placeholderId: 'category-logistics' },
-    { id: 'tool', label: 'Tool Problem', placeholderId: 'category-tool' },
-    { id: 'other', label: 'Other', placeholderId: 'category-other' },
+    { id: 'it', label: 'IT Problem', icon: Monitor },
+    { id: 'logistics', label: 'Logistics', icon: Truck },
+    { id: 'tool', label: 'Tool Problem', icon: Wrench },
+    { id: 'other', label: 'Other', icon: HelpCircle },
 ];
 
 export function ReportIssueDialog({ children }: { children: React.ReactNode }) {
@@ -127,7 +127,6 @@ export function ReportIssueDialog({ children }: { children: React.ReactNode }) {
   }
   
   const currentCategory = categories.find(c => c.id === selectedCategory);
-  const currentCategoryImage = PlaceHolderImages.find(p => p.id === currentCategory?.placeholderId);
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -149,23 +148,14 @@ export function ReportIssueDialog({ children }: { children: React.ReactNode }) {
         {!selectedCategory ? (
             <div className="grid grid-cols-2 gap-4 py-4">
                 {categories.map((category) => {
-                    const categoryImage = PlaceHolderImages.find(p => p.id === category.placeholderId);
+                    const Icon = category.icon;
                     return (
                     <Card 
                         key={category.id} 
                         className="flex flex-col items-center justify-center text-center p-4 hover:bg-accent hover:text-accent-foreground cursor-pointer"
                         onClick={() => handleCategorySelect(category.id)}
                     >
-                        {categoryImage && (
-                            <Image 
-                                src={categoryImage.imageUrl} 
-                                alt={category.label} 
-                                width={80} 
-                                height={80} 
-                                data-ai-hint={categoryImage.imageHint}
-                                className="mb-2"
-                            />
-                        )}
+                        <Icon className="h-12 w-12 mb-2" />
                         <p className="text-sm font-medium">{category.label}</p>
                     </Card>
                 )})}
@@ -174,14 +164,8 @@ export function ReportIssueDialog({ children }: { children: React.ReactNode }) {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <div className="flex justify-center">
-            {currentCategoryImage && (
-                <Image 
-                    src={currentCategoryImage.imageUrl} 
-                    alt={currentCategory?.label || 'Category'} 
-                    width={100} 
-                    height={100}
-                    data-ai-hint={currentCategoryImage.imageHint}
-                />
+            {currentCategory && (
+                <currentCategory.icon className="h-16 w-16" />
             )}
             </div>
             <FormField
