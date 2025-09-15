@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 
 export default function Home() {
   // To test different user roles, change 'operator' to 'current' for admin view
-  const currentUser = users.operator; 
+  const currentUser = users.current; 
 
   const userIssues =
     currentUser.role === "admin"
