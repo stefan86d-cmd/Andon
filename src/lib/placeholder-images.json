@@ -1,3 +1,28 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "user-avatar-alex",
+      "description": "Placeholder avatar for Alex Johnson",
+      "imageUrl": "https://picsum.photos/seed/user-alex/40/40",
+      "imageHint": "person portrait"
+    },
+    {
+      "id": "user-avatar-jane",
+      "description": "Placeholder avatar for Jane Jones",
+      "imageUrl": "https://picsum.photos/seed/user-jane/40/40",
+      "imageHint": "person portrait"
+    },
+    {
+      "id": "user-avatar-bob",
+      "description": "Placeholder avatar for Bob Smith",
+      "imageUrl": "https://picsum.photos/seed/user-bob/40/40",
+      "imageHint": "person portrait"
+    },
+    {
+      "id": "user-avatar-alice",
+      "description": "Placeholder avatar for Alice Williams",
+      "imageUrl": "https://picsum.photos/seed/user-alice/40/40",
+      "imageHint": "person portrait"
+    }
+  ]
 }
