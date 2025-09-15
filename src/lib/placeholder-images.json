@@ -29,6 +29,30 @@
       "description": "Placeholder avatar for Alice Williams",
       "imageUrl": "https://picsum.photos/seed/user-alice/40/40",
       "imageHint": "person portrait"
+    },
+    {
+        "id": "category-it",
+        "description": "Icon for IT problems",
+        "imageUrl": "https://picsum.photos/seed/monitor/100/100",
+        "imageHint": "monitor computer"
+    },
+    {
+        "id": "category-logistics",
+        "description": "Icon for logistics problems",
+        "imageUrl": "https://picsum.photos/seed/truck/100/100",
+        "imageHint": "truck logistics"
+    },
+    {
+        "id": "category-tool",
+        "description": "Icon for tool problems",
+        "imageUrl": "https://picsum.photos/seed/wrench/100/100",
+        "imageHint": "wrench tool"
+    },
+    {
+        "id": "category-other",
+        "description": "Icon for other problems",
+        "imageUrl": "https://picsum.photos/seed/help/100/100",
+        "imageHint": "question mark"
     }
   ]
 }

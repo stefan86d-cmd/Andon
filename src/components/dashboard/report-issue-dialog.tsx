@@ -34,10 +34,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
-import { Sparkles, LoaderCircle } from "lucide-react";
+import { Sparkles, LoaderCircle, Monitor, Truck, Wrench, HelpCircle, ArrowLeft } from "lucide-react";
 import type { Priority } from "@/lib/types";
+import { PlaceHolderImages } from "@/lib/placeholder-images";
+import Image from "next/image";
+import { Card, CardContent } from "../ui/card";
+import { cn } from "@/lib/utils";
 
 const issueFormSchema = z.object({
+  category: z.string(),
   description: z.string().min(10, {
     message: "Description must be at least 10 characters.",
   }),
@@ -49,13 +54,22 @@ const issueFormSchema = z.object({
 
 type IssueFormValues = z.infer<typeof issueFormSchema>;
 
+const categories = [
+    { id: 'it', label: 'IT Problem', placeholderId: 'category-it' },
+    { id: 'logistics', label: 'Logistics', placeholderId: 'category-logistics' },
+    { id: 'tool', label: 'Tool Problem', placeholderId: 'category-tool' },
+    { id: 'other', label: 'Other', placeholderId: 'category-other' },
+];
+
 export function ReportIssueDialog({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   const [isAiPending, startAiTransition] = useTransition();
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   const form = useForm<IssueFormValues>({
     resolver: zodResolver(issueFormSchema),
     defaultValues: {
+      category: "",
       description: "",
       location: "",
       priority: "medium",
@@ -90,21 +104,86 @@ export function ReportIssueDialog({ children }: { children: React.ReactNode }) {
       description: "Your issue has been successfully submitted.",
     });
     form.reset();
+    setSelectedCategory(null);
     setOpen(false);
   }
 
+  const handleCategorySelect = (categoryId: string) => {
+    setSelectedCategory(categoryId);
+    form.setValue("category", categoryId);
+  }
+
+  const handleBack = () => {
+    setSelectedCategory(null);
+    form.reset();
+  }
+
+  const handleOpenChange = (isOpen: boolean) => {
+    if (!isOpen) {
+      form.reset();
+      setSelectedCategory(null);
+    }
+    setOpen(isOpen);
+  }
+  
+  const currentCategory = categories.find(c => c.id === selectedCategory);
+  const currentCategoryImage = PlaceHolderImages.find(p => p.id === currentCategory?.placeholderId);
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Report a New Issue</DialogTitle>
-          <DialogDescription>
-            Provide details about the issue on the production line.
+            {selectedCategory && (
+                 <Button variant="ghost" size="sm" className="absolute left-4 top-4 w-auto px-2 justify-start" onClick={handleBack}>
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    Back
+                </Button>
+            )}
+          <DialogTitle className={cn("pt-8", selectedCategory ? 'text-center' : '')}>Report a New Issue</DialogTitle>
+          <DialogDescription className={cn(selectedCategory ? 'text-center' : '')}>
+            {selectedCategory ? `Provide details for the '${currentCategory?.label}' issue.` : 'Select a category for the issue.'}
           </DialogDescription>
         </DialogHeader>
+
+        {!selectedCategory ? (
+            <div className="grid grid-cols-2 gap-4 py-4">
+                {categories.map((category) => {
+                    const categoryImage = PlaceHolderImages.find(p => p.id === category.placeholderId);
+                    return (
+                    <Card 
+                        key={category.id} 
+                        className="flex flex-col items-center justify-center text-center p-4 hover:bg-accent hover:text-accent-foreground cursor-pointer"
+                        onClick={() => handleCategorySelect(category.id)}
+                    >
+                        {categoryImage && (
+                            <Image 
+                                src={categoryImage.imageUrl} 
+                                alt={category.label} 
+                                width={80} 
+                                height={80} 
+                                data-ai-hint={categoryImage.imageHint}
+                                className="mb-2"
+                            />
+                        )}
+                        <p className="text-sm font-medium">{category.label}</p>
+                    </Card>
+                )})}
+            </div>
+        ) : (
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <div className="flex justify-center">
+            {currentCategoryImage && (
+                <Image 
+                    src={currentCategoryImage.imageUrl} 
+                    alt={currentCategory?.label || 'Category'} 
+                    width={100} 
+                    height={100}
+                    data-ai-hint={currentCategoryImage.imageHint}
+                />
+            )}
+            </div>
             <FormField
               control={form.control}
               name="description"
@@ -183,6 +262,7 @@ export function ReportIssueDialog({ children }: { children: React.ReactNode }) {
             </DialogFooter>
           </form>
         </Form>
+        )}
       </DialogContent>
     </Dialog>
   );
