@@ -4,14 +4,12 @@ export function Logo() {
     return (
       <div className="flex items-center gap-2 font-semibold text-primary">
           <Image
-            src="https://picsum.photos/seed/logo/40/40"
+            src="/Andonpro_Logo_Musta.jpg"
             alt="AndonPro logo"
-            width={24}
+            width={100}
             height={24}
-            className="h-6 w-6"
-            data-ai-hint="abstract logo"
+            className="h-6 w-auto"
         />
-        <span className="hidden md:inline-block">AndonPro</span>
       </div>
     );
   }
