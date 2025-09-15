@@ -1,62 +1,54 @@
-import { Header } from "@/components/layout/header";
-import { Sidebar } from "@/components/layout/sidebar";
-import { IssuesDataTable } from "@/components/dashboard/issues-data-table";
-import { StatsCards } from "@/components/dashboard/stats-cards";
-import { ReportIssueDialog } from "@/components/dashboard/report-issue-dialog";
 import { Button } from "@/components/ui/button";
-import { PlusCircle } from "lucide-react";
-import { issues, stats, users, productionLines } from "@/lib/data";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Logo } from "@/components/layout/logo";
+import Link from "next/link";
 
-export default function Home() {
-  // To test different user roles, change 'current' to 'operator'
-  const currentUser = users.current; 
-
-  const userIssues =
-    currentUser.role === "admin"
-      ? issues
-      : issues.filter((issue) => issue.productionLineId === currentUser.productionLineId);
-
-  const currentProductionLine = productionLines.find(line => line.id === currentUser.productionLineId);
-
+export default function LoginPage() {
   return (
-    <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
-      <Sidebar />
-      <div className="flex flex-col">
-        <Header />
-        <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background">
-          <div className="flex items-center justify-between">
-            <h1 className="text-lg font-semibold md:text-2xl">Dashboard</h1>
-            <ReportIssueDialog>
-              <Button size="sm" className="gap-1">
-                <PlusCircle className="h-4 w-4" />
-                Report Issue
-              </Button>
-            </ReportIssueDialog>
-          </div>
-          
-          {currentUser.role === 'admin' ? (
-            <>
-              <StatsCards stats={stats} />
-              <IssuesDataTable issues={userIssues} />
-            </>
-          ) : (
-            <div className="flex flex-col gap-4">
-               <Card>
-                <CardHeader>
-                  <CardTitle>Your Production Line</CardTitle>
-                  <CardDescription>Details about your assigned work area.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-2xl font-bold">{currentProductionLine?.name || 'No line assigned'}</p>
-                </CardContent>
-              </Card>
-              <IssuesDataTable issues={userIssues} />
+    <div className="flex items-center justify-center min-h-screen bg-background">
+      <Card className="mx-auto max-w-sm">
+        <CardHeader className="text-center">
+            <div className="flex justify-center mb-4">
+                <Logo />
             </div>
-          )}
-          
-        </main>
-      </div>
+          <CardTitle className="text-2xl">Login</CardTitle>
+          <CardDescription>
+            Enter your email below to login to your account
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4">
+            <div className="grid gap-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="m@example.com"
+                required
+              />
+            </div>
+            <div className="grid gap-2">
+              <div className="flex items-center">
+                <Label htmlFor="password">Password</Label>
+              </div>
+              <Input id="password" type="password" required />
+            </div>
+            <Link href="/dashboard" className="w-full">
+              <Button type="submit" className="w-full">
+                Login
+              </Button>
+            </Link>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

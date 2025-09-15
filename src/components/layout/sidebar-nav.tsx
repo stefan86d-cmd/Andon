@@ -16,7 +16,7 @@ import type { Role } from "@/lib/types";
 import { Logo } from "./logo";
 
 const allNavItems = [
-    { href: "/", icon: LayoutDashboard, label: "Dashboard", roles: ['admin', 'operator'] },
+    { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard", roles: ['admin', 'operator'] },
     { href: "/issues", icon: HardHat, label: "All Issues", badge: "27", roles: ['admin'] },
     { href: "/my-issues", icon: HardHat, label: "My Line Issues", roles: ['operator'] },
     { href: "/lines", icon: Factory, label: "Production Lines", roles: ['admin'] },
@@ -32,7 +32,7 @@ export function SidebarNav({ isMobile = false, userRole }: { isMobile?: boolean,
     return (
         <nav className={cn("grid items-start px-2 text-sm font-medium lg:px-4", isMobile && "px-4" )}>
             {isMobile && 
-            <Link href="/" className="flex items-center gap-2 text-lg font-semibold mb-4">
+            <Link href="/dashboard" className="flex items-center gap-2 text-lg font-semibold mb-4">
               <Logo />
               <span className="sr-only">AndonPro</span>
             </Link>
