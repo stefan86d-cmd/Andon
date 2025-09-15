@@ -3,7 +3,7 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 
 export const metadata: Metadata = {
-  title: 'Andon Assistant',
+  title: 'AndonPro',
   description: 'Monitor workflow and resolve issues on your production line.',
 };
 
