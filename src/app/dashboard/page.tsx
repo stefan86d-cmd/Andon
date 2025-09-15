@@ -9,8 +9,8 @@ import { issues, stats, users, productionLines } from "@/lib/data";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function Home() {
-  // To test different user roles, change 'current' to 'operator'
-  const currentUser = users.current; 
+  // To test different user roles, change 'operator' to 'current' for admin view
+  const currentUser = users.operator; 
 
   const userIssues =
     currentUser.role === "admin"
