@@ -48,7 +48,7 @@ export const productionLines: ProductionLine[] = [
   },
 ];
 
-export const users: { [key: string]: User } = {
+const userProfiles = {
   janejones: {
     name: "Jane Jones",
     email: "jane.jones@example.com",
@@ -70,6 +70,20 @@ export const users: { [key: string]: User } = {
     role: "operator",
     productionLineId: "welding-1",
   },
+  charliebrown: {
+    name: "Charlie Brown",
+    email: "charlie.brown@example.com",
+    avatarUrl: "https://picsum.photos/seed/user-charlie/40/40",
+    role: "operator",
+    productionLineId: "packaging",
+  },
+  davidlee: {
+    name: "David Lee",
+    email: "david.lee@example.com",
+    avatarUrl: "https://picsum.photos/seed/user-david/40/40",
+    role: "operator",
+    productionLineId: "finishing",
+  },
   current: {
     name: "Alex Johnson",
     email: "alex.j@andon.io",
@@ -85,6 +99,15 @@ export const users: { [key: string]: User } = {
   }
 };
 
+export const allUsers: User[] = Object.values(userProfiles);
+
+// The 'users' object is now used to define the current user for demonstration purposes.
+// To view the app as a specific user, set 'users.current' to one of the profiles above.
+export const users = {
+  current: userProfiles.current, // Default to admin user
+  operator: userProfiles.operator,
+};
+
 export const issues: Issue[] = [
   {
     id: "AND-001",
@@ -94,7 +117,7 @@ export const issues: Issue[] = [
     priority: "high",
     status: "in_progress",
     reportedAt: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
-    reportedBy: users.janejones,
+    reportedBy: userProfiles.janejones,
   },
   {
     id: "AND-002",
@@ -104,7 +127,7 @@ export const issues: Issue[] = [
     priority: "critical",
     status: "reported",
     reportedAt: new Date(Date.now() - 30 * 60 * 1000), // 30 minutes ago
-    reportedBy: users.bobsmith,
+    reportedBy: userProfiles.bobsmith,
   },
   {
     id: "AND-003",
@@ -114,7 +137,7 @@ export const issues: Issue[] = [
     priority: "critical",
     status: "resolved",
     reportedAt: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
-    reportedBy: users.alicewilliams,
+    reportedBy: userProfiles.alicewilliams,
   },
   {
     id: "AND-004",
@@ -124,7 +147,7 @@ export const issues: Issue[] = [
     priority: "low",
     status: "reported",
     reportedAt: new Date(Date.now() - 4 * 60 * 60 * 1000), // 4 hours ago
-    reportedBy: users.janejones,
+    reportedBy: userProfiles.janejones,
   },
   {
     id: "AND-005",
@@ -134,7 +157,7 @@ export const issues: Issue[] = [
     priority: "medium",
     status: "in_progress",
     reportedAt: new Date(Date.now() - 8 * 60 * 60 * 1000), // 8 hours ago
-    reportedBy: users.bobsmith,
+    reportedBy: userProfiles.bobsmith,
   },
   {
     id: "AND-006",
@@ -144,7 +167,7 @@ export const issues: Issue[] = [
     priority: "low",
     status: "resolved",
     reportedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
-    reportedBy: users.alicewilliams,
+    reportedBy: userProfiles.alicewilliams,
   },
   {
     id: "AND-007",
@@ -154,7 +177,7 @@ export const issues: Issue[] = [
     priority: "high",
     status: "reported",
     reportedAt: new Date(Date.now() - 60 * 60 * 1000), // 1 hour ago
-    reportedBy: users.janejones,
+    reportedBy: userProfiles.janejones,
   },
 ];
 
