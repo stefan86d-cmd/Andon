@@ -25,9 +25,15 @@ const allNavItems = [
     { href: "/settings", icon: Settings, label: "Settings", roles: ['admin', 'operator'] },
 ]
 
+const operatorNavItems = [
+    { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard", roles: ['operator'] },
+    { href: "/my-issues", icon: HardHat, label: "My Line Issues", roles: ['operator'] },
+    { href: "/settings", icon: Settings, label: "Settings", roles: ['operator'] },
+]
+
 export function SidebarNav({ isMobile = false, userRole }: { isMobile?: boolean, userRole: Role }) {
     const pathname = usePathname()
-    const navItems = allNavItems.filter(item => item.roles.includes(userRole));
+    const navItems = userRole === 'admin' ? allNavItems.filter(item => item.roles.includes(userRole)) : operatorNavItems;
 
     return (
         <nav className={cn("grid items-start px-2 text-sm font-medium lg:px-4", isMobile && "px-4" )}>
