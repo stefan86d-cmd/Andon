@@ -1,6 +1,12 @@
 {
   "placeholderImages": [
     {
+      "id": "app-logo",
+      "description": "Application logo",
+      "imageUrl": "https://picsum.photos/seed/logo/40/40",
+      "imageHint": "abstract logo"
+    },
+    {
       "id": "user-avatar-alex",
       "description": "Placeholder avatar for Alex Johnson",
       "imageUrl": "https://picsum.photos/seed/user-alex/40/40",
