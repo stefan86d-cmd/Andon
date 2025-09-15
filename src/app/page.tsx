@@ -87,6 +87,16 @@ export default function LoginPage() {
                 Login
               </Button>
             </Link>
+            <div className="text-center text-sm">
+                Don&apos;t have an account?{" "}
+                <Link href="#" className="underline">
+                    Sign up
+                </Link>
+                <span className="mx-2 text-muted-foreground">|</span>
+                <Link href="#" className="underline">
+                    Forgot your password?
+                </Link>
+            </div>
             <div className="relative my-2">
                 <div className="absolute inset-0 flex items-center">
                     <span className="w-full border-t" />
