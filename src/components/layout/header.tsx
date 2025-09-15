@@ -1,4 +1,4 @@
-import { Bell, Search } from "lucide-react";
+import { Bell, Search, PanelLeft, PanelRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,22 +8,36 @@ import Link from "next/link";
 import { SidebarNav } from "./sidebar-nav";
 import { users } from "@/lib/data";
 import { Logo } from "./logo";
+import { useIsMobile } from "@/hooks/use-mobile";
 
-export function Header() {
+interface HeaderProps {
+    onMenuClick: () => void;
+    isCollapsed: boolean;
+}
+
+export function Header({ onMenuClick, isCollapsed }: HeaderProps) {
   const currentUser = users.current;
+  const isMobile = useIsMobile();
   return (
     <header className="flex h-14 items-center gap-4 border-b bg-card px-4 lg:h-[60px] lg:px-6">
-      <Sheet>
-        <SheetTrigger asChild>
-          <Button variant="outline" size="icon" className="shrink-0 md:hidden">
-            <Logo />
-            <span className="sr-only">Toggle navigation menu</span>
-          </Button>
-        </SheetTrigger>
-        <SheetContent side="left" className="flex flex-col">
-            <SidebarNav isMobile={true} userRole={currentUser.role} />
-        </SheetContent>
-      </Sheet>
+      {isMobile ? (
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button variant="outline" size="icon" className="shrink-0 md:hidden">
+              <Logo />
+              <span className="sr-only">Toggle navigation menu</span>
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="left" className="flex flex-col">
+              <SidebarNav isMobile={true} userRole={currentUser.role} />
+          </SheetContent>
+        </Sheet>
+      ) : (
+        <Button variant="ghost" size="icon" onClick={onMenuClick} className="hidden md:flex">
+            {isCollapsed ? <PanelRight /> : <PanelLeft />}
+            <span className="sr-only">Toggle sidebar</span>
+        </Button>
+      )}
 
       <div className="w-full flex-1">
         {currentUser.role === 'admin' && (
