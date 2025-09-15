@@ -62,7 +62,7 @@ export default function LoginPage() {
       <Card className="mx-auto max-w-sm w-full">
         <CardHeader className="text-center">
             <div className="flex justify-center py-4">
-                <Logo />
+                <Logo className="w-40" />
             </div>
         </CardHeader>
         <CardContent>
