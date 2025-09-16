@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { IssuesDataTable } from "@/components/dashboard/issues-data-table";
 import { AppLayout } from "@/components/layout/app-layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -21,13 +21,27 @@ import { Button } from "@/components/ui/button";
 export default function IssuesPage() {
   const currentUser = users.current;
   const [selectedLines, setSelectedLines] = useState<string[]>([]);
+  const [tempSelectedLines, setTempSelectedLines] = useState<string[]>([]);
+
+  useEffect(() => {
+    setTempSelectedLines(selectedLines);
+  }, [selectedLines]);
 
   const handleLineFilterChange = (lineId: string) => {
-    setSelectedLines((prev) =>
+    setTempSelectedLines((prev) =>
       prev.includes(lineId)
         ? prev.filter((id) => id !== lineId)
         : [...prev, lineId]
     );
+  };
+
+  const handleFilterConfirm = () => {
+    setSelectedLines(tempSelectedLines);
+  };
+  
+  const handleFilterReset = () => {
+    setTempSelectedLines([]);
+    setSelectedLines([]);
   };
 
   const filteredIssues =
@@ -64,18 +78,26 @@ export default function IssuesPage() {
                     </span>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
+                <DropdownMenuContent align="end" className="w-56">
                   <DropdownMenuLabel>Filter by production line</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   {productionLines.map((line) => (
                     <DropdownMenuCheckboxItem
                       key={line.id}
-                      checked={selectedLines.includes(line.id)}
+                      checked={tempSelectedLines.includes(line.id)}
                       onCheckedChange={() => handleLineFilterChange(line.id)}
+                      onSelect={(e) => e.preventDefault()}
                     >
                       {line.name}
                     </DropdownMenuCheckboxItem>
                   ))}
+                  <DropdownMenuSeparator />
+                  <div className="p-2 flex justify-end gap-2">
+                    <Button variant="outline" size="sm" onClick={handleFilterReset}>Reset</Button>
+                    <DropdownMenuCheckboxItem onSelect={handleFilterConfirm} className="p-0">
+                      <Button size="sm" className="w-full">Confirm</Button>
+                    </DropdownMenuCheckboxItem>
+                  </div>
                 </DropdownMenuContent>
               </DropdownMenu>
             )}
