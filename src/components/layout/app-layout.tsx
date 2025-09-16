@@ -23,9 +23,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         !isEffectivelyCollapsed ? "md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]" : "md:grid-cols-[64px_1fr]"
       )}
     >
-      <Sidebar isCollapsed={isEffectivelyCollapsed} />
+      <Sidebar isCollapsed={isEffectivelyCollapsed} onMenuClick={toggleSidebar} />
       <div className="flex flex-col">
-        <Header onMenuClick={toggleSidebar} isCollapsed={isEffectivelyCollapsed} />
+        <Header isCollapsed={isEffectivelyCollapsed} />
         {children}
       </div>
     </div>

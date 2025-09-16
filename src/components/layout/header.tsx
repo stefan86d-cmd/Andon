@@ -10,23 +10,16 @@ import { Logo } from "./logo";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface HeaderProps {
-    onMenuClick: () => void;
     isCollapsed: boolean;
 }
 
-export function Header({ onMenuClick, isCollapsed }: HeaderProps) {
+export function Header({ isCollapsed }: HeaderProps) {
   const currentUser = users.current;
   const isMobile = useIsMobile();
   
   return (
     <header className="flex h-14 items-center gap-4 border-b bg-card px-4 lg:h-[60px] lg:px-6">
-      <Link href="/dashboard" className="flex items-center gap-2 font-semibold">
-          <Logo />
-      </Link>
-      <Button variant="outline" size="icon" onClick={onMenuClick} className="shrink-0 hidden md:flex">
-          <Menu className="h-5 w-5" />
-          <span className="sr-only">Toggle sidebar</span>
-      </Button>
+      {!isMobile && <div className="w-[36px] shrink-0"></div>}
       {isMobile && (
         <Sheet>
           <SheetTrigger asChild>
@@ -40,6 +33,9 @@ export function Header({ onMenuClick, isCollapsed }: HeaderProps) {
           </SheetContent>
         </Sheet>
       )}
+      <Link href="/dashboard" className="flex items-center gap-2 font-semibold">
+          <Logo />
+      </Link>
 
       <div className="w-full flex-1" />
 
