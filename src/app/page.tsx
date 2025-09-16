@@ -62,12 +62,14 @@ export default function LoginPage() {
   return (
     <div className="flex items-center justify-center min-h-screen bg-background">
       <Card className="mx-auto max-w-sm w-full">
-      <CardHeader className="text-center space-y-4">
-          <Logo className="w-40 mx-auto" />
-          <div>
-            <CardTitle>Welcome to AndonPro</CardTitle>
-            <CardDescription>Enter your credentials to access your account</CardDescription>
+      <CardHeader className="space-y-1">
+          <div className="flex justify-center p-6">
+            <Logo />
           </div>
+          <CardTitle>Login</CardTitle>
+          <CardDescription>
+            Enter your credentials to access your account
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4">
@@ -112,12 +114,12 @@ export default function LoginPage() {
                 </div>
             </div>
             <div className="grid grid-cols-2 gap-2">
-                <Button variant="outline">
-                    <GoogleIcon className="mr-2 h-5 w-5" />
+                <Button variant="outline" className="flex items-center justify-center gap-2">
+                    <GoogleIcon className="h-5 w-5" />
                     Google
                 </Button>
-                <Button variant="outline">
-                    <MicrosoftIcon className="mr-2 h-5 w-5" />
+                <Button variant="outline" className="flex items-center justify-center gap-2">
+                    <MicrosoftIcon className="h-5 w-5" />
                     Microsoft
                 </Button>
             </div>
@@ -127,3 +129,4 @@ export default function LoginPage() {
     </div>
   );
 }
+
