@@ -55,12 +55,12 @@ const issueFormSchema = z.object({
 type IssueFormValues = z.infer<typeof issueFormSchema>;
 
 const categories = [
-    { id: 'it', label: 'It & Network', icon: Monitor },
-    { id: 'logistics', label: 'Logistics', icon: Truck },
-    { id: 'tool', label: 'Tool & Equipment', icon: Wrench },
-    { id: 'assistance', label: 'Need Assistance', icon: LifeBuoy },
-    { id: 'quality', label: 'Quality', icon: BadgeCheck },
-    { id: 'other', label: 'Other', icon: HelpCircle },
+    { id: 'it', label: 'It & Network', icon: Monitor, color: 'text-blue-500' },
+    { id: 'logistics', label: 'Logistics', icon: Truck, color: 'text-orange-500' },
+    { id: 'tool', label: 'Tool & Equipment', icon: Wrench, color: 'text-gray-500' },
+    { id: 'assistance', label: 'Need Assistance', icon: LifeBuoy, color: 'text-red-500' },
+    { id: 'quality', label: 'Quality', icon: BadgeCheck, color: 'text-green-500' },
+    { id: 'other', label: 'Other', icon: HelpCircle, color: 'text-purple-500' },
 ];
 
 export function ReportIssueDialog({ children }: { children: React.ReactNode }) {
@@ -157,7 +157,7 @@ export function ReportIssueDialog({ children }: { children: React.ReactNode }) {
                         className="flex flex-col items-center justify-center text-center p-4 hover:bg-accent hover:text-accent-foreground cursor-pointer"
                         onClick={() => handleCategorySelect(category.id)}
                     >
-                        <Icon className="h-12 w-12 mb-2" />
+                        <Icon className={cn("h-12 w-12 mb-2", category.color)} />
                         <p className="text-sm font-medium">{category.label}</p>
                     </Card>
                 )})}
@@ -167,7 +167,7 @@ export function ReportIssueDialog({ children }: { children: React.ReactNode }) {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <div className="flex justify-center">
             {currentCategory && (
-                <currentCategory.icon className="h-16 w-16" />
+                <currentCategory.icon className={cn("h-16 w-16", currentCategory.color)} />
             )}
             </div>
             <FormField
