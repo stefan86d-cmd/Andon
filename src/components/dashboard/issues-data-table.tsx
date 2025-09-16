@@ -138,6 +138,7 @@ export function IssuesDataTable({ issues, title, description }: { issues: Issue[
                   <TableCell>
                     <div className="flex items-center gap-2">
                         <CategoryIcon className={cn("h-6 w-6", categoryInfo.color)} />
+                        <span className="font-medium">{categoryInfo.label}</span>
                     </div>
                   </TableCell>
                   <TableCell>
