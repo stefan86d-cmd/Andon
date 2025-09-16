@@ -3,7 +3,6 @@ import Link from "next/link";
 import {
   LayoutDashboard,
   BarChart3,
-  Settings,
   Users,
   Factory,
   Activity,
