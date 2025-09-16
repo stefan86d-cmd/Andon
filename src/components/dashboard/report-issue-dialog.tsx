@@ -57,7 +57,7 @@ type IssueFormValues = z.infer<typeof issueFormSchema>;
 const categories = [
     { id: 'it', label: 'It & Network', icon: Monitor },
     { id: 'logistics', label: 'Logistics', icon: Truck },
-    { id: 'tool', label: 'Tool Problem', icon: Wrench },
+    { id: 'tool', label: 'Tool & Equipment', icon: Wrench },
     { id: 'other', label: 'Other', icon: HelpCircle },
 ];
 
