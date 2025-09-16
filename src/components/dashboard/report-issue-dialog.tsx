@@ -34,7 +34,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
-import { Sparkles, LoaderCircle, Monitor, Truck, Wrench, HelpCircle, ArrowLeft } from "lucide-react";
+import { Sparkles, LoaderCircle, Monitor, Truck, Wrench, HelpCircle, ArrowLeft, LifeBuoy } from "lucide-react";
 import type { Priority } from "@/lib/types";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import Image from "next/image";
@@ -58,6 +58,7 @@ const categories = [
     { id: 'it', label: 'It & Network', icon: Monitor },
     { id: 'logistics', label: 'Logistics', icon: Truck },
     { id: 'tool', label: 'Tool & Equipment', icon: Wrench },
+    { id: 'assistance', label: 'Need Assistance', icon: LifeBuoy },
     { id: 'other', label: 'Other', icon: HelpCircle },
 ];
 
