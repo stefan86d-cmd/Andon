@@ -22,7 +22,6 @@ const allNavItems = [
     { href: "/lines", icon: Factory, label: "Production Lines", roles: ['admin'] },
     { href: "/users", icon: Users, label: "User Management", roles: ['admin'] },
     { href: "/reports", icon: BarChart3, label: "Reports", roles: ['admin'] },
-    { href: "/settings", icon: Settings, label: "Settings", roles: ['admin', 'operator'] },
 ]
 
 interface SidebarNavProps {
