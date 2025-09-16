@@ -16,9 +16,9 @@ import { Logo } from "./logo";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
 
 const allNavItems = [
-    { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard", roles: ['admin', 'operator'] },
+    { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard", roles: ['admin'] },
+    { href: "/dashboard", icon: HardHat, label: "My Line Issues", roles: ['operator'] },
     { href: "/issues", icon: HardHat, label: "All Issues", badge: "27", roles: ['admin'] },
-    { href: "/my-issues", icon: HardHat, label: "My Line Issues", roles: ['operator'] },
     { href: "/lines", icon: Factory, label: "Production Lines", roles: ['admin'] },
     { href: "/users", icon: Users, label: "User Management", roles: ['admin'] },
     { href: "/reports", icon: BarChart3, label: "Reports", roles: ['admin'] },
