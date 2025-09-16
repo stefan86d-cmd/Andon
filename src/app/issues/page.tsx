@@ -13,6 +13,9 @@ export default function IssuesPage() {
   const activeIssues: Issue[] = issues.filter(
     (issue) => issue.status === "reported" || issue.status === "in_progress"
   );
+  const resolvedIssues: Issue[] = issues.filter(
+    (issue) => issue.status === "resolved"
+  );
   const todaysIssues: Issue[] = issues.filter((issue) =>
     isToday(issue.reportedAt)
   );
@@ -36,10 +39,14 @@ export default function IssuesPage() {
         <Tabs defaultValue="active">
           <TabsList>
             <TabsTrigger value="active">Active</TabsTrigger>
+            <TabsTrigger value="resolved">Resolved</TabsTrigger>
             <TabsTrigger value="today">Today</TabsTrigger>
           </TabsList>
           <TabsContent value="active">
             <IssuesDataTable issues={activeIssues} />
+          </TabsContent>
+           <TabsContent value="resolved">
+            <IssuesDataTable issues={resolvedIssues} />
           </TabsContent>
           <TabsContent value="today">
             <IssuesDataTable issues={todaysIssues} />
