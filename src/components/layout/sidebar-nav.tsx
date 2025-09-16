@@ -4,7 +4,6 @@ import {
   LayoutDashboard,
   BarChart3,
   Settings,
-  HardHat,
   Users,
   Factory,
   Activity,
@@ -19,7 +18,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/
 const allNavItems = [
     { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard", roles: ['admin'] },
     { href: "/dashboard", icon: Activity, label: "Line Status", roles: ['operator'] },
-    { href: "/issues", icon: HardHat, label: "All Issues", badge: "27", roles: ['admin'] },
+    { href: "/issues", icon: Activity, label: "All Issues", badge: "27", roles: ['admin'] },
     { href: "/lines", icon: Factory, label: "Production Lines", roles: ['admin'] },
     { href: "/users", icon: Users, label: "User Management", roles: ['admin'] },
     { href: "/reports", icon: BarChart3, label: "Reports", roles: ['admin'] },
