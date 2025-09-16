@@ -1,4 +1,5 @@
 import { AppLayout } from "@/components/layout/app-layout";
+import { AddUserDialog } from "@/components/users/add-user-dialog";
 import { UsersDataTable } from "@/components/users/users-data-table";
 import { Button } from "@/components/ui/button";
 import { allUsers } from "@/lib/data";
@@ -12,10 +13,12 @@ export default function UsersPage() {
           <h1 className="text-lg font-semibold md:text-2xl">
             User Management
           </h1>
-          <Button size="sm" className="gap-1">
-            <PlusCircle className="h-4 w-4" />
-            Add User
-          </Button>
+          <AddUserDialog>
+            <Button size="sm" className="gap-1">
+              <PlusCircle className="h-4 w-4" />
+              Add User
+            </Button>
+          </AddUserDialog>
         </div>
         <UsersDataTable users={allUsers} />
       </main>
