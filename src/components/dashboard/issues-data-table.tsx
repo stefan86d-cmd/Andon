@@ -96,6 +96,7 @@ const StatusDisplay = ({ status }: { status: Status }) => {
 export function IssuesDataTable({ issues, title, description }: { issues: Issue[], title?: string, description?: string }) {
   const currentUser = users.current;
   const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
+  const isResolvedView = issues.length > 0 && issues.every(issue => issue.status === 'resolved');
 
   const handleIssueUpdate = (updatedIssue: Issue) => {
     // In a real app, this would trigger a re-fetch of the issues data
@@ -120,8 +121,17 @@ export function IssuesDataTable({ issues, title, description }: { issues: Issue[
               <TableHead className="min-w-[300px]">Description</TableHead>
               <TableHead>Priority</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>Reported</TableHead>
-              <TableHead>Reported By</TableHead>
+              {isResolvedView ? (
+                <>
+                  <TableHead>Resolved</TableHead>
+                  <TableHead>Resolved By</TableHead>
+                </>
+              ) : (
+                <>
+                  <TableHead>Reported</TableHead>
+                  <TableHead>Reported By</TableHead>
+                </>
+              )}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -154,18 +164,39 @@ export function IssuesDataTable({ issues, title, description }: { issues: Issue[
                   <TableCell>
                     <StatusDisplay status={issue.status} />
                   </TableCell>
-                  <TableCell>
-                    {formatDistanceToNow(issue.reportedAt, { addSuffix: true })}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                        <Avatar className="h-8 w-8">
-                            <AvatarImage src={issue.reportedBy.avatarUrl} alt={issue.reportedBy.name} />
-                            <AvatarFallback>{issue.reportedBy.name.charAt(0)}</AvatarFallback>
-                        </Avatar>
-                        <span>{issue.reportedBy.name}</span>
-                    </div>
-                  </TableCell>
+                  {isResolvedView ? (
+                     <>
+                        <TableCell>
+                            {issue.resolvedAt && formatDistanceToNow(issue.resolvedAt, { addSuffix: true })}
+                        </TableCell>
+                        <TableCell>
+                           {issue.resolvedBy && (
+                             <div className="flex items-center gap-2">
+                                <Avatar className="h-8 w-8">
+                                    <AvatarImage src={issue.resolvedBy.avatarUrl} alt={issue.resolvedBy.name} />
+                                    <AvatarFallback>{issue.resolvedBy.name.charAt(0)}</AvatarFallback>
+                                </Avatar>
+                                <span>{issue.resolvedBy.name}</span>
+                            </div>
+                           )}
+                        </TableCell>
+                    </>
+                  ) : (
+                    <>
+                        <TableCell>
+                            {formatDistanceToNow(issue.reportedAt, { addSuffix: true })}
+                        </TableCell>
+                        <TableCell>
+                            <div className="flex items-center gap-2">
+                                <Avatar className="h-8 w-8">
+                                    <AvatarImage src={issue.reportedBy.avatarUrl} alt={issue.reportedBy.name} />
+                                    <AvatarFallback>{issue.reportedBy.name.charAt(0)}</AvatarFallback>
+                                </Avatar>
+                                <span>{issue.reportedBy.name}</span>
+                            </div>
+                        </TableCell>
+                    </>
+                  )}
                 </TableRow>
               );
             })}

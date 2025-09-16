@@ -32,6 +32,8 @@ export type Issue = {
   reportedBy: User;
   category: IssueCategory;
   resolutionNotes?: string;
+  resolvedAt?: Date;
+  resolvedBy?: User;
 };
 
 export type StatCard = {

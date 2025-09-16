@@ -140,6 +140,9 @@ export const issues: Issue[] = [
     status: "resolved",
     reportedAt: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
     reportedBy: userProfiles.alicewilliams,
+    resolvedAt: new Date(Date.now() - 20 * 60 * 60 * 1000),
+    resolvedBy: userProfiles.current,
+    resolutionNotes: "Replaced faulty sensor and recalibrated the robotic arm. System is now operating normally.",
     category: "quality",
   },
   {
@@ -173,6 +176,9 @@ export const issues: Issue[] = [
     status: "resolved",
     reportedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
     reportedBy: userProfiles.alicewilliams,
+    resolvedAt: new Date(Date.now() - 1.5 * 24 * 60 * 60 * 1000),
+    resolvedBy: userProfiles.current,
+    resolutionNotes: "Battery swapped with a fully charged unit.",
     category: "logistics",
   },
   {

@@ -33,7 +33,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
 import type { Issue, Status } from "@/lib/types";
-import { issues } from "@/lib/data";
+import { issues, users } from "@/lib/data";
 
 
 const resolveIssueFormSchema = z.object({
@@ -61,15 +61,24 @@ export function ResolveIssueDialog({ isOpen, onOpenChange, issue, onIssueUpdate 
     },
   });
 
+  const currentUser = users.current;
+
   function onSubmit(data: ResolveIssueFormValues) {
     // Find the issue in our mock data and update it
     const issueIndex = issues.findIndex((i) => i.id === issue.id);
     if (issueIndex !== -1) {
-      issues[issueIndex] = {
+      const updatedIssue = {
         ...issues[issueIndex],
         status: data.status as Status,
         resolutionNotes: data.resolutionNotes,
       };
+
+      if (data.status === 'resolved') {
+        updatedIssue.resolvedAt = new Date();
+        updatedIssue.resolvedBy = currentUser;
+      }
+
+      issues[issueIndex] = updatedIssue;
     }
 
     toast({
@@ -143,4 +152,3 @@ export function ResolveIssueDialog({ isOpen, onOpenChange, issue, onIssueUpdate 
     </Dialog>
   );
 }
-
