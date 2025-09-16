@@ -1,7 +1,6 @@
-import { Bell, Search, PanelLeft, PanelRight } from "lucide-react";
+import { Bell, Menu } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { UserNav } from "@/components/layout/user-nav";
 import Link from "next/link";
@@ -18,13 +17,21 @@ interface HeaderProps {
 export function Header({ onMenuClick, isCollapsed }: HeaderProps) {
   const currentUser = users.current;
   const isMobile = useIsMobile();
+  
   return (
     <header className="flex h-14 items-center gap-4 border-b bg-card px-4 lg:h-[60px] lg:px-6">
-      {isMobile ? (
+      <Link href="/dashboard" className="flex items-center gap-2 font-semibold">
+          <Logo />
+      </Link>
+      <Button variant="outline" size="icon" onClick={onMenuClick} className="shrink-0 hidden md:flex">
+          <Menu className="h-5 w-5" />
+          <span className="sr-only">Toggle sidebar</span>
+      </Button>
+      {isMobile && (
         <Sheet>
           <SheetTrigger asChild>
             <Button variant="outline" size="icon" className="shrink-0 md:hidden">
-              <Logo />
+                <Menu className="h-5 w-5" />
               <span className="sr-only">Toggle navigation menu</span>
             </Button>
           </SheetTrigger>
@@ -32,11 +39,6 @@ export function Header({ onMenuClick, isCollapsed }: HeaderProps) {
               <SidebarNav isMobile={true} userRole={currentUser.role} />
           </SheetContent>
         </Sheet>
-      ) : (
-        <Button variant="ghost" size="icon" onClick={onMenuClick} className="hidden md:flex">
-            {isCollapsed ? <PanelRight /> : <PanelLeft />}
-            <span className="sr-only">Toggle sidebar</span>
-        </Button>
       )}
 
       <div className="w-full flex-1" />
