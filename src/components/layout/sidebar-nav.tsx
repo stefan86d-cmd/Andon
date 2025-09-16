@@ -25,12 +25,6 @@ const allNavItems = [
     { href: "/settings", icon: Settings, label: "Settings", roles: ['admin', 'operator'] },
 ]
 
-const operatorNavItems = [
-    { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard", roles: ['operator'] },
-    { href: "/my-issues", icon: HardHat, label: "My Line Issues", roles: ['operator'] },
-    { href: "/settings", icon: Settings, label: "Settings", roles: ['operator'] },
-]
-
 interface SidebarNavProps {
     isMobile?: boolean;
     isCollapsed?: boolean;
@@ -39,7 +33,7 @@ interface SidebarNavProps {
 
 export function SidebarNav({ isMobile = false, isCollapsed = false, userRole }: SidebarNavProps) {
     const pathname = usePathname()
-    const navItems = userRole === 'admin' ? allNavItems.filter(item => item.roles.includes(userRole)) : operatorNavItems;
+    const navItems = allNavItems.filter(item => item.roles.includes(userRole));
 
     return (
         <TooltipProvider>
