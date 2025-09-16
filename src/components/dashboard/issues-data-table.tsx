@@ -108,7 +108,7 @@ const StatusSelector = ({ status, isOperator }: { status: Status, isOperator: bo
 );
 
 
-export function IssuesDataTable({ issues, title }: { issues: Issue[], title?: string }) {
+export function IssuesDataTable({ issues, title, description }: { issues: Issue[], title?: string, description?: string }) {
   const currentUser = users.current;
   const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
 
@@ -125,7 +125,7 @@ export function IssuesDataTable({ issues, title }: { issues: Issue[], title?: st
       <CardHeader>
         <CardTitle>{title || (currentUser.role === 'admin' ? 'Recent Issues' : 'Recent Issues on Your Line')}</CardTitle>
         <CardDescription>
-          {currentUser.role === 'admin' ? 'A list of recently reported issues on the production line.' : 'Issues reported on your assigned production line.'}
+          {description || (currentUser.role === 'admin' ? 'A list of recently reported issues on the production line.' : 'Issues reported on your assigned production line.')}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -198,4 +198,3 @@ export function IssuesDataTable({ issues, title }: { issues: Issue[], title?: st
     </Card>
   );
 }
-
