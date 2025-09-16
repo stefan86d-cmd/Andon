@@ -34,21 +34,17 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
-import { Sparkles, LoaderCircle, Monitor, Truck, Wrench, HelpCircle, ArrowLeft, LifeBuoy, BadgeCheck } from "lucide-react";
+import { Sparkles, LoaderCircle, Monitor, Truck, Wrench, HelpCircle, ArrowLeft, LifeBuoy, BadgeCheck, Factory } from "lucide-react";
 import type { Priority } from "@/lib/types";
-import { PlaceHolderImages } from "@/lib/placeholder-images";
-import Image from "next/image";
-import { Card, CardContent } from "../ui/card";
 import { cn } from "@/lib/utils";
+import { productionLines, users } from "@/lib/data";
 
 const issueFormSchema = z.object({
   category: z.string(),
   description: z.string().min(10, {
     message: "Description must be at least 10 characters.",
   }),
-  location: z.string().min(3, {
-    message: "Location must be at least 3 characters.",
-  }),
+  location: z.string(),
   priority: z.enum(["low", "medium", "high", "critical"]),
 });
 
@@ -67,13 +63,17 @@ export function ReportIssueDialog({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   const [isAiPending, startAiTransition] = useTransition();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  
+  // To test different user roles, change 'operator' to 'current' for admin view
+  const currentUser = users.operator;
+  const currentProductionLine = productionLines.find(line => line.id === currentUser.productionLineId);
 
   const form = useForm<IssueFormValues>({
     resolver: zodResolver(issueFormSchema),
     defaultValues: {
       category: "",
       description: "",
-      location: "",
+      location: currentProductionLine?.name || "",
       priority: "medium",
     },
   });
@@ -105,7 +105,12 @@ export function ReportIssueDialog({ children }: { children: React.ReactNode }) {
       title: "Issue Reported",
       description: "Your issue has been successfully submitted.",
     });
-    form.reset();
+    form.reset({
+        category: "",
+        description: "",
+        location: currentProductionLine?.name || "",
+        priority: "medium",
+    });
     setSelectedCategory(null);
     setOpen(false);
   }
@@ -122,7 +127,12 @@ export function ReportIssueDialog({ children }: { children: React.ReactNode }) {
 
   const handleOpenChange = (isOpen: boolean) => {
     if (!isOpen) {
-      form.reset();
+      form.reset({
+        category: "",
+        description: "",
+        location: currentProductionLine?.name || "",
+        priority: "medium",
+    });
       setSelectedCategory(null);
     }
     setOpen(isOpen);
@@ -165,10 +175,16 @@ export function ReportIssueDialog({ children }: { children: React.ReactNode }) {
         ) : (
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <div className="flex justify-center">
-            {currentCategory && (
-                <currentCategory.icon className={cn("h-16 w-16", currentCategory.color)} />
+            {currentProductionLine && (
+                 <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground bg-muted/50 p-2 rounded-md">
+                    <Factory className="h-4 w-4" />
+                    <span>{currentProductionLine.name}</span>
+                </div>
             )}
+            <div className="flex justify-center">
+                {currentCategory && (
+                    <currentCategory.icon className={cn("h-16 w-16", currentCategory.color)} />
+                )}
             </div>
             <FormField
               control={form.control}
@@ -190,10 +206,10 @@ export function ReportIssueDialog({ children }: { children: React.ReactNode }) {
               control={form.control}
               name="location"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="hidden">
                   <FormLabel>Location / Machine ID</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., Assembly Line 2, Machine #4B" {...field} />
+                    <Input {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
