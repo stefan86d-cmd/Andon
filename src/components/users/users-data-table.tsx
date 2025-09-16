@@ -14,7 +14,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Select,
@@ -23,7 +22,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { productionLines } from "@/lib/data";
 
 const RoleSelector = ({ role }: { role: Role }) => (
   <Select defaultValue={role}>
@@ -53,12 +51,10 @@ export function UsersDataTable({ users }: { users: User[] }) {
               <TableHead>User</TableHead>
               <TableHead>Email</TableHead>
               <TableHead>Role</TableHead>
-              <TableHead>Production Line</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {users.map((user) => {
-                const userLine = productionLines.find(line => line.id === user.productionLineId);
                 return (
                     <TableRow key={user.email}>
                         <TableCell>
@@ -73,13 +69,6 @@ export function UsersDataTable({ users }: { users: User[] }) {
                         <TableCell>{user.email}</TableCell>
                         <TableCell>
                             <RoleSelector role={user.role} />
-                        </TableCell>
-                        <TableCell>
-                            {userLine ? (
-                                <Badge variant="secondary">{userLine.name}</Badge>
-                            ) : (
-                                <span className="text-muted-foreground">N/A</span>
-                            )}
                         </TableCell>
                     </TableRow>
                 )
