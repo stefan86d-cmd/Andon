@@ -19,8 +19,7 @@ export function Header({ isCollapsed }: HeaderProps) {
   
   return (
     <header className="flex h-14 items-center gap-4 border-b bg-card px-4 lg:h-[60px] lg:px-6">
-      {!isMobile && <div className="w-[36px] shrink-0"></div>}
-      {isMobile && (
+      {isMobile ? (
         <Sheet>
           <SheetTrigger asChild>
             <Button variant="outline" size="icon" className="shrink-0 md:hidden">
@@ -32,10 +31,20 @@ export function Header({ isCollapsed }: HeaderProps) {
               <SidebarNav isMobile={true} userRole={currentUser.role} />
           </SheetContent>
         </Sheet>
+      ) : (
+        <Link href="/dashboard" className="flex items-center gap-2 font-semibold">
+            <Logo />
+        </Link>
       )}
-      <Link href="/dashboard" className="flex items-center gap-2 font-semibold">
-          <Logo />
-      </Link>
+      
+      {isMobile && (
+        <div className="flex-1 text-center">
+            <Link href="/dashboard" className="inline-flex items-center gap-2 font-semibold">
+                <Logo />
+            </Link>
+        </div>
+      )}
+
 
       <div className="w-full flex-1" />
 
