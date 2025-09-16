@@ -19,7 +19,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
   ArrowDownCircle,
   TriangleAlert,
@@ -37,13 +36,6 @@ import {
   BadgeCheck,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { formatDistanceToNow } from "date-fns";
 import { users } from "@/lib/data";
 import { cn } from "@/lib/utils";
@@ -87,26 +79,18 @@ const categories: Record<IssueCategory, { label: string, icon: React.ElementType
     'other': { label: 'Other', icon: HelpCircle, color: 'text-purple-500' },
 };
 
-const StatusSelector = ({ status, isOperator }: { status: Status, isOperator: boolean }) => (
-  <Select defaultValue={status} disabled={isOperator}>
-    <SelectTrigger className="w-36 h-8 text-xs focus:ring-0 focus:ring-offset-0 border-0 shadow-none bg-transparent disabled:opacity-100 disabled:cursor-default">
-      <SelectValue placeholder="Status" />
-    </SelectTrigger>
-    <SelectContent>
-      {Object.entries(statusLabels).map(([key, label]) => {
-        const Icon = statusIcons[key as Status];
-        return (
-          <SelectItem key={key} value={key}>
-            <div className="flex items-center gap-2">
-              <Icon className="h-4 w-4" />
-              {label}
-            </div>
-          </SelectItem>
-        );
-      })}
-    </SelectContent>
-  </Select>
-);
+const StatusDisplay = ({ status }: { status: Status }) => {
+    const Icon = statusIcons[status];
+    const label = statusLabels[status];
+    const color = status === 'resolved' ? 'text-green-500' : 'text-muted-foreground';
+
+    return (
+        <div className={cn("flex items-center gap-2", color)}>
+            <Icon className={cn("h-4 w-4", status === 'in_progress' && 'animate-spin')} />
+            {label}
+        </div>
+    );
+};
 
 
 export function IssuesDataTable({ issues, title, description }: { issues: Issue[], title?: string, description?: string }) {
@@ -119,8 +103,6 @@ export function IssuesDataTable({ issues, title, description }: { issues: Issue[
     // For now, we just close the dialog
     setSelectedIssue(null);
   };
-
-  const isResolvedView = issues.every(issue => issue.status === 'resolved');
 
   return (
     <Card>
@@ -147,7 +129,6 @@ export function IssuesDataTable({ issues, title, description }: { issues: Issue[
               const PriorityIcon = priorityIcons[issue.priority];
               const categoryInfo = categories[issue.category];
               const CategoryIcon = categoryInfo.icon;
-              const StatusIcon = statusIcons[issue.status];
               return (
                 <TableRow 
                   key={issue.id} 
@@ -170,14 +151,7 @@ export function IssuesDataTable({ issues, title, description }: { issues: Issue[
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    {isResolvedView ? (
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <StatusIcon className="h-4 w-4 text-green-500" />
-                        {statusLabels[issue.status]}
-                      </div>
-                    ) : (
-                      <StatusSelector status={issue.status} isOperator={currentUser.role === 'operator'} />
-                    )}
+                    <StatusDisplay status={issue.status} />
                   </TableCell>
                   <TableCell>
                     {formatDistanceToNow(issue.reportedAt, { addSuffix: true })}
