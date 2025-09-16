@@ -58,11 +58,6 @@ export function UserNav() {
         <DropdownMenuGroup>
           <Link href="/settings">
             <DropdownMenuItem>
-              Profile
-            </DropdownMenuItem>
-          </Link>
-          <Link href="/settings">
-            <DropdownMenuItem>
                 Settings
             </DropdownMenuItem>
           </Link>
