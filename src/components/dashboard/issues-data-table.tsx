@@ -94,7 +94,7 @@ const StatusDisplay = ({ status }: { status: Status }) => {
 
 
 export function IssuesDataTable({ issues, title, description }: { issues: Issue[], title?: string, description?: string }) {
-  const currentUser = users.current;
+  const currentUser = users.operator;
   const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
   const isResolvedView = issues.length > 0 && issues.every(issue => issue.status === 'resolved');
 

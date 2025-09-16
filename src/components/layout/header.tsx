@@ -14,7 +14,7 @@ interface HeaderProps {
 }
 
 export function Header({ isCollapsed }: HeaderProps) {
-  const currentUser = users.current;
+  const currentUser = users.operator;
   const isMobile = useIsMobile();
   
   return (

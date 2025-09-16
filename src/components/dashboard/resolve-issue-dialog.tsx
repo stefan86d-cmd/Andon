@@ -61,7 +61,7 @@ export function ResolveIssueDialog({ isOpen, onOpenChange, issue, onIssueUpdate 
     },
   });
 
-  const currentUser = users.current;
+  const currentUser = users.operator;
 
   function onSubmit(data: ResolveIssueFormValues) {
     // Find the issue in our mock data and update it

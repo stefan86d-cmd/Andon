@@ -22,7 +22,7 @@ import { useTheme } from "next-themes";
 import { Moon, Sun } from "lucide-react";
 
 export function UserNav() {
-  const currentUser = users.current;
+  const currentUser = users.operator;
   const avatarImage = PlaceHolderImages.find(p => p.id === 'user-avatar');
   const { setTheme } = useTheme()
 
