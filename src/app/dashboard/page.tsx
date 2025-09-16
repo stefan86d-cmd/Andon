@@ -43,14 +43,6 @@ export default function Home() {
       <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background">
         <div className="flex items-center justify-between">
           <h1 className="text-lg font-semibold md:text-2xl">{currentUser.role === 'admin' ? 'Dashboard' : 'Line Status'}</h1>
-          {currentUser.role === 'admin' && (
-            <ReportIssueDialog>
-              <Button size="sm" className="gap-1">
-                <PlusCircle className="h-4 w-4" />
-                Report Issue
-              </Button>
-            </ReportIssueDialog>
-          )}
         </div>
         
         {currentUser.role === 'admin' ? (
