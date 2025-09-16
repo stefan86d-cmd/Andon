@@ -4,7 +4,6 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { issues, users } from "@/lib/data";
 import type { Issue } from "@/lib/types";
-import { isToday } from "date-fns";
 import { Search } from "lucide-react";
 
 export default function IssuesPage() {
@@ -15,9 +14,6 @@ export default function IssuesPage() {
   );
   const resolvedIssues: Issue[] = issues.filter(
     (issue) => issue.status === "resolved"
-  );
-  const todaysIssues: Issue[] = issues.filter((issue) =>
-    isToday(issue.reportedAt)
   );
 
   return (
@@ -40,16 +36,12 @@ export default function IssuesPage() {
           <TabsList>
             <TabsTrigger value="active">Active</TabsTrigger>
             <TabsTrigger value="resolved">Resolved</TabsTrigger>
-            <TabsTrigger value="today">Today</TabsTrigger>
           </TabsList>
           <TabsContent value="active">
             <IssuesDataTable issues={activeIssues} />
           </TabsContent>
            <TabsContent value="resolved">
             <IssuesDataTable issues={resolvedIssues} />
-          </TabsContent>
-          <TabsContent value="today">
-            <IssuesDataTable issues={todaysIssues} />
           </TabsContent>
         </Tabs>
       </main>
