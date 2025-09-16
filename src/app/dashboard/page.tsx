@@ -96,10 +96,10 @@ export default function Home() {
                   </div>
                 </CardContent>
                 <CardFooter className="justify-end">
-                    <ReportIssueDialog>
-                        <Button className="gap-1">
-                        <PlusCircle className="h-4 w-4" />
-                        Report Issue
+                    <ReportIssueDialog selectedLineId={selectedLineId} selectedWorkstation={selectedWorkstation}>
+                        <Button className="gap-1" disabled={!selectedWorkstation}>
+                            <PlusCircle className="h-4 w-4" />
+                            Report Issue
                         </Button>
                     </ReportIssueDialog>
                 </CardFooter>

@@ -60,24 +60,46 @@ const categories = [
     { id: 'other', label: 'Other', icon: HelpCircle, color: 'text-purple-500' },
 ];
 
-export function ReportIssueDialog({ children }: { children: React.ReactNode }) {
+export function ReportIssueDialog({
+  children,
+  selectedLineId,
+  selectedWorkstation,
+}: {
+  children: React.ReactNode;
+  selectedLineId?: string;
+  selectedWorkstation?: string;
+}) {
   const [open, setOpen] = useState(false);
   const [isAiPending, startAiTransition] = useTransition();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   
-  // To test different user roles, change 'operator' to 'current' for admin view
   const currentUser = users.operator;
-  const currentProductionLine = productionLines.find(line => line.id === currentUser.productionLineId);
+  
+  const getLineName = () => productionLines.find(line => line.id === selectedLineId)?.name || "";
+  const getLocation = () => {
+    const lineName = getLineName();
+    if (lineName && selectedWorkstation) {
+      return `${lineName} - ${selectedWorkstation}`;
+    }
+    return currentUser.productionLineId 
+      ? productionLines.find(line => line.id === currentUser.productionLineId)?.name || ""
+      : "";
+  };
 
   const form = useForm<IssueFormValues>({
     resolver: zodResolver(issueFormSchema),
-    defaultValues: {
-      category: "",
-      description: "",
-      location: currentProductionLine?.name || "",
-      priority: "medium",
-    },
   });
+
+  React.useEffect(() => {
+    if (open) {
+      form.reset({
+        category: "",
+        description: "",
+        location: getLocation(),
+        priority: "medium",
+      });
+    }
+  }, [open, selectedLineId, selectedWorkstation]);
 
   const descriptionValue = form.watch("description");
 
@@ -106,12 +128,6 @@ export function ReportIssueDialog({ children }: { children: React.ReactNode }) {
       title: "Issue Reported",
       description: "Your issue has been successfully submitted.",
     });
-    form.reset({
-        category: "",
-        description: "",
-        location: currentProductionLine?.name || "",
-        priority: "medium",
-    });
     setSelectedCategory(null);
     setOpen(false);
   }
@@ -123,23 +139,17 @@ export function ReportIssueDialog({ children }: { children: React.ReactNode }) {
 
   const handleBack = () => {
     setSelectedCategory(null);
-    form.reset();
   }
 
   const handleOpenChange = (isOpen: boolean) => {
     if (!isOpen) {
-      form.reset({
-        category: "",
-        description: "",
-        location: currentProductionLine?.name || "",
-        priority: "medium",
-    });
       setSelectedCategory(null);
     }
     setOpen(isOpen);
   }
   
   const currentCategory = categories.find(c => c.id === selectedCategory);
+  const location = getLocation();
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -176,10 +186,10 @@ export function ReportIssueDialog({ children }: { children: React.ReactNode }) {
         ) : (
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            {currentProductionLine && (
+            {location && (
                  <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground bg-muted/50 p-2 rounded-md">
                     <Factory className="h-4 w-4" />
-                    <span>{currentProductionLine.name}</span>
+                    <span>{location}</span>
                 </div>
             )}
             <div className="flex justify-center">
