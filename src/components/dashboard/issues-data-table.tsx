@@ -148,12 +148,11 @@ export function IssuesDataTable({ issues }: { issues: Issue[] }) {
                   <TableCell>
                     <div className="flex items-center gap-2">
                         <CategoryIcon className={cn("h-6 w-6", categoryInfo.color)} />
-                        <div className="font-medium">{issue.id}</div>
                     </div>
                   </TableCell>
                   <TableCell>
                     <div className="font-medium">{issue.title}</div>
-                    <div className="text-sm text-muted-foreground">{issue.location}</div>
+                    <div className="text-sm text-muted-foreground">{issue.id} - {issue.location}</div>
                   </TableCell>
                   <TableCell>
                     <Badge variant="outline" className={`capitalize border-0 ${priorityColors[issue.priority]}`}>
