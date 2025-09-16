@@ -38,10 +38,10 @@ export default function IssuesPage() {
             <TabsTrigger value="resolved">Resolved</TabsTrigger>
           </TabsList>
           <TabsContent value="active">
-            <IssuesDataTable issues={activeIssues} />
+            <IssuesDataTable issues={activeIssues} title="Active Issues" />
           </TabsContent>
            <TabsContent value="resolved">
-            <IssuesDataTable issues={resolvedIssues} />
+            <IssuesDataTable issues={resolvedIssues} title="Resolved Issues" />
           </TabsContent>
         </Tabs>
       </main>

@@ -34,7 +34,7 @@ export default function Home() {
         {currentUser.role === 'admin' ? (
           <>
             <StatsCards stats={stats} />
-            <IssuesDataTable issues={userIssues} />
+            <IssuesDataTable issues={userIssues} title="Recent Issues" />
           </>
         ) : (
           <div className="flex flex-col gap-4">
@@ -47,7 +47,7 @@ export default function Home() {
                 <p className="text-2xl font-bold">{currentProductionLine?.name || 'No line assigned'}</p>
               </CardContent>
             </Card>
-            <IssuesDataTable issues={userIssues} />
+            <IssuesDataTable issues={userIssues} title="Recent Issues on Your Line" />
           </div>
         )}
         
