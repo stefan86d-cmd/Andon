@@ -4,11 +4,10 @@
 import { useState } from "react";
 import { IssuesDataTable } from "@/components/dashboard/issues-data-table";
 import { AppLayout } from "@/components/layout/app-layout";
-import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { issues, productionLines, users } from "@/lib/data";
 import type { Issue } from "@/lib/types";
-import { ListFilter, Search } from "lucide-react";
+import { ListFilter } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -48,16 +47,6 @@ export default function IssuesPage() {
       <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background">
         <div className="flex items-center justify-between">
           <h1 className="text-lg font-semibold md:text-2xl">All Issues</h1>
-          {currentUser.role === "admin" && (
-            <div className="relative w-full max-w-sm">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                type="search"
-                placeholder="Search issues..."
-                className="w-full appearance-none bg-background pl-8 shadow-none"
-              />
-            </div>
-          )}
         </div>
         <Tabs defaultValue="active">
           <div className="flex items-center justify-between">
