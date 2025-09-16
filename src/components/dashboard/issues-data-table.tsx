@@ -1,3 +1,6 @@
+
+"use client";
+
 import type { Issue, Priority, Status, User, IssueCategory } from "@/lib/types";
 import {
   Table,
@@ -15,15 +18,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import {
-  MoreHorizontal,
   ArrowDownCircle,
   TriangleAlert,
   Flame,
@@ -50,6 +46,8 @@ import {
 import { formatDistanceToNow } from "date-fns";
 import { users } from "@/lib/data";
 import { cn } from "@/lib/utils";
+import { ResolveIssueDialog } from "./resolve-issue-dialog";
+import { useState } from "react";
 
 const priorityIcons: Record<Priority, React.ElementType> = {
   low: ArrowDownCircle,
@@ -112,6 +110,15 @@ const StatusSelector = ({ status, isOperator }: { status: Status, isOperator: bo
 
 export function IssuesDataTable({ issues }: { issues: Issue[] }) {
   const currentUser = users.current;
+  const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
+
+  const handleIssueUpdate = (updatedIssue: Issue) => {
+    // In a real app, this would trigger a re-fetch of the issues data
+    console.log("Issue updated:", updatedIssue);
+    // For now, we just close the dialog
+    setSelectedIssue(null);
+  };
+
 
   return (
     <Card>
@@ -131,11 +138,6 @@ export function IssuesDataTable({ issues }: { issues: Issue[] }) {
               <TableHead>Status</TableHead>
               <TableHead>Reported</TableHead>
               <TableHead>Reported By</TableHead>
-              {currentUser.role === 'admin' && (
-                <TableHead>
-                  <span className="sr-only">Actions</span>
-                </TableHead>
-              )}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -144,7 +146,11 @@ export function IssuesDataTable({ issues }: { issues: Issue[] }) {
               const categoryInfo = categories[issue.category];
               const CategoryIcon = categoryInfo.icon;
               return (
-                <TableRow key={issue.id}>
+                <TableRow 
+                  key={issue.id} 
+                  onClick={() => currentUser.role === 'admin' && setSelectedIssue(issue)}
+                  className={cn(currentUser.role === 'admin' && 'cursor-pointer')}
+                >
                   <TableCell>
                     <div className="flex items-center gap-2">
                         <CategoryIcon className={cn("h-6 w-6", categoryInfo.color)} />
@@ -152,7 +158,7 @@ export function IssuesDataTable({ issues }: { issues: Issue[] }) {
                   </TableCell>
                   <TableCell>
                     <div className="font-medium">{issue.title}</div>
-                    <div className="text-sm text-muted-foreground">{issue.id} - {issue.location}</div>
+                    <div className="text-sm text-muted-foreground">{issue.location}</div>
                   </TableCell>
                   <TableCell>
                     <Badge variant="outline" className={`capitalize border-0 ${priorityColors[issue.priority]}`}>
@@ -175,34 +181,21 @@ export function IssuesDataTable({ issues }: { issues: Issue[] }) {
                         <span>{issue.reportedBy.name}</span>
                     </div>
                   </TableCell>
-                  {currentUser.role === 'admin' && (
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            aria-haspopup="true"
-                            size="icon"
-                            variant="ghost"
-                          >
-                            <MoreHorizontal className="h-4 w-4" />
-                            <span className="sr-only">Toggle menu</span>
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem>View Details</DropdownMenuItem>
-                          <DropdownMenuItem>Assign</DropdownMenuItem>
-                          <DropdownMenuItem>Resolve</DropdownMenuItem>
-                          <DropdownMenuItem>Archive</DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  )}
                 </TableRow>
               );
             })}
           </TableBody>
         </Table>
       </CardContent>
+      {selectedIssue && (
+         <ResolveIssueDialog
+          isOpen={!!selectedIssue}
+          onOpenChange={(isOpen) => !isOpen && setSelectedIssue(null)}
+          issue={selectedIssue}
+          onIssueUpdate={handleIssueUpdate}
+        />
+      )}
     </Card>
   );
 }
+

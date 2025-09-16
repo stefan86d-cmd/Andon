@@ -1,3 +1,4 @@
+
 export type Role = "admin" | "operator";
 
 export type User = {
@@ -30,6 +31,7 @@ export type Issue = {
   reportedAt: Date;
   reportedBy: User;
   category: IssueCategory;
+  resolutionNotes?: string;
 };
 
 export type StatCard = {
