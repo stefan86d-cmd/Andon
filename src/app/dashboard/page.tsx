@@ -61,7 +61,7 @@ export default function Home() {
               <Card>
                 <CardHeader>
                   <CardTitle>Select Your Workstation</CardTitle>
-                  <CardDescription>Choose your current production line and workstation to view relevant issues.</CardDescription>
+                  <CardDescription>Report an issue</CardDescription>
                 </CardHeader>
                 <CardContent className="grid md:grid-cols-2 gap-4">
                   <div className="flex flex-col gap-2">
