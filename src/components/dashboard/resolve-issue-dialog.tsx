@@ -37,9 +37,7 @@ import { issues, users } from "@/lib/data";
 
 
 const resolveIssueFormSchema = z.object({
-  resolutionNotes: z.string().min(10, {
-    message: "Resolution notes must be at least 10 characters.",
-  }),
+  resolutionNotes: z.string(),
   status: z.enum(["in_progress", "resolved"]),
 });
 
