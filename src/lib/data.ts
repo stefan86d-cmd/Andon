@@ -1,4 +1,4 @@
-import type { User, Issue, StatCard, ProductionLine } from "@/lib/types";
+import type { User, Issue, StatCard, ProductionLine, ReportData, Kpi, IssueByDay } from "@/lib/types";
 
 export const productionLines: ProductionLine[] = [
   { 
@@ -210,4 +210,30 @@ export const stats: StatCard[] = [
         changeType: "increase",
         description: "in last 24 hours"
     }
+];
+
+export const reportData: ReportData = {
+  resolutionTimeByCategory: [
+    { category: "It & Network", hours: 2.5 },
+    { category: "Logistics", hours: 4.1 },
+    { category: "Tool & Equipment", hours: 5.8 },
+    { category: "Assistance", hours: 1.2 },
+    { category: "Quality", hours: 3.3 },
+    { category: "Other", hours: 2.1 },
+  ],
+};
+
+export const kpiData: Kpi[] = [
+  { title: "Total Downtime", value: "18.5 hours", subtitle: "Across all lines in the last 7 days" },
+  { title: "Most Impacted Line", value: "Assembly Line 3", subtitle: "5.2 hours of downtime" },
 ]
+
+export const issuesByDay: IssueByDay[] = [
+  { date: "Mon", issues: 4 },
+  { date: "Tue", issues: 6 },
+  { date: "Wed", issues: 5 },
+  { date: "Thu", issues: 7 },
+  { date: "Fri", issues: 3 },
+  { date: "Sat", issues: 2 },
+  { date: "Sun", issues: 1 },
+];

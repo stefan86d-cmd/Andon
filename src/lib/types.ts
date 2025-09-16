@@ -36,3 +36,21 @@ export type StatCard = {
   changeType: "increase" | "decrease";
   description: string;
 };
+
+export type ReportData = {
+  resolutionTimeByCategory: {
+    category: string;
+    hours: number;
+  }[];
+};
+
+export type Kpi = {
+  title: string;
+  value: string;
+  subtitle: string;
+}
+
+export type IssueByDay = {
+  date: string;
+  issues: number;
+}
