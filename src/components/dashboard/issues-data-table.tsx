@@ -1,4 +1,4 @@
-import type { Issue, Priority, Status, User } from "@/lib/types";
+import type { Issue, Priority, Status, User, IssueCategory } from "@/lib/types";
 import {
   Table,
   TableBody,
@@ -32,6 +32,12 @@ import {
   LoaderCircle,
   CheckCircle2,
   Archive,
+  Monitor,
+  Truck,
+  Wrench,
+  HelpCircle,
+  LifeBuoy,
+  BadgeCheck,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -43,6 +49,7 @@ import {
 } from "@/components/ui/select";
 import { formatDistanceToNow } from "date-fns";
 import { users } from "@/lib/data";
+import { cn } from "@/lib/utils";
 
 const priorityIcons: Record<Priority, React.ElementType> = {
   low: ArrowDownCircle,
@@ -70,6 +77,15 @@ const statusLabels: Record<Status, string> = {
     in_progress: "In Progress",
     resolved: "Resolved",
     archived: "Archived",
+};
+
+const categories: Record<IssueCategory, { label: string, icon: React.ElementType, color: string }> = {
+    'it': { label: 'It & Network', icon: Monitor, color: 'text-blue-500' },
+    'logistics': { label: 'Logistics', icon: Truck, color: 'text-orange-500' },
+    'tool': { label: 'Tool & Equipment', icon: Wrench, color: 'text-gray-500' },
+    'assistance': { label: 'Need Assistance', icon: LifeBuoy, color: 'text-red-500' },
+    'quality': { label: 'Quality', icon: BadgeCheck, color: 'text-green-500' },
+    'other': { label: 'Other', icon: HelpCircle, color: 'text-purple-500' },
 };
 
 const StatusSelector = ({ status, isOperator }: { status: Status, isOperator: boolean }) => (
@@ -109,7 +125,7 @@ export function IssuesDataTable({ issues }: { issues: Issue[] }) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Issue ID</TableHead>
+              <TableHead>Category</TableHead>
               <TableHead className="min-w-[300px]">Description</TableHead>
               <TableHead>Priority</TableHead>
               <TableHead>Status</TableHead>
@@ -125,9 +141,16 @@ export function IssuesDataTable({ issues }: { issues: Issue[] }) {
           <TableBody>
             {issues.map((issue) => {
               const PriorityIcon = priorityIcons[issue.priority];
+              const categoryInfo = categories[issue.category];
+              const CategoryIcon = categoryInfo.icon;
               return (
                 <TableRow key={issue.id}>
-                  <TableCell className="font-medium">{issue.id}</TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                        <CategoryIcon className={cn("h-6 w-6", categoryInfo.color)} />
+                        <div className="font-medium">{issue.id}</div>
+                    </div>
+                  </TableCell>
                   <TableCell>
                     <div className="font-medium">{issue.title}</div>
                     <div className="text-sm text-muted-foreground">{issue.location}</div>

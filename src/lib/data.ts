@@ -118,6 +118,7 @@ export const issues: Issue[] = [
     status: "in_progress",
     reportedAt: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
     reportedBy: userProfiles.janejones,
+    category: "tool",
   },
   {
     id: "AND-002",
@@ -128,6 +129,7 @@ export const issues: Issue[] = [
     status: "reported",
     reportedAt: new Date(Date.now() - 30 * 60 * 1000), // 30 minutes ago
     reportedBy: userProfiles.bobsmith,
+    category: "tool",
   },
   {
     id: "AND-003",
@@ -138,6 +140,7 @@ export const issues: Issue[] = [
     status: "resolved",
     reportedAt: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
     reportedBy: userProfiles.alicewilliams,
+    category: "quality",
   },
   {
     id: "AND-004",
@@ -148,6 +151,7 @@ export const issues: Issue[] = [
     status: "reported",
     reportedAt: new Date(Date.now() - 4 * 60 * 60 * 1000), // 4 hours ago
     reportedBy: userProfiles.janejones,
+    category: "logistics",
   },
   {
     id: "AND-005",
@@ -158,6 +162,7 @@ export const issues: Issue[] = [
     status: "in_progress",
     reportedAt: new Date(Date.now() - 8 * 60 * 60 * 1000), // 8 hours ago
     reportedBy: userProfiles.bobsmith,
+    category: "tool",
   },
   {
     id: "AND-006",
@@ -168,6 +173,7 @@ export const issues: Issue[] = [
     status: "resolved",
     reportedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
     reportedBy: userProfiles.alicewilliams,
+    category: "logistics",
   },
   {
     id: "AND-007",
@@ -178,6 +184,7 @@ export const issues: Issue[] = [
     status: "reported",
     reportedAt: new Date(Date.now() - 60 * 60 * 1000), // 1 hour ago
     reportedBy: userProfiles.janejones,
+    category: "tool",
   },
 ];
 
