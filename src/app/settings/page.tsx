@@ -85,7 +85,7 @@ export default function SettingsPage() {
                                 </div>
                                 </CardContent>
                             </Card>
-                        </TabsValue>
+                        </TabsContent>
                     )}
                 </Tabs>
                 </div>
