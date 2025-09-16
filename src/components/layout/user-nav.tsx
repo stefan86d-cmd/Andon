@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -22,7 +23,7 @@ import { useTheme } from "next-themes";
 import { Moon, Sun } from "lucide-react";
 
 export function UserNav() {
-  const currentUser = users.operator;
+  const currentUser = users.current;
   const avatarImage = PlaceHolderImages.find(p => p.id === 'user-avatar');
   const { setTheme } = useTheme()
 

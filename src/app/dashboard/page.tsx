@@ -20,7 +20,7 @@ import { PlusCircle } from "lucide-react";
 import type { ProductionLine } from "@/lib/types";
 
 export default function Home() {
-  const currentUser = users.operator;
+  const currentUser = users.current;
   const [selectedLineId, setSelectedLineId] = useState<string | undefined>(currentUser.productionLineId);
   const [selectedWorkstation, setSelectedWorkstation] = useState<string | undefined>();
 

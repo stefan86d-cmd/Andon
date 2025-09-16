@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useTransition } from "react";
@@ -73,7 +74,7 @@ export function ReportIssueDialog({
   const [isAiPending, startAiTransition] = useTransition();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   
-  const currentUser = users.operator;
+  const currentUser = users.current;
   
   const getLineName = () => productionLines.find(line => line.id === selectedLineId)?.name || "";
   const getLocation = () => {

@@ -19,7 +19,7 @@ import {
 import { Button } from "@/components/ui/button";
 
 export default function IssuesPage() {
-  const currentUser = users.operator;
+  const currentUser = users.current;
   const [selectedLines, setSelectedLines] = useState<string[]>([]);
 
   const handleLineFilterChange = (lineId: string) => {
