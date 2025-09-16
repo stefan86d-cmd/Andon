@@ -7,7 +7,7 @@ import { ReportIssueDialog } from "@/components/dashboard/report-issue-dialog";
 import { StatsCards } from "@/components/dashboard/stats-cards";
 import { AppLayout } from "@/components/layout/app-layout";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -43,12 +43,14 @@ export default function Home() {
       <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background">
         <div className="flex items-center justify-between">
           <h1 className="text-lg font-semibold md:text-2xl">{currentUser.role === 'admin' ? 'Dashboard' : 'Line Status'}</h1>
-          <ReportIssueDialog>
-            <Button size="sm" className="gap-1">
-              <PlusCircle className="h-4 w-4" />
-              Report Issue
-            </Button>
-          </ReportIssueDialog>
+          {currentUser.role === 'admin' && (
+            <ReportIssueDialog>
+              <Button size="sm" className="gap-1">
+                <PlusCircle className="h-4 w-4" />
+                Report Issue
+              </Button>
+            </ReportIssueDialog>
+          )}
         </div>
         
         {currentUser.role === 'admin' ? (
@@ -93,6 +95,14 @@ export default function Home() {
                     </Select>
                   </div>
                 </CardContent>
+                <CardFooter className="justify-end">
+                    <ReportIssueDialog>
+                        <Button className="gap-1">
+                        <PlusCircle className="h-4 w-4" />
+                        Report Issue
+                        </Button>
+                    </ReportIssueDialog>
+                </CardFooter>
               </Card>
             <IssuesDataTable issues={userIssues} title="Issues on Selected Line" />
           </div>
