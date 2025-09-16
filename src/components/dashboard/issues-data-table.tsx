@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import type { Issue, Priority, Status, User, IssueCategory } from "@/lib/types";
@@ -119,6 +120,7 @@ export function IssuesDataTable({ issues, title, description }: { issues: Issue[
     setSelectedIssue(null);
   };
 
+  const isResolvedView = issues.every(issue => issue.status === 'resolved');
 
   return (
     <Card>
@@ -145,6 +147,7 @@ export function IssuesDataTable({ issues, title, description }: { issues: Issue[
               const PriorityIcon = priorityIcons[issue.priority];
               const categoryInfo = categories[issue.category];
               const CategoryIcon = categoryInfo.icon;
+              const StatusIcon = statusIcons[issue.status];
               return (
                 <TableRow 
                   key={issue.id} 
@@ -167,7 +170,14 @@ export function IssuesDataTable({ issues, title, description }: { issues: Issue[
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <StatusSelector status={issue.status} isOperator={currentUser.role === 'operator'} />
+                    {isResolvedView ? (
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <StatusIcon className="h-4 w-4 text-green-500" />
+                        {statusLabels[issue.status]}
+                      </div>
+                    ) : (
+                      <StatusSelector status={issue.status} isOperator={currentUser.role === 'operator'} />
+                    )}
                   </TableCell>
                   <TableCell>
                     {formatDistanceToNow(issue.reportedAt, { addSuffix: true })}
