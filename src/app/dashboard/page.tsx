@@ -1,27 +1,48 @@
+
+"use client";
+
+import { useState } from "react";
 import { IssuesDataTable } from "@/components/dashboard/issues-data-table";
 import { ReportIssueDialog } from "@/components/dashboard/report-issue-dialog";
 import { StatsCards } from "@/components/dashboard/stats-cards";
 import { AppLayout } from "@/components/layout/app-layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { issues, productionLines, stats, users } from "@/lib/data";
 import { PlusCircle } from "lucide-react";
+import type { ProductionLine } from "@/lib/types";
 
 export default function Home() {
-  const currentUser = users.operator; 
+  const currentUser = users.operator;
+  const [selectedLineId, setSelectedLineId] = useState<string | undefined>(currentUser.productionLineId);
+  const [selectedWorkstation, setSelectedWorkstation] = useState<string | undefined>();
+
+  const handleLineChange = (lineId: string) => {
+    setSelectedLineId(lineId);
+    setSelectedWorkstation(undefined); // Reset workstation when line changes
+  };
+
+  const selectedLine: ProductionLine | undefined = productionLines.find(
+    (line) => line.id === selectedLineId
+  );
 
   const userIssues =
     currentUser.role === "admin"
       ? issues
-      : issues.filter((issue) => issue.productionLineId === currentUser.productionLineId);
-
-  const currentProductionLine = productionLines.find(line => line.id === currentUser.productionLineId);
+      : issues.filter((issue) => issue.productionLineId === selectedLineId);
 
   return (
     <AppLayout>
       <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background">
         <div className="flex items-center justify-between">
-          <h1 className="text-lg font-semibold md:text-2xl">{currentUser.role === 'admin' ? 'Dashboard' : 'My Line Issues'}</h1>
+          <h1 className="text-lg font-semibold md:text-2xl">{currentUser.role === 'admin' ? 'Dashboard' : 'Line Status'}</h1>
           <ReportIssueDialog>
             <Button size="sm" className="gap-1">
               <PlusCircle className="h-4 w-4" />
@@ -38,15 +59,42 @@ export default function Home() {
         ) : (
           <div className="flex flex-col gap-4">
               <Card>
-              <CardHeader>
-                <CardTitle>Your Production Line</CardTitle>
-                <CardDescription>Details about your assigned work area.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-2xl font-bold">{currentProductionLine?.name || 'No line assigned'}</p>
-              </CardContent>
-            </Card>
-            <IssuesDataTable issues={userIssues} title="Recent Issues on Your Line" />
+                <CardHeader>
+                  <CardTitle>Select Your Workstation</CardTitle>
+                  <CardDescription>Choose your current production line and workstation to view relevant issues.</CardDescription>
+                </CardHeader>
+                <CardContent className="grid md:grid-cols-2 gap-4">
+                  <div className="flex flex-col gap-2">
+                    <Select onValueChange={handleLineChange} value={selectedLineId}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select Production Line" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {productionLines.map((line) => (
+                          <SelectItem key={line.id} value={line.id}>
+                            {line.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                     <Select onValueChange={setSelectedWorkstation} value={selectedWorkstation} disabled={!selectedLine}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select Workstation" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {selectedLine?.workstations.map((station) => (
+                          <SelectItem key={station} value={station}>
+                            {station}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </CardContent>
+              </Card>
+            <IssuesDataTable issues={userIssues} title="Issues on Selected Line" />
           </div>
         )}
         
