@@ -48,11 +48,13 @@ export function Header({ isCollapsed }: HeaderProps) {
 
       <div className="w-full flex-1" />
 
-      <Button variant="ghost" size="icon" className="relative">
-        <Bell className="h-5 w-5" />
-        <span className="sr-only">Toggle notifications</span>
-         <Badge className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 h-4 w-4 shrink-0 items-center justify-center rounded-full p-0 text-xs font-medium">3</Badge>
-      </Button>
+      {currentUser.role === 'admin' && (
+        <Button variant="ghost" size="icon" className="relative">
+          <Bell className="h-5 w-5" />
+          <span className="sr-only">Toggle notifications</span>
+          <Badge className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 h-4 w-4 shrink-0 items-center justify-center rounded-full p-0 text-xs font-medium">3</Badge>
+        </Button>
+      )}
       <UserNav />
     </header>
   );
