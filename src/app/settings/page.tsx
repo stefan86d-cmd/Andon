@@ -79,24 +79,17 @@ export default function SettingsPage() {
                                             <div className="space-y-4">
                                                 <div className="flex items-center justify-between rounded-lg border p-4">
                                                     <div className="space-y-0.5">
-                                                        <Label htmlFor="issue-assigned" className="text-base">Issue Assigned</Label>
-                                                        <p className="text-sm text-muted-foreground">Receive an email when a new issue is assigned to you.</p>
+                                                        <Label htmlFor="new-issue-reported" className="text-base">New Issue Reported</Label>
+                                                        <p className="text-sm text-muted-foreground">Receive an email when a new issue is reported on any line.</p>
                                                     </div>
-                                                    <Switch id="issue-assigned" defaultChecked />
+                                                    <Switch id="new-issue-reported" defaultChecked />
                                                 </div>
                                                 <div className="flex items-center justify-between rounded-lg border p-4">
                                                     <div className="space-y-0.5">
-                                                        <Label htmlFor="status-update" className="text-base">Status Updates</Label>
-                                                        <p className="text-sm text-muted-foreground">Receive an email when an issue you reported is updated.</p>
+                                                        <Label htmlFor="issue-resolved" className="text-base">Issue Resolved</Label>
+                                                        <p className="text-sm text-muted-foreground">Receive an email when an issue is marked as resolved.</p>
                                                     </div>
-                                                    <Switch id="status-update" />
-                                                </div>
-                                                <div className="flex items-center justify-between rounded-lg border p-4">
-                                                    <div className="space-y-0.5">
-                                                        <Label htmlFor="weekly-digest" className="text-base">Weekly Digest</Label>
-                                                        <p className="text-sm text-muted-foreground">Get a summary of the week's activity on your production line.</p>
-                                                    </div>
-                                                    <Switch id="weekly-digest" defaultChecked />
+                                                    <Switch id="issue-resolved" />
                                                 </div>
                                             </div>
                                     </div>
