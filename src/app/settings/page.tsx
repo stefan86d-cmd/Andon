@@ -1,4 +1,5 @@
 
+
 "use client"
 
 import { AppLayout } from "@/components/layout/app-layout";
@@ -9,9 +10,12 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { users } from "@/lib/data";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Camera } from "lucide-react";
 
 export default function SettingsPage() {
     const currentUser = users.current;
+    const [firstName, lastName] = currentUser.name.split(" ");
 
     return (
         <AppLayout>
@@ -19,8 +23,8 @@ export default function SettingsPage() {
                 <div className="mx-auto grid w-full max-w-6xl gap-2">
                     <h1 className="text-3xl font-semibold">Settings</h1>
                 </div>
-                <div className="mx-auto w-full max-w-6xl">
-                    <Tabs defaultValue="profile" className="space-y-6">
+                <div className="mx-auto grid w-full max-w-6xl items-start gap-6">
+                    <Tabs defaultValue="profile" className="w-full">
                         <TabsList>
                             <TabsTrigger value="profile">My Profile</TabsTrigger>
                             {currentUser.role === 'admin' && (
@@ -33,14 +37,30 @@ export default function SettingsPage() {
                                     <CardTitle>My Profile</CardTitle>
                                     <CardDescription>Update your personal information.</CardDescription>
                                 </CardHeader>
-                                <CardContent className="space-y-4">
-                                    <div className="space-y-2">
-                                        <Label htmlFor="name">Name</Label>
-                                        <Input id="name" defaultValue={currentUser.name} />
+                                <CardContent className="space-y-6">
+                                    <div className="flex items-center gap-4">
+                                        <Avatar className="h-20 w-20">
+                                            <AvatarImage src={currentUser.avatarUrl} alt={currentUser.name} />
+                                            <AvatarFallback>{currentUser.name.charAt(0)}</AvatarFallback>
+                                        </Avatar>
+                                        <Button variant="outline">
+                                            <Camera className="mr-2 h-4 w-4" />
+                                            Change Photo
+                                        </Button>
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <Label htmlFor="firstName">First Name</Label>
+                                            <Input id="firstName" defaultValue={firstName} />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="lastName">Last Name</Label>
+                                            <Input id="lastName" defaultValue={lastName} />
+                                        </div>
                                     </div>
                                     <div className="space-y-2">
                                         <Label htmlFor="email">Email</Label>
-                                        <Input id="email" type="email" defaultValue={currentUser.email} />
+                                        <Input id="email" type="email" defaultValue={currentUser.email} readOnly disabled/>
                                     </div>
                                     <Button>Update Profile</Button>
                                 </CardContent>
