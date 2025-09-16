@@ -17,14 +17,13 @@ import {
   DropdownMenuSubContent
 } from "@/components/ui/dropdown-menu";
 import { users } from "@/lib/data";
-import { PlaceHolderImages } from "@/lib/placeholder-images";
-import Image from 'next/image';
 import { useTheme } from "next-themes";
 import { Moon, Sun } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
 
 export function UserNav() {
   const currentUser = users.current;
-  const avatarImage = PlaceHolderImages.find(p => p.id === 'user-avatar');
   const { setTheme } = useTheme()
 
   return (
@@ -32,14 +31,14 @@ export function UserNav() {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar className="h-9 w-9">
-            {avatarImage && (
+            {currentUser.avatarUrl && (
               <Image 
                 src={currentUser.avatarUrl} 
                 alt={currentUser.name}
                 width={36}
                 height={36}
                 className="rounded-full"
-                data-ai-hint={avatarImage.imageHint}
+                data-ai-hint="person portrait"
               />
             )}
             <AvatarFallback>{currentUser.name.charAt(0)}</AvatarFallback>
@@ -57,8 +56,16 @@ export function UserNav() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem>Profile</DropdownMenuItem>
-          <DropdownMenuItem>Settings</DropdownMenuItem>
+          <Link href="/settings">
+            <DropdownMenuItem>
+              Profile
+            </DropdownMenuItem>
+          </Link>
+          <Link href="/settings">
+            <DropdownMenuItem>
+                Settings
+            </DropdownMenuItem>
+          </Link>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuSub>
