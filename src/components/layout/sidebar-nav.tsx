@@ -7,6 +7,7 @@ import {
   HardHat,
   Users,
   Factory,
+  Activity,
 } from "lucide-react";
 import { usePathname } from 'next/navigation'
 import { cn } from "@/lib/utils";
@@ -17,7 +18,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/
 
 const allNavItems = [
     { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard", roles: ['admin'] },
-    { href: "/dashboard", icon: HardHat, label: "My Line Issues", roles: ['operator'] },
+    { href: "/dashboard", icon: Activity, label: "Line Status", roles: ['operator'] },
     { href: "/issues", icon: HardHat, label: "All Issues", badge: "27", roles: ['admin'] },
     { href: "/lines", icon: Factory, label: "Production Lines", roles: ['admin'] },
     { href: "/users", icon: Users, label: "User Management", roles: ['admin'] },
