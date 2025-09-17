@@ -1,3 +1,4 @@
+
 import type { Role, User } from "@/lib/types";
 import {
   Table,
@@ -16,13 +17,6 @@ import {
 } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -30,19 +24,20 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import { MoreHorizontal, Pencil, Trash2, UserCog, User as UserIcon } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
-const RoleSelector = ({ role }: { role: Role }) => (
-  <Select defaultValue={role}>
-    <SelectTrigger className="w-32 h-8 text-xs focus:ring-0 focus:ring-offset-0 border-0 shadow-none bg-transparent capitalize">
-      <SelectValue placeholder="Role" />
-    </SelectTrigger>
-    <SelectContent>
-      <SelectItem value="admin">Admin</SelectItem>
-      <SelectItem value="operator">Operator</SelectItem>
-    </SelectContent>
-  </Select>
-);
+const RoleDisplay = ({ role }: { role: Role }) => {
+    const Icon = role === 'admin' ? UserCog : UserIcon;
+    return (
+        <Badge variant="outline" className="capitalize border-0 font-medium">
+            <Icon className="mr-2 h-4 w-4 text-muted-foreground" />
+            {role}
+        </Badge>
+    );
+};
+
 
 export function UsersDataTable({ users }: { users: User[] }) {
   return (
@@ -80,7 +75,7 @@ export function UsersDataTable({ users }: { users: User[] }) {
                         </TableCell>
                         <TableCell>{user.email}</TableCell>
                         <TableCell>
-                            <RoleSelector role={user.role} />
+                            <RoleDisplay role={user.role} />
                         </TableCell>
                         <TableCell>
                             <DropdownMenu>
