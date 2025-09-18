@@ -148,17 +148,6 @@ export function ReportIssueDialog({
   const router = useRouter();
   
   const currentUser = users.current;
-  
-  const getLineName = () => productionLines.find(line => line.id === selectedLineId)?.name || "";
-  const getLocation = () => {
-    const lineName = getLineName();
-    if (lineName && selectedWorkstation) {
-      return `${lineName} - ${selectedWorkstation}`;
-    }
-    return currentUser.productionLineId 
-      ? productionLines.find(line => line.id === currentUser.productionLineId)?.name || ""
-      : "";
-  };
 
   const form = useForm<IssueFormValues>({
     resolver: zodResolver(issueFormSchema),
@@ -166,24 +155,36 @@ export function ReportIssueDialog({
       category: "",
       subCategory: "",
       description: "",
-      location: getLocation(),
+      location: "",
       priority: "medium",
     },
   });
+  
+  const getLocation = React.useCallback(() => {
+    const lineName = productionLines.find(line => line.id === selectedLineId)?.name || "";
+    if (lineName && selectedWorkstation) {
+      return `${lineName} - ${selectedWorkstation}`;
+    }
+    return currentUser.productionLineId 
+      ? productionLines.find(line => line.id === currentUser.productionLineId)?.name || ""
+      : "";
+  }, [selectedLineId, selectedWorkstation, currentUser.productionLineId]);
+
 
   React.useEffect(() => {
     if (open) {
+      const currentLocation = getLocation();
       form.reset({
         category: "",
         subCategory: "",
         description: "",
-        location: getLocation(),
+        location: currentLocation,
         priority: "medium",
       });
       setStep(1);
       setSelectedCategory(null);
     }
-  }, [open, selectedLineId, selectedWorkstation, form, getLocation]);
+  }, [open, getLocation, form]);
 
   const descriptionValue = form.watch("description");
 
