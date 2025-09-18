@@ -152,7 +152,7 @@ export const issues: Issue[] = [
     priority: "low",
     status: "reported",
     reportedAt: new Date(Date.now() - 4 * 60 * 60 * 1000), // 4 hours ago
-    reportedBy: usersByEmail['janejones@example.com'],
+    reportedBy: usersByEmail['jane.jones@example.com'],
     category: "logistics",
   },
   {

@@ -212,6 +212,7 @@ export function IssuesDataTable({ issues, title, description }: { issues: Issue[
                             </div>
                         </TableCell>
                         <TableCell>
+                            {issue.reportedBy && (
                             <div className="flex items-center gap-2">
                                 <Avatar className="h-8 w-8">
                                     <AvatarImage src={issue.reportedBy.avatarUrl} alt={issue.reportedBy.name} />
@@ -219,6 +220,7 @@ export function IssuesDataTable({ issues, title, description }: { issues: Issue[
                                 </Avatar>
                                 <span>{issue.reportedBy.name}</span>
                             </div>
+                            )}
                         </TableCell>
                     </>
                   )}
