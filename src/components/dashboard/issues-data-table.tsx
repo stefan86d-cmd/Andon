@@ -37,7 +37,7 @@ import {
   HardHat,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { formatDistanceToNow } from "date-fns";
+import { format, formatDistanceToNow, intervalToDuration } from "date-fns";
 import { users } from "@/lib/data";
 import { cn } from "@/lib/utils";
 import { ResolveIssueDialog } from "./resolve-issue-dialog";
@@ -94,6 +94,17 @@ const StatusDisplay = ({ status }: { status: Status }) => {
     );
 };
 
+function formatDuration(start: Date, end: Date) {
+  const duration = intervalToDuration({ start, end });
+  
+  const parts = [];
+  if (duration.days && duration.days > 0) parts.push(`${duration.days}d`);
+  if (duration.hours && duration.hours > 0) parts.push(`${duration.hours}h`);
+  if (duration.minutes && duration.minutes > 0) parts.push(`${duration.minutes}m`);
+  if (duration.seconds && duration.seconds > 0) parts.push(`${duration.seconds}s`);
+  
+  return parts.length > 0 ? parts.slice(0, 2).join(' ') : '0s';
+}
 
 export function IssuesDataTable({ issues, title, description }: { issues: Issue[], title?: string, description?: string }) {
   const currentUser = users.current;
@@ -126,11 +137,12 @@ export function IssuesDataTable({ issues, title, description }: { issues: Issue[
               {isResolvedView ? (
                 <>
                   <TableHead>Resolved</TableHead>
+                  <TableHead>Resolution Time</TableHead>
                   <TableHead>Resolved By</TableHead>
                 </>
               ) : (
                 <>
-                  <TableHead>Reported</TableHead>
+                  <TableHead>Reported At</TableHead>
                   <TableHead>Reported By</TableHead>
                 </>
               )}
@@ -156,6 +168,7 @@ export function IssuesDataTable({ issues, title, description }: { issues: Issue[
                   <TableCell>
                     <div className="font-medium">{issue.title}</div>
                     <div className="text-sm text-muted-foreground">{issue.location}</div>
+                    {issue.subCategory && <div className="text-xs text-muted-foreground capitalize">{issue.subCategory.replace(/-/g, ' ')}</div>}
                   </TableCell>
                   <TableCell>
                     <Badge variant="outline" className={`capitalize border-0 ${priorityColors[issue.priority]}`}>
@@ -169,7 +182,15 @@ export function IssuesDataTable({ issues, title, description }: { issues: Issue[
                   {isResolvedView ? (
                      <>
                         <TableCell>
-                            {issue.resolvedAt && formatDistanceToNow(issue.resolvedAt, { addSuffix: true })}
+                           {issue.resolvedAt && (
+                            <div className="flex flex-col">
+                                <span className="font-medium">{format(issue.resolvedAt, 'PPpp')}</span>
+                                <span className="text-sm text-muted-foreground">{formatDistanceToNow(issue.resolvedAt, { addSuffix: true })}</span>
+                            </div>
+                           )}
+                        </TableCell>
+                        <TableCell>
+                           {issue.resolvedAt && formatDuration(issue.reportedAt, issue.resolvedAt)}
                         </TableCell>
                         <TableCell>
                            {issue.resolvedBy && (
@@ -186,7 +207,10 @@ export function IssuesDataTable({ issues, title, description }: { issues: Issue[
                   ) : (
                     <>
                         <TableCell>
-                            {formatDistanceToNow(issue.reportedAt, { addSuffix: true })}
+                            <div className="flex flex-col">
+                                <span className="font-medium">{format(issue.reportedAt, 'PPpp')}</span>
+                                <span className="text-sm text-muted-foreground">{formatDistanceToNow(issue.reportedAt, { addSuffix: true })}</span>
+                            </div>
                         </TableCell>
                         <TableCell>
                             <div className="flex items-center gap-2">
