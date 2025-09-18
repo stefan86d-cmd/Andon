@@ -18,6 +18,7 @@ import {
 import { issues, productionLines, users } from "@/lib/data";
 import { PlusCircle } from "lucide-react";
 import type { ProductionLine } from "@/lib/types";
+import { subHours } from "date-fns";
 
 export default function Home() {
   const currentUser = users.current;
@@ -47,10 +48,15 @@ export default function Home() {
     (line) => line.id === selectedLineId
   );
 
+  const twentyFourHoursAgo = subHours(new Date(), 24);
   const userIssues =
     currentUser.role === "admin"
       ? issues
-      : issues.filter((issue) => issue.productionLineId === selectedLineId && (issue.status === 'reported' || issue.status === 'in_progress' || issue.status === 'resolved'));
+      : issues.filter((issue) => 
+          issue.productionLineId === selectedLineId && 
+          issue.reportedAt > twentyFourHoursAgo &&
+          (issue.status === 'reported' || issue.status === 'in_progress' || issue.status === 'resolved')
+        );
 
   return (
     <AppLayout>
