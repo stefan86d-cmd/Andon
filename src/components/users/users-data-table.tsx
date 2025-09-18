@@ -1,4 +1,5 @@
 
+
 import type { Role, User } from "@/lib/types";
 import {
   Table,
@@ -24,9 +25,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Pencil, Trash2, UserCog, User as UserIcon } from "lucide-react";
+import { MoreHorizontal, Pencil, UserCog, User as UserIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
+import { DeleteUserDialog } from "./delete-user-dialog";
 
 const RoleDisplay = ({ role }: { role: Role }) => {
     const Icon = role === 'admin' ? UserCog : UserIcon;
@@ -95,10 +96,7 @@ export function UsersDataTable({ users }: { users: User[] }) {
                                     <Pencil className="mr-2 h-4 w-4" />
                                     Edit
                                 </DropdownMenuItem>
-                                <DropdownMenuItem className="text-destructive focus:text-destructive focus:bg-destructive/10">
-                                    <Trash2 className="mr-2 h-4 w-4" />
-                                    Delete
-                                </DropdownMenuItem>
+                                <DeleteUserDialog user={user} />
                                 </DropdownMenuContent>
                             </DropdownMenu>
                         </TableCell>

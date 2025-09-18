@@ -1,4 +1,5 @@
 
+
 import type { User, Issue, StatCard, ProductionLine, ReportData, Kpi, IssueByDay, IssueCategory, Role } from "@/lib/types";
 
 export let productionLines: ProductionLine[] = [
@@ -48,7 +49,7 @@ export let productionLines: ProductionLine[] = [
   },
 ];
 
-const userProfiles = {
+const userProfiles: Record<string, User> = {
   janejones: {
     name: "Jane Jones",
     email: "jane.jones@example.com",
@@ -99,17 +100,19 @@ const userProfiles = {
   }
 };
 
-export const allUsers: User[] = Object.values(userProfiles);
+export let allUsers: User[] = Object.values(userProfiles);
 
-let currentUser: User = userProfiles.admin;
+let currentUser: User | undefined = userProfiles.admin;
 
 export const users = {
   get current() {
     return currentUser;
   },
   setCurrent(role: Role) {
-    if (userProfiles[role]) {
+    if (role && userProfiles[role]) {
       currentUser = userProfiles[role];
+    } else {
+        currentUser = undefined;
     }
   },
   operator: userProfiles.operator,
@@ -205,6 +208,9 @@ export const issues: Issue[] = [
 let nextIssueId = issues.length + 1;
 
 export function addIssue(issueData: Omit<Issue, 'id' | 'reportedAt' | 'reportedBy' | 'status'>) {
+    if (!users.current) {
+        throw new Error("Cannot report issue without a logged in user.");
+    }
     const newIssue: Issue = {
         ...issueData,
         id: `AND-${String(nextIssueId).padStart(3, '0')}`,
@@ -242,6 +248,19 @@ export function deleteProductionLine(lineId: string) {
         productionLines.splice(lineIndex, 1);
     }
 }
+
+export function deleteUser(email: string) {
+    const userKey = Object.keys(userProfiles).find(key => userProfiles[key].email === email);
+    if (userKey && userKey !== 'admin' && userKey !== 'operator') {
+      delete userProfiles[userKey];
+      allUsers = Object.values(userProfiles);
+    } else if (userKey) {
+        throw new Error("Cannot delete default admin or operator roles.");
+    } else {
+        throw new Error("User not found.");
+    }
+}
+
 
 export const stats: StatCard[] = [
     {
