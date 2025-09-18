@@ -25,7 +25,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Pencil, UserCog, User as UserIcon } from "lucide-react";
+import { MoreHorizontal, UserCog, User as UserIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { DeleteUserDialog } from "./delete-user-dialog";
 import { EditUserDialog } from "./edit-user-dialog";
@@ -93,12 +93,7 @@ export function UsersDataTable({ users }: { users: User[] }) {
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
                                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                <EditUserDialog user={user}>
-                                    <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                                        <Pencil className="mr-2 h-4 w-4" />
-                                        Edit
-                                    </DropdownMenuItem>
-                                </EditUserDialog>
+                                <EditUserDialog user={user} />
                                 <DeleteUserDialog user={user} />
                                 </DropdownMenuContent>
                             </DropdownMenu>

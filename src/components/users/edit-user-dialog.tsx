@@ -33,9 +33,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
-import { LoaderCircle } from "lucide-react";
+import { LoaderCircle, Pencil } from "lucide-react";
 import { editUser } from "@/app/actions";
 import type { User } from "@/lib/types";
+import { DropdownMenuItem } from "../ui/dropdown-menu";
 
 const userFormSchema = z.object({
   firstName: z.string().min(1, "First name is required."),
@@ -47,11 +48,10 @@ const userFormSchema = z.object({
 type UserFormValues = z.infer<typeof userFormSchema>;
 
 interface EditUserDialogProps {
-  children: React.ReactNode;
   user: User;
 }
 
-export function EditUserDialog({ children, user }: EditUserDialogProps) {
+export function EditUserDialog({ user }: EditUserDialogProps) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, startSubmittingTransition] = useTransition();
 
@@ -102,7 +102,12 @@ export function EditUserDialog({ children, user }: EditUserDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>{children}</DialogTrigger>
+      <DialogTrigger asChild>
+        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+            <Pencil className="mr-2 h-4 w-4" />
+            Edit
+        </DropdownMenuItem>
+      </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Edit User: {user.name}</DialogTitle>
