@@ -1,5 +1,5 @@
 
-import type { User, Issue, StatCard, ProductionLine, ReportData, Kpi, IssueByDay } from "@/lib/types";
+import type { User, Issue, StatCard, ProductionLine, ReportData, Kpi, IssueByDay, IssueCategory } from "@/lib/types";
 
 export const productionLines: ProductionLine[] = [
   { 
@@ -107,6 +107,7 @@ export const allUsers: User[] = Object.values(userProfiles);
 export const users = {
   current: userProfiles.operator, // Default to admin user
   operator: userProfiles.operator,
+  admin: userProfiles.current,
 };
 
 export const issues: Issue[] = [
@@ -194,6 +195,21 @@ export const issues: Issue[] = [
     category: "tool",
   },
 ];
+
+let nextIssueId = issues.length + 1;
+
+export function addIssue(issueData: Omit<Issue, 'id' | 'reportedAt' | 'reportedBy' | 'status'>) {
+    const newIssue: Issue = {
+        ...issueData,
+        id: `AND-${String(nextIssueId).padStart(3, '0')}`,
+        reportedAt: new Date(),
+        reportedBy: users.current,
+        status: 'reported',
+        category: issueData.category as IssueCategory,
+    };
+    issues.unshift(newIssue);
+    nextIssueId++;
+}
 
 export const stats: StatCard[] = [
     {

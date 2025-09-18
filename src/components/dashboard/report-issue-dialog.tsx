@@ -5,7 +5,7 @@ import React, { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { suggestPriority } from "@/app/actions";
+import { suggestPriority, reportIssue } from "@/app/actions";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -40,9 +40,10 @@ import { Sparkles, LoaderCircle, Monitor, Truck, Wrench, HelpCircle, ArrowLeft, 
 import type { Priority } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { productionLines, users } from "@/lib/data";
+import { useRouter } from "next/navigation";
 
 const issueFormSchema = z.object({
-  category: z.string(),
+  category: z.string().min(1, "Category is required."),
   subCategory: z.string(),
   description: z.string().min(1, {
     message: "Description is required.",
@@ -121,6 +122,13 @@ const categories = [
         color: 'text-red-500',
         subCategories: []
     },
+    {
+        id: 'other',
+        label: 'Other',
+        icon: HelpCircle,
+        color: 'text-purple-500',
+        subCategories: [],
+    },
 ];
 
 export function ReportIssueDialog({
@@ -134,8 +142,10 @@ export function ReportIssueDialog({
 }) {
   const [open, setOpen] = useState(false);
   const [isAiPending, startAiTransition] = useTransition();
+  const [isSubmitting, startSubmittingTransition] = useTransition();
   const [step, setStep] = useState(1);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const router = useRouter();
   
   const currentUser = users.current;
   
@@ -152,6 +162,13 @@ export function ReportIssueDialog({
 
   const form = useForm<IssueFormValues>({
     resolver: zodResolver(issueFormSchema),
+    defaultValues: {
+      category: "",
+      subCategory: "",
+      description: "",
+      location: getLocation(),
+      priority: "medium",
+    },
   });
 
   React.useEffect(() => {
@@ -166,7 +183,7 @@ export function ReportIssueDialog({
       setStep(1);
       setSelectedCategory(null);
     }
-  }, [open, selectedLineId, selectedWorkstation, form]);
+  }, [open, selectedLineId, selectedWorkstation, form, getLocation]);
 
   const descriptionValue = form.watch("description");
 
@@ -180,7 +197,7 @@ export function ReportIssueDialog({
           description: result.error,
         });
       } else if (result.priority) {
-        form.setValue("priority", result.priority, { shouldValidate: true });
+        form.setValue("priority", result.priority as Priority, { shouldValidate: true });
         toast({
           title: "AI Suggestion Complete",
           description: `Priority set to "${result.priority}".`,
@@ -190,12 +207,32 @@ export function ReportIssueDialog({
   };
 
   function onSubmit(data: IssueFormValues) {
-    console.log(data);
-    toast({
-      title: "Issue Reported",
-      description: "Your issue has been successfully submitted.",
+    startSubmittingTransition(async () => {
+        const issueData = {
+            title: data.description,
+            location: data.location,
+            productionLineId: selectedLineId || currentUser.productionLineId || "",
+            priority: data.priority,
+            category: data.category as any, // Cast because zod schema is string
+            subCategory: data.subCategory,
+        };
+        const result = await reportIssue(issueData);
+
+        if (result.success) {
+            toast({
+              title: "Issue Reported",
+              description: "Your issue has been successfully submitted.",
+            });
+            setOpen(false);
+            router.refresh();
+        } else {
+            toast({
+                variant: "destructive",
+                title: "Report Failed",
+                description: result.error,
+            });
+        }
     });
-    setOpen(false);
   }
 
   const handleCategorySelect = (categoryId: string) => {
@@ -205,6 +242,7 @@ export function ReportIssueDialog({
     if (category && category.subCategories.length > 0) {
       setStep(2);
     } else {
+        form.setValue("subCategory", "");
       setStep(3);
     }
   }
@@ -216,7 +254,11 @@ export function ReportIssueDialog({
 
   const handleBack = () => {
     if (step > 1) {
-      setStep(step - 1);
+      if (step === 3 && currentCategory?.subCategories.length === 0) {
+        setStep(1);
+      } else {
+        setStep(step - 1);
+      }
     }
   }
 
@@ -382,7 +424,10 @@ export function ReportIssueDialog({
               )}
             />
             <DialogFooter>
-              <Button type="submit">Submit Issue</Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
+                Submit Issue
+              </Button>
             </DialogFooter>
           </form>
         </Form>
