@@ -71,7 +71,7 @@ export default function IssuesPage() {
               <TabsTrigger value="active">Active</TabsTrigger>
               <TabsTrigger value="resolved">Resolved</TabsTrigger>
             </TabsList>
-            {currentUser.role === 'admin' && (
+            {currentUser?.role === 'admin' && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" size="sm" className="gap-1">
