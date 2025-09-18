@@ -15,19 +15,33 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { issues, productionLines, stats, users } from "@/lib/data";
+import { issues, productionLines, users } from "@/lib/data";
 import { PlusCircle } from "lucide-react";
 import type { ProductionLine } from "@/lib/types";
 
 export default function Home() {
   const currentUser = users.current;
-  const [selectedLineId, setSelectedLineId] = useState<string | undefined>(currentUser.productionLineId);
+  const [selectedLineId, setSelectedLineId] = useState<string | undefined>(undefined);
   const [selectedWorkstation, setSelectedWorkstation] = useState<string | undefined>();
+  const [selectionConfirmed, setSelectionConfirmed] = useState(false);
+
 
   const handleLineChange = (lineId: string) => {
     setSelectedLineId(lineId);
     setSelectedWorkstation(undefined); // Reset workstation when line changes
   };
+
+  const confirmSelection = () => {
+    if (selectedLineId && selectedWorkstation) {
+        setSelectionConfirmed(true);
+    }
+  }
+
+  const changeSelection = () => {
+    setSelectionConfirmed(false);
+    setSelectedLineId(undefined);
+    setSelectedWorkstation(undefined);
+  }
 
   const selectedLine: ProductionLine | undefined = productionLines.find(
     (line) => line.id === selectedLineId
@@ -36,7 +50,7 @@ export default function Home() {
   const userIssues =
     currentUser.role === "admin"
       ? issues
-      : issues.filter((issue) => issue.productionLineId === selectedLineId && (issue.status === 'reported' || issue.status === 'resolved'));
+      : issues.filter((issue) => issue.productionLineId === selectedLineId && (issue.status === 'reported' || issue.status === 'in_progress' || issue.status === 'resolved'));
 
   return (
     <AppLayout>
@@ -52,56 +66,76 @@ export default function Home() {
           </>
         ) : (
           <div className="flex flex-col gap-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Select Your Workstation</CardTitle>
-                  <CardDescription>Report an issue</CardDescription>
-                </CardHeader>
-                <CardContent className="grid md:grid-cols-2 gap-4">
-                  <div className="flex flex-col gap-2">
-                    <Select onValueChange={handleLineChange} value={selectedLineId}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select Production Line" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {productionLines.map((line) => (
-                          <SelectItem key={line.id} value={line.id}>
-                            {line.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="flex flex-col gap-2">
-                     <Select onValueChange={setSelectedWorkstation} value={selectedWorkstation} disabled={!selectedLine}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select Workstation" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {selectedLine?.workstations.map((station) => (
-                          <SelectItem key={station} value={station}>
-                            {station}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </CardContent>
-                <CardFooter className="justify-end">
-                    <ReportIssueDialog 
-                        key={`${selectedLineId}-${selectedWorkstation}`}
-                        productionLines={productionLines}
-                        selectedLineId={selectedLineId} 
-                        selectedWorkstation={selectedWorkstation}
-                    >
-                        <Button className="gap-1" disabled={!selectedWorkstation}>
-                            <PlusCircle className="h-4 w-4" />
-                            Report Issue
-                        </Button>
-                    </ReportIssueDialog>
-                </CardFooter>
-              </Card>
-            <IssuesDataTable issues={userIssues} title="Reported Issues" />
+            {!selectionConfirmed ? (
+                 <Card>
+                 <CardHeader>
+                   <CardTitle>Select Your Workstation</CardTitle>
+                   <CardDescription>Choose the production line and workstation you are currently at.</CardDescription>
+                 </CardHeader>
+                 <CardContent className="grid md:grid-cols-2 gap-4">
+                   <div className="flex flex-col gap-2">
+                     <Select onValueChange={handleLineChange} value={selectedLineId}>
+                       <SelectTrigger>
+                         <SelectValue placeholder="Select Production Line" />
+                       </SelectTrigger>
+                       <SelectContent>
+                         {productionLines.map((line) => (
+                           <SelectItem key={line.id} value={line.id}>
+                             {line.name}
+                           </SelectItem>
+                         ))}
+                       </SelectContent>
+                     </Select>
+                   </div>
+                   <div className="flex flex-col gap-2">
+                      <Select onValueChange={setSelectedWorkstation} value={selectedWorkstation} disabled={!selectedLine}>
+                       <SelectTrigger>
+                         <SelectValue placeholder="Select Workstation" />
+                       </SelectTrigger>
+                       <SelectContent>
+                         {selectedLine?.workstations.map((station) => (
+                           <SelectItem key={station} value={station}>
+                             {station}
+                           </SelectItem>
+                         ))}
+                       </SelectContent>
+                     </Select>
+                   </div>
+                 </CardContent>
+                 <CardFooter className="justify-end">
+                     <Button onClick={confirmSelection} disabled={!selectedLineId || !selectedWorkstation}>
+                        Confirm Selection
+                     </Button>
+                 </CardFooter>
+               </Card>
+            ) : (
+                <>
+                 <Card>
+                    <CardHeader>
+                        <CardTitle>Current Location</CardTitle>
+                        <CardDescription>You are currently working at:</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-xl font-semibold">{selectedLine?.name} - {selectedWorkstation}</p>
+                    </CardContent>
+                    <CardFooter className="justify-between">
+                        <Button variant="outline" onClick={changeSelection}>Change Location</Button>
+                        <ReportIssueDialog
+                            key={`${selectedLineId}-${selectedWorkstation}`}
+                            productionLines={productionLines}
+                            selectedLineId={selectedLineId}
+                            selectedWorkstation={selectedWorkstation}
+                        >
+                            <Button className="gap-1">
+                                <PlusCircle className="h-4 w-4" />
+                                Report Issue
+                            </Button>
+                        </ReportIssueDialog>
+                    </CardFooter>
+                 </Card>
+                 <IssuesDataTable issues={userIssues} title="Reported Issues" />
+                </>
+            )}
           </div>
         )}
         
