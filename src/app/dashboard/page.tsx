@@ -36,7 +36,7 @@ export default function Home() {
   const userIssues =
     currentUser.role === "admin"
       ? issues
-      : issues.filter((issue) => issue.productionLineId === selectedLineId);
+      : issues.filter((issue) => issue.productionLineId === selectedLineId && (issue.status === 'reported' || issue.status === 'resolved'));
 
   return (
     <AppLayout>
@@ -96,7 +96,7 @@ export default function Home() {
                     </ReportIssueDialog>
                 </CardFooter>
               </Card>
-            <IssuesDataTable issues={userIssues} title="Issues on Selected Line" />
+            <IssuesDataTable issues={userIssues} title="Reported Issues" />
           </div>
         )}
         
