@@ -17,6 +17,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+import { subHours } from "date-fns";
 
 export default function IssuesPage() {
   const currentUser = users.current;
@@ -52,8 +53,10 @@ export default function IssuesPage() {
   const activeIssues: Issue[] = filteredIssues.filter(
     (issue) => issue.status === "reported" || issue.status === "in_progress"
   );
+  
+  const twentyFourHoursAgo = subHours(new Date(), 24);
   const resolvedIssues: Issue[] = filteredIssues.filter(
-    (issue) => issue.status === "resolved"
+    (issue) => issue.status === "resolved" && issue.resolvedAt && issue.resolvedAt > twentyFourHoursAgo
   );
 
   return (
@@ -113,7 +116,7 @@ export default function IssuesPage() {
             <IssuesDataTable
               issues={resolvedIssues}
               title="Resolved Issues"
-              description="A list of recently resolved issues on the production line."
+              description="A list of issues resolved in the last 24 hours."
             />
           </TabsContent>
         </Tabs>
