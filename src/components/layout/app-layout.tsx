@@ -13,18 +13,7 @@ import { useUser } from "@/contexts/user-context";
 function AppLayoutContent({ children }: { children: React.ReactNode }) {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const isMobile = useIsMobile();
-  const searchParams = useSearchParams();
-  const role = searchParams.get('role') as Role;
-  const { setUser } = useUser();
-
-  useEffect(() => {
-    if (role === 'admin' || role === 'operator') {
-      setUser(role);
-    } else {
-      setUser(null);
-    }
-  }, [role, setUser]);
-
+  
   const toggleSidebar = () => {
     setIsSidebarCollapsed(!isSidebarCollapsed);
   };

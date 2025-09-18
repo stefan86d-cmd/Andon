@@ -14,7 +14,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/layout/logo";
-import Link from "next/link";
 import { useUser } from '@/contexts/user-context';
 
 export default function LoginPage() {
@@ -27,15 +26,13 @@ export default function LoginPage() {
     const emailLower = email.toLowerCase();
     if (emailLower === 'admin') {
       setUser('admin');
-      router.push('/dashboard?role=admin');
+      router.push('/dashboard');
     } else if (emailLower === 'operator') {
       setUser('operator');
-      router.push('/dashboard?role=operator');
+      router.push('/dashboard');
     } else {
-      // For any other input, you might want to show an error or default to a non-privileged view
-      // For now, let's default to the operator view for any other input for demonstration
       setUser('operator');
-      router.push('/dashboard?role=operator');
+      router.push('/dashboard');
     }
   };
   
