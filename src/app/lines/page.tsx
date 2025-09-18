@@ -1,4 +1,5 @@
 import { AppLayout } from "@/components/layout/app-layout";
+import { AddProductionLineDialog } from "@/components/lines/add-production-line-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,10 +20,12 @@ export default function LinesPage() {
           <h1 className="text-lg font-semibold md:text-2xl">
             Production Lines
           </h1>
-          <Button size="sm" className="gap-1">
-            <PlusCircle className="h-4 w-4" />
-            Add Production Line
-          </Button>
+          <AddProductionLineDialog>
+            <Button size="sm" className="gap-1">
+              <PlusCircle className="h-4 w-4" />
+              Add Production Line
+            </Button>
+          </AddProductionLineDialog>
         </div>
         <div className="grid gap-6">
           {productionLines.map((line) => (
