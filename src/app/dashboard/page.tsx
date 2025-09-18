@@ -89,6 +89,7 @@ export default function Home() {
                 </CardContent>
                 <CardFooter className="justify-end">
                     <ReportIssueDialog 
+                        key={`${selectedLineId}-${selectedWorkstation}`}
                         productionLines={productionLines}
                         selectedLineId={selectedLineId} 
                         selectedWorkstation={selectedWorkstation}
