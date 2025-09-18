@@ -210,6 +210,19 @@ export function addIssue(issueData: Omit<Issue, 'id' | 'reportedAt' | 'reportedB
     nextIssueId++;
 }
 
+let nextLineId = productionLines.length + 1;
+
+export function addProductionLine(lineData: { name: string }) {
+    const newLine: ProductionLine = {
+        id: `line-${nextLineId + 10}`, // use a different seed to avoid collision
+        name: lineData.name,
+        workstations: [],
+    };
+    productionLines.push(newLine);
+    nextLineId++;
+}
+
+
 export const stats: StatCard[] = [
     {
         title: "Open Issues",

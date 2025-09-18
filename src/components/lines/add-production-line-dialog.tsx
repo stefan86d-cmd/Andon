@@ -27,6 +27,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import { LoaderCircle } from "lucide-react";
+import { createProductionLine } from "@/app/actions";
 
 const lineFormSchema = z.object({
   name: z.string().min(1, "Line name is required."),
@@ -47,13 +48,21 @@ export function AddProductionLineDialog({ children }: { children: React.ReactNod
 
   function onSubmit(data: LineFormValues) {
     startSubmittingTransition(async () => {
-        // In a real app, you would have a server action here to add the line.
-        console.log("New Production Line:", data);
-        toast({
-            title: "Production Line Added",
-            description: `The line "${data.name}" has been created.`,
-        });
-        setOpen(false);
+        const result = await createProductionLine(data.name);
+
+        if (result.success) {
+            toast({
+                title: "Production Line Added",
+                description: `The line "${data.name}" has been created.`,
+            });
+            setOpen(false);
+        } else {
+            toast({
+                variant: "destructive",
+                title: "Failed to add line",
+                description: result.error,
+            });
+        }
     });
   }
 
