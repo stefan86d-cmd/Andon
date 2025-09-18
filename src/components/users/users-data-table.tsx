@@ -28,6 +28,7 @@ import { Button } from "@/components/ui/button";
 import { MoreHorizontal, Pencil, UserCog, User as UserIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { DeleteUserDialog } from "./delete-user-dialog";
+import { EditUserDialog } from "./edit-user-dialog";
 
 const RoleDisplay = ({ role }: { role: Role }) => {
     const Icon = role === 'admin' ? UserCog : UserIcon;
@@ -92,10 +93,12 @@ export function UsersDataTable({ users }: { users: User[] }) {
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
                                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                <DropdownMenuItem>
-                                    <Pencil className="mr-2 h-4 w-4" />
-                                    Edit
-                                </DropdownMenuItem>
+                                <EditUserDialog user={user}>
+                                    <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                                        <Pencil className="mr-2 h-4 w-4" />
+                                        Edit
+                                    </DropdownMenuItem>
+                                </EditUserDialog>
                                 <DeleteUserDialog user={user} />
                                 </DropdownMenuContent>
                             </DropdownMenu>

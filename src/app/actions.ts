@@ -3,8 +3,8 @@
 
 import { revalidatePath } from 'next/cache';
 import { prioritizeIssue } from "@/ai/flows/prioritize-reported-issues";
-import { addIssue, addProductionLine, updateProductionLine, deleteProductionLine as deleteLine, deleteUser as deleteUserData } from "@/lib/data";
-import type { Issue, ProductionLine } from "@/lib/types";
+import { addIssue, addProductionLine, updateProductionLine, deleteProductionLine as deleteLine, deleteUser as deleteUserData, updateUser } from "@/lib/data";
+import type { Issue, ProductionLine, Role } from "@/lib/types";
 
 export async function suggestPriority(description: string) {
   if (!description) {
@@ -74,5 +74,16 @@ export async function deleteUser(email: string) {
     } catch (e) {
         console.error(e);
         return { error: "Failed to delete user." };
+    }
+}
+
+export async function editUser(originalEmail: string, data: { firstName: string, lastName: string, email: string, role: Role }) {
+    try {
+        updateUser(originalEmail, data);
+        revalidatePath('/users');
+        return { success: true };
+    } catch (e) {
+        console.error(e);
+        return { error: "Failed to update user." };
     }
 }

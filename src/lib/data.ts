@@ -102,7 +102,7 @@ const userProfiles: Record<string, User> = {
 
 export let allUsers: User[] = Object.values(userProfiles);
 
-let currentUser: User | undefined = userProfiles.admin;
+let currentUser: User | undefined = undefined;
 
 export const users = {
   get current() {
@@ -256,6 +256,22 @@ export function deleteUser(email: string) {
       allUsers = Object.values(userProfiles);
     } else if (userKey) {
         throw new Error("Cannot delete default admin or operator roles.");
+    } else {
+        throw new Error("User not found.");
+    }
+}
+
+export function updateUser(originalEmail: string, data: { firstName: string, lastName: string, email: string, role: Role }) {
+    const userKey = Object.keys(userProfiles).find(key => userProfiles[key].email === originalEmail);
+    if (userKey) {
+        const user = userProfiles[userKey];
+        user.name = `${data.firstName} ${data.lastName}`;
+        user.email = data.email;
+        // Don't allow changing role for default admin/operator
+        if (userKey !== 'admin' && userKey !== 'operator') {
+            user.role = data.role;
+        }
+        allUsers = Object.values(userProfiles);
     } else {
         throw new Error("User not found.");
     }
