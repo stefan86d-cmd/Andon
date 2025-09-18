@@ -73,11 +73,7 @@ export default function Home() {
           <h1 className="text-lg font-semibold md:text-2xl">{currentUser?.role === 'admin' ? 'Dashboard' : 'Line Status'}</h1>
         </div>
         
-        {!currentUser ? (
-             <div className="flex flex-1 items-center justify-center">
-                <LoaderCircle className="h-8 w-8 animate-spin text-muted-foreground" />
-             </div>
-        ) : currentUser.role === 'admin' ? (
+        {currentUser?.role === 'admin' ? (
           <>
             <StatsCards stats={[
                 {
