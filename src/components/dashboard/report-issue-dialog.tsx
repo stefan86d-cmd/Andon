@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { suggestPriority, reportIssue } from "@/app/actions";
+import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -144,6 +145,7 @@ export function ReportIssueDialog({
   const [isSubmitting, startSubmittingTransition] = useTransition();
   const [step, setStep] = useState(1);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const router = useRouter();
   
   const currentUser = users.current;
 
@@ -223,6 +225,7 @@ export function ReportIssueDialog({
               description: "Your issue has been successfully submitted.",
             });
             setOpen(false);
+            router.refresh();
         } else {
             toast({
                 variant: "destructive",
@@ -434,3 +437,5 @@ export function ReportIssueDialog({
     </Dialog>
   );
 }
+
+    
