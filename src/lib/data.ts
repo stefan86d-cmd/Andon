@@ -37,8 +37,7 @@ export const productionLines: ProductionLine[] = [
     name: "Packaging Area",
     workstations: ["Station 1", "Station 2", "Station 3", "Station 4", "Station 5"],
   },
-  { 
-    id: "finishing", 
+  { _id: "finishing", 
     name: "Finishing Department",
     workstations: ["Sanding", "Painting", "Polishing"],
   },
@@ -105,7 +104,7 @@ export const allUsers: User[] = Object.values(userProfiles);
 // The 'users' object is now used to define the current user for demonstration purposes.
 // To view the app as a specific user, set 'users.current' to one of the profiles above.
 export const users = {
-  current: userProfiles.operator, // Default to admin user
+  current: userProfiles.current, // Default to admin user
   operator: userProfiles.operator,
   admin: userProfiles.current,
 };
