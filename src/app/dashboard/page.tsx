@@ -88,7 +88,11 @@ export default function Home() {
                   </div>
                 </CardContent>
                 <CardFooter className="justify-end">
-                    <ReportIssueDialog selectedLineId={selectedLineId} selectedWorkstation={selectedWorkstation}>
+                    <ReportIssueDialog 
+                        productionLines={productionLines}
+                        selectedLineId={selectedLineId} 
+                        selectedWorkstation={selectedWorkstation}
+                    >
                         <Button className="gap-1" disabled={!selectedWorkstation}>
                             <PlusCircle className="h-4 w-4" />
                             Report Issue

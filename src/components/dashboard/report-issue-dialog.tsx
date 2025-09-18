@@ -37,16 +37,14 @@ import {
 } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
 import { Sparkles, LoaderCircle, Monitor, Truck, Wrench, HelpCircle, ArrowLeft, LifeBuoy, BadgeCheck, Factory, HardHat } from "lucide-react";
-import type { Priority } from "@/lib/types";
+import type { Priority, ProductionLine } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { productionLines, users } from "@/lib/data";
+import { users } from "@/lib/data";
 
 const issueFormSchema = z.object({
   category: z.string().min(1, "Category is required."),
   subCategory: z.string(),
-  description: z.string().min(1, {
-    message: "Description is required.",
-  }),
+  description: z.string().min(1, "Description is required."),
   location: z.string(),
   priority: z.enum(["low", "medium", "high", "critical"]),
 });
@@ -132,10 +130,12 @@ const categories = [
 
 export function ReportIssueDialog({
   children,
+  productionLines,
   selectedLineId,
   selectedWorkstation,
 }: {
   children: React.ReactNode;
+  productionLines: ProductionLine[];
   selectedLineId?: string;
   selectedWorkstation?: string;
 }) {
@@ -166,7 +166,7 @@ export function ReportIssueDialog({
     return currentUser.productionLineId 
       ? productionLines.find(line => line.id === currentUser.productionLineId)?.name || ""
       : "";
-  }, [selectedLineId, selectedWorkstation, currentUser.productionLineId]);
+  }, [selectedLineId, selectedWorkstation, currentUser.productionLineId, productionLines]);
 
 
   React.useEffect(() => {
