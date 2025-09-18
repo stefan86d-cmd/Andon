@@ -26,6 +26,10 @@ export function UserNav() {
   const currentUser = users.current;
   const { setTheme } = useTheme()
 
+  if (!currentUser) {
+    return null;
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>

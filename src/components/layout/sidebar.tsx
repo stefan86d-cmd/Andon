@@ -1,3 +1,4 @@
+
 import { SidebarNav } from "./sidebar-nav";
 import { users } from "@/lib/data";
 import { cn } from "@/lib/utils";
@@ -21,7 +22,7 @@ export function Sidebar({ isCollapsed, onMenuClick }: SidebarProps) {
           </Button>
         </div>
         <div className="flex-1">
-            <SidebarNav userRole={currentUser.role} isCollapsed={isCollapsed} />
+            {currentUser && <SidebarNav userRole={currentUser.role} isCollapsed={isCollapsed} />}
         </div>
       </div>
     </div>
