@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from 'next/cache';
 import { prioritizeIssue } from "@/ai/flows/prioritize-reported-issues";
 import { addIssue } from "@/lib/data";
 import type { Issue } from "@/lib/types";
@@ -20,6 +21,8 @@ export async function suggestPriority(description: string) {
 export async function reportIssue(issueData: Omit<Issue, 'id' | 'reportedAt' | 'reportedBy' | 'status'>) {
     try {
         addIssue(issueData);
+        revalidatePath('/dashboard');
+        revalidatePath('/issues');
         return { success: true };
     } catch (e) {
         console.error(e);

@@ -40,7 +40,6 @@ import { Sparkles, LoaderCircle, Monitor, Truck, Wrench, HelpCircle, ArrowLeft, 
 import type { Priority } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { productionLines, users } from "@/lib/data";
-import { useRouter } from "next/navigation";
 
 const issueFormSchema = z.object({
   category: z.string().min(1, "Category is required."),
@@ -145,7 +144,6 @@ export function ReportIssueDialog({
   const [isSubmitting, startSubmittingTransition] = useTransition();
   const [step, setStep] = useState(1);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const router = useRouter();
   
   const currentUser = users.current;
 
@@ -225,7 +223,6 @@ export function ReportIssueDialog({
               description: "Your issue has been successfully submitted.",
             });
             setOpen(false);
-            router.refresh();
         } else {
             toast({
                 variant: "destructive",
