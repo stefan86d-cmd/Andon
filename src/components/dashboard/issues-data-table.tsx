@@ -34,6 +34,7 @@ import {
   HelpCircle,
   LifeBuoy,
   BadgeCheck,
+  HardHat,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { formatDistanceToNow } from "date-fns";
@@ -74,8 +75,9 @@ const categories: Record<IssueCategory, { label: string, icon: React.ElementType
     'it': { label: 'It & Network', icon: Monitor, color: 'text-blue-500' },
     'logistics': { label: 'Logistics', icon: Truck, color: 'text-orange-500' },
     'tool': { label: 'Tool & Equipment', icon: Wrench, color: 'text-gray-500' },
-    'assistance': { label: 'Need Assistance', icon: LifeBuoy, color: 'text-red-500' },
+    'assistance': { label: 'Assistance', icon: LifeBuoy, color: 'text-red-500' },
     'quality': { label: 'Quality', icon: BadgeCheck, color: 'text-green-500' },
+    'safety': { label: 'Safety', icon: HardHat, color: 'text-yellow-500' },
     'other': { label: 'Other', icon: HelpCircle, color: 'text-purple-500' },
 };
 

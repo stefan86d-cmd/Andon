@@ -36,13 +36,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
-import { Sparkles, LoaderCircle, Monitor, Truck, Wrench, HelpCircle, ArrowLeft, LifeBuoy, BadgeCheck, Factory } from "lucide-react";
+import { Sparkles, LoaderCircle, Monitor, Truck, Wrench, HelpCircle, ArrowLeft, LifeBuoy, BadgeCheck, Factory, HardHat } from "lucide-react";
 import type { Priority } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { productionLines, users } from "@/lib/data";
 
 const issueFormSchema = z.object({
   category: z.string(),
+  subCategory: z.string(),
   description: z.string().min(10, {
     message: "Description must be at least 10 characters.",
   }),
@@ -53,12 +54,73 @@ const issueFormSchema = z.object({
 type IssueFormValues = z.infer<typeof issueFormSchema>;
 
 const categories = [
-    { id: 'it', label: 'It & Network', icon: Monitor, color: 'text-blue-500' },
-    { id: 'logistics', label: 'Logistics', icon: Truck, color: 'text-orange-500' },
-    { id: 'tool', label: 'Tool & Equipment', icon: Wrench, color: 'text-gray-500' },
-    { id: 'assistance', label: 'Need Assistance', icon: LifeBuoy, color: 'text-red-500' },
-    { id: 'quality', label: 'Quality', icon: BadgeCheck, color: 'text-green-500' },
-    { id: 'other', label: 'Other', icon: HelpCircle, color: 'text-purple-500' },
+    { 
+        id: 'it', 
+        label: 'It & Network', 
+        icon: Monitor, 
+        color: 'text-blue-500',
+        subCategories: [
+            { id: 'network', label: 'Network Down' },
+            { id: 'software', label: 'Software Issue' },
+            { id: 'hardware', label: 'Hardware Malfunction' },
+            { id: 'other', label: 'Other IT Issue' },
+        ]
+    },
+    { 
+        id: 'logistics', 
+        label: 'Logistics', 
+        icon: Truck, 
+        color: 'text-orange-500',
+        subCategories: [
+            { id: 'material-shortage', label: 'Material Shortage' },
+            { id: 'incorrect-material', label: 'Incorrect Material' },
+            { id: 'transport-delay', label: 'Transport Delay' },
+            { id: 'other', label: 'Other Logistics Issue' },
+        ]
+    },
+    { 
+        id: 'tool', 
+        label: 'Tool & Equipment', 
+        icon: Wrench, 
+        color: 'text-gray-500',
+        subCategories: [
+            { id: 'tool-broken', label: 'Tool Broken' },
+            { id: 'calibration', label: 'Needs Calibration' },
+            { id: 'power-issue', label: 'Power Issue' },
+            { id: 'other', label: 'Other Tool Issue' },
+        ]
+    },
+    { 
+        id: 'safety', 
+        label: 'Safety Concern', 
+        icon: HardHat, 
+        color: 'text-yellow-500',
+        subCategories: [
+            { id: 'spill', label: 'Spill or Leak' },
+            { id: 'ppe', label: 'Missing PPE' },
+            { id: 'unsafe-condition', label: 'Unsafe Condition' },
+            { id: 'other', label: 'Other Safety Concern' },
+        ]
+    },
+    { 
+        id: 'quality', 
+        label: 'Quality Control', 
+        icon: BadgeCheck, 
+        color: 'text-green-500',
+        subCategories: [
+            { id: 'defect-found', label: 'Defect Found' },
+            { id: 'measurement', label: 'Incorrect Measurement' },
+            { id: 'inspection-fail', label: 'Inspection Failed' },
+            { id: 'other', label: 'Other Quality Issue' },
+        ]
+    },
+    { 
+        id: 'assistance', 
+        label: 'Assistance Needed', 
+        icon: LifeBuoy, 
+        color: 'text-red-500',
+        subCategories: []
+    },
 ];
 
 export function ReportIssueDialog({
@@ -72,6 +134,7 @@ export function ReportIssueDialog({
 }) {
   const [open, setOpen] = useState(false);
   const [isAiPending, startAiTransition] = useTransition();
+  const [step, setStep] = useState(1);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   
   const currentUser = users.current;
@@ -95,12 +158,15 @@ export function ReportIssueDialog({
     if (open) {
       form.reset({
         category: "",
+        subCategory: "",
         description: "",
         location: getLocation(),
         priority: "medium",
       });
+      setStep(1);
+      setSelectedCategory(null);
     }
-  }, [open, selectedLineId, selectedWorkstation]);
+  }, [open, selectedLineId, selectedWorkstation, form]);
 
   const descriptionValue = form.watch("description");
 
@@ -129,21 +195,34 @@ export function ReportIssueDialog({
       title: "Issue Reported",
       description: "Your issue has been successfully submitted.",
     });
-    setSelectedCategory(null);
     setOpen(false);
   }
 
   const handleCategorySelect = (categoryId: string) => {
     setSelectedCategory(categoryId);
     form.setValue("category", categoryId);
+    const category = categories.find(c => c.id === categoryId);
+    if (category && category.subCategories.length > 0) {
+      setStep(2);
+    } else {
+      setStep(3);
+    }
+  }
+
+  const handleSubCategorySelect = (subCategoryId: string) => {
+    form.setValue("subCategory", subCategoryId);
+    setStep(3);
   }
 
   const handleBack = () => {
-    setSelectedCategory(null);
+    if (step > 1) {
+      setStep(step - 1);
+    }
   }
 
   const handleOpenChange = (isOpen: boolean) => {
     if (!isOpen) {
+      setStep(1);
       setSelectedCategory(null);
     }
     setOpen(isOpen);
@@ -152,24 +231,39 @@ export function ReportIssueDialog({
   const currentCategory = categories.find(c => c.id === selectedCategory);
   const location = getLocation();
 
+  const getDialogTitle = () => {
+    if (step === 1) return "Report a New Issue";
+    if (step === 2) return currentCategory?.label;
+    if (step === 3) {
+      const subCategoryLabel = currentCategory?.subCategories.find(sc => sc.id === form.getValues('subCategory'))?.label;
+      return subCategoryLabel || currentCategory?.label;
+    }
+  }
+
+  const getDialogDescription = () => {
+    if (step === 1) return "Select a category for the issue.";
+    if (step === 2) return "Select a sub-category.";
+    if (step === 3) return "Provide details for the issue.";
+  }
+
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-            {selectedCategory && (
+            {step > 1 && (
                  <Button variant="ghost" size="sm" className="absolute left-4 top-4 w-auto px-2 justify-start" onClick={handleBack}>
                     <ArrowLeft className="mr-2 h-4 w-4" />
                     Back
                 </Button>
             )}
-          <DialogTitle className={cn("pt-8", selectedCategory ? 'text-center' : '')}>Report a New Issue</DialogTitle>
-          <DialogDescription className={cn(selectedCategory ? 'text-center' : '')}>
-            {selectedCategory ? `Provide details for the '${currentCategory?.label}' issue.` : 'Select a category for the issue.'}
+          <DialogTitle className="pt-8 text-center">{getDialogTitle()}</DialogTitle>
+          <DialogDescription className="text-center">
+            {getDialogDescription()}
           </DialogDescription>
         </DialogHeader>
 
-        {!selectedCategory ? (
+        {step === 1 && (
             <div className="grid grid-cols-2 gap-4 py-4">
                 {categories.map((category) => {
                     const Icon = category.icon;
@@ -184,7 +278,23 @@ export function ReportIssueDialog({
                     </Card>
                 )})}
             </div>
-        ) : (
+        )}
+
+        {step === 2 && currentCategory && (
+             <div className="grid grid-cols-2 gap-4 py-4">
+                {currentCategory.subCategories.map((subCategory) => (
+                    <Card 
+                        key={subCategory.id} 
+                        className="flex flex-col items-center justify-center text-center p-4 hover:bg-accent hover:text-accent-foreground cursor-pointer"
+                        onClick={() => handleSubCategorySelect(subCategory.id)}
+                    >
+                        <p className="text-sm font-medium">{subCategory.label}</p>
+                    </Card>
+                ))}
+            </div>
+        )}
+
+        {step === 3 && (
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             {location && (
@@ -240,7 +350,7 @@ export function ReportIssueDialog({
                       size="sm"
                       className="text-accent-foreground h-auto p-0 gap-1"
                       onClick={handleSuggestPriority}
-                      disabled={isAiPending || descriptionValue.length < 10}
+                      disabled={isAiPending || (descriptionValue?.length || 0) < 10}
                     >
                       {isAiPending ? (
                          <LoaderCircle className="h-4 w-4 animate-spin" />
