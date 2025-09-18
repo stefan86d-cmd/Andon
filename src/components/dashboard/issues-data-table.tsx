@@ -121,9 +121,9 @@ export function IssuesDataTable({ issues, title, description }: { issues: Issue[
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{title || (currentUser.role === 'admin' ? 'Recent Issues' : 'Recent Issues on Your Line')}</CardTitle>
+        <CardTitle>{title || (currentUser?.role === 'admin' ? 'Recent Issues' : 'Recent Issues on Your Line')}</CardTitle>
         <CardDescription>
-          {description || (currentUser.role === 'admin' ? 'A list of recently reported issues on the production line.' : 'Issues reported on your selected line.')}
+          {description || (currentUser?.role === 'admin' ? 'A list of recently reported issues on the production line.' : 'Issues reported on your selected line within the last 24 hours.')}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -156,8 +156,8 @@ export function IssuesDataTable({ issues, title, description }: { issues: Issue[
               return (
                 <TableRow 
                   key={issue.id} 
-                  onClick={() => currentUser.role === 'admin' && setSelectedIssue(issue)}
-                  className={cn(currentUser.role === 'admin' && 'cursor-pointer')}
+                  onClick={() => currentUser?.role === 'admin' && setSelectedIssue(issue)}
+                  className={cn(currentUser?.role === 'admin' && 'cursor-pointer')}
                 >
                   <TableCell>
                     <div className="flex items-center gap-2">
