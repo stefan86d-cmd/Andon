@@ -44,8 +44,8 @@ import { productionLines, users } from "@/lib/data";
 const issueFormSchema = z.object({
   category: z.string(),
   subCategory: z.string(),
-  description: z.string().min(10, {
-    message: "Description must be at least 10 characters.",
+  description: z.string().min(1, {
+    message: "Description is required.",
   }),
   location: z.string(),
   priority: z.enum(["low", "medium", "high", "critical"]),
@@ -350,7 +350,7 @@ export function ReportIssueDialog({
                       size="sm"
                       className="text-accent-foreground h-auto p-0 gap-1"
                       onClick={handleSuggestPriority}
-                      disabled={isAiPending || (descriptionValue?.length || 0) < 10}
+                      disabled={isAiPending || !descriptionValue}
                     >
                       {isAiPending ? (
                          <LoaderCircle className="h-4 w-4 animate-spin" />

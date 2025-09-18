@@ -3,8 +3,8 @@
 import { prioritizeIssue } from "@/ai/flows/prioritize-reported-issues";
 
 export async function suggestPriority(description: string) {
-  if (!description || description.length < 10) {
-    return { error: "Please provide a description of at least 10 characters." };
+  if (!description) {
+    return { error: "Please provide a description." };
   }
   try {
     const result = await prioritizeIssue({ description });
