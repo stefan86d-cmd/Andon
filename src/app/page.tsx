@@ -74,7 +74,9 @@ export default function LoginPage() {
     } else if (emailLower === 'operator') {
       router.push('/dashboard?role=operator');
     } else {
-      router.push('/dashboard');
+      // For any other input, you might want to show an error or default to a non-privileged view
+      // For now, let's default to the operator view for any other input for demonstration
+      router.push('/dashboard?role=operator');
     }
   };
   
@@ -97,8 +99,8 @@ export default function LoginPage() {
                 <Label htmlFor="email">Email</Label>
                 <Input
                   id="email"
-                  type="email"
-                  placeholder="m@example.com"
+                  type="text"
+                  placeholder="Admin or Operator"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
