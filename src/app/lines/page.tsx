@@ -10,7 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { productionLines } from "@/lib/data";
-import { Edit, PlusCircle } from "lucide-react";
+import { Edit, PlusCircle, Trash2 } from "lucide-react";
 
 export default function LinesPage() {
   return (
@@ -37,10 +37,16 @@ export default function LinesPage() {
                     {line.workstations.length} workstations
                   </CardDescription>
                 </div>
-                <Button variant="outline" size="sm">
-                  <Edit className="h-4 w-4 mr-2" />
-                  Edit Line
-                </Button>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm">
+                    <Edit className="h-4 w-4" />
+                    <span className="sr-only sm:not-sr-only sm:ml-2">Edit</span>
+                  </Button>
+                   <Button variant="destructive" size="sm">
+                    <Trash2 className="h-4 w-4" />
+                     <span className="sr-only sm:not-sr-only sm:ml-2">Delete</span>
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2">
