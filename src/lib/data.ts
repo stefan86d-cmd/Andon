@@ -1,7 +1,7 @@
 
 import type { User, Issue, StatCard, ProductionLine, ReportData, Kpi, IssueByDay, IssueCategory } from "@/lib/types";
 
-export const productionLines: ProductionLine[] = [
+export let productionLines: ProductionLine[] = [
   { 
     id: "line-1", 
     name: "Assembly Line 1",
@@ -37,7 +37,7 @@ export const productionLines: ProductionLine[] = [
     name: "Packaging Area",
     workstations: ["Station 1", "Station 2", "Station 3", "Station 4", "Station 5"],
   },
-  { _id: "finishing", 
+  { id: "finishing", 
     name: "Finishing Department",
     workstations: ["Sanding", "Painting", "Polishing"],
   },
@@ -220,6 +220,13 @@ export function addProductionLine(lineData: { name: string }) {
     };
     productionLines.push(newLine);
     nextLineId++;
+}
+
+export function updateProductionLine(lineId: string, updatedData: Partial<ProductionLine>) {
+    const lineIndex = productionLines.findIndex(line => line.id === lineId);
+    if (lineIndex !== -1) {
+        productionLines[lineIndex] = { ...productionLines[lineIndex], ...updatedData };
+    }
 }
 
 

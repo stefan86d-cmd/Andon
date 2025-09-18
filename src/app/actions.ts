@@ -3,8 +3,8 @@
 
 import { revalidatePath } from 'next/cache';
 import { prioritizeIssue } from "@/ai/flows/prioritize-reported-issues";
-import { addIssue, addProductionLine } from "@/lib/data";
-import type { Issue } from "@/lib/types";
+import { addIssue, addProductionLine, updateProductionLine } from "@/lib/data";
+import type { Issue, ProductionLine } from "@/lib/types";
 
 export async function suggestPriority(description: string) {
   if (!description) {
@@ -39,5 +39,17 @@ export async function createProductionLine(name: string) {
     } catch (e) {
         console.error(e);
         return { error: "Failed to create production line." };
+    }
+}
+
+export async function editProductionLine(lineId: string, data: { name: string, workstations: { value: string }[] }) {
+    try {
+        const workstationNames = data.workstations.map(ws => ws.value);
+        updateProductionLine(lineId, { name: data.name, workstations: workstationNames });
+        revalidatePath('/lines');
+        return { success: true };
+    } catch (e) {
+        console.error(e);
+        return { error: "Failed to update production line." };
     }
 }

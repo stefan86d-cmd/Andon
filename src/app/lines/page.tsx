@@ -1,5 +1,6 @@
 import { AppLayout } from "@/components/layout/app-layout";
 import { AddProductionLineDialog } from "@/components/lines/add-production-line-dialog";
+import { EditProductionLineDialog } from "@/components/lines/edit-production-line-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -38,10 +39,12 @@ export default function LinesPage() {
                   </CardDescription>
                 </div>
                 <div className="flex gap-2">
-                  <Button variant="outline" size="sm">
-                    <Edit className="h-4 w-4" />
-                    <span className="sr-only sm:not-sr-only sm:ml-2">Edit</span>
-                  </Button>
+                  <EditProductionLineDialog productionLine={line}>
+                    <Button variant="outline" size="sm">
+                      <Edit className="h-4 w-4" />
+                      <span className="sr-only sm:not-sr-only sm:ml-2">Edit</span>
+                    </Button>
+                  </EditProductionLineDialog>
                    <Button variant="destructive" size="sm">
                     <Trash2 className="h-4 w-4" />
                      <span className="sr-only sm:not-sr-only sm:ml-2">Delete</span>
@@ -55,10 +58,6 @@ export default function LinesPage() {
                       {station}
                     </Badge>
                   ))}
-                    <Button variant="ghost" size="sm" className="gap-1 text-muted-foreground">
-                      <PlusCircle className="h-4 w-4" />
-                      Add Workstation
-                  </Button>
                 </div>
               </CardContent>
             </Card>
