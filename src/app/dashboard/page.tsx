@@ -16,9 +16,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { issues, productionLines, users } from "@/lib/data";
-import { PlusCircle } from "lucide-react";
+import { PlusCircle, LoaderCircle } from "lucide-react";
 import type { ProductionLine } from "@/lib/types";
-import { subHours } from "date-fns";
+import { subHours, addHours } from "date-fns";
 
 export default function Home() {
   const currentUser = users.current;
@@ -47,27 +47,68 @@ export default function Home() {
   const selectedLine: ProductionLine | undefined = productionLines.find(
     (line) => line.id === selectedLineId
   );
-
-  const twentyFourHoursAgo = subHours(new Date(), 24);
+  
+  const now = new Date();
+  const twentyFourHoursAgo = subHours(now, 24);
   const userIssues =
-    currentUser.role === "admin"
+    currentUser?.role === "admin"
       ? issues
       : issues.filter((issue) => 
           issue.productionLineId === selectedLineId && 
           issue.reportedAt > twentyFourHoursAgo &&
           (issue.status === 'reported' || issue.status === 'in_progress' || issue.status === 'resolved')
         );
+  
+  const stats = {
+    openIssues: issues.filter(issue => issue.status === 'in_progress' || issue.status === 'reported').length,
+    avgResolutionTime: '3.2 hours',
+    lineUptime: '98.7%',
+    criticalAlerts: issues.filter(issue => issue.priority === 'critical' && issue.reportedAt > twentyFourHoursAgo).length,
+  };
 
   return (
     <AppLayout>
       <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background">
         <div className="flex items-center justify-between">
-          <h1 className="text-lg font-semibold md:text-2xl">{currentUser.role === 'admin' ? 'Dashboard' : 'Line Status'}</h1>
+          <h1 className="text-lg font-semibold md:text-2xl">{currentUser?.role === 'admin' ? 'Dashboard' : 'Line Status'}</h1>
         </div>
         
-        {currentUser.role === 'admin' ? (
+        {!currentUser ? (
+             <div className="flex flex-1 items-center justify-center">
+                <LoaderCircle className="h-8 w-8 animate-spin text-muted-foreground" />
+             </div>
+        ) : currentUser.role === 'admin' ? (
           <>
-            <StatsCards stats={stats} />
+            <StatsCards stats={[
+                {
+                    title: "Open Issues",
+                    value: stats.openIssues.toString(),
+                    change: "+5",
+                    changeType: "increase",
+                    description: "since last hour",
+                },
+                {
+                    title: "Avg. Resolution Time",
+                    value: stats.avgResolutionTime,
+                    change: "-12%",
+                    changeType: "decrease",
+                    description: "this week",
+                },
+                {
+                    title: "Line Uptime",
+                    value: stats.lineUptime,
+                    change: "+0.2%",
+                    changeType: "increase",
+                    description: "today",
+                },
+                {
+                    title: "Critical Alerts",
+                    value: stats.criticalAlerts.toString(),
+                    change: "+1",
+                    changeType: "increase",
+                    description: "in last 24 hours"
+                }
+            ]} />
             <IssuesDataTable issues={userIssues} title="Recent Issues" />
           </>
         ) : (
@@ -99,52 +140,51 @@ export default function Home() {
                          <SelectValue placeholder="Select Workstation" />
                        </SelectTrigger>
                        <SelectContent>
-                         {selectedLine?.workstations.map((station) => (
-                           <SelectItem key={station} value={station}>
-                             {station}
-                           </SelectItem>
-                         ))}
+                          {selectedLine?.workstations.map((station) => (
+                            <SelectItem key={station} value={station}>
+                              {station}
+                            </SelectItem>
+                          ))}
                        </SelectContent>
                      </Select>
                    </div>
                  </CardContent>
-                 <CardFooter className="justify-end">
-                     <Button onClick={confirmSelection} disabled={!selectedLineId || !selectedWorkstation}>
-                        Confirm Selection
-                     </Button>
+                 <CardFooter>
+                    <Button onClick={confirmSelection} disabled={!selectedLineId || !selectedWorkstation}>Confirm Selection</Button>
                  </CardFooter>
                </Card>
             ) : (
-                <>
-                 <Card>
-                    <CardHeader>
-                        <CardTitle>Current Location</CardTitle>
-                        <CardDescription>You are currently working at:</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <p className="text-xl font-semibold">{selectedLine?.name} - {selectedWorkstation}</p>
-                    </CardContent>
-                    <CardFooter className="justify-between">
-                        <Button variant="outline" onClick={changeSelection}>Change Location</Button>
+                <div className="flex flex-col gap-4">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Current Station</CardTitle>
+                        </CardHeader>
+                        <CardContent className="flex items-center justify-between">
+                            <div>
+                                <p className="font-medium">{selectedLine?.name}</p>
+                                <p className="text-sm text-muted-foreground">{selectedWorkstation}</p>
+                            </div>
+                            <Button variant="outline" onClick={changeSelection}>Change</Button>
+                        </CardContent>
+                    </Card>
+                     <div className="flex items-center justify-end">
                         <ReportIssueDialog
                             key={`${selectedLineId}-${selectedWorkstation}`}
                             productionLines={productionLines}
                             selectedLineId={selectedLineId}
                             selectedWorkstation={selectedWorkstation}
                         >
-                            <Button className="gap-1">
-                                <PlusCircle className="h-4 w-4" />
-                                Report Issue
+                            <Button>
+                                <PlusCircle className="mr-2 h-4 w-4" />
+                                Report New Issue
                             </Button>
                         </ReportIssueDialog>
-                    </CardFooter>
-                 </Card>
-                 <IssuesDataTable issues={userIssues} title="Reported Issues" />
-                </>
+                    </div>
+                    <IssuesDataTable issues={userIssues} />
+                </div>
             )}
           </div>
         )}
-        
       </main>
     </AppLayout>
   );
