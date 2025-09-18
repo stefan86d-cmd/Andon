@@ -1,5 +1,4 @@
 
-
 import type { User, Issue, StatCard, ProductionLine, ReportData, Kpi, IssueByDay, IssueCategory, Role } from "@/lib/types";
 
 export let productionLines: ProductionLine[] = [
@@ -49,75 +48,64 @@ export let productionLines: ProductionLine[] = [
   },
 ];
 
-const userProfiles: Record<string, User> = {
-  janejones: {
+const userProfiles: User[] = [
+  {
     name: "Jane Jones",
     email: "jane.jones@example.com",
     avatarUrl: "https://picsum.photos/seed/user-jane/40/40",
     role: "operator",
     productionLineId: "line-3",
   },
-  bobsmith: {
+  {
     name: "Bob Smith",
     email: "bob.smith@example.com",
     avatarUrl: "https://picsum.photos/seed/user-bob/40/40",
     role: "operator",
     productionLineId: "fab-bay-2",
   },
-  alicewilliams: {
+  {
     name: "Alice Williams",
     email: "alice.williams@example.com",
     avatarUrl: "https://picsum.photos/seed/user-alice/40/40",
     role: "operator",
     productionLineId: "welding-1",
   },
-  charliebrown: {
+  {
     name: "Charlie Brown",
     email: "charlie.brown@example.com",
     avatarUrl: "https://picsum.photos/seed/user-charlie/40/40",
     role: "operator",
     productionLineId: "packaging",
   },
-  davidlee: {
+  {
     name: "David Lee",
     email: "david.lee@example.com",
     avatarUrl: "https://picsum.photos/seed/user-david/40/40",
     role: "operator",
     productionLineId: "finishing",
   },
-  admin: {
+  {
     name: "Alex Johnson",
     email: "alex.j@andon.io",
     avatarUrl: "https://picsum.photos/seed/user-alex/40/40",
     role: "admin",
   },
-  operator: {
+  {
     name: "Sam Miller",
     email: "sam.m@andon.io",
     avatarUrl: "https://picsum.photos/seed/user-sam/40/40",
     role: "operator",
     productionLineId: "line-1",
   }
-};
+];
 
-export let allUsers: User[] = Object.values(userProfiles);
+export let allUsers: User[] = [...userProfiles];
 
-let currentUser: User | undefined = undefined;
+const usersByEmail = userProfiles.reduce((acc, user) => {
+  acc[user.email] = user;
+  return acc;
+}, {} as Record<string, User>);
 
-export const users = {
-  get current() {
-    return currentUser;
-  },
-  setCurrent(role: Role) {
-    if (role && userProfiles[role]) {
-      currentUser = userProfiles[role];
-    } else {
-        currentUser = undefined;
-    }
-  },
-  operator: userProfiles.operator,
-  admin: userProfiles.admin,
-};
 
 export const issues: Issue[] = [
   {
@@ -128,7 +116,7 @@ export const issues: Issue[] = [
     priority: "high",
     status: "in_progress",
     reportedAt: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
-    reportedBy: userProfiles.janejones,
+    reportedBy: usersByEmail['jane.jones@example.com'],
     category: "tool",
   },
   {
@@ -139,7 +127,7 @@ export const issues: Issue[] = [
     priority: "critical",
     status: "reported",
     reportedAt: new Date(Date.now() - 30 * 60 * 1000), // 30 minutes ago
-    reportedBy: userProfiles.bobsmith,
+    reportedBy: usersByEmail['bob.smith@example.com'],
     category: "tool",
   },
   {
@@ -150,9 +138,9 @@ export const issues: Issue[] = [
     priority: "critical",
     status: "resolved",
     reportedAt: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
-    reportedBy: userProfiles.alicewilliams,
+    reportedBy: usersByEmail['alice.williams@example.com'],
     resolvedAt: new Date(Date.now() - 20 * 60 * 60 * 1000),
-    resolvedBy: userProfiles.admin,
+    resolvedBy: usersByEmail['alex.j@andon.io'],
     resolutionNotes: "Replaced faulty sensor and recalibrated the robotic arm. System is now operating normally.",
     category: "quality",
   },
@@ -164,7 +152,7 @@ export const issues: Issue[] = [
     priority: "low",
     status: "reported",
     reportedAt: new Date(Date.now() - 4 * 60 * 60 * 1000), // 4 hours ago
-    reportedBy: userProfiles.janejones,
+    reportedBy: usersByEmail['janejones@example.com'],
     category: "logistics",
   },
   {
@@ -175,7 +163,7 @@ export const issues: Issue[] = [
     priority: "medium",
     status: "in_progress",
     reportedAt: new Date(Date.now() - 8 * 60 * 60 * 1000), // 8 hours ago
-    reportedBy: userProfiles.bobsmith,
+    reportedBy: usersByEmail['bob.smith@example.com'],
     category: "tool",
   },
   {
@@ -186,9 +174,9 @@ export const issues: Issue[] = [
     priority: "low",
     status: "resolved",
     reportedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
-    reportedBy: userProfiles.alicewilliams,
+    reportedBy: usersByEmail['alice.williams@example.com'],
     resolvedAt: new Date(Date.now() - 1.5 * 24 * 60 * 60 * 1000),
-    resolvedBy: userProfiles.admin,
+    resolvedBy: usersByEmail['alex.j@andon.io'],
     resolutionNotes: "Battery swapped with a fully charged unit.",
     category: "logistics",
   },
@@ -200,22 +188,24 @@ export const issues: Issue[] = [
     priority: "high",
     status: "reported",
     reportedAt: new Date(Date.now() - 60 * 60 * 1000), // 1 hour ago
-    reportedBy: userProfiles.janejones,
+    reportedBy: usersByEmail['janejones@example.com'],
     category: "tool",
   },
 ];
 
 let nextIssueId = issues.length + 1;
 
-export function addIssue(issueData: Omit<Issue, 'id' | 'reportedAt' | 'reportedBy' | 'status'>) {
-    if (!users.current) {
+// This is a mock implementation. In a real app, you'd get the current user from an auth session.
+// For now, we'll need to pass the current user to this function.
+export function addIssue(issueData: Omit<Issue, 'id' | 'reportedAt' | 'reportedBy' | 'status'>, currentUser: User) {
+    if (!currentUser) {
         throw new Error("Cannot report issue without a logged in user.");
     }
     const newIssue: Issue = {
         ...issueData,
         id: `AND-${String(nextIssueId).padStart(3, '0')}`,
         reportedAt: new Date(),
-        reportedBy: users.current,
+        reportedBy: currentUser,
         status: 'reported',
         category: issueData.category as IssueCategory,
     };
@@ -250,28 +240,30 @@ export function deleteProductionLine(lineId: string) {
 }
 
 export function deleteUser(email: string) {
-    const userKey = Object.keys(userProfiles).find(key => userProfiles[key].email === email);
-    if (userKey && userKey !== 'admin' && userKey !== 'operator') {
-      delete userProfiles[userKey];
-      allUsers = Object.values(userProfiles);
-    } else if (userKey) {
-        throw new Error("Cannot delete default admin or operator roles.");
+    const userIndex = allUsers.findIndex(user => user.email === email);
+    if (userIndex !== -1) {
+        const user = allUsers[userIndex];
+        // Prevent deletion of the default admin/operator for demo purposes
+        if (user.email === 'alex.j@andon.io' || user.email === 'sam.m@andon.io') {
+             throw new Error("Cannot delete default admin or operator roles.");
+        }
+        allUsers.splice(userIndex, 1);
     } else {
         throw new Error("User not found.");
     }
 }
 
 export function updateUser(originalEmail: string, data: { firstName: string, lastName: string, email: string, role: Role }) {
-    const userKey = Object.keys(userProfiles).find(key => userProfiles[key].email === originalEmail);
-    if (userKey) {
-        const user = userProfiles[userKey];
+    const userIndex = allUsers.findIndex(user => user.email === originalEmail);
+    if (userIndex !== -1) {
+        const user = allUsers[userIndex];
         user.name = `${data.firstName} ${data.lastName}`;
         user.email = data.email;
         // Don't allow changing role for default admin/operator
-        if (userKey !== 'admin' && userKey !== 'operator') {
+        if (user.email !== 'alex.j@andon.io' && user.email !== 'sam.m@andon.io') {
             user.role = data.role;
         }
-        allUsers = Object.values(userProfiles);
+        allUsers[userIndex] = user;
     } else {
         throw new Error("User not found.");
     }

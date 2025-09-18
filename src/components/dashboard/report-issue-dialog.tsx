@@ -38,9 +38,9 @@ import {
 } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
 import { Sparkles, LoaderCircle, Monitor, Truck, Wrench, HelpCircle, ArrowLeft, LifeBuoy, BadgeCheck, Factory, HardHat } from "lucide-react";
-import type { Priority, ProductionLine } from "@/lib/types";
+import type { Priority, ProductionLine, User } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { users } from "@/lib/data";
+import { useUser } from "@/contexts/user-context";
 
 const issueFormSchema = z.object({
   category: z.string().min(1, "Category is required."),
@@ -147,7 +147,7 @@ export function ReportIssueDialog({
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const router = useRouter();
   
-  const currentUser = users.current;
+  const { currentUser } = useUser();
 
   const form = useForm<IssueFormValues>({
     resolver: zodResolver(issueFormSchema),
@@ -165,10 +165,10 @@ export function ReportIssueDialog({
     if (lineName && selectedWorkstation) {
       return `${lineName} - ${selectedWorkstation}`;
     }
-    return currentUser.productionLineId 
+    return currentUser?.productionLineId 
       ? productionLines.find(line => line.id === currentUser.productionLineId)?.name || ""
       : "";
-  }, [selectedLineId, selectedWorkstation, currentUser.productionLineId, productionLines]);
+  }, [selectedLineId, selectedWorkstation, currentUser?.productionLineId, productionLines]);
 
 
   React.useEffect(() => {
@@ -208,6 +208,14 @@ export function ReportIssueDialog({
   };
 
   function onSubmit(data: IssueFormValues) {
+    if (!currentUser) {
+      toast({
+        variant: "destructive",
+        title: "Not Logged In",
+        description: "You must be logged in to report an issue.",
+      });
+      return;
+    }
     startSubmittingTransition(async () => {
         const issueData = {
             title: data.description,
@@ -437,5 +445,3 @@ export function ReportIssueDialog({
     </Dialog>
   );
 }
-
-    

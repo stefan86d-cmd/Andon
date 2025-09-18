@@ -1,5 +1,4 @@
 
-
 "use client"
 
 import { AppLayout } from "@/components/layout/app-layout";
@@ -9,12 +8,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { users } from "@/lib/data";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Camera } from "lucide-react";
+import { useUser } from "@/contexts/user-context";
 
 export default function SettingsPage() {
-    const currentUser = users.current;
+    const { currentUser } = useUser();
+    
+    if (!currentUser) {
+        return <AppLayout><div>Loading...</div></AppLayout>;
+    }
+
     const [firstName, lastName] = currentUser.name.split(" ");
 
     return (

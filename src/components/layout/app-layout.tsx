@@ -7,20 +7,23 @@ import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useSearchParams } from "next/navigation";
-import { users } from "@/lib/data";
 import type { Role } from "@/lib/types";
+import { useUser } from "@/contexts/user-context";
 
 function AppLayoutContent({ children }: { children: React.ReactNode }) {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const isMobile = useIsMobile();
   const searchParams = useSearchParams();
   const role = searchParams.get('role') as Role;
+  const { setUser } = useUser();
 
   useEffect(() => {
     if (role === 'admin' || role === 'operator') {
-      users.setCurrent(role);
+      setUser(role);
+    } else {
+      setUser(null);
     }
-  }, [role]);
+  }, [role, setUser]);
 
   const toggleSidebar = () => {
     setIsSidebarCollapsed(!isSidebarCollapsed);

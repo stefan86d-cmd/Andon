@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import type { Issue, Priority, Status, User, IssueCategory } from "@/lib/types";
@@ -38,10 +37,10 @@ import {
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { format, formatDistanceToNow, intervalToDuration } from "date-fns";
-import { users } from "@/lib/data";
 import { cn } from "@/lib/utils";
 import { ResolveIssueDialog } from "./resolve-issue-dialog";
 import { useState } from "react";
+import { useUser } from "@/contexts/user-context";
 
 const priorityIcons: Record<Priority, React.ElementType> = {
   low: ArrowDownCircle,
@@ -107,7 +106,7 @@ function formatDuration(start: Date, end: Date) {
 }
 
 export function IssuesDataTable({ issues, title, description }: { issues: Issue[], title?: string, description?: string }) {
-  const currentUser = users.current;
+  const { currentUser } = useUser();
   const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
   const isResolvedView = issues.length > 0 && issues.every(issue => issue.status === 'resolved');
 

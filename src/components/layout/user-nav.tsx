@@ -16,18 +16,25 @@ import {
   DropdownMenuPortal,
   DropdownMenuSubContent
 } from "@/components/ui/dropdown-menu";
-import { users } from "@/lib/data";
+import { useUser } from "@/contexts/user-context";
 import { useTheme } from "next-themes";
 import { Moon, Sun } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export function UserNav() {
-  const currentUser = users.current;
+  const { currentUser, setUser } = useUser();
   const { setTheme } = useTheme()
+  const router = useRouter();
 
   if (!currentUser) {
     return null;
+  }
+
+  const handleLogout = () => {
+    setUser(null);
+    router.push('/');
   }
 
   return (
@@ -85,11 +92,9 @@ export function UserNav() {
           </DropdownMenuPortal>
         </DropdownMenuSub>
         <DropdownMenuSeparator />
-        <Link href="/">
-          <DropdownMenuItem>
-            Log out
-          </DropdownMenuItem>
-        </Link>
+        <DropdownMenuItem onClick={handleLogout}>
+          Log out
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

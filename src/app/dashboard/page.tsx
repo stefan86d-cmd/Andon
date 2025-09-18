@@ -15,13 +15,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { issues, productionLines, users } from "@/lib/data";
+import { issues, productionLines } from "@/lib/data";
 import { PlusCircle, LoaderCircle } from "lucide-react";
 import type { ProductionLine } from "@/lib/types";
 import { subHours, addHours } from "date-fns";
+import { useUser } from "@/contexts/user-context";
 
 export default function Home() {
-  const currentUser = users.current;
+  const { currentUser } = useUser();
   const [selectedLineId, setSelectedLineId] = useState<string | undefined>(undefined);
   const [selectedWorkstation, setSelectedWorkstation] = useState<string | undefined>();
   const [selectionConfirmed, setSelectionConfirmed] = useState(false);
@@ -65,6 +66,14 @@ export default function Home() {
     lineUptime: '98.7%',
     criticalAlerts: issues.filter(issue => issue.priority === 'critical' && issue.reportedAt > twentyFourHoursAgo).length,
   };
+
+  if (!currentUser) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <LoaderCircle className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <AppLayout>

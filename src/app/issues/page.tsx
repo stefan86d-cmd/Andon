@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { IssuesDataTable } from "@/components/dashboard/issues-data-table";
 import { AppLayout } from "@/components/layout/app-layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { issues, productionLines, users } from "@/lib/data";
+import { issues, productionLines } from "@/lib/data";
 import type { Issue } from "@/lib/types";
 import { ListFilter } from "lucide-react";
 import {
@@ -18,9 +18,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { subHours } from "date-fns";
+import { useUser } from "@/contexts/user-context";
 
 export default function IssuesPage() {
-  const currentUser = users.current;
+  const { currentUser } = useUser();
   const [selectedLines, setSelectedLines] = useState<string[]>([]);
   const [tempSelectedLines, setTempSelectedLines] = useState<string[]>([]);
 

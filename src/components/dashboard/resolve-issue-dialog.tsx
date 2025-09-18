@@ -33,7 +33,8 @@ import {
 } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
 import type { Issue, Status } from "@/lib/types";
-import { issues, users } from "@/lib/data";
+import { issues } from "@/lib/data";
+import { useUser } from "@/contexts/user-context";
 
 
 const resolveIssueFormSchema = z.object({
@@ -59,9 +60,13 @@ export function ResolveIssueDialog({ isOpen, onOpenChange, issue, onIssueUpdate 
     },
   });
 
-  const currentUser = users.current;
+  const { currentUser } = useUser();
 
   function onSubmit(data: ResolveIssueFormValues) {
+    if (!currentUser) {
+        toast({ title: "Error", description: "You must be logged in.", variant: "destructive"});
+        return;
+    }
     // Find the issue in our mock data and update it
     const issueIndex = issues.findIndex((i) => i.id === issue.id);
     if (issueIndex !== -1) {

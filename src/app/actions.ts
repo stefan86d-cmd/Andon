@@ -3,8 +3,24 @@
 
 import { revalidatePath } from 'next/cache';
 import { prioritizeIssue } from "@/ai/flows/prioritize-reported-issues";
-import { addIssue, addProductionLine, updateProductionLine, deleteProductionLine as deleteLine, deleteUser as deleteUserData, updateUser } from "@/lib/data";
-import type { Issue, ProductionLine, Role } from "@/lib/types";
+import { addIssue as addIssueToData, addProductionLine, updateProductionLine, deleteProductionLine as deleteLine, deleteUser as deleteUserData, updateUser } from "@/lib/data";
+import type { Issue, ProductionLine, Role, User } from "@/lib/types";
+import { headers } from 'next/headers';
+
+async function getCurrentUser(): Promise<User | null> {
+    const headersList = headers();
+    const userCookie = headersList.get('cookie');
+    // In a real app, you'd parse the cookie and validate the session
+    // For this mock, we'll just return a default user if there's any cookie
+    if (userCookie) {
+        const allUsers = (await import('@/lib/data')).allUsers;
+        // This is a simplified mock. A real app would have a proper session management
+        const adminUser = allUsers.find(u => u.email === 'alex.j@andon.io');
+        return adminUser || null;
+    }
+    return null;
+}
+
 
 export async function suggestPriority(description: string) {
   if (!description) {
@@ -21,7 +37,13 @@ export async function suggestPriority(description: string) {
 
 export async function reportIssue(issueData: Omit<Issue, 'id' | 'reportedAt' | 'reportedBy' | 'status'>) {
     try {
-        addIssue(issueData);
+        // This is a mock. In a real app, you would get the user from the session.
+        const allUsers = (await import('@/lib/data')).allUsers;
+        const currentUser = allUsers.find(u => u.email === 'sam.m@andon.io');
+        if (!currentUser) {
+            return { error: "Could not find current user."};
+        }
+        addIssueToData(issueData, currentUser);
         revalidatePath('/dashboard');
         revalidatePath('/issues');
         return { success: true };

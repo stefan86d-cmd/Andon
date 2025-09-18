@@ -1,9 +1,9 @@
 
 import { SidebarNav } from "./sidebar-nav";
-import { users } from "@/lib/data";
 import { cn } from "@/lib/utils";
 import { Button } from "../ui/button";
 import { Menu } from "lucide-react";
+import { useUser } from "@/contexts/user-context";
 
 interface SidebarProps {
   isCollapsed: boolean;
@@ -11,7 +11,7 @@ interface SidebarProps {
 }
 
 export function Sidebar({ isCollapsed, onMenuClick }: SidebarProps) {
-  const currentUser = users.current;
+  const { currentUser } = useUser();
   return (
     <div className="hidden border-r bg-card md:block">
       <div className="flex h-full max-h-screen flex-col gap-2">

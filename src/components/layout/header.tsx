@@ -6,16 +6,16 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { UserNav } from "@/components/layout/user-nav";
 import Link from "next/link";
 import { SidebarNav } from "./sidebar-nav";
-import { users } from "@/lib/data";
 import { Logo } from "./logo";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useUser } from "@/contexts/user-context";
 
 interface HeaderProps {
     isCollapsed: boolean;
 }
 
 export function Header({ isCollapsed }: HeaderProps) {
-  const currentUser = users.current;
+  const { currentUser } = useUser();
   const isMobile = useIsMobile();
   
   return (
