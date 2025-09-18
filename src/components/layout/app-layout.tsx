@@ -1,14 +1,26 @@
+
 "use client";
 
-import { useState } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { cn } from "@/lib/utils";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useSearchParams } from "next/navigation";
+import { users } from "@/lib/data";
+import type { Role } from "@/lib/types";
 
-export function AppLayout({ children }: { children: React.ReactNode }) {
+function AppLayoutContent({ children }: { children: React.ReactNode }) {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const isMobile = useIsMobile();
+  const searchParams = useSearchParams();
+  const role = searchParams.get('role') as Role;
+
+  useEffect(() => {
+    if (role === 'admin' || role === 'operator') {
+      users.setCurrent(role);
+    }
+  }, [role]);
 
   const toggleSidebar = () => {
     setIsSidebarCollapsed(!isSidebarCollapsed);
@@ -30,4 +42,12 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       </div>
     </div>
   );
+}
+
+export function AppLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <AppLayoutContent>{children}</AppLayoutContent>
+    </Suspense>
+  )
 }

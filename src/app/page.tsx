@@ -1,3 +1,8 @@
+
+"use client";
+
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -10,7 +15,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/layout/logo";
 import Link from "next/link";
-import { Separator } from "@/components/ui/separator";
 
 function GoogleIcon(props: React.SVGProps<SVGSVGElement>) {
     return (
@@ -59,6 +63,21 @@ function GoogleIcon(props: React.SVGProps<SVGSVGElement>) {
   }
 
 export default function LoginPage() {
+  const [email, setEmail] = useState('');
+  const router = useRouter();
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    const emailLower = email.toLowerCase();
+    if (emailLower === 'admin') {
+      router.push('/dashboard?role=admin');
+    } else if (emailLower === 'operator') {
+      router.push('/dashboard?role=operator');
+    } else {
+      router.push('/dashboard');
+    }
+  };
+  
   return (
     <div className="flex items-center justify-center min-h-screen bg-background">
       <Card className="mx-auto max-w-sm w-full">
@@ -68,65 +87,66 @@ export default function LoginPage() {
           </div>
           <CardTitle>Login</CardTitle>
           <CardDescription>
-            Enter your credentials to access your account
+            Enter your credentials to access your account. (Hint: try 'Admin' or 'Operator')
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4">
-            <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="m@example.com"
-                required
-              />
-            </div>
-            <div className="grid gap-2">
-              <div className="flex items-center">
-                <Label htmlFor="password">Password</Label>
+          <form onSubmit={handleLogin}>
+            <div className="grid gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="m@example.com"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
               </div>
-              <Input id="password" type="password" required />
-            </div>
-            <Link href="/dashboard" className="w-full">
+              <div className="grid gap-2">
+                <div className="flex items-center">
+                  <Label htmlFor="password">Password</Label>
+                </div>
+                <Input id="password" type="password" />
+              </div>
               <Button type="submit" className="w-full">
-                Login
+                  Login
               </Button>
-            </Link>
-            <div className="text-center text-sm">
-                Don&apos;t have an account?{" "}
-                <Link href="#" className="underline">
-                    Sign up
-                </Link>
-                <span className="mx-2 text-muted-foreground">|</span>
-                <Link href="#" className="underline">
-                    Forgot your password?
-                </Link>
+              <div className="text-center text-sm">
+                  Don&apos;t have an account?{" "}
+                  <Link href="#" className="underline">
+                      Sign up
+                  </Link>
+                  <span className="mx-2 text-muted-foreground">|</span>
+                  <Link href="#" className="underline">
+                      Forgot your password?
+                  </Link>
+              </div>
+              <div className="relative my-2">
+                  <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-background px-2 text-muted-foreground">
+                      Or continue with
+                      </span>
+                  </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                  <Button variant="outline" className="flex items-center justify-center gap-2" type="button">
+                      <GoogleIcon className="h-5 w-5" />
+                      Google
+                  </Button>
+                  <Button variant="outline" className="flex items-center justify-center gap-2" type="button">
+                      <MicrosoftIcon className="h-5 w-5" />
+                      Microsoft
+                  </Button>
+              </div>
             </div>
-            <div className="relative my-2">
-                <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-background px-2 text-muted-foreground">
-                    Or continue with
-                    </span>
-                </div>
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-                <Button variant="outline" className="flex items-center justify-center gap-2">
-                    <GoogleIcon className="h-5 w-5" />
-                    Google
-                </Button>
-                <Button variant="outline" className="flex items-center justify-center gap-2">
-                    <MicrosoftIcon className="h-5 w-5" />
-                    Microsoft
-                </Button>
-            </div>
-          </div>
+          </form>
         </CardContent>
       </Card>
     </div>
   );
 }
-

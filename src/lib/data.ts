@@ -1,5 +1,5 @@
 
-import type { User, Issue, StatCard, ProductionLine, ReportData, Kpi, IssueByDay, IssueCategory } from "@/lib/types";
+import type { User, Issue, StatCard, ProductionLine, ReportData, Kpi, IssueByDay, IssueCategory, Role } from "@/lib/types";
 
 export let productionLines: ProductionLine[] = [
   { 
@@ -84,7 +84,7 @@ const userProfiles = {
     role: "operator",
     productionLineId: "finishing",
   },
-  current: {
+  admin: {
     name: "Alex Johnson",
     email: "alex.j@andon.io",
     avatarUrl: "https://picsum.photos/seed/user-alex/40/40",
@@ -101,12 +101,19 @@ const userProfiles = {
 
 export const allUsers: User[] = Object.values(userProfiles);
 
-// The 'users' object is now used to define the current user for demonstration purposes.
-// To view the app as a specific user, set 'users.current' to one of the profiles above.
+let currentUser: User = userProfiles.admin;
+
 export const users = {
-  current: userProfiles.admin, // Default to admin user
+  get current() {
+    return currentUser;
+  },
+  setCurrent(role: Role) {
+    if (userProfiles[role]) {
+      currentUser = userProfiles[role];
+    }
+  },
   operator: userProfiles.operator,
-  admin: userProfiles.current,
+  admin: userProfiles.admin,
 };
 
 export const issues: Issue[] = [
@@ -142,7 +149,7 @@ export const issues: Issue[] = [
     reportedAt: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
     reportedBy: userProfiles.alicewilliams,
     resolvedAt: new Date(Date.now() - 20 * 60 * 60 * 1000),
-    resolvedBy: userProfiles.current,
+    resolvedBy: userProfiles.admin,
     resolutionNotes: "Replaced faulty sensor and recalibrated the robotic arm. System is now operating normally.",
     category: "quality",
   },
@@ -178,7 +185,7 @@ export const issues: Issue[] = [
     reportedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
     reportedBy: userProfiles.alicewilliams,
     resolvedAt: new Date(Date.now() - 1.5 * 24 * 60 * 60 * 1000),
-    resolvedBy: userProfiles.current,
+    resolvedBy: userProfiles.admin,
     resolutionNotes: "Battery swapped with a fully charged unit.",
     category: "logistics",
   },
