@@ -35,6 +35,7 @@ export async function createProductionLine(name: string) {
     try {
         addProductionLine({ name });
         revalidatePath('/lines');
+        revalidatePath('/dashboard');
         return { success: true };
     } catch (e) {
         console.error(e);
