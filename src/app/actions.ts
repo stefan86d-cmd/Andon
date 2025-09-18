@@ -3,7 +3,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { prioritizeIssue } from "@/ai/flows/prioritize-reported-issues";
-import { addIssue, addProductionLine, updateProductionLine } from "@/lib/data";
+import { addIssue, addProductionLine, updateProductionLine, deleteProductionLine as deleteLine } from "@/lib/data";
 import type { Issue, ProductionLine } from "@/lib/types";
 
 export async function suggestPriority(description: string) {
@@ -51,5 +51,16 @@ export async function editProductionLine(lineId: string, data: { name: string, w
     } catch (e) {
         console.error(e);
         return { error: "Failed to update production line." };
+    }
+}
+
+export async function deleteProductionLine(lineId: string) {
+    try {
+        deleteLine(lineId);
+        revalidatePath('/lines');
+        return { success: true };
+    } catch (e) {
+        console.error(e);
+        return { error: "Failed to delete production line." };
     }
 }

@@ -229,6 +229,12 @@ export function updateProductionLine(lineId: string, updatedData: Partial<Produc
     }
 }
 
+export function deleteProductionLine(lineId: string) {
+    const lineIndex = productionLines.findIndex(line => line.id === lineId);
+    if (lineIndex !== -1) {
+        productionLines.splice(lineIndex, 1);
+    }
+}
 
 export const stats: StatCard[] = [
     {
