@@ -123,7 +123,7 @@ export function IssuesDataTable({ issues, title, description }: { issues: Issue[
       <CardHeader>
         <CardTitle>{title || (currentUser.role === 'admin' ? 'Recent Issues' : 'Recent Issues on Your Line')}</CardTitle>
         <CardDescription>
-          {description || (currentUser.role === 'admin' ? 'A list of recently reported issues on the production line.' : 'Issues reported on your assigned production line.')}
+          {description || (currentUser.role === 'admin' ? 'A list of recently reported issues on the production line.' : 'Issues reported on your selected line.')}
         </CardDescription>
       </CardHeader>
       <CardContent>
