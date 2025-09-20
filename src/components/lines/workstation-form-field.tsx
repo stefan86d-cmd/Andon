@@ -42,7 +42,7 @@ export function WorkstationFormField({ form }: WorkstationFormFieldProps) {
               render={({ field }) => (
                 <FormItem className="flex-1">
                   <FormControl>
-                    <Input {...field} placeholder={`Workstation ${index + 1}`} />
+                    <Input {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

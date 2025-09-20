@@ -92,7 +92,7 @@ export function AddProductionLineDialog({ children }: { children: React.ReactNod
                 <FormItem>
                   <FormLabel>Line Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., Assembly Line 4" {...field} />
+                    <Input {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

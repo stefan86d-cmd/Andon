@@ -108,7 +108,7 @@ export function EditProductionLineDialog({ children, productionLine }: EditProdu
                 <FormItem>
                   <FormLabel>Line Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., Assembly Line 4" {...field} />
+                    <Input {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

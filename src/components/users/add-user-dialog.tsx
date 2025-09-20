@@ -100,7 +100,7 @@ export function AddUserDialog({ children }: { children: React.ReactNode }) {
                 <FormItem>
                   <FormLabel>First Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., John" {...field} />
+                    <Input {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -113,7 +113,7 @@ export function AddUserDialog({ children }: { children: React.ReactNode }) {
                 <FormItem>
                   <FormLabel>Last Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., Doe" {...field} />
+                    <Input {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -129,7 +129,6 @@ export function AddUserDialog({ children }: { children: React.ReactNode }) {
                   <FormControl>
                     <Input
                       type="email"
-                      placeholder="e.g., john.doe@example.com"
                       {...field}
                     />
                   </FormControl>
