@@ -14,7 +14,7 @@ export default function Home() {
   
   const now = new Date();
   const twentyFourHoursAgo = subHours(now, 24);
-  const userIssues = issues;
+  const userIssues = issues.slice(0, 20);
 
   const stoppedIssuesInLast24h = issues.filter(
     issue => issue.productionStopped && issue.reportedAt > twentyFourHoursAgo
