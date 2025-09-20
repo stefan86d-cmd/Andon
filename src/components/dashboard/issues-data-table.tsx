@@ -76,7 +76,6 @@ const categories: Record<IssueCategory, { label: string, icon: React.ElementType
     'tool': { label: 'Tool & Equipment', icon: Wrench, color: 'text-gray-500' },
     'assistance': { label: 'Assistance', icon: LifeBuoy, color: 'text-red-500' },
     'quality': { label: 'Quality', icon: BadgeCheck, color: 'text-green-500' },
-    'safety': { label: 'Safety', icon: HardHat, color: 'text-yellow-500' },
     'other': { label: 'Other', icon: HelpCircle, color: 'text-purple-500' },
 };
 
@@ -132,6 +131,7 @@ export function IssuesDataTable({ issues, title, description }: { issues: Issue[
           <TableHeader>
             <TableRow>
               <TableHead>Category</TableHead>
+              <TableHead>Sub-Category</TableHead>
               <TableHead className="min-w-[300px]">Description</TableHead>
               <TableHead>Priority</TableHead>
               <TableHead>Status</TableHead>
@@ -163,11 +163,11 @@ export function IssuesDataTable({ issues, title, description }: { issues: Issue[
                   <TableCell>
                     <div className="flex items-center gap-2">
                         <CategoryIcon className={cn("h-6 w-6", categoryInfo.color)} />
-                        <div>
-                            <div className="font-medium">{categoryInfo.label}</div>
-                            {issue.subCategory && <div className="text-xs text-muted-foreground capitalize">{issue.subCategory.replace(/-/g, ' ')}</div>}
-                        </div>
+                        <div className="font-medium">{categoryInfo.label}</div>
                     </div>
+                  </TableCell>
+                  <TableCell>
+                    {issue.subCategory && <div className="text-sm capitalize">{issue.subCategory.replace(/-/g, ' ')}</div>}
                   </TableCell>
                   <TableCell>
                     <div className="font-medium">{issue.title}</div>
