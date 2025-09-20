@@ -82,39 +82,42 @@ export async function deleteProductionLine(lineId: string) {
 
 export async function addUser(data: { firstName: string, lastName: string, email: string, role: Role }, tempPass: string) {
     try {
-        // Create user in Firebase Auth
-        const userRecord = await adminAuth.createUser({
-            email: data.email,
-            emailVerified: true,
-            password: tempPass,
-            displayName: `${data.firstName} ${data.lastName}`,
-        });
+        // Check if user already exists in Auth
+        let userRecord = null;
+        try {
+            userRecord = await adminAuth.getUserByEmail(data.email);
+        } catch (error: any) {
+            if (error.code !== 'auth/user-not-found') {
+                throw error; // Re-throw unexpected errors
+            }
+            // User does not exist in Auth, so we will create them.
+        }
 
-        // Add user profile to Firestore
+        if (!userRecord) {
+            // Create user in Firebase Auth
+            userRecord = await adminAuth.createUser({
+                email: data.email,
+                emailVerified: true,
+                password: tempPass,
+                displayName: `${data.firstName} ${data.lastName}`,
+            });
+        }
+        
+        // At this point, userRecord is guaranteed to be populated.
+        // Add or update user profile in Firestore.
         await addUserToData({
             uid: userRecord.uid,
             ...data
         });
 
         revalidatePath('/users');
-        return { success: true };
+        return { success: true, message: `User ${data.email} processed successfully.` };
     } catch (e: any) {
-        console.error(e);
-        if (e.code === 'auth/email-already-exists') {
-             // If the user already exists in Auth, we might be trying to seed our default users.
-            // Let's try to get the user and ensure their data is in Firestore.
-            try {
-                const userRecord = await adminAuth.getUserByEmail(data.email);
-                await addUserToData({ uid: userRecord.uid, ...data });
-                revalidatePath('/users');
-                return { success: true, message: "User already existed in Auth, ensured Firestore profile exists." };
-            } catch (innerError: any) {
-                 return { error: innerError.message || "User exists in Auth, but failed to update Firestore." };
-            }
-        }
-        return { error: e.message || "Failed to create user." };
+        console.error("Error in addUser action:", e);
+        return { error: e.message || "Failed to create or update user." };
     }
 }
+
 
 export async function deleteUser(email: string) {
     try {
@@ -130,7 +133,7 @@ export async function deleteUser(email: string) {
         await adminAuth.deleteUser(user.id);
         revalidatePath('/users');
         return { success: true };
-    } catch (e: any) {
+    } catch (e: any)
         console.error(e);
         return { error: e.message || "Failed to delete user." };
     }
