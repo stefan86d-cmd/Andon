@@ -41,6 +41,7 @@ import { cn } from "@/lib/utils";
 import { ResolveIssueDialog } from "./resolve-issue-dialog";
 import { useState } from "react";
 import { useUser } from "@/contexts/user-context";
+import { SafeHydrate } from "../layout/safe-hydrate";
 
 const priorityIcons: Record<Priority, React.ElementType> = {
   low: ArrowDownCircle,
@@ -187,8 +188,10 @@ export function IssuesDataTable({ issues, title, description }: { issues: Issue[
                         <TableCell>
                            {issue.resolvedAt && (
                             <div className="flex flex-col">
-                                <span className="font-medium">{format(issue.resolvedAt, 'PPpp')}</span>
-                                <span className="text-sm text-muted-foreground">{formatDistanceToNow(issue.resolvedAt, { addSuffix: true })}</span>
+                                <SafeHydrate>
+                                    <span className="font-medium">{format(issue.resolvedAt, 'PPpp')}</span>
+                                    <span className="text-sm text-muted-foreground">{formatDistanceToNow(issue.resolvedAt, { addSuffix: true })}</span>
+                                </SafeHydrate>
                             </div>
                            )}
                         </TableCell>
@@ -211,8 +214,10 @@ export function IssuesDataTable({ issues, title, description }: { issues: Issue[
                     <>
                         <TableCell>
                             <div className="flex flex-col">
-                                <span className="font-medium">{format(issue.reportedAt, 'PPpp')}</span>
-                                <span className="text-sm text-muted-foreground">{formatDistanceToNow(issue.reportedAt, { addSuffix: true })}</span>
+                                <SafeHydrate>
+                                    <span className="font-medium">{format(issue.reportedAt, 'PPpp')}</span>
+                                    <span className="text-sm text-muted-foreground">{formatDistanceToNow(issue.reportedAt, { addSuffix: true })}</span>
+                                </SafeHydrate>
                             </div>
                         </TableCell>
                         <TableCell>
