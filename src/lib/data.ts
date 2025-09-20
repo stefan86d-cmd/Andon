@@ -115,7 +115,7 @@ export const issues: Issue[] = [
     productionLineId: "line-3",
     priority: "high",
     status: "in_progress",
-    reportedAt: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
+    reportedAt: new Date("2024-09-20T10:30:00Z"),
     reportedBy: usersByEmail['jane.jones@example.com'],
     category: "tool",
   },
@@ -126,7 +126,7 @@ export const issues: Issue[] = [
     productionLineId: "fab-bay-2",
     priority: "critical",
     status: "reported",
-    reportedAt: new Date(Date.now() - 30 * 60 * 1000), // 30 minutes ago
+    reportedAt: new Date("2024-09-20T12:00:00Z"),
     reportedBy: usersByEmail['bob.smith@example.com'],
     category: "tool",
   },
@@ -137,9 +137,9 @@ export const issues: Issue[] = [
     productionLineId: "welding-1",
     priority: "critical",
     status: "resolved",
-    reportedAt: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
+    reportedAt: new Date("2024-09-19T12:30:00Z"),
     reportedBy: usersByEmail['alice.williams@example.com'],
-    resolvedAt: new Date(Date.now() - 20 * 60 * 60 * 1000),
+    resolvedAt: new Date("2024-09-19T16:30:00Z"),
     resolvedBy: usersByEmail['alex.j@andon.io'],
     resolutionNotes: "Replaced faulty sensor and recalibrated the robotic arm. System is now operating normally.",
     category: "quality",
@@ -151,7 +151,7 @@ export const issues: Issue[] = [
     productionLineId: "packaging",
     priority: "low",
     status: "reported",
-    reportedAt: new Date(Date.now() - 4 * 60 * 60 * 1000), // 4 hours ago
+    reportedAt: new Date("2024-09-20T08:30:00Z"),
     reportedBy: usersByEmail['jane.jones@example.com'],
     category: "logistics",
   },
@@ -162,7 +162,7 @@ export const issues: Issue[] = [
     productionLineId: "finishing",
     priority: "medium",
     status: "in_progress",
-    reportedAt: new Date(Date.now() - 8 * 60 * 60 * 1000), // 8 hours ago
+    reportedAt: new Date("2024-09-20T04:30:00Z"),
     reportedBy: usersByEmail['bob.smith@example.com'],
     category: "tool",
   },
@@ -173,9 +173,9 @@ export const issues: Issue[] = [
     productionLineId: "warehouse",
     priority: "low",
     status: "resolved",
-    reportedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
+    reportedAt: new Date("2024-09-18T12:30:00Z"),
     reportedBy: usersByEmail['alice.williams@example.com'],
-    resolvedAt: new Date(Date.now() - 1.5 * 24 * 60 * 60 * 1000),
+    resolvedAt: new Date("2024-09-19T00:30:00Z"),
     resolvedBy: usersByEmail['alex.j@andon.io'],
     resolutionNotes: "Battery swapped with a fully charged unit.",
     category: "logistics",
@@ -187,7 +187,7 @@ export const issues: Issue[] = [
     productionLineId: "fab-bay-1",
     priority: "high",
     status: "reported",
-    reportedAt: new Date(Date.now() - 60 * 60 * 1000), // 1 hour ago
+    reportedAt: new Date("2024-09-20T11:30:00Z"),
     reportedBy: usersByEmail['jane.jones@example.com'],
     category: "tool",
   },
