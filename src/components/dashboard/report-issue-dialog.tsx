@@ -90,18 +90,6 @@ const categories = [
         ]
     },
     { 
-        id: 'safety', 
-        label: 'Safety Concern', 
-        icon: HardHat, 
-        color: 'text-yellow-500',
-        subCategories: [
-            { id: 'spill', label: 'Spill or Leak' },
-            { id: 'ppe', label: 'Missing PPE' },
-            { id: 'unsafe-condition', label: 'Unsafe Condition' },
-            { id: 'other', label: 'Other Safety Concern' },
-        ]
-    },
-    { 
         id: 'quality', 
         label: 'Quality Control', 
         icon: BadgeCheck, 
@@ -445,3 +433,5 @@ export function ReportIssueDialog({
     </Dialog>
   );
 }
+
+    
