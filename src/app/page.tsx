@@ -29,7 +29,7 @@ export default function LoginPage() {
       router.push('/dashboard');
     } else if (emailLower === 'supervisor') {
         setUser('supervisor');
-        router.push('/issues');
+        router.push('/dashboard');
     } else {
       setUser('operator');
       router.push('/dashboard');

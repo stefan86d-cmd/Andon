@@ -52,7 +52,7 @@ export default function Home() {
   const now = new Date();
   const twentyFourHoursAgo = subHours(now, 24);
   const userIssues =
-    currentUser?.role === "admin"
+    currentUser?.role === "admin" || currentUser?.role === "supervisor"
       ? issues
       : issues.filter((issue) => 
           issue.productionLineId === selectedLineId && 
@@ -74,15 +74,17 @@ export default function Home() {
       </div>
     );
   }
+  
+  const isPrivilegedUser = currentUser?.role === 'admin' || currentUser?.role === 'supervisor';
 
   return (
     <AppLayout>
       <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background">
         <div className="flex items-center justify-between">
-          <h1 className="text-lg font-semibold md:text-2xl">{currentUser?.role === 'admin' ? 'Dashboard' : 'Line Status'}</h1>
+          <h1 className="text-lg font-semibold md:text-2xl">{isPrivilegedUser ? 'Dashboard' : 'Line Status'}</h1>
         </div>
         
-        {currentUser?.role === 'admin' ? (
+        {isPrivilegedUser ? (
           <>
             <StatsCards stats={[
                 {
