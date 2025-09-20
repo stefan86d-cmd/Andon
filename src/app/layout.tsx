@@ -27,10 +27,10 @@ export default function RootLayout({
           defaultTheme="light"
           disableTransitionOnChange
         >
-          <UserProvider>
-            {children}
-          </UserProvider>
-          <Toaster />
+            <UserProvider>
+                {children}
+            </UserProvider>
+            <Toaster />
         </ThemeProvider>
       </body>
     </html>

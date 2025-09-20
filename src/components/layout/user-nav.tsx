@@ -22,6 +22,7 @@ import { Moon, Sun } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { auth } from "@/lib/firebase";
 
 export function UserNav() {
   const { currentUser, setUser } = useUser();
@@ -32,7 +33,8 @@ export function UserNav() {
     return null;
   }
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await auth.signOut();
     setUser(null);
     router.push('/');
   }

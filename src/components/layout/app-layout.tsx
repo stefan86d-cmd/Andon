@@ -1,24 +1,40 @@
 
 "use client";
 
-import React, { useState, useEffect, Suspense } from "react";
+import React, { Suspense } from "react";
 import { cn } from "@/lib/utils";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useSearchParams } from "next/navigation";
-import type { Role } from "@/lib/types";
 import { useUser } from "@/contexts/user-context";
+import { useRouter } from "next/navigation";
+import { LoaderCircle } from "lucide-react";
 
 function AppLayoutContent({ children }: { children: React.ReactNode }) {
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = React.useState(false);
   const isMobile = useIsMobile();
+  const { currentUser, loading } = useUser();
+  const router = useRouter();
+
+  React.useEffect(() => {
+    if (!loading && !currentUser) {
+      router.replace('/');
+    }
+  }, [currentUser, loading, router]);
   
   const toggleSidebar = () => {
     setIsSidebarCollapsed(!isSidebarCollapsed);
   };
   
   const isEffectivelyCollapsed = isMobile ? true : isSidebarCollapsed;
+
+  if (loading || !currentUser) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <LoaderCircle className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div
@@ -38,7 +54,11 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={
+        <div className="flex h-screen items-center justify-center">
+            <LoaderCircle className="h-8 w-8 animate-spin" />
+        </div>
+    }>
       <AppLayoutContent>{children}</AppLayoutContent>
     </Suspense>
   )

@@ -201,7 +201,7 @@ export function ReportIssueDialog({
             itemNumber: data.itemNumber,
             quantity: data.quantity,
         };
-        const result = await reportIssue(issueData);
+        const result = await reportIssue(issueData, currentUser);
 
         if (result.success) {
             toast({
