@@ -36,14 +36,24 @@ export default function LoginPage() {
 
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const user = await getUserByEmail(userCredential.user.email!);
       
+      // Ensure we have the user's email before fetching their profile
+      if (!userCredential.user.email) {
+        throw new Error("Email not found for the logged-in user.");
+      }
+      
+      const user = await getUserByEmail(userCredential.user.email);
+      
+      if (!user) {
+        throw new Error("User profile not found in the database.");
+      }
+
       toast({
         title: "Login Successful",
-        description: `Welcome back, ${user?.name}!`,
+        description: `Welcome back, ${user.name}!`,
       });
 
-      if (user?.role === 'operator') {
+      if (user.role === 'operator') {
         router.replace('/line-status');
       } else {
         router.replace('/dashboard');
