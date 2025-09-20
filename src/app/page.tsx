@@ -32,7 +32,7 @@ export default function LoginPage() {
         router.push('/dashboard');
     } else {
       setUser('operator');
-      router.push('/dashboard');
+      router.push('/line-status');
     }
   };
   
