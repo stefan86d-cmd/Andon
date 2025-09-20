@@ -1,5 +1,5 @@
 
-import type { User, Issue, StatCard, ProductionLine, ReportData, Kpi, IssueByDay, IssueCategory, Role } from "@/lib/types";
+import type { User, Issue, StatCard, ProductionLine, Kpi, IssueByDay, IssueCategory, Role, DowntimeData } from "@/lib/types";
 
 export let productionLines: ProductionLine[] = [
   { 
@@ -188,7 +188,7 @@ export const issues: Issue[] = [
     priority: "high",
     status: "reported",
     reportedAt: new Date(Date.now() - 60 * 60 * 1000), // 1 hour ago
-    reportedBy: usersByEmail['janejones@example.com'],
+    reportedBy: usersByEmail['jane.jones@example.com'],
     category: "tool",
   },
 ];
@@ -301,16 +301,36 @@ export const stats: StatCard[] = [
     }
 ];
 
-export const reportData: ReportData = {
-  resolutionTimeByCategory: [
-    { category: "It & Network", hours: 2.5 },
+export const downtimeByCategory: DowntimeData = {
+  '7d': [
+    { category: "IT & Network", hours: 2.5 },
     { category: "Logistics", hours: 4.1 },
-    { category: "Tool & Equipment", hours: 5.8 },
+    { category: "Tool & Equipment", hours: 8.8 },
     { category: "Assistance", hours: 1.2 },
     { category: "Quality", hours: 3.3 },
+    { category: "Safety", hours: 1.9 },
+    { category: "Other", hours: 0.5 },
+  ],
+  '30d': [
+    { category: "IT & Network", hours: 10.2 },
+    { category: "Logistics", hours: 15.5 },
+    { category: "Tool & Equipment", hours: 35.1 },
+    { category: "Assistance", hours: 5.0 },
+    { category: "Quality", hours: 12.8 },
+    { category: "Safety", hours: 7.2 },
     { category: "Other", hours: 2.1 },
   ],
+  'all': [
+    { category: "IT & Network", hours: 50.7 },
+    { category: "Logistics", hours: 80.3 },
+    { category: "Tool & Equipment", hours: 152.9 },
+    { category: "Assistance", hours: 22.0 },
+    { category: "Quality", hours: 61.4 },
+    { category: "Safety", hours: 33.6 },
+    { category: "Other", hours: 10.2 },
+  ]
 };
+
 
 export const kpiData: Kpi[] = [
   { title: "Total Downtime", value: "18.5 hours", subtitle: "Across all lines in the last 7 days" },

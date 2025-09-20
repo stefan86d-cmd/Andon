@@ -45,12 +45,16 @@ export type StatCard = {
   description: string;
 };
 
-export type ReportData = {
-  resolutionTimeByCategory: {
-    category: string;
-    hours: number;
-  }[];
+export type DowntimeRecord = {
+  category: string;
+  hours: number;
 };
+
+export type DowntimeData = {
+  "7d": DowntimeRecord[];
+  "30d": DowntimeRecord[];
+  "all": DowntimeRecord[];
+}
 
 export type Kpi = {
   title: string;
