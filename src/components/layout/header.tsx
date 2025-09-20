@@ -49,7 +49,7 @@ export function Header({ isCollapsed }: HeaderProps) {
 
       <div className="w-full flex-1" />
 
-      {currentUser && currentUser.role === 'admin' && (
+      {currentUser && currentUser.role !== 'operator' && (
         <Button variant="ghost" size="icon" className="relative">
           <Bell className="h-5 w-5" />
           <span className="sr-only">Toggle notifications</span>

@@ -42,7 +42,7 @@ const userFormSchema = z.object({
   firstName: z.string().min(1, "First name is required."),
   lastName: z.string().min(1, "Last name is required."),
   email: z.string().email("Please enter a valid email address."),
-  role: z.enum(["admin", "operator"]),
+  role: z.enum(["admin", "supervisor", "operator"]),
 });
 
 type UserFormValues = z.infer<typeof userFormSchema>;
@@ -172,6 +172,7 @@ export function EditUserDialog({ user }: EditUserDialogProps) {
                     </FormControl>
                     <SelectContent>
                       <SelectItem value="admin">Admin</SelectItem>
+                      <SelectItem value="supervisor">Supervisor</SelectItem>
                       <SelectItem value="operator">Operator</SelectItem>
                     </SelectContent>
                   </Select>

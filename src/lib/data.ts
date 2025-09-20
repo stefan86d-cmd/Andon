@@ -96,6 +96,13 @@ const userProfiles: User[] = [
     avatarUrl: "https://picsum.photos/seed/user-sam/40/40",
     role: "operator",
     productionLineId: "line-1",
+  },
+  {
+    name: "Maria Garcia",
+    email: "maria.g@andon.io",
+    avatarUrl: "https://picsum.photos/seed/user-maria/40/40",
+    role: "supervisor",
+    productionLineId: "line-1",
   }
 ];
 
@@ -248,8 +255,8 @@ export function deleteUser(email: string) {
     if (userIndex !== -1) {
         const user = allUsers[userIndex];
         // Prevent deletion of the default admin/operator for demo purposes
-        if (user.email === 'alex.j@andon.io' || user.email === 'sam.m@andon.io') {
-             throw new Error("Cannot delete default admin or operator roles.");
+        if (user.email === 'alex.j@andon.io' || user.email === 'sam.m@andon.io' || user.email === 'maria.g@andon.io') {
+             throw new Error("Cannot delete default admin, supervisor, or operator roles.");
         }
         allUsers.splice(userIndex, 1);
     } else {
@@ -264,7 +271,7 @@ export function updateUser(originalEmail: string, data: { firstName: string, las
         user.name = `${data.firstName} ${data.lastName}`;
         user.email = data.email;
         // Don't allow changing role for default admin/operator
-        if (user.email !== 'alex.j@andon.io' && user.email !== 'sam.m@andon.io') {
+        if (user.email !== 'alex.j@andon.io' && user.email !== 'sam.m@andon.io' && user.email !== 'maria.g@andon.io') {
             user.role = data.role;
         }
         allUsers[userIndex] = user;

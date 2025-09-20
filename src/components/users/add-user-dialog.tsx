@@ -44,7 +44,7 @@ const userFormSchema = z.object({
   email: z.string().email({
     message: "Please enter a valid email address.",
   }),
-  role: z.enum(["admin", "operator"]),
+  role: z.enum(["admin", "supervisor", "operator"]),
 });
 
 type UserFormValues = z.infer<typeof userFormSchema>;
@@ -154,6 +154,7 @@ export function AddUserDialog({ children }: { children: React.ReactNode }) {
                     </FormControl>
                     <SelectContent>
                       <SelectItem value="admin">Admin</SelectItem>
+                      <SelectItem value="supervisor">Supervisor</SelectItem>
                       <SelectItem value="operator">Operator</SelectItem>
                     </SelectContent>
                   </Select>

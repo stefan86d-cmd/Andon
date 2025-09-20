@@ -25,13 +25,20 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, UserCog, User as UserIcon } from "lucide-react";
+import { MoreHorizontal, UserCog, User as UserIcon, ShieldCheck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { DeleteUserDialog } from "./delete-user-dialog";
 import { EditUserDialog } from "./edit-user-dialog";
+import React from "react";
+
+const roleIcons: Record<Role, React.ElementType> = {
+    admin: UserCog,
+    supervisor: ShieldCheck,
+    operator: UserIcon,
+};
 
 const RoleDisplay = ({ role }: { role: Role }) => {
-    const Icon = role === 'admin' ? UserCog : UserIcon;
+    const Icon = roleIcons[role];
     return (
         <Badge variant="outline" className="capitalize border-0 font-medium">
             <Icon className="mr-2 h-4 w-4 text-muted-foreground" />

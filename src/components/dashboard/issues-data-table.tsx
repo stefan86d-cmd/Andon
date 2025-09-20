@@ -117,6 +117,8 @@ export function IssuesDataTable({ issues, title, description }: { issues: Issue[
     setSelectedIssue(null);
   };
 
+  const canResolveIssues = currentUser?.role === 'admin' || currentUser?.role === 'supervisor';
+
   return (
     <Card>
       <CardHeader>
@@ -155,8 +157,8 @@ export function IssuesDataTable({ issues, title, description }: { issues: Issue[
               return (
                 <TableRow 
                   key={issue.id} 
-                  onClick={() => currentUser?.role === 'admin' && setSelectedIssue(issue)}
-                  className={cn(currentUser?.role === 'admin' && 'cursor-pointer')}
+                  onClick={() => canResolveIssues && setSelectedIssue(issue)}
+                  className={cn(canResolveIssues && 'cursor-pointer')}
                 >
                   <TableCell>
                     <div className="flex items-center gap-2">

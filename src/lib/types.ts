@@ -1,5 +1,5 @@
 
-export type Role = "admin" | "operator";
+export type Role = "admin" | "supervisor" | "operator";
 
 export type User = {
   name: string;

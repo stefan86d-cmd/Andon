@@ -1,3 +1,4 @@
+
 "use client"
 import Link from "next/link";
 import {
@@ -6,6 +7,7 @@ import {
   Users,
   Factory,
   Activity,
+  UserCog,
 } from "lucide-react";
 import { usePathname } from 'next/navigation'
 import { cn } from "@/lib/utils";
@@ -17,10 +19,10 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/
 const allNavItems = [
     { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard", roles: ['admin'] },
     { href: "/dashboard", icon: Activity, label: "Line Status", roles: ['operator'] },
-    { href: "/issues", icon: Activity, label: "All Issues", badge: "27", roles: ['admin'] },
+    { href: "/issues", icon: Activity, label: "All Issues", badge: "27", roles: ['admin', 'supervisor'] },
     { href: "/lines", icon: Factory, label: "Production Lines", roles: ['admin'] },
     { href: "/users", icon: Users, label: "User Management", roles: ['admin'] },
-    { href: "/reports", icon: BarChart3, label: "Reports", roles: ['admin'] },
+    { href: "/reports", icon: BarChart3, label: "Reports", roles: ['admin', 'supervisor'] },
 ]
 
 interface SidebarNavProps {

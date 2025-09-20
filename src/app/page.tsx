@@ -27,9 +27,9 @@ export default function LoginPage() {
     if (emailLower === 'admin') {
       setUser('admin');
       router.push('/dashboard');
-    } else if (emailLower === 'operator') {
-      setUser('operator');
-      router.push('/dashboard');
+    } else if (emailLower === 'supervisor') {
+        setUser('supervisor');
+        router.push('/issues');
     } else {
       setUser('operator');
       router.push('/dashboard');
@@ -45,7 +45,7 @@ export default function LoginPage() {
           </div>
           <CardTitle>Login</CardTitle>
           <CardDescription>
-            Enter your credentials to access your account. (Hint: try 'Admin' or 'Operator')
+            Enter your credentials to access your account. (Hint: try 'Admin', 'Supervisor', or 'Operator')
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -56,7 +56,7 @@ export default function LoginPage() {
                 <Input
                   id="email"
                   type="text"
-                  placeholder="Admin or Operator"
+                  placeholder="Admin, Supervisor, or Operator"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}

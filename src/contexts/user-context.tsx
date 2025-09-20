@@ -14,6 +14,7 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 
 const userProfiles = {
     admin: allUsers.find(u => u.role === 'admin'),
+    supervisor: allUsers.find(u => u.role === 'supervisor'),
     operator: allUsers.find(u => u.role === 'operator'),
 };
 
