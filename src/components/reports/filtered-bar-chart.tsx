@@ -1,35 +1,39 @@
 
 "use client"
 
-import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts"
+import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, LabelList } from "recharts"
 
-interface DowntimeChartProps {
+interface FilteredBarChartProps {
     data: {
-        category: string;
-        hours: number;
+        name: string;
+        value: number;
     }[];
 }
 
-export function DowntimeChart({ data }: DowntimeChartProps) {
+export function FilteredBarChart({ data }: FilteredBarChartProps) {
   return (
     <ResponsiveContainer width="100%" height={350}>
-      <BarChart data={data}>
+      <BarChart data={data} layout="vertical" margin={{ left: 20, right: 40}}>
         <XAxis
-          dataKey="category"
+          type="number"
           stroke="hsl(var(--muted-foreground))"
           fontSize={12}
           tickLine={false}
           axisLine={false}
-          tickFormatter={(value) => value.length > 12 ? `${value.substring(0, 12)}...` : value}
+          allowDecimals={false}
         />
         <YAxis
+          dataKey="name"
+          type="category"
           stroke="hsl(var(--muted-foreground))"
           fontSize={12}
           tickLine={false}
           axisLine={false}
-          tickFormatter={(value) => `${value}h`}
+          tickFormatter={(value) => value.length > 20 ? `${value.substring(0, 20)}...` : value}
+          width={150}
         />
         <Tooltip
+            cursor={{ fill: 'hsl(var(--accent))' }}
             contentStyle={{
                 background: "hsl(var(--background))",
                 borderColor: "hsl(var(--border))",
@@ -40,10 +44,13 @@ export function DowntimeChart({ data }: DowntimeChartProps) {
             itemStyle={{
                 color: "hsl(var(--foreground))",
             }}
-            formatter={(value, name) => [`${value} hours`, "Downtime"]}
         />
-        <Bar dataKey="hours" fill="hsl(var(--destructive))" radius={[4, 4, 0, 0]} />
+        <Bar dataKey="value" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]}>
+            <LabelList dataKey="value" position="right" offset={8} className="fill-foreground text-sm" />
+        </Bar>
       </BarChart>
     </ResponsiveContainer>
   )
 }
+
+    
