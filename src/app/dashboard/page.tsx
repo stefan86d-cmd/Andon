@@ -6,7 +6,7 @@ import { StatsCards } from "@/components/dashboard/stats-cards";
 import { AppLayout } from "@/components/layout/app-layout";
 import { issues } from "@/lib/data";
 import { LoaderCircle } from "lucide-react";
-import { subHours } from "date-fns";
+import { subHours, intervalToDuration, differenceInSeconds } from "date-fns";
 import { useUser } from "@/contexts/user-context";
 
 export default function Home() {
@@ -15,15 +15,40 @@ export default function Home() {
   const now = new Date();
   const twentyFourHoursAgo = subHours(now, 24);
   const userIssues = issues;
+
+  const stoppedIssuesInLast24h = issues.filter(
+    issue => issue.productionStopped && issue.reportedAt > twentyFourHoursAgo
+  );
+
+  const totalDowntimeSeconds = stoppedIssuesInLast24h.reduce((total, issue) => {
+    const end = issue.resolvedAt && issue.resolvedAt < now ? issue.resolvedAt : now;
+    return total + differenceInSeconds(end, issue.reportedAt);
+  }, 0);
+
+  const duration = intervalToDuration({ start: 0, end: totalDowntimeSeconds * 1000 });
+
+  const formatDuration = (d: Duration) => {
+    const parts = [];
+    if (d.hours) parts.push(`${d.hours}h`);
+    if (d.minutes) parts.push(`${d.minutes}m`);
+    if (parts.length === 0 && d.seconds !== undefined) {
+      if (d.hours === 0 && d.minutes === 0) {
+        return "0m";
+      }
+    }
+    return parts.join(' ') || '0m';
+  }
+
+  const productionStopTime = formatDuration(duration);
   
   const stats = {
     openIssues: issues.filter(issue => issue.status === 'in_progress' || issue.status === 'reported').length,
     avgResolutionTime: '3.2 hours',
-    lineUptime: '98.7%',
+    productionStopTime: productionStopTime,
     criticalAlerts: issues.filter(issue => issue.priority === 'critical' && issue.reportedAt > twentyFourHoursAgo).length,
   };
 
-  if (!currentUser) {
+  if (!currentUser || (currentUser.role !== 'admin' && currentUser.role !== 'supervisor')) {
     return (
       <div className="flex h-screen items-center justify-center">
         <LoaderCircle className="h-8 w-8 animate-spin" />
@@ -55,11 +80,11 @@ export default function Home() {
                     description: "this week",
                 },
                 {
-                    title: "Line Uptime",
-                    value: stats.lineUptime,
-                    change: "+0.2%",
+                    title: "Production Stop Time",
+                    value: stats.productionStopTime,
+                    change: "+15m",
                     changeType: "increase",
-                    description: "today",
+                    description: "in last 24 hours",
                 },
                 {
                     title: "Critical Alerts",

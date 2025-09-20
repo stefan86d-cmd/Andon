@@ -9,6 +9,10 @@ import { ArrowUp, ArrowDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function StatsCards({ stats }: { stats: StatCard[] }) {
+  const isIncreaseBad = (title: string) => {
+    return ["Critical Alerts", "Open Issues", "Production Stop Time"].includes(title);
+  }
+
   return (
     <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
       {stats.map((stat) => (
@@ -19,11 +23,14 @@ export function StatsCards({ stats }: { stats: StatCard[] }) {
               <ArrowUp
                 className={cn(
                   "h-4 w-4 text-muted-foreground",
-                  stat.title === "Critical Alerts" || stat.title === "Open Issues" ? "text-red-500" : "text-green-500"
+                  isIncreaseBad(stat.title) ? "text-red-500" : "text-green-500"
                 )}
               />
             ) : (
-              <ArrowDown className="h-4 w-4 text-green-500" />
+              <ArrowDown className={cn(
+                  "h-4 w-4 text-muted-foreground",
+                  isIncreaseBad(stat.title) ? "text-green-500" : "text-red-500"
+                )} />
             )}
           </CardHeader>
           <CardContent>
@@ -31,7 +38,8 @@ export function StatsCards({ stats }: { stats: StatCard[] }) {
             <p className="text-xs text-muted-foreground">
               <span
                 className={cn(
-                  stat.title === "Critical Alerts" || stat.title === "Open Issues" ? "text-red-500" : "text-green-500"
+                  stat.changeType === 'increase' && (isIncreaseBad(stat.title) ? "text-red-500" : "text-green-500"),
+                  stat.changeType === 'decrease' && (isIncreaseBad(stat.title) ? "text-green-500" : "text-red-500")
                 )}
               >
                 {stat.change}
