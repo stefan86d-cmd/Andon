@@ -2,7 +2,6 @@
 import { db } from '@/lib/firebase';
 import { collection, getDocs, doc, getDoc, addDoc, updateDoc, deleteDoc, query, orderBy, limit, where, Timestamp, setDoc } from "firebase/firestore";
 import type { User, Issue, ProductionLine, Role, IssueCategory } from "@/lib/types";
-import { adminAuth } from './firebase-admin';
 
 // Helper to convert Firestore Timestamps to Dates in fetched objects
 function convertTimestamps<T>(obj: any): T {
@@ -79,46 +78,19 @@ export async function addUser(data: { uid: string, firstName: string, lastName: 
 }
 
 
-export async function deleteUser(email: string) {
-    if (['alex.j@andon.io', 'sam.m@andon.io', 'maria.g@andon.io'].includes(email)) {
-        throw new Error("Cannot delete default admin, supervisor, or operator roles.");
-    }
-    
-    const user = await getUserByEmail(email);
-    if (!user) {
-        throw new Error("User not found in Firestore.");
-    }
-
+export async function deleteUser(userId: string) {
     // Delete from Firestore
-    await deleteDoc(doc(db, "users", user.id));
-
-    // Delete from Firebase Auth
-    await adminAuth.deleteUser(user.id);
+    await deleteDoc(doc(db, "users", userId));
 }
 
-export async function updateUser(originalEmail: string, data: { firstName: string, lastName: string, email: string, role: Role }) {
-    const user = await getUserByEmail(originalEmail);
-     if (!user) {
-        throw new Error("User not found.");
-    }
-
-    const userDocRef = doc(db, "users", user.id);
-    const authUpdatePayload: any = {
-        displayName: `${data.firstName} ${data.lastName}`,
-    };
+export async function updateUser(userId: string, data: { firstName: string, lastName: string, email: string, role: Role }) {
+    const userDocRef = doc(db, "users", userId);
     
     const firestoreUpdatePayload: any = {
         name: `${data.firstName} ${data.lastName}`,
         role: data.role,
+        email: data.email,
     };
-
-    if (originalEmail !== data.email) {
-        authUpdatePayload.email = data.email;
-        firestoreUpdatePayload.email = data.email;
-    }
-
-    // Update Auth
-    await adminAuth.updateUser(user.id, authUpdatePayload);
     
     // Update Firestore
     await updateDoc(userDocRef, firestoreUpdatePayload);
@@ -136,9 +108,25 @@ export async function getIssues(): Promise<Issue[]> {
         const reportedByRef = issueData.reportedBy;
         const resolvedByRef = issueData.resolvedBy;
 
-        const reportedBy = reportedByRef ? await getUserByEmail(reportedByRef.email) : null;
-        const resolvedBy = resolvedByRef ? await getUserByEmail(resolvedByRef.email) : null;
-        
+        // The user object might be directly on the issue or we might need to fetch it
+        // For simplicity, let's assume the required info is embedded.
+        // In a more complex app, you might fetch user details here if they weren't embedded.
+        const reportedBy = reportedByRef ? {
+            id: reportedByRef.id || '', // Attempt to get id
+            name: reportedByRef.name,
+            email: reportedByRef.email,
+            avatarUrl: reportedByRef.avatarUrl,
+            role: 'operator' // Role might not be stored on ref, so this is a default
+        } : null;
+
+        const resolvedBy = resolvedByRef ? {
+             id: resolvedByRef.id || '',
+            name: resolvedByRef.name,
+            email: resolvedByRef.email,
+            avatarUrl: resolvedByRef.avatarUrl,
+            role: 'supervisor'
+        } : null;
+
         if (!reportedBy) {
             return null;
         }
@@ -183,7 +171,7 @@ export async function addIssue(issueData: Omit<Issue, 'id' | 'reportedAt' | 'rep
     }
     const issuesCol = collection(db, "issues");
     
-    const reportedByRef = { email: currentUser.email, name: currentUser.name, avatarUrl: currentUser.avatarUrl };
+    const reportedByRef = { id: currentUser.id, email: currentUser.email, name: currentUser.name, avatarUrl: currentUser.avatarUrl };
 
     await addDoc(issuesCol, {
         ...issueData,

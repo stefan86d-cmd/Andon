@@ -15,7 +15,18 @@ import {
 import type { Issue, Role, User } from "@/lib/types";
 import { db } from '@/lib/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
-import { adminAuth } from '@/lib/firebase-admin';
+import * as admin from 'firebase-admin';
+
+if (!admin.apps.length) {
+  try {
+    admin.initializeApp({
+      credential: admin.credential.applicationDefault(),
+    });
+  } catch (error) {
+    console.log('Firebase admin initialization error', error);
+  }
+}
+const adminAuth = admin.auth();
 
 export async function reportIssue(issueData: Omit<Issue, 'id' | 'reportedAt' | 'reportedBy' | 'status'>, reportedByEmail: string) {
     try {
@@ -98,7 +109,16 @@ export async function addUser(data: { firstName: string, lastName: string, email
 
 export async function deleteUser(email: string) {
     try {
-        await deleteUserData(email);
+        const user = await getUserByEmail(email);
+        if (!user) {
+            throw new Error("User not found in Firestore.");
+        }
+        if (['alex.j@andon.io', 'sam.m@andon.io', 'maria.g@andon.io'].includes(email)) {
+            throw new Error("Cannot delete default admin, supervisor, or operator roles.");
+        }
+
+        await deleteUserData(user.id);
+        await adminAuth.deleteUser(user.id);
         revalidatePath('/users');
         return { success: true };
     } catch (e: any) {
@@ -109,7 +129,20 @@ export async function deleteUser(email: string) {
 
 export async function editUser(originalEmail: string, data: { firstName: string, lastName: string, email: string, role: Role }) {
     try {
-        await updateUserInDb(originalEmail, data);
+        const user = await getUserByEmail(originalEmail);
+        if (!user) {
+           throw new Error("User not found.");
+        }
+   
+        const authUpdatePayload: any = {
+            displayName: `${data.firstName} ${data.lastName}`,
+        };
+        if (originalEmail !== data.email) {
+            authUpdatePayload.email = data.email;
+        }
+
+        await adminAuth.updateUser(user.id, authUpdatePayload);
+        await updateUserInDb(user.id, data);
         revalidatePath('/users');
         return { success: true };
     } catch (e: any) {
