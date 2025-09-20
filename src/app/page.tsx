@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import {
@@ -16,14 +16,16 @@ import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/layout/logo";
 import { useUser } from '@/contexts/user-context';
 import { toast } from '@/hooks/use-toast';
-import { LoaderCircle } from 'lucide-react';
+import { LoaderCircle, Database } from 'lucide-react';
 import { auth } from '@/lib/firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
+import { seedUsers } from './actions';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isSeeding, startSeedingTransition] = useTransition();
   const router = useRouter();
   const { currentUser, loading } = useUser();
 
@@ -63,6 +65,24 @@ export default function LoginPage() {
       setIsLoading(false);
     }
   };
+
+  const handleSeed = () => {
+    startSeedingTransition(async () => {
+        const result = await seedUsers();
+        if (result.success) {
+            toast({
+                title: "Database Seeded",
+                description: result.message,
+            });
+        } else {
+             toast({
+                variant: "destructive",
+                title: "Seeding Failed",
+                description: result.error,
+            });
+        }
+    });
+  }
   
   // If user is already logged in, redirect them.
   if (!loading && currentUser) {
@@ -129,12 +149,25 @@ export default function LoginPage() {
                     disabled={isLoading}
                 />
               </div>
-              <Button type="submit" className="w-full" disabled={isLoading}>
+              <Button type="submit" className="w-full" disabled={isLoading || isSeeding}>
                   {isLoading && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
                   Login
               </Button>
             </div>
           </form>
+           {process.env.NODE_ENV === 'development' && (
+             <div className="mt-4 border-t pt-4">
+                <p className="text-sm text-muted-foreground text-center mb-2">First time? Seed the database with default users.</p>
+                <Button variant="outline" className="w-full" onClick={handleSeed} disabled={isSeeding}>
+                    {isSeeding ? (
+                        <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                        <Database className="mr-2 h-4 w-4" />
+                    )}
+                    Seed Default Users
+                </Button>
+            </div>
+           )}
         </CardContent>
       </Card>
     </div>

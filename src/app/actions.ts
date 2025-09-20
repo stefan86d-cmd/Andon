@@ -133,7 +133,7 @@ export async function deleteUser(email: string) {
         await adminAuth.deleteUser(user.id);
         revalidatePath('/users');
         return { success: true };
-    } catch (e: any)
+    } catch (e: any) {
         console.error(e);
         return { error: e.message || "Failed to delete user." };
     }
@@ -193,5 +193,50 @@ export async function updateIssue(issueId: string, data: {
     } catch (e: any) {
         console.error(e);
         return { error: e.message || "Failed to update issue." };
+    }
+}
+
+export async function seedUsers() {
+    const usersToSeed = [
+        { firstName: 'Alex', lastName: 'Johnson', email: 'alex.j@andon.io', role: 'admin' as Role },
+        { firstName: 'Sam', lastName: 'Miller', email: 'sam.m@andon.io', role: 'supervisor' as Role },
+        { firstName: 'Maria', lastName: 'Garcia', email: 'maria.g@andon.io', role: 'operator' as Role },
+    ];
+
+    const password = 'password';
+    let createdCount = 0;
+    let existingCount = 0;
+
+    try {
+        for (const userData of usersToSeed) {
+             let userRecord = null;
+            try {
+                userRecord = await adminAuth.getUserByEmail(userData.email);
+                existingCount++;
+            } catch (error: any) {
+                if (error.code !== 'auth/user-not-found') {
+                    throw error;
+                }
+            }
+
+            if (!userRecord) {
+                 userRecord = await adminAuth.createUser({
+                    email: userData.email,
+                    emailVerified: true,
+                    password: password,
+                    displayName: `${userData.firstName} ${userData.lastName}`,
+                });
+                createdCount++;
+            }
+            
+            await addUserToData({
+                uid: userRecord.uid,
+                ...userData
+            });
+        }
+        return { success: true, message: `Seeding complete. Created: ${createdCount}, Existing: ${existingCount}.` };
+    } catch (error: any) {
+        console.error('Error seeding users:', error);
+        return { error: error.message || 'An unknown error occurred during seeding.' };
     }
 }
