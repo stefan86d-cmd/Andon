@@ -241,10 +241,9 @@ export async function seedUsers() {
         }
         revalidatePath('/users');
         return { success: true, message: `Seeding complete. Created: ${createdCount}, Existing: ${existingCount}.` };
-    } catch (error: any)
-{
+    } catch (error: any) {
         console.error('Error seeding users:', error);
-        if (error.code === 'auth/internal-error') {
+        if (error.code === 'auth/internal-error' || (error.message && error.message.includes('credential'))) {
              return { error: "Firebase Admin SDK not initialized. This is likely a credentials issue in the development environment. Please check server logs." };
         }
         return { error: error.message || 'An unknown error occurred during seeding.' };
