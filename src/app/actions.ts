@@ -101,7 +101,16 @@ export async function addUser(data: { firstName: string, lastName: string, email
     } catch (e: any) {
         console.error(e);
         if (e.code === 'auth/email-already-exists') {
-            return { error: 'A user with this email address already exists.' };
+             // If the user already exists in Auth, we might be trying to seed our default users.
+            // Let's try to get the user and ensure their data is in Firestore.
+            try {
+                const userRecord = await adminAuth.getUserByEmail(data.email);
+                await addUserToData({ uid: userRecord.uid, ...data });
+                revalidatePath('/users');
+                return { success: true, message: "User already existed in Auth, ensured Firestore profile exists." };
+            } catch (innerError: any) {
+                 return { error: innerError.message || "User exists in Auth, but failed to update Firestore." };
+            }
         }
         return { error: e.message || "Failed to create user." };
     }
