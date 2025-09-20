@@ -22,6 +22,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -35,11 +36,13 @@ import { toast } from "@/hooks/use-toast";
 import type { Issue, Status } from "@/lib/types";
 import { issues } from "@/lib/data";
 import { useUser } from "@/contexts/user-context";
+import { Checkbox } from "../ui/checkbox";
 
 
 const resolveIssueFormSchema = z.object({
   resolutionNotes: z.string(),
   status: z.enum(["in_progress", "resolved"]),
+  productionStopped: z.boolean().default(false),
 });
 
 type ResolveIssueFormValues = z.infer<typeof resolveIssueFormSchema>;
@@ -57,6 +60,7 @@ export function ResolveIssueDialog({ isOpen, onOpenChange, issue, onIssueUpdate 
     defaultValues: {
       resolutionNotes: issue.resolutionNotes || "",
       status: issue.status === 'resolved' ? 'resolved' : 'in_progress',
+      productionStopped: issue.productionStopped || false,
     },
   });
 
@@ -74,6 +78,7 @@ export function ResolveIssueDialog({ isOpen, onOpenChange, issue, onIssueUpdate 
         ...issues[issueIndex],
         status: data.status as Status,
         resolutionNotes: data.resolutionNotes,
+        productionStopped: data.productionStopped,
       };
 
       if (data.status === 'resolved') {
@@ -142,6 +147,28 @@ export function ResolveIssueDialog({ isOpen, onOpenChange, issue, onIssueUpdate 
                     </SelectContent>
                   </Select>
                   <FormMessage />
+                </FormItem>
+              )}
+            />
+             <FormField
+              control={form.control}
+              name="productionStopped"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                  <div className="space-y-1 leading-none">
+                    <FormLabel>
+                      Production Stop
+                    </FormLabel>
+                    <FormDescription>
+                      Check this box if this issue caused the production line to stop.
+                    </FormDescription>
+                  </div>
                 </FormItem>
               )}
             />

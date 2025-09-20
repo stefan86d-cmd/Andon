@@ -118,6 +118,7 @@ export const issues: Issue[] = [
     reportedAt: new Date("2024-09-20T10:30:00Z"),
     reportedBy: usersByEmail['jane.jones@example.com'],
     category: "tool",
+    productionStopped: false,
   },
   {
     id: "AND-002",
@@ -129,6 +130,7 @@ export const issues: Issue[] = [
     reportedAt: new Date("2024-09-20T12:00:00Z"),
     reportedBy: usersByEmail['bob.smith@example.com'],
     category: "tool",
+    productionStopped: true,
   },
   {
     id: "AND-003",
@@ -143,6 +145,7 @@ export const issues: Issue[] = [
     resolvedBy: usersByEmail['alex.j@andon.io'],
     resolutionNotes: "Replaced faulty sensor and recalibrated the robotic arm. System is now operating normally.",
     category: "quality",
+    productionStopped: true,
   },
   {
     id: "AND-004",
@@ -190,6 +193,7 @@ export const issues: Issue[] = [
     reportedAt: new Date("2024-09-20T11:30:00Z"),
     reportedBy: usersByEmail['jane.jones@example.com'],
     category: "tool",
+    productionStopped: false,
   },
 ];
 

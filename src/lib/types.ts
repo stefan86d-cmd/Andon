@@ -35,6 +35,7 @@ export type Issue = {
   resolutionNotes?: string;
   resolvedAt?: Date;
   resolvedBy?: User;
+  productionStopped?: boolean;
 };
 
 export type StatCard = {
