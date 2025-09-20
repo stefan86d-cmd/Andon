@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Calendar as CalendarIcon, Filter, ListFilter, Power, Factory, Grip } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { format, subDays, startOfDay, endOfDay } from 'date-fns';
+import { format, subDays, startOfDay, endOfDay, startOfWeek, endOfWeek } from 'date-fns';
 import type { DateRange } from "react-day-picker";
 import { cn } from "@/lib/utils";
 import {
@@ -86,8 +86,8 @@ function aggregateBy(filteredIssues: Issue[], key: 'category' | 'productionLineI
 
 export default function ReportsPage() {
     const [dateRange, setDateRange] = React.useState<DateRange | undefined>({
-        from: subDays(new Date(), 29),
-        to: new Date(),
+        from: startOfWeek(new Date()),
+        to: endOfWeek(new Date()),
     });
     const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
     const [selectedLines, setSelectedLines] = useState<string[]>([]);
@@ -114,7 +114,7 @@ export default function ReportsPage() {
     const issuesByLine = useMemo(() => aggregateBy(filteredIssues, 'productionLineId'), [filteredIssues]);
 
     const resetFilters = () => {
-        setDateRange({ from: subDays(new Date(), 29), to: new Date() });
+        setDateRange({ from: startOfWeek(new Date()), to: endOfWeek(new Date()) });
         setSelectedCategories([]);
         setSelectedLines([]);
         setProductionStopped(false);
