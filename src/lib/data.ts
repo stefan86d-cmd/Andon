@@ -1,7 +1,8 @@
 
 import { db } from '@/lib/firebase';
-import { collection, getDocs, doc, getDoc, addDoc, updateDoc, deleteDoc, query, orderBy, limit, where, Timestamp } from "firebase/firestore";
+import { collection, getDocs, doc, getDoc, addDoc, updateDoc, deleteDoc, query, orderBy, limit, where, Timestamp, setDoc } from "firebase/firestore";
 import type { User, Issue, ProductionLine, Role, IssueCategory } from "@/lib/types";
+import { adminAuth } from './firebase-admin';
 
 // Helper to convert Firestore Timestamps to Dates in fetched objects
 function convertTimestamps<T>(obj: any): T {
@@ -62,51 +63,65 @@ export async function getUserByEmail(email: string): Promise<User | null> {
     if (userSnapshot.empty) {
         return null;
     }
-    const userData = userSnapshot.docs[0].data();
-    return convertTimestamps<User>({ id: userSnapshot.docs[0].id, ...userData } as any);
+    const userDoc = userSnapshot.docs[0];
+    const userData = userDoc.data();
+    return convertTimestamps<User>({ id: userDoc.id, ...userData } as any);
+}
+
+export async function addUser(data: { uid: string, firstName: string, lastName: string, email: string, role: Role }) {
+    const userDoc = doc(db, "users", data.uid);
+    await setDoc(userDoc, {
+        name: `${data.firstName} ${data.lastName}`,
+        email: data.email,
+        role: data.role,
+        avatarUrl: `https://picsum.photos/seed/${data.uid}/100/100`, // Placeholder avatar
+    });
 }
 
 
 export async function deleteUser(email: string) {
-    // In a real app, you would also need to delete the user from Firebase Auth.
-    // This function only deletes the user's profile from Firestore.
     if (['alex.j@andon.io', 'sam.m@andon.io', 'maria.g@andon.io'].includes(email)) {
         throw new Error("Cannot delete default admin, supervisor, or operator roles.");
     }
     
-    const usersCol = collection(db, "users");
-    const q = query(usersCol, where("email", "==", email), limit(1));
-    const userSnapshot = await getDocs(q);
-
-    if (!userSnapshot.empty) {
-        const docId = userSnapshot.docs[0].id;
-        await deleteDoc(doc(db, "users", docId));
-        // Note: Add Firebase Admin SDK logic here to delete from Auth
-    } else {
+    const user = await getUserByEmail(email);
+    if (!user) {
         throw new Error("User not found in Firestore.");
     }
+
+    // Delete from Firestore
+    await deleteDoc(doc(db, "users", user.id));
+
+    // Delete from Firebase Auth
+    await adminAuth.deleteUser(user.id);
 }
 
 export async function updateUser(originalEmail: string, data: { firstName: string, lastName: string, email: string, role: Role }) {
-    const usersCol = collection(db, "users");
-    const q = query(usersCol, where("email", "==", originalEmail), limit(1));
-    const userSnapshot = await getDocs(q);
-    
-    if (!userSnapshot.empty) {
-        const docId = userSnapshot.docs[0].id;
-        const userDocRef = doc(db, "users", docId);
-        
-        const updateData: any = {
-            name: `${data.firstName} ${data.lastName}`,
-            email: data.email,
-            role: data.role,
-        };
-
-        // Note: If email changes, you also need to update it in Firebase Auth
-        await updateDoc(userDocRef, updateData);
-    } else {
+    const user = await getUserByEmail(originalEmail);
+     if (!user) {
         throw new Error("User not found.");
     }
+
+    const userDocRef = doc(db, "users", user.id);
+    const authUpdatePayload: any = {
+        displayName: `${data.firstName} ${data.lastName}`,
+    };
+    
+    const firestoreUpdatePayload: any = {
+        name: `${data.firstName} ${data.lastName}`,
+        role: data.role,
+    };
+
+    if (originalEmail !== data.email) {
+        authUpdatePayload.email = data.email;
+        firestoreUpdatePayload.email = data.email;
+    }
+
+    // Update Auth
+    await adminAuth.updateUser(user.id, authUpdatePayload);
+    
+    // Update Firestore
+    await updateDoc(userDocRef, firestoreUpdatePayload);
 }
 
 
@@ -118,15 +133,12 @@ export async function getIssues(): Promise<Issue[]> {
     const issuesList = await Promise.all(issuesSnapshot.docs.map(async (d) => {
         const issueData = d.data();
         
-        // The user data is now stored as a reference (name/email pair)
         const reportedByRef = issueData.reportedBy;
         const resolvedByRef = issueData.resolvedBy;
 
-        // Fetch full user profiles for display
         const reportedBy = reportedByRef ? await getUserByEmail(reportedByRef.email) : null;
         const resolvedBy = resolvedByRef ? await getUserByEmail(resolvedByRef.email) : null;
         
-        // If the user who reported the issue has been deleted, we'll skip this issue
         if (!reportedBy) {
             return null;
         }
@@ -134,11 +146,11 @@ export async function getIssues(): Promise<Issue[]> {
         return convertTimestamps<Issue>({ 
             id: d.id, 
             ...issueData,
-            reportedBy, // Populated user object
-            resolvedBy,   // Populated user object or null
+            reportedBy,
+            resolvedBy,
         });
     }));
-    // Filter out any null results (e.g., issues from deleted users)
+
     return issuesList.filter((issue): issue is Issue => issue !== null);
 }
 
@@ -171,7 +183,6 @@ export async function addIssue(issueData: Omit<Issue, 'id' | 'reportedAt' | 'rep
     }
     const issuesCol = collection(db, "issues");
     
-    // Store a lightweight reference to the user, not the whole object.
     const reportedByRef = { email: currentUser.email, name: currentUser.name, avatarUrl: currentUser.avatarUrl };
 
     await addDoc(issuesCol, {

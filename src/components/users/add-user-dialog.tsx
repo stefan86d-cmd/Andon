@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -33,6 +33,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
+import { addUser } from "@/app/actions";
+import { Eye, EyeOff, LoaderCircle } from "lucide-react";
 
 const userFormSchema = z.object({
   firstName: z.string().min(1, {
@@ -45,12 +47,17 @@ const userFormSchema = z.object({
     message: "Please enter a valid email address.",
   }),
   role: z.enum(["admin", "supervisor", "operator"]),
+  password: z.string().min(6, {
+    message: "Password must be at least 6 characters.",
+  }),
 });
 
 type UserFormValues = z.infer<typeof userFormSchema>;
 
 export function AddUserDialog({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
+  const [isSubmitting, startTransition] = useTransition();
+  const [showPassword, setShowPassword] = useState(false);
 
   const form = useForm<UserFormValues>({
     resolver: zodResolver(userFormSchema),
@@ -59,18 +66,30 @@ export function AddUserDialog({ children }: { children: React.ReactNode }) {
       lastName: "",
       email: "",
       role: "operator",
+      password: "",
     },
   });
 
   function onSubmit(data: UserFormValues) {
-    // In a real app, you would send this data to your backend
-    console.log("New user created:", data);
-    toast({
-      title: "User Created",
-      description: `User ${data.firstName} ${data.lastName} has been successfully added.`,
+    startTransition(async () => {
+      const { password, ...userData } = data;
+      const result = await addUser(userData, password);
+
+      if (result.success) {
+        toast({
+          title: "User Created",
+          description: `An account for ${data.firstName} ${data.lastName} has been created.`,
+        });
+        form.reset();
+        setOpen(false);
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Failed to create user",
+          description: result.error,
+        });
+      }
     });
-    form.reset();
-    setOpen(false);
   }
 
   const handleOpenChange = (isOpen: boolean) => {
@@ -138,6 +157,34 @@ export function AddUserDialog({ children }: { children: React.ReactNode }) {
             />
             <FormField
               control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Temporary Password</FormLabel>
+                  <div className="relative">
+                    <FormControl>
+                      <Input
+                        type={showPassword ? "text" : "password"}
+                        {...field}
+                      />
+                    </FormControl>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="absolute inset-y-0 right-0 h-full"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? <EyeOff /> : <Eye />}
+                      <span className="sr-only">{showPassword ? "Hide password" : "Show password"}</span>
+                    </Button>
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
               name="role"
               render={({ field }) => (
                 <FormItem>
@@ -166,10 +213,14 @@ export function AddUserDialog({ children }: { children: React.ReactNode }) {
                 type="button"
                 variant="outline"
                 onClick={() => setOpen(false)}
+                disabled={isSubmitting}
               >
                 Cancel
               </Button>
-              <Button type="submit">Add User</Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
+                Add User
+              </Button>
             </DialogFooter>
           </form>
         </Form>

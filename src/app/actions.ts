@@ -9,11 +9,13 @@ import {
     deleteProductionLine as deleteLine, 
     deleteUser as deleteUserData, 
     updateUser as updateUserInDb,
-    getUserByEmail
+    getUserByEmail,
+    addUser as addUserToData
 } from "@/lib/data";
 import type { Issue, Role, User } from "@/lib/types";
 import { db } from '@/lib/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
+import { adminAuth } from '@/lib/firebase-admin';
 
 export async function reportIssue(issueData: Omit<Issue, 'id' | 'reportedAt' | 'reportedBy' | 'status'>, reportedByEmail: string) {
     try {
@@ -67,6 +69,33 @@ export async function deleteProductionLine(lineId: string) {
     }
 }
 
+export async function addUser(data: { firstName: string, lastName: string, email: string, role: Role }, tempPass: string) {
+    try {
+        // Create user in Firebase Auth
+        const userRecord = await adminAuth.createUser({
+            email: data.email,
+            emailVerified: true,
+            password: tempPass,
+            displayName: `${data.firstName} ${data.lastName}`,
+        });
+
+        // Add user profile to Firestore
+        await addUserToData({
+            uid: userRecord.uid,
+            ...data
+        });
+
+        revalidatePath('/users');
+        return { success: true };
+    } catch (e: any) {
+        console.error(e);
+        if (e.code === 'auth/email-already-exists') {
+            return { error: 'A user with this email address already exists.' };
+        }
+        return { error: e.message || "Failed to create user." };
+    }
+}
+
 export async function deleteUser(email: string) {
     try {
         await deleteUserData(email);
@@ -108,7 +137,7 @@ export async function updateIssue(issueId: string, data: {
                 return { error: "Could not find resolving user." };
             }
             updateData.resolvedAt = new Date();
-            updateData.resolvedBy = { email: resolvedByUser.email, name: resolvedByUser.name };
+            updateData.resolvedBy = { email: resolvedByUser.email, name: resolvedByUser.name, avatarUrl: resolvedByUser.avatarUrl };
         }
 
         await updateDoc(issueRef, updateData);

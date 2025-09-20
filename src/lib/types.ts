@@ -2,7 +2,7 @@
 export type Role = "admin" | "supervisor" | "operator";
 
 export type User = {
-  id: string; // Document ID from Firestore
+  id: string; // This is the Firebase Auth UID
   name: string;
   email: string;
   avatarUrl: string;
