@@ -234,6 +234,7 @@ export async function seedUsers() {
                 ...userData
             });
         }
+        revalidatePath('/users');
         return { success: true, message: `Seeding complete. Created: ${createdCount}, Existing: ${existingCount}.` };
     } catch (error: any) {
         console.error('Error seeding users:', error);
