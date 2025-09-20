@@ -118,7 +118,6 @@ export function ResolveIssueDialog({ isOpen, onOpenChange, issue, onIssueUpdate 
                   <FormLabel>Resolution Notes</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="e.g., Replaced the faulty sensor and tested the conveyor belt."
                       {...field}
                     />
                   </FormControl>

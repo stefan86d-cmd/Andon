@@ -5,7 +5,7 @@ import React, { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { suggestPriority, reportIssue } from "@/app/actions";
+import { reportIssue } from "@/app/actions";
 import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
@@ -37,8 +37,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
-import { Sparkles, LoaderCircle, Monitor, Truck, Wrench, HelpCircle, ArrowLeft, LifeBuoy, BadgeCheck, Factory } from "lucide-react";
-import type { Priority, ProductionLine, User } from "@/lib/types";
+import { LoaderCircle, Monitor, Truck, Wrench, HelpCircle, ArrowLeft, LifeBuoy, BadgeCheck, Factory } from "lucide-react";
+import type { ProductionLine, User } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { useUser } from "@/contexts/user-context";
 
@@ -131,7 +131,6 @@ export function ReportIssueDialog({
   selectedWorkstation?: string;
 }) {
   const [open, setOpen] = useState(false);
-  const [isAiPending, startAiTransition] = useTransition();
   const [isSubmitting, startSubmittingTransition] = useTransition();
   const [step, setStep] = useState(1);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -180,27 +179,7 @@ export function ReportIssueDialog({
     }
   }, [open, getLocation, form]);
 
-  const descriptionValue = form.watch("description");
   const subCategoryValue = form.watch("subCategory");
-
-  const handleSuggestPriority = () => {
-    startAiTransition(async () => {
-      const result = await suggestPriority(descriptionValue);
-      if (result.error) {
-        toast({
-          variant: "destructive",
-          title: "AI Suggestion Failed",
-          description: result.error,
-        });
-      } else if (result.priority) {
-        form.setValue("priority", result.priority as Priority, { shouldValidate: true });
-        toast({
-          title: "AI Suggestion Complete",
-          description: `Priority set to "${result.priority}".`,
-        });
-      }
-    });
-  };
 
   function onSubmit(data: IssueFormValues) {
     if (!currentUser) {
@@ -368,7 +347,7 @@ export function ReportIssueDialog({
                     <FormItem>
                       <FormLabel>Item Number</FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g., SKU-12345" {...field} />
+                        <Input {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -381,7 +360,7 @@ export function ReportIssueDialog({
                     <FormItem>
                       <FormLabel>Quantity</FormLabel>
                       <FormControl>
-                        <Input type="number" placeholder="e.g., 100" {...field} />
+                        <Input type="number" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -398,7 +377,6 @@ export function ReportIssueDialog({
                   <FormLabel>Description</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="e.g., Conveyor belt is making a loud squeaking noise."
                       {...field}
                     />
                   </FormControl>
@@ -426,21 +404,6 @@ export function ReportIssueDialog({
                 <FormItem>
                   <div className="flex items-center justify-between">
                     <FormLabel>Priority</FormLabel>
-                    <Button
-                      type="button"
-                      variant="link"
-                      size="sm"
-                      className="text-accent-foreground h-auto p-0 gap-1"
-                      onClick={handleSuggestPriority}
-                      disabled={isAiPending || !descriptionValue}
-                    >
-                      {isAiPending ? (
-                         <LoaderCircle className="h-4 w-4 animate-spin" />
-                      ) : (
-                         <Sparkles className="h-4 w-4" />
-                      )}
-                      Suggest with AI
-                    </Button>
                   </div>
                   <Select
                     onValueChange={field.onChange}
@@ -476,5 +439,3 @@ export function ReportIssueDialog({
     </Dialog>
   );
 }
-
-    
