@@ -31,7 +31,7 @@ export default function SettingsPage() {
                     <Tabs defaultValue="profile" className="w-full">
                         <TabsList>
                             <TabsTrigger value="profile">My Profile</TabsTrigger>
-                            {currentUser.role === 'admin' && (
+                            {(currentUser.role === 'admin' || currentUser.role === 'supervisor') && (
                                 <TabsTrigger value="notifications">Notifications</TabsTrigger>
                             )}
                         </TabsList>
@@ -70,7 +70,7 @@ export default function SettingsPage() {
                                 </CardContent>
                             </Card>
                         </TabsContent>
-                        {currentUser.role === 'admin' && (
+                        {(currentUser.role === 'admin' || currentUser.role === 'supervisor') && (
                             <TabsContent value="notifications">
                                 <Card>
                                     <CardHeader>
