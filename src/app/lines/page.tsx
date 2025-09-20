@@ -1,3 +1,4 @@
+
 import { AppLayout } from "@/components/layout/app-layout";
 import { AddProductionLineDialog } from "@/components/lines/add-production-line-dialog";
 import { DeleteProductionLineDialog } from "@/components/lines/delete-production-line-dialog";
@@ -11,10 +12,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { productionLines } from "@/lib/data";
+import { getProductionLines } from "@/lib/data";
 import { Edit, PlusCircle } from "lucide-react";
 
-export default function LinesPage() {
+export default async function LinesPage() {
+  const productionLines = await getProductionLines();
+
   return (
     <AppLayout>
       <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background">

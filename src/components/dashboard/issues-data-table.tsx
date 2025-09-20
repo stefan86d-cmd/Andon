@@ -33,7 +33,6 @@ import {
   HelpCircle,
   LifeBuoy,
   BadgeCheck,
-  HardHat,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { format, formatDistanceToNow, intervalToDuration } from "date-fns";
@@ -42,6 +41,7 @@ import { ResolveIssueDialog } from "./resolve-issue-dialog";
 import { useState } from "react";
 import { useUser } from "@/contexts/user-context";
 import { SafeHydrate } from "../layout/safe-hydrate";
+import { Skeleton } from "../ui/skeleton";
 
 const priorityIcons: Record<Priority, React.ElementType> = {
   low: ArrowDownCircle,
@@ -105,16 +105,19 @@ function formatDuration(start: Date, end: Date) {
   return parts.length > 0 ? parts.slice(0, 2).join(' ') : '0s';
 }
 
-export function IssuesDataTable({ issues, title, description }: { issues: Issue[], title?: string, description?: string }) {
+export function IssuesDataTable({ issues, title, description, loading }: { issues: Issue[], title?: string, description?: string, loading?: boolean }) {
   const { currentUser } = useUser();
   const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
   const isResolvedView = issues.length > 0 && issues.every(issue => issue.status === 'resolved');
 
   const handleIssueUpdate = (updatedIssue: Issue) => {
-    // In a real app, this would trigger a re-fetch of the issues data
+    // In a real app with client-side state management (like SWR or React Query),
+    // you would trigger a re-fetch or optimistically update the local cache.
+    // Since we are using server actions and revalidatePath, a page refresh will show the update.
     console.log("Issue updated:", updatedIssue);
-    // For now, we just close the dialog
     setSelectedIssue(null);
+    // For now, we manually reload to see the change.
+    window.location.reload();
   };
 
   const canResolveIssues = currentUser?.role === 'admin' || currentUser?.role === 'supervisor';
@@ -151,7 +154,15 @@ export function IssuesDataTable({ issues, title, description }: { issues: Issue[
             </TableRow>
           </TableHeader>
           <TableBody>
-            {issues.map((issue) => {
+            {loading ? (
+                Array.from({ length: 5 }).map((_, i) => (
+                    <TableRow key={i}>
+                        <TableCell colSpan={isResolvedView ? 8 : 7} className="h-16">
+                           <Skeleton className="h-6 w-full" />
+                        </TableCell>
+                    </TableRow>
+                ))
+            ) : issues.map((issue) => {
               const PriorityIcon = priorityIcons[issue.priority];
               const categoryInfo = categories[issue.category];
               const CategoryIcon = categoryInfo.icon;

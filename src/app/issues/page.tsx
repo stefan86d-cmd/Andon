@@ -5,8 +5,7 @@ import { useState, useEffect } from "react";
 import { IssuesDataTable } from "@/components/dashboard/issues-data-table";
 import { AppLayout } from "@/components/layout/app-layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { issues, productionLines } from "@/lib/data";
-import type { Issue } from "@/lib/types";
+import type { Issue, ProductionLine } from "@/lib/types";
 import { ListFilter } from "lucide-react";
 import {
   DropdownMenu,
@@ -19,11 +18,29 @@ import {
 import { Button } from "@/components/ui/button";
 import { subHours } from "date-fns";
 import { useUser } from "@/contexts/user-context";
+import { getIssues, getProductionLines } from "@/lib/data";
 
 export default function IssuesPage() {
   const { currentUser } = useUser();
+  const [issues, setIssues] = useState<Issue[]>([]);
+  const [productionLines, setProductionLines] = useState<ProductionLine[]>([]);
   const [selectedLines, setSelectedLines] = useState<string[]>([]);
   const [tempSelectedLines, setTempSelectedLines] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchData() {
+      setLoading(true);
+      const [issuesData, linesData] = await Promise.all([
+        getIssues(),
+        getProductionLines(),
+      ]);
+      setIssues(issuesData);
+      setProductionLines(linesData);
+      setLoading(false);
+    }
+    fetchData();
+  }, []);
 
   useEffect(() => {
     setTempSelectedLines(selectedLines);
@@ -111,6 +128,7 @@ export default function IssuesPage() {
               issues={activeIssues}
               title="Active Issues"
               description="A list of recently reported issues on the production line."
+              loading={loading}
             />
           </TabsContent>
           <TabsContent value="resolved">
@@ -118,6 +136,7 @@ export default function IssuesPage() {
               issues={resolvedIssues}
               title="Resolved Issues"
               description="A list of issues resolved in the last 24 hours."
+              loading={loading}
             />
           </TabsContent>
         </Tabs>

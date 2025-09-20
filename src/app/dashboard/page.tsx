@@ -1,16 +1,30 @@
 
-"use client";
-
 import { IssuesDataTable } from "@/components/dashboard/issues-data-table";
 import { StatsCards } from "@/components/dashboard/stats-cards";
 import { AppLayout } from "@/components/layout/app-layout";
-import { issues } from "@/lib/data";
-import { LoaderCircle } from "lucide-react";
+import { getIssues, getProductionLines } from "@/lib/data";
 import { subHours, intervalToDuration, differenceInSeconds } from "date-fns";
-import { useUser } from "@/contexts/user-context";
+import { auth } from "@/lib/firebase";
+import { getUserByEmail } from "@/lib/data";
 
-export default function Home() {
-  const { currentUser } = useUser();
+export default async function Home() {
+  const [issues, user] = await Promise.all([
+    getIssues(),
+    auth.currentUser ? getUserByEmail(auth.currentUser.email!) : null,
+  ]);
+  
+  if (!user || (user.role !== 'admin' && user.role !== 'supervisor')) {
+    // This part of the component logic might need adjustment
+    // depending on how you handle auth redirects in Next.js 14 App Router.
+    // For now, it assumes some mechanism prevents non-admins/supervisors from reaching this page.
+    return (
+      <AppLayout>
+        <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background">
+          <p>You do not have permission to view this page.</p>
+        </main>
+      </AppLayout>
+    );
+  }
   
   const now = new Date();
   const twentyFourHoursAgo = subHours(now, 24);
@@ -47,14 +61,6 @@ export default function Home() {
     productionStopTime: productionStopTime,
     criticalAlerts: issues.filter(issue => issue.priority === 'critical' && issue.reportedAt > twentyFourHoursAgo).length,
   };
-
-  if (!currentUser || (currentUser.role !== 'admin' && currentUser.role !== 'supervisor')) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <LoaderCircle className="h-8 w-8 animate-spin" />
-      </div>
-    );
-  }
   
   return (
     <AppLayout>

@@ -50,6 +50,7 @@ const issueFormSchema = z.object({
   priority: z.enum(["low", "medium", "high", "critical"]),
   itemNumber: z.string().optional(),
   quantity: z.coerce.number().optional(),
+  productionStopped: z.boolean().default(false),
 });
 
 type IssueFormValues = z.infer<typeof issueFormSchema>;
@@ -182,7 +183,7 @@ export function ReportIssueDialog({
   const subCategoryValue = form.watch("subCategory");
 
   function onSubmit(data: IssueFormValues) {
-    if (!currentUser) {
+    if (!currentUser?.email) {
       toast({
         variant: "destructive",
         title: "Not Logged In",
@@ -200,8 +201,9 @@ export function ReportIssueDialog({
             subCategory: data.subCategory,
             itemNumber: data.itemNumber,
             quantity: data.quantity,
+            productionStopped: data.productionStopped,
         };
-        const result = await reportIssue(issueData, currentUser);
+        const result = await reportIssue(issueData, currentUser.email!);
 
         if (result.success) {
             toast({
@@ -209,7 +211,6 @@ export function ReportIssueDialog({
               description: "Your issue has been successfully submitted.",
             });
             setOpen(false);
-            router.refresh();
         } else {
             toast({
                 variant: "destructive",

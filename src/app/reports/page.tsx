@@ -1,13 +1,13 @@
 
 "use client";
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { AppLayout } from "@/components/layout/app-layout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { issues, productionLines } from "@/lib/data";
+import { getIssues, getProductionLines } from "@/lib/data";
 import { IssuesTrendChart } from "@/components/reports/issues-trend-chart";
 import { Button } from "@/components/ui/button";
-import { Calendar as CalendarIcon, Filter, ListFilter, Power, Factory, Grip } from "lucide-react";
+import { Calendar as CalendarIcon, Filter, ListFilter, Power, Factory, Grip, LoaderCircle } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { format, subDays, startOfDay, endOfDay, startOfWeek, endOfWeek } from 'date-fns';
@@ -24,8 +24,6 @@ import {
 import { Switch } from '@/components/ui/switch';
 import type { Issue, IssueCategory, ProductionLine } from '@/lib/types';
 import { FilteredBarChart } from '@/components/reports/filtered-bar-chart';
-import { all } from 'axios';
-
 
 const allCategories: { id: IssueCategory, label: string }[] = [
     { id: 'it', label: 'IT & Network' },
@@ -51,7 +49,7 @@ function aggregateIssuesByDate(filteredIssues: Issue[]): { date: string; issues:
         .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 }
 
-function aggregateBy(filteredIssues: Issue[], key: 'category' | 'productionLineId') {
+function aggregateBy(filteredIssues: Issue[], key: 'category' | 'productionLineId', productionLines: ProductionLine[]) {
     const counts: Record<string, number> = {};
     
     let nameMap: Record<string, string> = {};
@@ -85,6 +83,10 @@ function aggregateBy(filteredIssues: Issue[], key: 'category' | 'productionLineI
 
 
 export default function ReportsPage() {
+    const [issues, setIssues] = useState<Issue[]>([]);
+    const [productionLines, setProductionLines] = useState<ProductionLine[]>([]);
+    const [loading, setLoading] = useState(true);
+
     const [dateRange, setDateRange] = React.useState<DateRange | undefined>({
         from: startOfWeek(new Date()),
         to: endOfWeek(new Date()),
@@ -92,6 +94,20 @@ export default function ReportsPage() {
     const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
     const [selectedLines, setSelectedLines] = useState<string[]>([]);
     const [productionStopped, setProductionStopped] = useState<boolean>(false);
+
+    useEffect(() => {
+        async function fetchData() {
+            setLoading(true);
+            const [issuesData, linesData] = await Promise.all([
+                getIssues(),
+                getProductionLines(),
+            ]);
+            setIssues(issuesData);
+            setProductionLines(linesData);
+            setLoading(false);
+        }
+        fetchData();
+    }, []);
 
     const filteredIssues = useMemo(() => {
         return issues.filter(issue => {
@@ -107,17 +123,29 @@ export default function ReportsPage() {
             
             return true;
         });
-    }, [dateRange, selectedCategories, selectedLines, productionStopped]);
+    }, [issues, dateRange, selectedCategories, selectedLines, productionStopped]);
 
     const issuesByDay = useMemo(() => aggregateIssuesByDate(filteredIssues), [filteredIssues]);
-    const issuesByCategory = useMemo(() => aggregateBy(filteredIssues, 'category'), [filteredIssues]);
-    const issuesByLine = useMemo(() => aggregateBy(filteredIssues, 'productionLineId'), [filteredIssues]);
+    const issuesByCategory = useMemo(() => aggregateBy(filteredIssues, 'category', productionLines), [filteredIssues, productionLines]);
+    const issuesByLine = useMemo(() => aggregateBy(filteredIssues, 'productionLineId', productionLines), [filteredIssues, productionLines]);
 
     const resetFilters = () => {
         setDateRange({ from: startOfWeek(new Date()), to: endOfWeek(new Date()) });
         setSelectedCategories([]);
         setSelectedLines([]);
         setProductionStopped(false);
+    }
+
+    if (loading) {
+        return (
+            <AppLayout>
+                 <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background">
+                    <div className="flex items-center justify-center h-full">
+                        <LoaderCircle className="h-8 w-8 animate-spin" />
+                    </div>
+                </main>
+            </AppLayout>
+        )
     }
   
   return (
@@ -279,5 +307,3 @@ export default function ReportsPage() {
     </AppLayout>
   );
 }
-
-    

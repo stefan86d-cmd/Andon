@@ -1,7 +1,7 @@
 
 "use client";
 
-import React from "react";
+import React, { useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -33,10 +33,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
-import type { Issue, Status } from "@/lib/types";
-import { issues } from "@/lib/data";
+import type { Issue } from "@/lib/types";
 import { useUser } from "@/contexts/user-context";
 import { Checkbox } from "../ui/checkbox";
+import { updateIssue } from "@/app/actions";
+import { LoaderCircle } from "lucide-react";
 
 
 const resolveIssueFormSchema = z.object({
@@ -55,6 +56,9 @@ interface ResolveIssueDialogProps {
 }
 
 export function ResolveIssueDialog({ isOpen, onOpenChange, issue, onIssueUpdate }: ResolveIssueDialogProps) {
+  const [isSubmitting, startTransition] = useTransition();
+  const { currentUser } = useUser();
+
   const form = useForm<ResolveIssueFormValues>({
     resolver: zodResolver(resolveIssueFormSchema),
     defaultValues: {
@@ -64,39 +68,30 @@ export function ResolveIssueDialog({ isOpen, onOpenChange, issue, onIssueUpdate 
     },
   });
 
-  const { currentUser } = useUser();
-
   function onSubmit(data: ResolveIssueFormValues) {
-    if (!currentUser) {
+    if (!currentUser?.email) {
         toast({ title: "Error", description: "You must be logged in.", variant: "destructive"});
         return;
     }
-    // Find the issue in our mock data and update it
-    const issueIndex = issues.findIndex((i) => i.id === issue.id);
-    if (issueIndex !== -1) {
-      const updatedIssue = {
-        ...issues[issueIndex],
-        status: data.status as Status,
-        resolutionNotes: data.resolutionNotes,
-        productionStopped: data.productionStopped,
-      };
 
-      if (data.status === 'resolved') {
-        updatedIssue.resolvedAt = new Date();
-        updatedIssue.resolvedBy = currentUser;
-      }
-
-      issues[issueIndex] = updatedIssue;
-    }
-
-    toast({
-      title: "Issue Updated",
-      description: `The issue has been marked as ${data.status}.`,
+    startTransition(async () => {
+        const result = await updateIssue(issue.id, data, currentUser.email!);
+        if (result.success) {
+            toast({
+                title: "Issue Updated",
+                description: `The issue has been marked as ${data.status}.`,
+            });
+            onIssueUpdate(issue); // We can pass the original issue to trigger the callback
+            onOpenChange(false);
+            form.reset();
+        } else {
+            toast({
+                title: "Update Failed",
+                description: result.error,
+                variant: "destructive"
+            });
+        }
     });
-    
-    onIssueUpdate(issues[issueIndex]);
-    onOpenChange(false);
-    form.reset();
   }
 
   return (
@@ -172,8 +167,11 @@ export function ResolveIssueDialog({ isOpen, onOpenChange, issue, onIssueUpdate 
               )}
             />
             <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-                <Button type="submit">Save Changes</Button>
+                <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>Cancel</Button>
+                <Button type="submit" disabled={isSubmitting}>
+                    {isSubmitting && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
+                    Save Changes
+                </Button>
             </DialogFooter>
           </form>
         </Form>

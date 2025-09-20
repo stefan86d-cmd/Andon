@@ -9,6 +9,12 @@ export type User = {
   productionLineId?: string;
 };
 
+// A simpler reference to a user, used within other documents.
+export type UserRef = {
+  email: string;
+  name: string;
+}
+
 export type ProductionLine = {
   id: string;
   name: string;
@@ -29,16 +35,23 @@ export type Issue = {
   priority: Priority;
   status: Status;
   reportedAt: Date;
-  reportedBy: User;
+  reportedBy: User; // This is a fully populated User object for display
   category: IssueCategory;
   subCategory?: string;
   resolutionNotes?: string;
   resolvedAt?: Date;
-  resolvedBy?: User;
+  resolvedBy?: User | null; // This is a fully populated User object for display
   productionStopped?: boolean;
   itemNumber?: string;
   quantity?: number;
 };
+
+// Type for how an issue is stored in Firestore
+export type IssueDocument = Omit<Issue, 'id' | 'reportedBy' | 'resolvedBy'> & {
+  reportedBy: UserRef;
+  resolvedBy?: UserRef | null;
+}
+
 
 export type StatCard = {
   title: string;

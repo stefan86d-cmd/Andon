@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { IssuesDataTable } from "@/components/dashboard/issues-data-table";
 import { ReportIssueDialog } from "@/components/dashboard/report-issue-dialog";
 import { AppLayout } from "@/components/layout/app-layout";
@@ -14,9 +14,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { issues, productionLines } from "@/lib/data";
+import { getIssues, getProductionLines } from "@/lib/data";
 import { PlusCircle, LoaderCircle } from "lucide-react";
-import type { ProductionLine } from "@/lib/types";
+import type { Issue, ProductionLine } from "@/lib/types";
 import { subHours } from "date-fns";
 import { useUser } from "@/contexts/user-context";
 
@@ -25,7 +25,23 @@ export default function LineStatusPage() {
   const [selectedLineId, setSelectedLineId] = useState<string | undefined>(undefined);
   const [selectedWorkstation, setSelectedWorkstation] = useState<string | undefined>();
   const [selectionConfirmed, setSelectionConfirmed] = useState(false);
+  const [productionLines, setProductionLines] = useState<ProductionLine[]>([]);
+  const [issues, setIssues] = useState<Issue[]>([]);
+  const [loading, setLoading] = useState(true);
 
+  useEffect(() => {
+    async function fetchData() {
+        setLoading(true);
+        const [linesData, issuesData] = await Promise.all([
+            getProductionLines(),
+            getIssues()
+        ]);
+        setProductionLines(linesData);
+        setIssues(issuesData);
+        setLoading(false);
+    }
+    fetchData();
+  }, []);
 
   const handleLineChange = (lineId: string) => {
     setSelectedLineId(lineId);
@@ -56,7 +72,7 @@ export default function LineStatusPage() {
       (issue.status === 'reported' || issue.status === 'in_progress' || issue.status === 'resolved')
     );
   
-  if (!currentUser) {
+  if (!currentUser || loading) {
     return (
       <div className="flex h-screen items-center justify-center">
         <LoaderCircle className="h-8 w-8 animate-spin" />
@@ -139,7 +155,7 @@ export default function LineStatusPage() {
                             </Button>
                         </ReportIssueDialog>
                     </div>
-                    <IssuesDataTable issues={userIssues} />
+                    <IssuesDataTable issues={userIssues} loading={loading} />
                 </div>
             )}
         </div>
