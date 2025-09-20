@@ -37,7 +37,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
-import { Sparkles, LoaderCircle, Monitor, Truck, Wrench, HelpCircle, ArrowLeft, LifeBuoy, BadgeCheck, Factory, HardHat } from "lucide-react";
+import { Sparkles, LoaderCircle, Monitor, Truck, Wrench, HelpCircle, ArrowLeft, LifeBuoy, BadgeCheck, Factory } from "lucide-react";
 import type { Priority, ProductionLine, User } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { useUser } from "@/contexts/user-context";
@@ -48,6 +48,8 @@ const issueFormSchema = z.object({
   description: z.string().min(1, "Description is required."),
   location: z.string(),
   priority: z.enum(["low", "medium", "high", "critical"]),
+  itemNumber: z.string().optional(),
+  quantity: z.coerce.number().optional(),
 });
 
 type IssueFormValues = z.infer<typeof issueFormSchema>;
@@ -145,6 +147,8 @@ export function ReportIssueDialog({
       description: "",
       location: "",
       priority: "medium",
+      itemNumber: "",
+      quantity: undefined,
     },
   });
   
@@ -168,6 +172,8 @@ export function ReportIssueDialog({
         description: "",
         location: currentLocation,
         priority: "medium",
+        itemNumber: "",
+        quantity: undefined,
       });
       setStep(1);
       setSelectedCategory(null);
@@ -175,6 +181,7 @@ export function ReportIssueDialog({
   }, [open, getLocation, form]);
 
   const descriptionValue = form.watch("description");
+  const subCategoryValue = form.watch("subCategory");
 
   const handleSuggestPriority = () => {
     startAiTransition(async () => {
@@ -212,6 +219,8 @@ export function ReportIssueDialog({
             priority: data.priority,
             category: data.category as any, // Cast because zod schema is string
             subCategory: data.subCategory,
+            itemNumber: data.itemNumber,
+            quantity: data.quantity,
         };
         const result = await reportIssue(issueData);
 
@@ -269,6 +278,7 @@ export function ReportIssueDialog({
   
   const currentCategory = categories.find(c => c.id === selectedCategory);
   const location = getLocation();
+  const showLogisticsFields = selectedCategory === 'logistics' && (subCategoryValue === 'material-shortage' || subCategoryValue === 'incorrect-material');
 
   const getDialogTitle = () => {
     if (step === 1) return "Report a New Issue";
@@ -347,6 +357,38 @@ export function ReportIssueDialog({
                     <currentCategory.icon className={cn("h-16 w-16", currentCategory.color)} />
                 )}
             </div>
+
+            {showLogisticsFields && (
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="itemNumber"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Item Number</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g., SKU-12345" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                 <FormField
+                  control={form.control}
+                  name="quantity"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Quantity</FormLabel>
+                      <FormControl>
+                        <Input type="number" placeholder="e.g., 100" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            )}
+            
             <FormField
               control={form.control}
               name="description"
@@ -433,5 +475,3 @@ export function ReportIssueDialog({
     </Dialog>
   );
 }
-
-    

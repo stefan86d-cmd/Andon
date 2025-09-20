@@ -164,6 +164,8 @@ export const issues: Issue[] = [
     reportedAt: new Date("2024-09-20T08:30:00Z"),
     reportedBy: usersByEmail['jane.jones@example.com'],
     category: "logistics",
+    itemNumber: "M6-BOLT-10MM",
+    quantity: 500,
   },
   {
     id: "AND-005",
@@ -319,7 +321,6 @@ export const downtimeByCategory: DowntimeData = {
     { category: "Tool & Equipment", hours: 8.8 },
     { category: "Assistance", hours: 1.2 },
     { category: "Quality", hours: 3.3 },
-    { category: "Safety", hours: 1.9 },
     { category: "Other", hours: 0.5 },
   ],
   '30d': [

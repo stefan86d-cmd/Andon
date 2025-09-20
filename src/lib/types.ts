@@ -19,7 +19,7 @@ export type Priority = "low" | "medium" | "high" | "critical";
 
 export type Status = "reported" | "in_progress" | "resolved" | "archived";
 
-export type IssueCategory = 'it' | 'logistics' | 'tool' | 'assistance' | 'quality' | 'safety' | 'other';
+export type IssueCategory = 'it' | 'logistics' | 'tool' | 'assistance' | 'quality' | 'other';
 
 export type Issue = {
   id: string;
@@ -36,6 +36,8 @@ export type Issue = {
   resolvedAt?: Date;
   resolvedBy?: User;
   productionStopped?: boolean;
+  itemNumber?: string;
+  quantity?: number;
 };
 
 export type StatCard = {
