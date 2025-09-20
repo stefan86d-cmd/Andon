@@ -64,7 +64,7 @@ export default function IssuesPage() {
     <AppLayout>
       <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background">
         <div className="flex items-center justify-between">
-          <h1 className="text-lg font-semibold md:text-2xl">All Issues</h1>
+          <h1 className="text-lg font-semibold md:text-2xl">Issue Tracker</h1>
         </div>
         <Tabs defaultValue="active">
           <div className="flex items-center justify-between">

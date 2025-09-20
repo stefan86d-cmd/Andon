@@ -19,7 +19,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/
 const allNavItems = [
     { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard", roles: ['admin', 'supervisor'] },
     { href: "/line-status", icon: Activity, label: "Line Status", roles: ['operator'] },
-    { href: "/issues", icon: Activity, label: "All Issues", badge: "27", roles: ['admin', 'supervisor'] },
+    { href: "/issues", icon: Activity, label: "Issue Tracker", badge: "27", roles: ['admin', 'supervisor'] },
     { href: "/lines", icon: Factory, label: "Production Lines", roles: ['admin'] },
     { href: "/users", icon: Users, label: "User Management", roles: ['admin'] },
     { href: "/reports", icon: BarChart3, label: "Reports", roles: ['admin', 'supervisor'] },
