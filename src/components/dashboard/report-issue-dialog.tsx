@@ -148,7 +148,7 @@ export function ReportIssueDialog({
       location: "",
       priority: "medium",
       itemNumber: "",
-      quantity: undefined,
+      quantity: '' as any,
     },
   });
   
@@ -173,7 +173,7 @@ export function ReportIssueDialog({
         location: currentLocation,
         priority: "medium",
         itemNumber: "",
-        quantity: undefined,
+        quantity: '' as any,
       });
       setStep(1);
       setSelectedCategory(null);
