@@ -17,6 +17,11 @@ interface HeaderProps {
 export function Header({ isCollapsed }: HeaderProps) {
   const { currentUser } = useUser();
   const isMobile = useIsMobile();
+
+  const capitalize = (s: string) => {
+    if (typeof s !== 'string') return ''
+    return s.charAt(0).toUpperCase() + s.slice(1)
+  }
   
   return (
     <header className="flex h-14 items-center gap-4 border-b bg-card px-4 lg:h-[60px] lg:px-6">
@@ -56,7 +61,12 @@ export function Header({ isCollapsed }: HeaderProps) {
           <Badge className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 h-4 w-4 shrink-0 items-center justify-center rounded-full p-0 text-xs font-medium">3</Badge>
         </Button>
       )}
-      {currentUser && <UserNav />}
+      {currentUser && (
+        <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-muted-foreground hidden sm:inline-block">{capitalize(currentUser.role)}</span>
+            <UserNav />
+        </div>
+      )}
     </header>
   );
 }
