@@ -20,6 +20,7 @@ import { LoaderCircle, Database } from 'lucide-react';
 import { auth } from '@/lib/firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { seedUsers } from './actions';
+import { getUserByEmail } from '@/lib/data';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -34,12 +35,20 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      // The onAuthStateChanged listener in UserProvider will handle the redirect.
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = await getUserByEmail(userCredential.user.email!);
+      
       toast({
         title: "Login Successful",
-        description: `Welcome back!`,
+        description: `Welcome back, ${user?.name}!`,
       });
+
+      if (user?.role === 'operator') {
+        router.replace('/line-status');
+      } else {
+        router.replace('/dashboard');
+      }
+
     } catch (error: any) {
       console.error("Firebase Auth Error:", error);
       let errorMessage = "An unknown error occurred.";
@@ -61,7 +70,6 @@ export default function LoginPage() {
         title: "Login Failed",
         description: errorMessage,
       });
-    } finally {
       setIsLoading(false);
     }
   };
