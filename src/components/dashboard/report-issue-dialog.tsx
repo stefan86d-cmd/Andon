@@ -279,6 +279,7 @@ export function ReportIssueDialog({
   const currentCategory = categories.find(c => c.id === selectedCategory);
   const location = getLocation();
   const showLogisticsFields = selectedCategory === 'logistics' && (subCategoryValue === 'material-shortage' || subCategoryValue === 'incorrect-material');
+  const showQualityFields = selectedCategory === 'quality' && (subCategoryValue === 'defect-found' || subCategoryValue === 'measurement' || subCategoryValue === 'inspection-fail');
 
   const getDialogTitle = () => {
     if (step === 1) return "Report a New Issue";
@@ -358,7 +359,7 @@ export function ReportIssueDialog({
                 )}
             </div>
 
-            {showLogisticsFields && (
+            {(showLogisticsFields || showQualityFields) && (
               <div className="grid grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
@@ -475,3 +476,5 @@ export function ReportIssueDialog({
     </Dialog>
   );
 }
+
+    
