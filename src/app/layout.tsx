@@ -9,6 +9,7 @@ import { UserProvider } from '@/contexts/user-context';
 export const metadata: Metadata = {
   title: 'AndonPro',
   description: 'Monitor workflow and resolve issues on your production line.',
+  manifest: '/manifest.json',
 };
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
