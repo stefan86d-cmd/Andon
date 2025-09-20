@@ -7,10 +7,10 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { getIssues, getProductionLines } from "@/lib/data";
 import { IssuesTrendChart } from "@/components/reports/issues-trend-chart";
 import { Button } from "@/components/ui/button";
-import { Calendar as CalendarIcon, Filter, ListFilter, Power, Factory, Grip, LoaderCircle } from "lucide-react";
+import { Calendar as CalendarIcon, Filter, Power, Factory, Grip, LoaderCircle } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { format, subDays, startOfDay, endOfDay, startOfWeek, endOfWeek } from 'date-fns';
+import { format, startOfWeek, endOfWeek, startOfDay, endOfDay } from 'date-fns';
 import type { DateRange } from "react-day-picker";
 import { cn } from "@/lib/utils";
 import {

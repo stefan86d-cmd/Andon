@@ -9,6 +9,9 @@ function convertTimestamps<T>(obj: any): T {
     for (const key in newObj) {
         if (newObj[key] instanceof Timestamp) {
             newObj[key] = newObj[key].toDate();
+        } else if (typeof newObj[key] === 'object' && newObj[key] !== null) {
+            // Recursively convert timestamps in nested objects
+            newObj[key] = convertTimestamps(newObj[key]);
         }
     }
     return newObj as T;
@@ -48,7 +51,7 @@ export async function deleteProductionLine(lineId: string) {
 export async function getAllUsers(): Promise<User[]> {
     const usersCol = collection(db, "users");
     const usersSnapshot = await getDocs(query(usersCol, orderBy("name")));
-    const usersList = usersSnapshot.docs.map(doc => convertTimestamps<User>(doc.data()));
+    const usersList = usersSnapshot.docs.map(doc => convertTimestamps<User>({ id: doc.id, ...doc.data() } as any));
     return usersList;
 }
 
@@ -59,13 +62,14 @@ export async function getUserByEmail(email: string): Promise<User | null> {
     if (userSnapshot.empty) {
         return null;
     }
-    return convertTimestamps<User>(userSnapshot.docs[0].data());
+    const userData = userSnapshot.docs[0].data();
+    return convertTimestamps<User>({ id: userSnapshot.docs[0].id, ...userData } as any);
 }
 
 
 export async function deleteUser(email: string) {
-    // In a real app, you might find the user's doc by their email and delete it.
-    // For now, we disallow deleting core users.
+    // In a real app, you would also need to delete the user from Firebase Auth.
+    // This function only deletes the user's profile from Firestore.
     if (['alex.j@andon.io', 'sam.m@andon.io', 'maria.g@andon.io'].includes(email)) {
         throw new Error("Cannot delete default admin, supervisor, or operator roles.");
     }
@@ -77,8 +81,9 @@ export async function deleteUser(email: string) {
     if (!userSnapshot.empty) {
         const docId = userSnapshot.docs[0].id;
         await deleteDoc(doc(db, "users", docId));
+        // Note: Add Firebase Admin SDK logic here to delete from Auth
     } else {
-        throw new Error("User not found.");
+        throw new Error("User not found in Firestore.");
     }
 }
 
@@ -90,18 +95,14 @@ export async function updateUser(originalEmail: string, data: { firstName: strin
     if (!userSnapshot.empty) {
         const docId = userSnapshot.docs[0].id;
         const userDocRef = doc(db, "users", docId);
-        const user = (await getDoc(userDocRef)).data() as User;
         
         const updateData: any = {
             name: `${data.firstName} ${data.lastName}`,
             email: data.email,
+            role: data.role,
         };
 
-        // Don't allow changing role for default admin/operator
-        if (user.email !== 'alex.j@andon.io' && user.email !== 'sam.m@andon.io' && user.email !== 'maria.g@andon.io') {
-            updateData.role = data.role;
-        }
-
+        // Note: If email changes, you also need to update it in Firebase Auth
         await updateDoc(userDocRef, updateData);
     } else {
         throw new Error("User not found.");
@@ -117,18 +118,28 @@ export async function getIssues(): Promise<Issue[]> {
     const issuesList = await Promise.all(issuesSnapshot.docs.map(async (d) => {
         const issueData = d.data();
         
-        // Fetch related user data
-        const reportedBy = issueData.reportedBy ? await getUserByEmail(issueData.reportedBy.email) : null;
-        const resolvedBy = issueData.resolvedBy ? await getUserByEmail(issueData.resolvedBy.email) : null;
+        // The user data is now stored as a reference (name/email pair)
+        const reportedByRef = issueData.reportedBy;
+        const resolvedByRef = issueData.resolvedBy;
+
+        // Fetch full user profiles for display
+        const reportedBy = reportedByRef ? await getUserByEmail(reportedByRef.email) : null;
+        const resolvedBy = resolvedByRef ? await getUserByEmail(resolvedByRef.email) : null;
         
+        // If the user who reported the issue has been deleted, we'll skip this issue
+        if (!reportedBy) {
+            return null;
+        }
+
         return convertTimestamps<Issue>({ 
             id: d.id, 
             ...issueData,
-            reportedBy,
-            resolvedBy,
+            reportedBy, // Populated user object
+            resolvedBy,   // Populated user object or null
         });
     }));
-    return issuesList.filter(issue => issue.reportedBy); // Filter out issues where user might have been deleted
+    // Filter out any null results (e.g., issues from deleted users)
+    return issuesList.filter((issue): issue is Issue => issue !== null);
 }
 
 
@@ -144,7 +155,7 @@ export async function getIssueById(id: string): Promise<Issue | null> {
     const reportedBy = issueData.reportedBy ? await getUserByEmail(issueData.reportedBy.email) : null;
     const resolvedBy = issueData.resolvedBy ? await getUserByEmail(issueData.resolvedBy.email) : null;
 
-    if (!reportedBy) return null; // or handle as needed
+    if (!reportedBy) return null;
 
     return convertTimestamps<Issue>({
         id: issueSnapshot.id,
@@ -160,8 +171,8 @@ export async function addIssue(issueData: Omit<Issue, 'id' | 'reportedAt' | 'rep
     }
     const issuesCol = collection(db, "issues");
     
-    // We store references to users by their email to avoid complex object storage.
-    const reportedByRef = { email: currentUser.email, name: currentUser.name };
+    // Store a lightweight reference to the user, not the whole object.
+    const reportedByRef = { email: currentUser.email, name: currentUser.name, avatarUrl: currentUser.avatarUrl };
 
     await addDoc(issuesCol, {
         ...issueData,
@@ -169,7 +180,6 @@ export async function addIssue(issueData: Omit<Issue, 'id' | 'reportedAt' | 'rep
         status: 'reported',
         category: issueData.category as IssueCategory,
         reportedBy: reportedByRef,
-        // Ensure optional fields are not undefined
         subCategory: issueData.subCategory || "",
         productionStopped: issueData.productionStopped || false,
         itemNumber: issueData.itemNumber || "",

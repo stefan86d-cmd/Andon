@@ -9,7 +9,6 @@ import { SidebarNav } from "./sidebar-nav";
 import { Logo } from "./logo";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useUser } from "@/contexts/user-context";
-import { issues } from "@/lib/data";
 
 interface HeaderProps {
     isCollapsed: boolean;
@@ -18,7 +17,7 @@ interface HeaderProps {
 export function Header({ isCollapsed }: HeaderProps) {
   const { currentUser } = useUser();
   const isMobile = useIsMobile();
-  const newIssuesCount = issues.filter(issue => issue.status === 'reported').length;
+  // const newIssuesCount = issues.filter(issue => issue.status === 'reported').length;
 
   const capitalize = (s: string) => {
     if (typeof s !== 'string') return ''
@@ -61,9 +60,9 @@ export function Header({ isCollapsed }: HeaderProps) {
             <Button variant="ghost" size="icon" className="relative">
             <Bell className="h-5 w-5" />
             <span className="sr-only">Toggle notifications</span>
-            {newIssuesCount > 0 && (
+            {/* {newIssuesCount > 0 && (
                 <Badge className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 h-4 w-4 shrink-0 items-center justify-center rounded-full p-0 text-xs font-medium">{newIssuesCount}</Badge>
-            )}
+            )} */}
             </Button>
         </Link>
       )}

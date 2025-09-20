@@ -25,7 +25,7 @@ import { useRouter } from "next/navigation";
 import { auth } from "@/lib/firebase";
 
 export function UserNav() {
-  const { currentUser, setUser } = useUser();
+  const { currentUser } = useUser();
   const { setTheme } = useTheme()
   const router = useRouter();
 
@@ -35,7 +35,8 @@ export function UserNav() {
 
   const handleLogout = async () => {
     await auth.signOut();
-    setUser(null);
+    // The onAuthStateChanged listener in UserProvider will handle state cleanup
+    // and redirecting to the login page.
     router.push('/');
   }
 

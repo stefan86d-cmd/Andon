@@ -2,6 +2,7 @@
 export type Role = "admin" | "supervisor" | "operator";
 
 export type User = {
+  id: string; // Document ID from Firestore
   name: string;
   email: string;
   avatarUrl: string;
@@ -13,6 +14,7 @@ export type User = {
 export type UserRef = {
   email: string;
   name: string;
+  avatarUrl: string;
 }
 
 export type ProductionLine = {
