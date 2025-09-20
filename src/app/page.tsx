@@ -37,15 +37,17 @@ export default function LoginPage() {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       
-      // Ensure we have the user's email before fetching their profile
       if (!userCredential.user.email) {
         throw new Error("Email not found for the logged-in user.");
       }
       
+      // Add a small delay to allow Firestore data to be available after seeding
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
       const user = await getUserByEmail(userCredential.user.email);
       
       if (!user) {
-        throw new Error("User profile not found in the database.");
+        throw new Error("User profile not found in the database. Please try seeding the users again.");
       }
 
       toast({
@@ -60,20 +62,24 @@ export default function LoginPage() {
       }
 
     } catch (error: any) {
-      console.error("Firebase Auth Error:", error);
+      console.error("Login Error:", error);
       let errorMessage = "An unknown error occurred.";
-      switch (error.code) {
-        case 'auth/user-not-found':
-        case 'auth/wrong-password':
-        case 'auth/invalid-credential':
-          errorMessage = 'Invalid email or password.';
-          break;
-        case 'auth/invalid-email':
-          errorMessage = 'Please enter a valid email address.';
-          break;
-        default:
-          errorMessage = 'Failed to log in. Please try again.';
-          break;
+       if (error.message.includes("User profile not found")) {
+        errorMessage = "User profile not found. Please click 'Seed Default Users' and try again."
+      } else {
+        switch (error.code) {
+          case 'auth/user-not-found':
+          case 'auth/wrong-password':
+          case 'auth/invalid-credential':
+            errorMessage = 'Invalid email or password.';
+            break;
+          case 'auth/invalid-email':
+            errorMessage = 'Please enter a valid email address.';
+            break;
+          default:
+            errorMessage = 'Failed to log in. Please try again.';
+            break;
+        }
       }
       toast({
         variant: "destructive",
@@ -90,7 +96,7 @@ export default function LoginPage() {
         if (result.success) {
             toast({
                 title: "Database Seeded",
-                description: result.message,
+                description: result.message + " You can now log in with default users.",
             });
         } else {
              toast({

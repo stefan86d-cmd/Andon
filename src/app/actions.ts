@@ -82,19 +82,16 @@ export async function deleteProductionLine(lineId: string) {
 
 export async function addUser(data: { firstName: string, lastName: string, email: string, role: Role }, tempPass: string) {
     try {
-        // Check if user already exists in Auth
         let userRecord = null;
         try {
             userRecord = await adminAuth.getUserByEmail(data.email);
         } catch (error: any) {
             if (error.code !== 'auth/user-not-found') {
-                throw error; // Re-throw unexpected errors
+                throw error;
             }
-            // User does not exist in Auth, so we will create them.
         }
 
         if (!userRecord) {
-            // Create user in Firebase Auth
             userRecord = await adminAuth.createUser({
                 email: data.email,
                 emailVerified: true,
@@ -103,8 +100,6 @@ export async function addUser(data: { firstName: string, lastName: string, email
             });
         }
         
-        // At this point, userRecord is guaranteed to be populated.
-        // Add or update user profile in Firestore.
         await addUserToData({
             uid: userRecord.uid,
             ...data
@@ -229,6 +224,7 @@ export async function seedUsers() {
                 createdCount++;
             }
             
+            // This is the critical part: ensure the Firestore document is always created/updated.
             await addUserToData({
                 uid: userRecord.uid,
                 ...userData
