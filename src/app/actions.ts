@@ -17,16 +17,21 @@ import { db } from '@/lib/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 import * as admin from 'firebase-admin';
 
-if (!admin.apps.length) {
-  try {
-    admin.initializeApp({
-      credential: admin.credential.applicationDefault(),
-    });
-  } catch (error) {
-    console.log('Firebase admin initialization error', error);
-  }
+// Initialize Firebase Admin SDK
+function initializeFirebaseAdmin() {
+    if (!admin.apps.length) {
+        try {
+            admin.initializeApp({
+                credential: admin.credential.applicationDefault(),
+            });
+        } catch (error) {
+            console.log('Firebase admin initialization error', error);
+            // Don't throw, just log. The functions will handle the uninitialized state.
+        }
+    }
+    return admin;
 }
-const adminAuth = admin.auth();
+
 
 export async function reportIssue(issueData: Omit<Issue, 'id' | 'reportedAt' | 'reportedBy' | 'status'>, reportedByEmail: string) {
     try {
@@ -82,6 +87,7 @@ export async function deleteProductionLine(lineId: string) {
 
 export async function addUser(data: { firstName: string, lastName: string, email: string, role: Role }, tempPass: string) {
     try {
+        const adminAuth = initializeFirebaseAdmin().auth();
         let userRecord = null;
         try {
             userRecord = await adminAuth.getUserByEmail(data.email);
@@ -116,6 +122,7 @@ export async function addUser(data: { firstName: string, lastName: string, email
 
 export async function deleteUser(email: string) {
     try {
+        const adminAuth = initializeFirebaseAdmin().auth();
         const user = await getUserByEmail(email);
         if (!user) {
             throw new Error("User not found in Firestore.");
@@ -136,6 +143,7 @@ export async function deleteUser(email: string) {
 
 export async function editUser(originalEmail: string, data: { firstName: string, lastName: string, email: string, role: Role }) {
     try {
+        const adminAuth = initializeFirebaseAdmin().auth();
         const user = await getUserByEmail(originalEmail);
         if (!user) {
            throw new Error("User not found.");
@@ -203,6 +211,7 @@ export async function seedUsers() {
     let existingCount = 0;
 
     try {
+        const adminAuth = initializeFirebaseAdmin().auth();
         for (const userData of usersToSeed) {
              let userRecord = null;
             try {
@@ -232,8 +241,12 @@ export async function seedUsers() {
         }
         revalidatePath('/users');
         return { success: true, message: `Seeding complete. Created: ${createdCount}, Existing: ${existingCount}.` };
-    } catch (error: any) {
+    } catch (error: any)
+{
         console.error('Error seeding users:', error);
+        if (error.code === 'auth/internal-error') {
+             return { error: "Firebase Admin SDK not initialized. This is likely a credentials issue in the development environment. Please check server logs." };
+        }
         return { error: error.message || 'An unknown error occurred during seeding.' };
     }
 }
