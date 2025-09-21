@@ -116,8 +116,9 @@ function aggregateDowntimeByCategory(filteredIssues: Issue[]) {
 
         const mergedIntervals: {start: Date, end: Date, issues: Issue[]}[] = [];
         for(const currentIssue of lineIssues) {
+            if (!currentIssue.resolvedAt) continue;
             const currentStart = currentIssue.reportedAt;
-            const currentEnd = currentIssue.resolvedAt!;
+            const currentEnd = currentIssue.resolvedAt;
 
             let merged = false;
             for(const mergedInterval of mergedIntervals) {
@@ -140,11 +141,15 @@ function aggregateDowntimeByCategory(filteredIssues: Issue[]) {
 
         for (const mergedInterval of mergedIntervals) {
             const totalDuration = differenceInHours(mergedInterval.end, mergedInterval.start);
-            const totalWeight = mergedInterval.issues.reduce((sum, issue) => sum + differenceInHours(issue.resolvedAt!, issue.reportedAt), 0);
+            const totalWeight = mergedInterval.issues.reduce((sum, issue) => {
+                if (!issue.resolvedAt) return sum;
+                return sum + differenceInHours(issue.resolvedAt, issue.reportedAt)
+            }, 0);
 
             if (totalWeight > 0) {
                 for(const issue of mergedInterval.issues) {
-                    const issueDuration = differenceInHours(issue.resolvedAt!, issue.reportedAt);
+                    if (!issue.resolvedAt) continue;
+                    const issueDuration = differenceInHours(issue.resolvedAt, issue.reportedAt);
                     const weightedContribution = (issueDuration / totalWeight) * totalDuration;
                     
                     if (!downtime[issue.category]) {
@@ -217,7 +222,7 @@ export default function ReportsPage() {
         setSelectedLines([]);
         setProductionStopped(false);
     }
-
+    
     if (loading) {
         return (
             <AppLayout>
@@ -230,173 +235,173 @@ export default function ReportsPage() {
         )
     }
   
-  return (
-    <AppLayout>
-      <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background">
-        <div className="flex items-center justify-between">
-          <h1 className="text-lg font-semibold md:text-2xl">Reports</h1>
-          <Button onClick={resetFilters} variant="outline" size="sm">
-            <Filter className="mr-2 h-4 w-4" /> Reset Filters
-          </Button>
-        </div>
-        
-        <Card>
-            <CardHeader>
-                <CardTitle>Filters</CardTitle>
-                <CardDescription>Refine the data shown in the reports below.</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                     <div className="grid gap-2">
-                        <Popover>
-                            <PopoverTrigger asChild>
-                            <Button
-                                id="date"
-                                variant={"outline"}
-                                className={cn(
-                                "justify-start text-left font-normal",
-                                !dateRange && "text-muted-foreground"
-                                )}
-                            >
-                                <CalendarIcon className="mr-2 h-4 w-4" />
-                                {dateRange?.from ? (
-                                dateRange.to ? (
-                                    <>
-                                    {format(dateRange.from, "LLL dd, y")} -{" "}
-                                    {format(dateRange.to, "LLL dd, y")}
-                                    </>
-                                ) : (
-                                    format(dateRange.from, "LLL dd, y")
-                                )
-                                ) : (
-                                <span>Pick a date</span>
-                                )}
-                            </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="start">
-                            <Calendar
-                                initialFocus
-                                mode="range"
-                                defaultMonth={dateRange?.from}
-                                selected={dateRange}
-                                onSelect={setDateRange}
-                                numberOfMonths={2}
-                            />
-                            </PopoverContent>
-                        </Popover>
-                     </div>
-                     <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                        <Button variant="outline" className="justify-start text-left font-normal">
-                            <Grip className="mr-2 h-4 w-4" />
-                            {selectedCategories.length > 0 ? `${selectedCategories.length} categories selected` : 'Filter by Category'}
-                        </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent className="w-56">
-                        <DropdownMenuLabel>Issue Category</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        {allCategories.map((category) => (
-                            <DropdownMenuCheckboxItem
-                                key={category.id}
-                                checked={selectedCategories.includes(category.id)}
-                                onCheckedChange={(checked) => {
-                                    setSelectedCategories(prev => checked ? [...prev, category.id] : prev.filter(id => id !== category.id))
-                                }}
-                            >
-                            {category.label}
-                            </DropdownMenuCheckboxItem>
-                        ))}
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                     <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                        <Button variant="outline" className="justify-start text-left font-normal">
-                           <Factory className="mr-2 h-4 w-4" />
-                           {selectedLines.length > 0 ? `${selectedLines.length} lines selected` : 'Filter by Line'}
-                        </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent className="w-56">
-                        <DropdownMenuLabel>Production Line</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        {productionLines.map((line) => (
-                            <DropdownMenuCheckboxItem
-                                key={line.id}
-                                checked={selectedLines.includes(line.id)}
-                                onCheckedChange={(checked) => {
-                                    setSelectedLines(prev => checked ? [...prev, line.id] : prev.filter(id => id !== line.id))
-                                }}
-                            >
-                            {line.name}
-                            </DropdownMenuCheckboxItem>
-                        ))}
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                     <div className="flex items-center space-x-2 justify-between rounded-md border p-3">
-                        <div className="flex items-center space-x-2">
-                             <Power className="h-4 w-4" />
-                            <label htmlFor="production-stop" className="text-sm font-medium leading-none">
-                                Production Stop
-                            </label>
-                        </div>
-                        <Switch
-                            id="production-stop"
-                            checked={productionStopped}
-                            onCheckedChange={setProductionStopped}
-                        />
-                    </div>
-                </div>
-            </CardContent>
-        </Card>
-
-        <div className="grid gap-6 mt-4">
-             <Card>
-                <CardHeader>
-                    <CardTitle>Issues Over Time</CardTitle>
-                    <CardDescription>
-                        Number of issues reported per day based on the selected filters.
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <IssuesTrendChart data={issuesByDay} />
-                </CardContent>
-            </Card>
-            <div className="grid md:grid-cols-2 gap-6">
-                 <Card>
-                  <CardHeader>
-                    <CardTitle>Issues by Category</CardTitle>
-                    <CardDescription>
-                      Total issues broken down by category.
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <FilteredBarChart data={issuesByCategory} />
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Issues by Production Line</CardTitle>
-                    <CardDescription>
-                        Total issues broken down by production line.
-                    </CardDescription>
-                  </Header>
-                  <CardContent>
-                    <FilteredBarChart data={issuesByLine} />
-                  </CardContent>
-                </Card>
+    return (
+        <AppLayout>
+        <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background">
+            <div className="flex items-center justify-between">
+            <h1 className="text-lg font-semibold md:text-2xl">Reports</h1>
+            <Button onClick={resetFilters} variant="outline" size="sm">
+                <Filter className="mr-2 h-4 w-4" /> Reset Filters
+            </Button>
             </div>
+            
             <Card>
                 <CardHeader>
-                    <CardTitle>Downtime by Category (Hours)</CardTitle>
-                    <CardDescription>
-                        Total production stop time in hours, by issue category. This chart correctly handles overlapping downtime on the same line.
-                    </CardDescription>
+                    <CardTitle>Filters</CardTitle>
+                    <CardDescription>Refine the data shown in the reports below.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <FilteredBarChart data={downtimeByCategory} />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                        <div className="grid gap-2">
+                            <Popover>
+                                <PopoverTrigger asChild>
+                                <Button
+                                    id="date"
+                                    variant={"outline"}
+                                    className={cn(
+                                    "justify-start text-left font-normal",
+                                    !dateRange && "text-muted-foreground"
+                                    )}
+                                >
+                                    <CalendarIcon className="mr-2 h-4 w-4" />
+                                    {dateRange?.from ? (
+                                    dateRange.to ? (
+                                        <>
+                                        {format(dateRange.from, "LLL dd, y")} -{" "}
+                                        {format(dateRange.to, "LLL dd, y")}
+                                        </>
+                                    ) : (
+                                        format(dateRange.from, "LLL dd, y")
+                                    )
+                                    ) : (
+                                    <span>Pick a date</span>
+                                    )}
+                                </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0" align="start">
+                                <Calendar
+                                    initialFocus
+                                    mode="range"
+                                    defaultMonth={dateRange?.from}
+                                    selected={dateRange}
+                                    onSelect={setDateRange}
+                                    numberOfMonths={2}
+                                />
+                                </PopoverContent>
+                            </Popover>
+                        </div>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                            <Button variant="outline" className="justify-start text-left font-normal">
+                                <Grip className="mr-2 h-4 w-4" />
+                                {selectedCategories.length > 0 ? `${selectedCategories.length} categories selected` : 'Filter by Category'}
+                            </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent className="w-56">
+                            <DropdownMenuLabel>Issue Category</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            {allCategories.map((category) => (
+                                <DropdownMenuCheckboxItem
+                                    key={category.id}
+                                    checked={selectedCategories.includes(category.id)}
+                                    onCheckedChange={(checked) => {
+                                        setSelectedCategories(prev => checked ? [...prev, category.id] : prev.filter(id => id !== category.id))
+                                    }}
+                                >
+                                {category.label}
+                                </DropdownMenuCheckboxItem>
+                            ))}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                            <Button variant="outline" className="justify-start text-left font-normal">
+                            <Factory className="mr-2 h-4 w-4" />
+                            {selectedLines.length > 0 ? `${selectedLines.length} lines selected` : 'Filter by Line'}
+                            </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent className="w-56">
+                            <DropdownMenuLabel>Production Line</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            {productionLines.map((line) => (
+                                <DropdownMenuCheckboxItem
+                                    key={line.id}
+                                    checked={selectedLines.includes(line.id)}
+                                    onCheckedChange={(checked) => {
+                                        setSelectedLines(prev => checked ? [...prev, line.id] : prev.filter(id => id !== line.id))
+                                    }}
+                                >
+                                {line.name}
+                                </DropdownMenuCheckboxItem>
+                            ))}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                        <div className="flex items-center space-x-2 justify-between rounded-md border p-3">
+                            <div className="flex items-center space-x-2">
+                                <Power className="h-4 w-4" />
+                                <label htmlFor="production-stop" className="text-sm font-medium leading-none">
+                                    Production Stop
+                                </label>
+                            </div>
+                            <Switch
+                                id="production-stop"
+                                checked={productionStopped}
+                                onCheckedChange={setProductionStopped}
+                            />
+                        </div>
+                    </div>
                 </CardContent>
             </Card>
-        </div>
-      </main>
-    </AppLayout>
-  );
+
+            <div className="grid gap-6 mt-4">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Issues Over Time</CardTitle>
+                        <CardDescription>
+                            Number of issues reported per day based on the selected filters.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <IssuesTrendChart data={issuesByDay} />
+                    </CardContent>
+                </Card>
+                <div className="grid md:grid-cols-2 gap-6">
+                    <Card>
+                    <CardHeader>
+                        <CardTitle>Issues by Category</CardTitle>
+                        <CardDescription>
+                        Total issues broken down by category.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <FilteredBarChart data={issuesByCategory} />
+                    </CardContent>
+                    </Card>
+                    <Card>
+                    <CardHeader>
+                        <CardTitle>Issues by Production Line</CardTitle>
+                        <CardDescription>
+                            Total issues broken down by production line.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <FilteredBarChart data={issuesByLine} />
+                    </CardContent>
+                    </Card>
+                </div>
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Downtime by Category (Hours)</CardTitle>
+                        <CardDescription>
+                            Total production stop time in hours, by issue category. This chart correctly handles overlapping downtime on the same line.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <FilteredBarChart data={downtimeByCategory} />
+                    </CardContent>
+                </Card>
+            </div>
+        </main>
+        </AppLayout>
+    );
 }
