@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import type { Issue, Priority, Status, User, IssueCategory } from "@/lib/types";
@@ -107,6 +106,17 @@ function formatDuration(start: Date, end: Date) {
   return '0s';
 }
 
+const DetailItem = ({ icon: Icon, label, value }: { icon: React.ElementType, label: string, value: React.ReactNode }) => (
+    <div className="flex items-center gap-2 text-sm">
+        <Icon className="h-5 w-5 text-muted-foreground" />
+        <div>
+            <p className="font-medium text-muted-foreground">{label}</p>
+            <p>{value}</p>
+        </div>
+    </div>
+);
+
+
 const IssueCard = ({ issue, onSelect, canResolve }: { issue: Issue, onSelect: (issue: Issue) => void, canResolve: boolean }) => {
     const PriorityIcon = priorityIcons[issue.priority];
     const categoryInfo = categories[issue.category];
@@ -125,44 +135,36 @@ const IssueCard = ({ issue, onSelect, canResolve }: { issue: Issue, onSelect: (i
                 </div>
             </CardHeader>
             
-            <CardContent className="pt-6 grid sm:grid-cols-2 md:grid-cols-3 gap-y-6 gap-x-4 text-sm">
-                <div className="flex items-center gap-2">
-                    <Clock className="h-5 w-5 text-muted-foreground" />
-                    <div>
-                        <p className="font-medium text-muted-foreground">{isResolved ? 'Resolved At' : 'Reported At'}</p>
-                        <SafeHydrate>
-                            <p>{format(isResolved ? issue.resolvedAt! : issue.reportedAt, 'PPp')}</p>
-                        </SafeHydrate>
-                    </div>
-                </div>
+            <CardContent className="flex flex-wrap items-center gap-x-6 gap-y-4">
+                <DetailItem 
+                    icon={Clock}
+                    label={isResolved ? 'Resolved At' : 'Reported At'}
+                    value={<SafeHydrate>{format(isResolved ? issue.resolvedAt! : issue.reportedAt, 'PPp')}</SafeHydrate>}
+                />
 
-                <div className="flex items-center gap-2">
-                    <UserIcon className="h-5 w-5 text-muted-foreground" />
-                    <div>
-                        <p className="font-medium text-muted-foreground">{isResolved ? 'Resolved By' : 'Reported By'}</p>
-                        <p>{isResolved ? issue.resolvedBy?.name : issue.reportedBy.name}</p>
-                    </div>
-                </div>
+                <DetailItem 
+                    icon={UserIcon}
+                    label={isResolved ? 'Resolved By' : 'Reported By'}
+                    value={isResolved ? issue.resolvedBy?.name : issue.reportedBy.name}
+                />
+                 
+                 {(issue.subCategory) && (
+                    <DetailItem
+                        icon={categoryInfo.icon}
+                        label={categoryInfo.label}
+                        value={<p className="capitalize">{issue.subCategory.replace(/-/g, ' ')}</p>}
+                    />
+                 )}
+            </CardContent>
 
-                <div className="flex items-center gap-2">
-                     <Badge variant="outline" className={`capitalize border-0 ${priorityColors[issue.priority]}`}>
+            <CardFooter className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                    <StatusDisplay status={issue.status} />
+                    <Badge variant="outline" className={`capitalize border-0 ${priorityColors[issue.priority]}`}>
                       <PriorityIcon className="mr-2 h-4 w-4" />
                       {issue.priority}
                     </Badge>
                 </div>
-                 
-                 {(issue.subCategory) && (
-                    <div className="flex items-center gap-2">
-                        <div className="w-5 h-5" />
-                        <div>
-                            <p className="font-medium text-muted-foreground">{categoryInfo.label}</p>
-                            <p className="capitalize">{issue.subCategory.replace(/-/g, ' ')}</p>
-                        </div>
-                    </div>
-                 )}
-            </CardContent>
-            <CardFooter className="flex items-center justify-between">
-                <StatusDisplay status={issue.status} />
                  {isResolved && issue.resolvedAt && (
                     <div className="text-sm text-muted-foreground">
                         Resolution Time: <strong>{formatDuration(issue.reportedAt, issue.resolvedAt)}</strong>
