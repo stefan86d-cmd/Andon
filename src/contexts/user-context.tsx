@@ -4,6 +4,7 @@
 import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
 import type { User } from '@/lib/types';
 import { getUserByEmail } from '@/lib/data';
+import { useRouter } from 'next/navigation';
 
 interface UserContextType {
   currentUser: User | null;
@@ -14,26 +15,44 @@ interface UserContextType {
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
-// Mock user for development when Firebase is disabled
-const MOCK_ADMIN_USER: User = {
-  id: '0P6TMG7LyyWKatYHFNVXpVoRQSC2',
-  name: 'Alex Johnson',
-  email: 'alex.j@andon.io',
-  avatarUrl: 'https://picsum.photos/seed/0P6TMG7LyyWKatYHFNVXpVoRQSC2/100/100',
-  role: 'admin',
+// Mock user data for development
+const mockUsersByEmail: { [email: string]: User } = {
+  'alex.j@andon.io': {
+    id: '0P6TMG7LyyWKatYHFNVXpVoRQSC2',
+    name: 'Alex Johnson',
+    email: 'alex.j@andon.io',
+    avatarUrl: 'https://picsum.photos/seed/0P6TMG7LyyWKatYHFNVXpVoRQSC2/100/100',
+    role: 'admin',
+  },
+  'sam.m@andon.io': {
+    id: 'mock-sam',
+    name: 'Sam Miller',
+    email: 'sam.m@andon.io',
+    avatarUrl: 'https://picsum.photos/seed/mock-sam/100/100',
+    role: 'supervisor',
+  },
+    'maria.g@andon.io': {
+    id: 'mock-maria',
+    name: 'Maria Garcia',
+    email: 'maria.g@andon.io',
+    avatarUrl: 'https://picsum.photos/seed/mock-maria/100/100',
+    role: 'operator',
+  }
 };
+
 
 export function UserProvider({ children }: { children: ReactNode }) {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
     // Check if a user session exists in localStorage
     const storedUserEmail = localStorage.getItem('currentUserEmail');
     if (storedUserEmail) {
-      // In a real app, you'd fetch the user profile. Here we'll just use the mock user if email matches.
-      if (storedUserEmail === MOCK_ADMIN_USER.email) {
-        setCurrentUser(MOCK_ADMIN_USER);
+      const user = mockUsersByEmail[storedUserEmail];
+      if (user) {
+        setCurrentUser(user);
       }
     }
     setLoading(false);
@@ -41,21 +60,21 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string) => {
     setLoading(true);
-    // For now, we only support logging in as the mock admin user
-    if (email === MOCK_ADMIN_USER.email) {
+    const user = mockUsersByEmail[email];
+    if (user) {
       localStorage.setItem('currentUserEmail', email);
-      setCurrentUser(MOCK_ADMIN_USER);
+      setCurrentUser(user);
+      setLoading(false);
     } else {
-        // In a real scenario, you might fetch other user profiles
-        // For this mock, we'll just throw an error for unknown users.
-        throw new Error("Invalid mock user email. Only 'alex.j@andon.io' is supported in mock mode.");
+        setLoading(false);
+        throw new Error("Invalid credentials for mock user.");
     }
-    setLoading(false);
   };
 
   const logout = () => {
     localStorage.removeItem('currentUserEmail');
     setCurrentUser(null);
+    router.push('/');
   };
 
 

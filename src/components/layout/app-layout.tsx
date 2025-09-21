@@ -18,7 +18,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
 
   React.useEffect(() => {
     if (!loading && !currentUser) {
-      router.replace('/');
+      router.replace('/login');
     }
   }, [currentUser, loading, router]);
   
