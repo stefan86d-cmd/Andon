@@ -7,7 +7,6 @@ import {
   CardContent,
   CardDescription,
   CardHeader,
-  CardTitle,
   CardFooter,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -150,30 +149,32 @@ const IssueCard = ({ issue, onSelect, canResolve }: { issue: Issue, onSelect: (i
                 </div>
             </CardHeader>
             
-            <CardContent className="flex flex-wrap items-center gap-x-6 gap-y-4">
-                {(issue.subCategory) && (
-                    <DetailItem
-                        icon={categoryInfo.icon}
-                        label={categoryInfo.label}
-                        value={<span className="capitalize">{issue.subCategory.replace(/-/g, ' ')}</span>}
+            <CardContent className="flex items-center justify-between gap-x-6 gap-y-4">
+                <div className="flex flex-wrap items-center gap-x-6 gap-y-4">
+                    {(issue.subCategory) && (
+                        <DetailItem
+                            icon={categoryInfo.icon}
+                            label={categoryInfo.label}
+                            value={<span className="capitalize">{issue.subCategory.replace(/-/g, ' ')}</span>}
+                        />
+                    )}
+                    
+                    <DetailItem 
+                        icon={UserIcon}
+                        label={isResolved ? 'Resolved By' : 'Reported By'}
+                        value={isResolved ? issue.resolvedBy?.name : issue.reportedBy.name}
                     />
-                )}
-                
-                <DetailItem 
-                    icon={UserIcon}
-                    label={isResolved ? 'Resolved By' : 'Reported By'}
-                    value={isResolved ? issue.resolvedBy?.name : issue.reportedBy.name}
-                />
 
-                <StatusDisplay status={issue.status} />
-                 
+                    <StatusDisplay status={issue.status} />
+                     
+
+                    <DetailItem 
+                        icon={Clock}
+                        label={isResolved ? 'Resolved At' : 'Reported At'}
+                        value={<SafeHydrate>{format(isResolved ? issue.resolvedAt! : issue.reportedAt, 'PPp')}</SafeHydrate>}
+                    />
+                </div>
                 <PriorityDisplay priority={issue.priority} />
-
-                <DetailItem 
-                    icon={Clock}
-                    label={isResolved ? 'Resolved At' : 'Reported At'}
-                    value={<SafeHydrate>{format(isResolved ? issue.resolvedAt! : issue.reportedAt, 'PPp')}</SafeHydrate>}
-                />
             </CardContent>
 
             <CardFooter>
