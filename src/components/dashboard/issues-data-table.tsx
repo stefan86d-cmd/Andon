@@ -3,7 +3,7 @@
 "use client";
 
 import React from "react";
-import type { Issue, Priority, Status, User } from "@/lib/types";
+import type { Issue, Priority, Status, User, IssueCategory } from "@/lib/types";
 import {
     Table,
     TableBody,
@@ -28,7 +28,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, ArrowDownCircle, TriangleAlert, Flame, Siren, CircleDotDashed, LoaderCircle, CheckCircle2, Archive } from "lucide-react";
+import { MoreHorizontal, ArrowDownCircle, TriangleAlert, Flame, Siren, CircleDotDashed, LoaderCircle, CheckCircle2, Archive, Monitor, Truck, Wrench, BadgeCheck, LifeBuoy, HelpCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -37,6 +37,25 @@ import { useState } from "react";
 import { useUser } from "@/contexts/user-context";
 import { SafeHydrate } from "../layout/safe-hydrate";
 import { Skeleton } from "../ui/skeleton";
+
+const categoryInfo: Record<IssueCategory, { label: string; icon: React.ElementType }> = {
+    it: { label: 'IT & Network', icon: Monitor },
+    logistics: { label: 'Logistics', icon: Truck },
+    tool: { label: 'Tool & Equipment', icon: Wrench },
+    quality: { label: 'Quality', icon: BadgeCheck },
+    assistance: { label: 'Need Help', icon: LifeBuoy },
+    other: { label: 'Other', icon: HelpCircle },
+};
+
+const CategoryDisplay = ({ category }: { category: IssueCategory }) => {
+    const { icon: Icon, label } = categoryInfo[category] || categoryInfo.other;
+    return (
+        <Badge variant="outline" className="capitalize border-0 font-medium">
+            <Icon className="mr-2 h-4 w-4 text-muted-foreground" />
+            {label}
+        </Badge>
+    );
+};
 
 const priorityIcons: Record<Priority, React.ElementType> = {
   low: ArrowDownCircle,
@@ -97,6 +116,7 @@ export function IssuesDataTable({ issues, title, description, loading }: { issue
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead>Category</TableHead>
               <TableHead>Issue</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Priority</TableHead>
@@ -113,6 +133,7 @@ export function IssuesDataTable({ issues, title, description, loading }: { issue
             {loading ? (
                 Array.from({ length: 5 }).map((_, i) => (
                     <TableRow key={i}>
+                        <TableCell><Skeleton className="h-6 w-28" /></TableCell>
                         <TableCell><Skeleton className="h-6 w-3/4" /></TableCell>
                         <TableCell><Skeleton className="h-6 w-20" /></TableCell>
                         <TableCell><Skeleton className="h-6 w-20" /></TableCell>
@@ -124,6 +145,9 @@ export function IssuesDataTable({ issues, title, description, loading }: { issue
             ) : issues.length > 0 ? (
               issues.map((issue) => (
                 <TableRow key={issue.id} onClick={() => canResolveIssues && setSelectedIssue(issue)} className={cn(canResolveIssues && "cursor-pointer")}>
+                  <TableCell>
+                      <CategoryDisplay category={issue.category} />
+                  </TableCell>
                   <TableCell>
                     <div className="font-medium">{issue.title}</div>
                     <div className="text-sm text-muted-foreground">
@@ -179,7 +203,7 @@ export function IssuesDataTable({ issues, title, description, loading }: { issue
               ))
             ) : (
                 <TableRow>
-                    <TableCell colSpan={canResolveIssues ? 6 : 5} className="h-24 text-center">
+                    <TableCell colSpan={canResolveIssues ? 7 : 6} className="h-24 text-center">
                         No issues found.
                     </TableCell>
                 </TableRow>
