@@ -2,7 +2,7 @@
 "use client"
 
 import { AppLayout } from "@/components/layout/app-layout";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,6 +14,8 @@ import { useUser } from "@/contexts/user-context";
 import { useState } from "react";
 import { CancelSubscriptionDialog } from "@/components/settings/cancel-subscription-dialog";
 import { format } from "date-fns";
+import Link from "next/link";
+import { cn } from "@/lib/utils";
 
 export default function SettingsPage() {
     const { currentUser } = useUser();
@@ -26,6 +28,11 @@ export default function SettingsPage() {
         setEndDate(futureDate);
         setIsCancelled(true);
     };
+
+    const handleRenew = () => {
+        setIsCancelled(false);
+        setEndDate(null);
+    }
     
     if (!currentUser) {
         return <AppLayout><div>Loading...</div></AppLayout>;
@@ -133,12 +140,19 @@ export default function SettingsPage() {
                                                 <p className="text-sm text-muted-foreground mt-2">Your plan renews on January 1, 2025.</p>
                                             )}
                                         </div>
-                                        {!isCancelled && (
+                                        {!isCancelled ? (
                                             <div className="flex flex-col sm:flex-row gap-2">
                                                 <Button className="w-full sm:w-auto">Upgrade to Enterprise</Button>
                                                 <CancelSubscriptionDialog onConfirm={handleCancelConfirm}>
                                                     <Button variant="destructive" className="w-full sm:w-auto">Cancel Subscription</Button>
                                                 </CancelSubscriptionDialog>
+                                            </div>
+                                        ) : (
+                                            <div className="flex flex-col sm:flex-row gap-2">
+                                                <Button onClick={handleRenew} className="w-full sm:w-auto">Renew Plan</Button>
+                                                <Link href="/pricing" className={cn(buttonVariants({ variant: "outline" }), "w-full sm:w-auto")}>
+                                                    View Plans
+                                                </Link>
                                             </div>
                                         )}
                                     </CardContent>
