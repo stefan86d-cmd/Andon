@@ -44,9 +44,11 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
       )}
     >
       <Sidebar isCollapsed={isEffectivelyCollapsed} onMenuClick={toggleSidebar} />
-      <div className="flex flex-col">
+      <div className="flex flex-col h-screen overflow-hidden">
         <Header isCollapsed={isEffectivelyCollapsed} />
-        {children}
+        <div className="flex-1 overflow-y-auto">
+            {children}
+        </div>
       </div>
     </div>
   );
