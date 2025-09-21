@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, 'useState', 'useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import {
@@ -44,7 +44,7 @@ function GoogleIcon() {
 }
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('alex.j@andon.io');
+  const [email, setEmail] = useState('maria.g@andon.io');
   const [password, setPassword] = useState('password');
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
