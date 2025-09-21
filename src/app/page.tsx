@@ -81,11 +81,11 @@ export default function LoginPage() {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       
-      if (!userCredential.user.email || !userCredential.user.displayName) {
+      if (!userCredential.user.email) {
         throw new Error("Email not found for the logged-in user.");
       }
       
-      await postLoginFlow(userCredential.user.email, userCredential.user.displayName);
+      await postLoginFlow(userCredential.user.email, userCredential.user.displayName || 'user');
 
     } catch (error: any) {
       console.error("Login Error:", error);
@@ -179,16 +179,9 @@ export default function LoginPage() {
     });
   }
   
-  // If user is already logged in, redirect them. This logic can cause redirect loops.
+  // If user is already logged in, redirect them.
   if (!loading && currentUser) {
-    // Determine the redirect path but don't redirect here.
-    // The postLoginFlow function will handle the redirect.
-    // This avoids a race condition and infinite loop.
     const path = currentUser.role === 'operator' ? '/line-status' : '/dashboard';
-    // If the user is on the login page but already logged in, they should be redirected.
-    // However, the current implementation has a redirect loop issue.
-    // For now, we show a loading screen and rely on the user to manually navigate
-    // or for the postLoginFlow to handle it.
     if (typeof window !== 'undefined' && window.location.pathname === '/') {
         router.replace(path);
         return (
