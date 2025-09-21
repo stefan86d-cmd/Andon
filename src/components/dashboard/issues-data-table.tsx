@@ -139,7 +139,7 @@ export function IssuesDataTable({ issues, title, description, loading }: { issue
                         <TableCell><Skeleton className="h-6 w-20" /></TableCell>
                         <TableCell><Skeleton className="h-6 w-24" /></TableCell>
                         <TableCell><Skeleton className="h-6 w-20" /></TableCell>
-                        {canResolveIssues && <TableCell><Skeleton className="h-8 w-8" /></TableCell>}
+                        {canResolveIssues && <TableCell />}
                     </TableRow>
                 ))
             ) : issues.length > 0 ? (
@@ -181,22 +181,7 @@ export function IssuesDataTable({ issues, title, description, loading }: { issue
                   </TableCell>
                   {canResolveIssues && (
                     <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            aria-haspopup="true"
-                            size="icon"
-                            variant="ghost"
-                          >
-                            <MoreHorizontal className="h-4 w-4" />
-                            <span className="sr-only">Toggle menu</span>
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuItem onSelect={() => setSelectedIssue(issue)}>Resolve</DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                      {/* The entire row is clickable, so this is no longer needed */}
                     </TableCell>
                   )}
                 </TableRow>
