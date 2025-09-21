@@ -30,7 +30,7 @@ const allCategories: { id: IssueCategory, label: string, color: string }[] = [
     { id: 'it', label: 'IT & Network', color: 'hsl(221.2 83.2% 53.3%)' }, // blue-500
     { id: 'logistics', label: 'Logistics', color: 'hsl(30.2 92.5% 55.5%)' }, // orange-500
     { id: 'tool', label: 'Tool & Equipment', color: 'hsl(240 3.7% 46.1%)' }, // gray-500
-    { id: 'assistance', label: 'Assistance', color: 'hsl(0 84.2% 60.2%)' }, // red-500
+    { id: 'assistance', label: 'Need Help', color: 'hsl(0 84.2% 60.2%)' }, // red-500
     { id: 'quality', label: 'Quality', color: 'hsl(142.1 76.2% 36.3%)' }, // green-500
     { id: 'other', label: 'Other', color: 'hsl(262.1 83.3% 57.8%)' }, // purple-500
 ];
