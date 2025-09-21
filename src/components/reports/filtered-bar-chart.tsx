@@ -1,7 +1,7 @@
 
 "use client"
 
-import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, Cell } from "recharts"
+import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, Cell, LabelList } from "recharts"
 
 interface FilteredBarChartProps {
     data: {
@@ -57,3 +57,5 @@ export function FilteredBarChart({ data }: FilteredBarChartProps) {
     </ResponsiveContainer>
   )
 }
+
+    

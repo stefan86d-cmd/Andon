@@ -24,6 +24,7 @@ import {
 import { Switch } from '@/components/ui/switch';
 import type { Issue, IssueCategory, ProductionLine } from '@/lib/types';
 import { FilteredBarChart } from '@/components/reports/filtered-bar-chart';
+import { PieChartWithPercentages } from '@/components/reports/pie-chart-with-percentages';
 
 const allCategories: { id: IssueCategory, label: string, color: string }[] = [
     { id: 'it', label: 'IT & Network', color: 'hsl(221.2 83.2% 53.3%)' }, // blue-500
@@ -222,6 +223,19 @@ export default function ReportsPage() {
     const issuesByLine = useMemo(() => aggregateBy(filteredIssues, 'productionLineId', productionLines), [filteredIssues, productionLines]);
     const downtimeByCategory = useMemo(() => aggregateDowntimeByCategory(filteredIssues), [filteredIssues]);
 
+    const totalIssues = useMemo(() => {
+        return issuesByCategory.reduce((acc, curr) => acc + curr.value, 0);
+    }, [issuesByCategory]);
+
+    const issuesByCategoryWithPercentage = useMemo(() => {
+        if (totalIssues === 0) return [];
+        return issuesByCategory.map(item => ({
+            ...item,
+            percentage: (item.value / totalIssues) * 100
+        }));
+    }, [issuesByCategory, totalIssues]);
+
+
     const resetFilters = () => {
         setDateRange({ from: startOfWeek(new Date()), to: endOfWeek(new Date()) });
         setSelectedCategories([]);
@@ -360,6 +374,18 @@ export default function ReportsPage() {
             </Card>
 
             <div className="grid gap-6 mt-4">
+                 <Card>
+                    <CardHeader>
+                        <CardTitle>Issues by Category</CardTitle>
+                        <CardDescription>
+                        Total issues broken down by category.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="grid md:grid-cols-2 gap-6">
+                        <FilteredBarChart data={issuesByCategory} />
+                        <PieChartWithPercentages data={issuesByCategoryWithPercentage} />
+                    </CardContent>
+                </Card>
                 <Card>
                     <CardHeader>
                         <CardTitle>Issues Over Time</CardTitle>
@@ -371,19 +397,7 @@ export default function ReportsPage() {
                         <IssuesTrendChart data={issuesByDay} />
                     </CardContent>
                 </Card>
-                <div className="grid md:grid-cols-2 gap-6">
-                    <Card>
-                    <CardHeader>
-                        <CardTitle>Issues by Category</CardTitle>
-                        <CardDescription>
-                        Total issues broken down by category.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <FilteredBarChart data={issuesByCategory} />
-                    </CardContent>
-                    </Card>
-                    <Card>
+                <Card>
                     <CardHeader>
                         <CardTitle>Issues by Production Line</CardTitle>
                         <CardDescription>
@@ -393,8 +407,7 @@ export default function ReportsPage() {
                     <CardContent>
                         <FilteredBarChart data={issuesByLine} />
                     </CardContent>
-                    </Card>
-                </div>
+                </Card>
                 <Card>
                     <CardHeader>
                         <CardTitle>Downtime by Category (Hours)</CardTitle>
@@ -411,3 +424,5 @@ export default function ReportsPage() {
         </AppLayout>
     );
 }
+
+    
