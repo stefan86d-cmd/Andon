@@ -34,7 +34,7 @@ const tiers = [
       "User Role Management",
     ],
     cta: "Upgrade to Standard",
-    popular: true,
+    badge: "Most Popular",
   },
   {
     name: "Pro",
@@ -44,10 +44,14 @@ const tiers = [
     features: [
         "Up to 50 users",
         "Up to 10 Production Lines",
-        "Everything in Standard",
+        "Advanced Reporting & Analytics",
+        "AI-Powered Issue Prioritization",
+        "User Role Management",
         "Priority Support",
     ],
     cta: "Upgrade to Pro",
+    badge: "Best Value",
+    popular: true,
   },
   {
     name: "Enterprise",
@@ -98,7 +102,7 @@ export default function PricingPage() {
                 {tiers.map((tier) => (
                     <Card key={tier.name} className={`flex flex-col ${tier.popular ? 'border-primary shadow-lg' : ''}`}>
                     <CardHeader className="text-center">
-                        {tier.popular && <div className="text-primary font-semibold mb-2">Most Popular</div>}
+                        {tier.badge && <div className="text-primary font-semibold mb-2">{tier.badge}</div>}
                         <CardTitle className="text-2xl">{tier.name}</CardTitle>
                         <div className="flex items-baseline justify-center gap-1">
                             <span className="text-4xl font-bold">{tier.price}</span>
