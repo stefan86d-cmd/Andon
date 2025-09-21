@@ -25,7 +25,7 @@ export function Header({ isCollapsed }: HeaderProps) {
   }
   
   return (
-    <header className="flex h-14 items-center gap-4 border-b bg-card px-4 lg:h-[60px] lg:px-6">
+    <header className="sticky top-0 z-40 flex h-14 items-center gap-4 border-b bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
       {isMobile ? (
         <Sheet>
           <SheetTrigger asChild>
@@ -39,20 +39,10 @@ export function Header({ isCollapsed }: HeaderProps) {
           </SheetContent>
         </Sheet>
       ) : (
-        <Link href="/dashboard" className="flex items-center gap-2 font-semibold">
-            <Logo />
-        </Link>
+        // Placeholder for non-mobile to keep spacing consistent
+        <div />
       )}
       
-      {isMobile && (
-        <div className="flex-1 text-center">
-            <Link href="/dashboard" className="inline-flex items-center gap-2 font-semibold">
-                <Logo />
-            </Link>
-        </div>
-      )}
-
-
       <div className="w-full flex-1" />
 
       {currentUser && currentUser.role !== 'operator' && (
