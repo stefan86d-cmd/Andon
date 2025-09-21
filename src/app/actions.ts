@@ -85,29 +85,30 @@ export async function deleteProductionLine(lineId: string) {
     }
 }
 
-export async function addUser(data: { firstName: string, lastName: string, email: string, role: Role }, tempPass: string) {
+export async function addUser(data: { uid: string, firstName: string, lastName: string, email: string, role: Role }, tempPass?: string) {
     try {
         const adminAuth = initializeFirebaseAdmin().auth();
         let userRecord = null;
         try {
-            userRecord = await adminAuth.getUserByEmail(data.email);
+            userRecord = await adminAuth.getUser(data.uid);
         } catch (error: any) {
-            if (error.code !== 'auth/user-not-found') {
+             if (error.code === 'auth/user-not-found' && tempPass) {
+                 userRecord = await adminAuth.createUser({
+                    uid: data.uid,
+                    email: data.email,
+                    emailVerified: true,
+                    password: tempPass,
+                    displayName: `${data.firstName} ${data.lastName}`,
+                });
+             } else if (error.code !== 'auth/user-not-found') {
                 throw error;
-            }
-        }
-
-        if (!userRecord) {
-            userRecord = await adminAuth.createUser({
-                email: data.email,
-                emailVerified: true,
-                password: tempPass,
-                displayName: `${data.firstName} ${data.lastName}`,
-            });
+             }
         }
         
+        // If user record was either found or created, or if it's a social login (no tempPass)
+        // ensure the firestore document is updated.
         await addUserToData({
-            uid: userRecord.uid,
+            uid: data.uid,
             ...data
         });
 
