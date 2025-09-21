@@ -11,7 +11,7 @@ export function Logo({ className }: { className?: string }) {
     const [logoSrc, setLogoSrc] = useState("/Andonpro_Logo_Musta_Syvätty.png");
 
     useEffect(() => {
-        setLogoSrc(resolvedTheme === 'dark' ? "/Andonpro_logo_valkoinen_syvätty.jpg" : "/Andonpro_Logo_Musta_Syvätty.png");
+        setLogoSrc(resolvedTheme === 'dark' ? "/Andonpro_Logo_Valkoinen_Syvätty.png" : "/Andonpro_Logo_Musta_Syvätty.png");
     }, [resolvedTheme]);
 
     return (
