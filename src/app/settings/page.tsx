@@ -34,6 +34,9 @@ export default function SettingsPage() {
                             {(currentUser.role === 'admin' || currentUser.role === 'supervisor') && (
                                 <TabsTrigger value="notifications">Notifications</TabsTrigger>
                             )}
+                             {(currentUser.role === 'admin') && (
+                                <TabsTrigger value="subscription">Subscription</TabsTrigger>
+                            )}
                         </TabsList>
                         <TabsContent value="profile">
                             <Card>
@@ -97,6 +100,26 @@ export default function SettingsPage() {
                                                 </div>
                                             </div>
                                     </div>
+                                    </CardContent>
+                                </Card>
+                            </TabsContent>
+                        )}
+                        {(currentUser.role === 'admin') && (
+                            <TabsContent value="subscription">
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>Subscription Plan</CardTitle>
+                                        <CardDescription>Manage your billing and subscription details.</CardDescription>
+                                    </CardHeader>
+                                    <CardContent className="space-y-4">
+                                        <div className="rounded-lg border bg-card-foreground/5 p-6">
+                                            <h3 className="text-lg font-semibold">Current Plan: Pro</h3>
+                                            <p className="text-sm text-muted-foreground">Your workspace is on the Pro plan, which includes AI-powered prioritization and advanced reporting.</p>
+                                        </div>
+                                        <div className="flex flex-col sm:flex-row gap-2">
+                                             <Button className="w-full sm:w-auto">Upgrade to Enterprise</Button>
+                                             <Button variant="destructive" className="w-full sm:w-auto">Cancel Subscription</Button>
+                                        </div>
                                     </CardContent>
                                 </Card>
                             </TabsContent>
