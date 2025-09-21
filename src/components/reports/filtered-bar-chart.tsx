@@ -1,16 +1,19 @@
 
 "use client"
 
-import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, LabelList } from "recharts"
+import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, Cell } from "recharts"
 
 interface FilteredBarChartProps {
     data: {
         name: string;
         value: number;
+        fill?: string;
     }[];
 }
 
 export function FilteredBarChart({ data }: FilteredBarChartProps) {
+    const defaultFill = "hsl(var(--primary))";
+
   return (
     <ResponsiveContainer width="100%" height={350}>
       <BarChart data={data} layout="vertical" margin={{ left: 20, right: 40}}>
@@ -45,12 +48,12 @@ export function FilteredBarChart({ data }: FilteredBarChartProps) {
                 color: "hsl(var(--foreground))",
             }}
         />
-        <Bar dataKey="value" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]}>
-            <LabelList dataKey="value" position="right" offset={8} className="fill-foreground text-sm" />
+        <Bar dataKey="value" radius={[0, 4, 4, 0]}>
+            {data.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={entry.fill || defaultFill} />
+            ))}
         </Bar>
       </BarChart>
     </ResponsiveContainer>
   )
 }
-
-    

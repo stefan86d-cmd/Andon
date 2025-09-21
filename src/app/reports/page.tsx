@@ -25,13 +25,13 @@ import { Switch } from '@/components/ui/switch';
 import type { Issue, IssueCategory, ProductionLine } from '@/lib/types';
 import { FilteredBarChart } from '@/components/reports/filtered-bar-chart';
 
-const allCategories: { id: IssueCategory, label: string }[] = [
-    { id: 'it', label: 'IT & Network' },
-    { id: 'logistics', label: 'Logistics' },
-    { id: 'tool', label: 'Tool & Equipment' },
-    { id: 'assistance', label: 'Assistance' },
-    { id: 'quality', label: 'Quality' },
-    { id: 'other', label: 'Other' },
+const allCategories: { id: IssueCategory, label: string, color: string }[] = [
+    { id: 'it', label: 'IT & Network', color: 'hsl(221.2 83.2% 53.3%)' }, // blue-500
+    { id: 'logistics', label: 'Logistics', color: 'hsl(30.2 92.5% 55.5%)' }, // orange-500
+    { id: 'tool', label: 'Tool & Equipment', color: 'hsl(240 3.7% 46.1%)' }, // gray-500
+    { id: 'assistance', label: 'Assistance', color: 'hsl(0 84.2% 60.2%)' }, // red-500
+    { id: 'quality', label: 'Quality', color: 'hsl(142.1 76.2% 36.3%)' }, // green-500
+    { id: 'other', label: 'Other', color: 'hsl(262.1 83.3% 57.8%)' }, // purple-500
 ];
 
 function aggregateIssuesByDate(filteredIssues: Issue[]): { date: string; issues: number }[] {
@@ -53,14 +53,20 @@ function aggregateBy(filteredIssues: Issue[], key: 'category' | 'productionLineI
     const counts: Record<string, number> = {};
     
     let nameMap: Record<string, string> = {};
+    let colorMap: Record<string, string | undefined> = {};
+
     if (key === 'productionLineId') {
         nameMap = productionLines.reduce((acc, line) => {
             acc[line.id] = line.name;
             return acc;
         }, {} as Record<string, string>);
-    } else {
+    } else { // category
         nameMap = allCategories.reduce((acc, cat) => {
             acc[cat.id] = cat.label;
+            return acc;
+        }, {} as Record<string, string>);
+        colorMap = allCategories.reduce((acc, cat) => {
+            acc[cat.id] = cat.color;
             return acc;
         }, {} as Record<string, string>);
     }
@@ -75,24 +81,24 @@ function aggregateBy(filteredIssues: Issue[], key: 'category' | 'productionLineI
         }
     });
 
-    return Object.entries(counts).map(([name, value]) => ({
-        name: nameMap[name] || name,
+    return Object.entries(counts).map(([id, value]) => ({
+        name: nameMap[id] || id,
         value,
+        fill: colorMap[id]
     })).sort((a, b) => b.value - a.value);
 }
 
 function aggregateDowntimeByCategory(filteredIssues: Issue[]) {
     const downtime: Record<string, number> = {};
-    const categoryNameMap = allCategories.reduce((acc, cat) => {
-        acc[cat.id] = cat.label;
+    const categoryInfoMap = allCategories.reduce((acc, cat) => {
+        acc[cat.id] = { label: cat.label, color: cat.color };
         return acc;
-    }, {} as Record<string, string>);
+    }, {} as Record<string, {label: string, color: string}>);
 
     const stoppedIssues = filteredIssues.filter(
         issue => issue.productionStopped && issue.status === 'resolved' && issue.resolvedAt
     );
     
-    // Group issues by production line
     const issuesByLine: Record<string, Issue[]> = stoppedIssues.reduce((acc, issue) => {
         const lineId = issue.productionLineId;
         if (!acc[lineId]) {
@@ -102,7 +108,6 @@ function aggregateDowntimeByCategory(filteredIssues: Issue[]) {
         return acc;
     }, {} as Record<string, Issue[]>);
 
-    // Calculate merged downtime for each line and attribute it to categories
     for (const lineId in issuesByLine) {
         const lineIssues = issuesByLine[lineId];
         if (lineIssues.length === 0) continue;
@@ -162,8 +167,9 @@ function aggregateDowntimeByCategory(filteredIssues: Issue[]) {
     }
 
     return Object.entries(downtime).map(([category, hours]) => ({
-        name: categoryNameMap[category] || category,
+        name: categoryInfoMap[category]?.label || category,
         value: parseFloat(hours.toFixed(1)), // Keep one decimal place
+        fill: categoryInfoMap[category]?.color,
     })).sort((a, b) => b.value - a.value);
 }
 
