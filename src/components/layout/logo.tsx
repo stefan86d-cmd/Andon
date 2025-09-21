@@ -8,10 +8,10 @@ import { useEffect, useState } from 'react';
 
 export function Logo({ className }: { className?: string }) {
     const { resolvedTheme } = useTheme();
-    const [logoSrc, setLogoSrc] = useState("/Andonpro_logo_musta_syvätty.jpg");
+    const [logoSrc, setLogoSrc] = useState("/Andonpro_Logo_Musta_Syvätty.png");
 
     useEffect(() => {
-        setLogoSrc(resolvedTheme === 'dark' ? "/Andonpro_logo_valkoinen_syvätty.jpg" : "/Andonpro_logo_musta_syvätty.jpg");
+        setLogoSrc(resolvedTheme === 'dark' ? "/Andonpro_logo_valkoinen_syvätty.jpg" : "/Andonpro_Logo_Musta_Syvätty.png");
     }, [resolvedTheme]);
 
     return (
