@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import type { Issue, Priority, Status, User, IssueCategory } from "@/lib/types";
@@ -50,6 +51,13 @@ const priorityColors: Record<Priority, string> = {
   medium: "text-yellow-500",
   high: "text-orange-500",
   critical: "text-red-500",
+};
+
+const priorityBgColors: Record<Priority, string> = {
+  low: "bg-blue-500",
+  medium: "bg-yellow-500",
+  high: "bg-orange-500",
+  critical: "bg-red-500",
 };
 
 const statusIcons: Record<Status, React.ElementType> = {
@@ -114,8 +122,8 @@ const IssueCard = ({ issue, onSelect, canResolve }: { issue: Issue, onSelect: (i
     const isResolved = issue.status === 'resolved';
 
     return (
-        <Card onClick={() => canResolve && onSelect(issue)} className={cn(canResolve && 'cursor-pointer hover:shadow-md transition-shadow')}>
-            <CardHeader>
+        <Card onClick={() => canResolve && onSelect(issue)} className={cn('overflow-hidden', canResolve && 'cursor-pointer hover:shadow-md transition-shadow')}>
+            <CardHeader className="pb-4">
                 <div className="flex items-start justify-between gap-4">
                     <div>
                         <CardTitle className="text-lg">{issue.location}</CardTitle>
@@ -127,7 +135,8 @@ const IssueCard = ({ issue, onSelect, canResolve }: { issue: Issue, onSelect: (i
                     </Badge>
                 </div>
             </CardHeader>
-            <CardContent className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+            <div className={cn("h-1 w-full", priorityBgColors[issue.priority])} />
+            <CardContent className="pt-6 grid sm:grid-cols-2 md:grid-cols-3 gap-4 text-sm">
                 <div className="flex items-center gap-2">
                     <CategoryIcon className={cn("h-5 w-5 text-muted-foreground", categoryInfo.color)} />
                     <div>
