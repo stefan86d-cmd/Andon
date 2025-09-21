@@ -118,8 +118,8 @@ const IssueCard = ({ issue, onSelect, canResolve }: { issue: Issue, onSelect: (i
             <CardHeader>
                 <div className="flex items-start justify-between gap-4">
                     <div>
-                        <CardTitle className="text-lg">{issue.title}</CardTitle>
-                        <CardDescription>{issue.location}</CardDescription>
+                        <CardTitle className="text-lg">{issue.location}</CardTitle>
+                        <CardDescription>{issue.title}</CardDescription>
                     </div>
                      <Badge variant="outline" className={`capitalize border-0 ${priorityColors[issue.priority]}`}>
                       <PriorityIcon className="mr-2 h-4 w-4" />
