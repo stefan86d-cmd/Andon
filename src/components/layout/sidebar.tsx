@@ -17,14 +17,28 @@ export function Sidebar({ isCollapsed, onMenuClick }: SidebarProps) {
   return (
     <div className="hidden border-r bg-muted/40 md:block">
       <div className="flex h-full max-h-screen flex-col gap-2">
-        <div className={cn("flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6", isCollapsed ? "justify-between" : "justify-between")}>
-          <Link href="/" className={cn("flex items-center gap-2 font-semibold", isCollapsed ? 'order-2' : '')}>
-            <Logo />
-          </Link>
-          <Button variant="outline" size="icon" onClick={onMenuClick} className={cn("shrink-0", isCollapsed ? 'order-1' : '')}>
-              <Menu className="h-5 w-5" />
-              <span className="sr-only">Toggle sidebar</span>
-          </Button>
+        <div className="flex h-14 items-center justify-between border-b px-4 lg:h-[60px] lg:px-6">
+          {isCollapsed ? (
+            <>
+              <Button variant="outline" size="icon" onClick={onMenuClick} className="shrink-0">
+                  <Menu className="h-5 w-5" />
+                  <span className="sr-only">Toggle sidebar</span>
+              </Button>
+               <Link href="/" className="flex items-center gap-2 font-semibold">
+                <Logo />
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link href="/" className="flex items-center gap-2 font-semibold">
+                <Logo />
+              </Link>
+              <Button variant="outline" size="icon" onClick={onMenuClick} className="shrink-0">
+                  <Menu className="h-5 w-5" />
+                  <span className="sr-only">Toggle sidebar</span>
+              </Button>
+            </>
+          )}
         </div>
         <div className="flex-1">
             {currentUser && <SidebarNav userRole={currentUser.role} isCollapsed={isCollapsed} />}
