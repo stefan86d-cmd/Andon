@@ -77,10 +77,9 @@ const categories: Record<IssueCategory, { label: string, icon: React.ElementType
 const StatusDisplay = ({ status }: { status: Status }) => {
     const Icon = statusIcons[status];
     const label = statusLabels[status];
-    const color = status === 'resolved' ? 'text-green-500' : 'text-muted-foreground';
 
     return (
-        <Badge variant={status === 'resolved' ? 'default' : 'secondary'} className={cn(status === 'resolved' ? 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300' : '')}>
+        <Badge variant={status === 'resolved' ? 'default' : 'secondary'} className={cn('capitalize', status === 'resolved' ? 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300' : '')}>
             <Icon className={cn("h-4 w-4 mr-1", status === 'in_progress' && 'animate-spin')} />
             {label}
         </Badge>
@@ -116,6 +115,13 @@ const DetailItem = ({ icon: Icon, label, value }: { icon: React.ElementType, lab
     </div>
 );
 
+const DetailItemBadge = ({ icon: Icon, value, className }: { icon: React.ElementType, value: React.ReactNode, className?: string }) => (
+    <div className="flex items-center gap-2 text-sm">
+        <Icon className="h-5 w-5 text-muted-foreground" />
+        <div className={className}>{value}</div>
+    </div>
+);
+
 
 const IssueCard = ({ issue, onSelect, canResolve }: { issue: Issue, onSelect: (issue: Issue) => void, canResolve: boolean }) => {
     const PriorityIcon = priorityIcons[issue.priority];
@@ -136,35 +142,43 @@ const IssueCard = ({ issue, onSelect, canResolve }: { issue: Issue, onSelect: (i
             </CardHeader>
             
             <CardContent className="flex flex-wrap items-center gap-x-6 gap-y-4">
-                <DetailItem 
-                    icon={Clock}
-                    label={isResolved ? 'Resolved At' : 'Reported At'}
-                    value={<SafeHydrate>{format(isResolved ? issue.resolvedAt! : issue.reportedAt, 'PPp')}</SafeHydrate>}
-                />
-
-                <DetailItem 
-                    icon={UserIcon}
-                    label={isResolved ? 'Resolved By' : 'Reported By'}
-                    value={isResolved ? issue.resolvedBy?.name : issue.reportedBy.name}
-                />
-                 
-                 {(issue.subCategory) && (
+                {(issue.subCategory) && (
                     <DetailItem
                         icon={categoryInfo.icon}
                         label={categoryInfo.label}
                         value={<p className="capitalize">{issue.subCategory.replace(/-/g, ' ')}</p>}
                     />
-                 )}
+                )}
+                
+                <DetailItem 
+                    icon={UserIcon}
+                    label={isResolved ? 'Resolved By' : 'Reported By'}
+                    value={isResolved ? issue.resolvedBy?.name : issue.reportedBy.name}
+                />
+
+                <DetailItemBadge
+                    icon={statusIcons[issue.status]}
+                    value={<StatusDisplay status={issue.status} />}
+                />
+                 
+                <DetailItemBadge
+                    icon={PriorityIcon}
+                    value={
+                        <Badge variant="outline" className={`capitalize border-0 ${priorityColors[issue.priority]}`}>
+                          <PriorityIcon className="mr-2 h-4 w-4" />
+                          {issue.priority}
+                        </Badge>
+                    }
+                />
+
+                <DetailItem 
+                    icon={Clock}
+                    label={isResolved ? 'Resolved At' : 'Reported At'}
+                    value={<SafeHydrate>{format(isResolved ? issue.resolvedAt! : issue.reportedAt, 'PPp')}</SafeHydrate>}
+                />
             </CardContent>
 
-            <CardFooter className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                    <StatusDisplay status={issue.status} />
-                    <Badge variant="outline" className={`capitalize border-0 ${priorityColors[issue.priority]}`}>
-                      <PriorityIcon className="mr-2 h-4 w-4" />
-                      {issue.priority}
-                    </Badge>
-                </div>
+            <CardFooter>
                  {isResolved && issue.resolvedAt && (
                     <div className="text-sm text-muted-foreground">
                         Resolution Time: <strong>{formatDuration(issue.reportedAt, issue.resolvedAt)}</strong>
