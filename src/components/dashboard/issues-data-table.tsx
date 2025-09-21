@@ -8,6 +8,7 @@ import {
   CardDescription,
   CardHeader,
   CardFooter,
+  CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -151,7 +152,7 @@ const IssueCard = ({ issue, onSelect, canResolve }: { issue: Issue, onSelect: (i
             
             <CardContent className="flex items-center justify-between gap-x-6 gap-y-4">
                 <div className="flex flex-wrap items-center gap-x-6 gap-y-4">
-                    {(issue.subCategory) && (
+                    {issue.subCategory && (
                         <DetailItem
                             icon={categoryInfo.icon}
                             label={categoryInfo.label}
@@ -167,7 +168,6 @@ const IssueCard = ({ issue, onSelect, canResolve }: { issue: Issue, onSelect: (i
 
                     <StatusDisplay status={issue.status} />
                      
-
                     <DetailItem 
                         icon={Clock}
                         label={isResolved ? 'Resolved At' : 'Reported At'}
