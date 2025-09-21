@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, 'useState', 'useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import {
@@ -33,7 +33,6 @@ function GoogleIcon() {
       <path
         fill="#4CAF50"
         d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238A11.91 11.91 0 0 1 24 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z"
-
       />
       <path
         fill="#1976D2"
