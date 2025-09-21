@@ -2,17 +2,12 @@
 "use client";
 
 import React, { Suspense } from "react";
-import { cn } from "@/lib/utils";
-import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { useUser } from "@/contexts/user-context";
 import { useRouter } from "next/navigation";
 import { LoaderCircle } from "lucide-react";
 
 function AppLayoutContent({ children }: { children: React.ReactNode }) {
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = React.useState(false);
-  const isMobile = useIsMobile();
   const { currentUser, loading } = useUser();
   const router = useRouter();
 
@@ -21,12 +16,6 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
       router.replace('/login');
     }
   }, [currentUser, loading, router]);
-  
-  const toggleSidebar = () => {
-    setIsSidebarCollapsed(!isSidebarCollapsed);
-  };
-  
-  const isEffectivelyCollapsed = isMobile ? true : isSidebarCollapsed;
 
   if (loading || !currentUser) {
     return (
@@ -37,15 +26,9 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div
-      className={cn(
-        "grid min-h-screen w-full",
-        !isEffectivelyCollapsed ? "md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]" : "md:grid-cols-[64px_1fr]"
-      )}
-    >
-      <Sidebar isCollapsed={isEffectivelyCollapsed} />
+    <div className="flex min-h-screen w-full flex-col">
+      <Header />
       <div className="flex flex-col">
-        <Header isCollapsed={isEffectivelyCollapsed} onMenuClick={toggleSidebar} />
         {children}
       </div>
     </div>

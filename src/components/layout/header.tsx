@@ -1,55 +1,39 @@
 
 import { Bell, Menu } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { UserNav } from "@/components/layout/user-nav";
 import Link from "next/link";
 import { SidebarNav } from "./sidebar-nav";
 import { Logo } from "./logo";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { useUser } from "@/contexts/user-context";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
-interface HeaderProps {
-    isCollapsed: boolean;
-    onMenuClick: () => void;
-}
-
-export function Header({ isCollapsed, onMenuClick }: HeaderProps) {
+export function Header() {
   const { currentUser } = useUser();
-  const isMobile = useIsMobile();
-  // const newIssuesCount = issues.filter(issue => issue.status === 'reported').length;
 
   const capitalize = (s: string) => {
     if (typeof s !== 'string') return ''
     return s.charAt(0).toUpperCase() + s.slice(1)
   }
-  
-  const MenuButton = () => (
-    isMobile ? (
-      <Sheet>
-        <SheetTrigger asChild>
-          <Button variant="outline" size="icon" className="shrink-0">
-              <Menu className="h-5 w-5" />
-            <span className="sr-only">Toggle navigation menu</span>
-          </Button>
-        </SheetTrigger>
-        <SheetContent side="left" className="flex flex-col">
-            {currentUser && <SidebarNav isMobile={true} userRole={currentUser.role} />}
-        </SheetContent>
-      </Sheet>
-    ) : (
-      <Button variant="outline" size="icon" onClick={onMenuClick} className="shrink-0">
-          <Menu className="h-5 w-5" />
-          <span className="sr-only">Toggle sidebar</span>
-      </Button>
-    )
-  );
 
   return (
-    <header className="flex h-14 items-center gap-4 border-b bg-muted/40 px-4 lg:h-[60px] lg:px-6">
-      <MenuButton />
-      
+    <header className="flex h-14 items-center gap-4 border-b bg-muted/40 px-4 lg:h-[60px] lg:px-6 sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="outline" size="icon" className="shrink-0">
+            <Menu className="h-5 w-5" />
+            <span className="sr-only">Toggle navigation menu</span>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start">
+          {currentUser && <SidebarNav userRole={currentUser.role} />}
+        </DropdownMenuContent>
+      </DropdownMenu>
+
       <Link href="/">
           <Logo />
       </Link>
