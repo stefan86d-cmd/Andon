@@ -25,7 +25,7 @@ export function Header({ isCollapsed }: HeaderProps) {
   }
   
   return (
-    <header className="sticky top-0 z-40 flex h-14 items-center gap-4 border-b bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60 sm:px-6">
+    <header className="flex h-14 items-center gap-4 border-b bg-muted/40 px-4 lg:h-[60px] lg:px-6">
       {isMobile && (
         <Sheet>
           <SheetTrigger asChild>
