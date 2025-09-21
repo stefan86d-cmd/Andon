@@ -30,7 +30,6 @@ import {
   Clock,
   User as UserIcon,
 } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { format, formatDistanceToNow, intervalToDuration } from "date-fns";
 import { cn } from "@/lib/utils";
 import { ResolveIssueDialog } from "./resolve-issue-dialog";
@@ -53,13 +52,6 @@ const priorityColors: Record<Priority, string> = {
   critical: "text-red-500",
 };
 
-const priorityBgColors: Record<Priority, string> = {
-  low: "bg-blue-500",
-  medium: "bg-yellow-500",
-  high: "bg-orange-500",
-  critical: "bg-red-500",
-};
-
 const statusIcons: Record<Status, React.ElementType> = {
   reported: CircleDotDashed,
   in_progress: LoaderCircle,
@@ -74,13 +66,13 @@ const statusLabels: Record<Status, string> = {
     archived: "Archived",
 };
 
-const categories: Record<IssueCategory, { label: string, icon: React.ElementType, color: string }> = {
-    'it': { label: 'It & Network', icon: Monitor, color: 'text-blue-500' },
-    'logistics': { label: 'Logistics', icon: Truck, color: 'text-orange-500' },
-    'tool': { label: 'Tool & Equipment', icon: Wrench, color: 'text-gray-500' },
-    'assistance': { label: 'Assistance', icon: LifeBuoy, color: 'text-red-500' },
-    'quality': { label: 'Quality', icon: BadgeCheck, color: 'text-green-500' },
-    'other': { label: 'Other', icon: HelpCircle, color: 'text-purple-500' },
+const categories: Record<IssueCategory, { label: string, icon: React.ElementType, color: string, bgColor: string }> = {
+    'it': { label: 'It & Network', icon: Monitor, color: 'text-blue-500', bgColor: 'bg-blue-500' },
+    'logistics': { label: 'Logistics', icon: Truck, color: 'text-orange-500', bgColor: 'bg-orange-500' },
+    'tool': { label: 'Tool & Equipment', icon: Wrench, color: 'text-gray-500', bgColor: 'bg-gray-500' },
+    'assistance': { label: 'Assistance', icon: LifeBuoy, color: 'text-red-500', bgColor: 'bg-red-500' },
+    'quality': { label: 'Quality', icon: BadgeCheck, color: 'text-green-500', bgColor: 'bg-green-500' },
+    'other': { label: 'Other', icon: HelpCircle, color: 'text-purple-500', bgColor: 'bg-purple-500' },
 };
 
 const StatusDisplay = ({ status }: { status: Status }) => {
@@ -123,28 +115,17 @@ const IssueCard = ({ issue, onSelect, canResolve }: { issue: Issue, onSelect: (i
 
     return (
         <Card onClick={() => canResolve && onSelect(issue)} className={cn('overflow-hidden', canResolve && 'cursor-pointer hover:shadow-md transition-shadow')}>
-            <CardHeader className="pb-4">
+            <CardHeader className={cn("pb-4", categoryInfo.bgColor)}>
                 <div className="flex items-start justify-between gap-4">
                     <div>
-                        <CardTitle className="text-lg">{issue.location}</CardTitle>
-                        <CardDescription>{issue.title}</CardDescription>
+                        <CardTitle className="text-lg text-primary-foreground">{issue.location}</CardTitle>
+                        <CardDescription className="text-primary-foreground/80">{issue.title}</CardDescription>
                     </div>
-                     <Badge variant="outline" className={`capitalize border-0 ${priorityColors[issue.priority]}`}>
-                      <PriorityIcon className="mr-2 h-4 w-4" />
-                      {issue.priority}
-                    </Badge>
+                    <CategoryIcon className={cn("h-8 w-8 text-primary-foreground/80")} />
                 </div>
             </CardHeader>
-            <div className={cn("h-1 w-full", priorityBgColors[issue.priority])} />
-            <CardContent className="pt-6 grid sm:grid-cols-2 md:grid-cols-3 gap-4 text-sm">
-                <div className="flex items-center gap-2">
-                    <CategoryIcon className={cn("h-5 w-5 text-muted-foreground", categoryInfo.color)} />
-                    <div>
-                        <p className="font-medium text-muted-foreground">Category</p>
-                        <p>{categoryInfo.label} {issue.subCategory && `(${issue.subCategory.replace(/-/g, ' ')})`}</p>
-                    </div>
-                </div>
-
+            
+            <CardContent className="pt-6 grid sm:grid-cols-2 md:grid-cols-3 gap-y-6 gap-x-4 text-sm">
                 <div className="flex items-center gap-2">
                     <Clock className="h-5 w-5 text-muted-foreground" />
                     <div>
@@ -162,6 +143,23 @@ const IssueCard = ({ issue, onSelect, canResolve }: { issue: Issue, onSelect: (i
                         <p>{isResolved ? issue.resolvedBy?.name : issue.reportedBy.name}</p>
                     </div>
                 </div>
+
+                <div className="flex items-center gap-2">
+                     <Badge variant="outline" className={`capitalize border-0 ${priorityColors[issue.priority]}`}>
+                      <PriorityIcon className="mr-2 h-4 w-4" />
+                      {issue.priority}
+                    </Badge>
+                </div>
+                 
+                 {(issue.subCategory) && (
+                    <div className="flex items-center gap-2">
+                        <div className="w-5 h-5" />
+                        <div>
+                            <p className="font-medium text-muted-foreground">{categoryInfo.label}</p>
+                            <p className="capitalize">{issue.subCategory.replace(/-/g, ' ')}</p>
+                        </div>
+                    </div>
+                 )}
             </CardContent>
             <CardFooter className="flex items-center justify-between">
                 <StatusDisplay status={issue.status} />
