@@ -26,7 +26,7 @@ export function Header({ isCollapsed }: HeaderProps) {
   
   return (
     <header className="sticky top-0 z-40 flex h-14 items-center gap-4 border-b bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60 sm:px-6">
-      {isMobile ? (
+      {isMobile && (
         <Sheet>
           <SheetTrigger asChild>
             <Button variant="outline" size="icon" className="shrink-0 md:hidden">
@@ -38,9 +38,6 @@ export function Header({ isCollapsed }: HeaderProps) {
               {currentUser && <SidebarNav isMobile={true} userRole={currentUser.role} />}
           </SheetContent>
         </Sheet>
-      ) : (
-        // Placeholder for non-mobile to keep spacing consistent
-        <div />
       )}
       
       <div className="w-full flex-1" />
