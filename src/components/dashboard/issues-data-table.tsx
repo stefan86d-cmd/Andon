@@ -2,6 +2,7 @@
 
 "use client";
 
+import React from "react";
 import type { Issue, Priority, Status, User } from "@/lib/types";
 import {
     Table,
@@ -29,7 +30,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal, ArrowDownCircle, TriangleAlert, Flame, Siren, CircleDotDashed, LoaderCircle, CheckCircle2, Archive } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { format, formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
 import { ResolveIssueDialog } from "./resolve-issue-dialog";
 import { useState } from "react";
