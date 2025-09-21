@@ -202,7 +202,7 @@ export async function updateIssue(issueId: string, data: {
 
 export async function seedUsers() {
     const usersToSeed = [
-        { firstName: 'Alex', lastName: 'Johnson', email: 'alex.j@andon.io', role: 'admin' as Role },
+        { uid: '0P6TMG7LyyWKatYHFNVXpVoRQSC2', firstName: 'Alex', lastName: 'Johnson', email: 'alex.j@andon.io', role: 'admin' as Role },
         { firstName: 'Sam', lastName: 'Miller', email: 'sam.m@andon.io', role: 'supervisor' as Role },
         { firstName: 'Maria', lastName: 'Garcia', email: 'maria.g@andon.io', role: 'operator' as Role },
     ];
@@ -215,8 +215,14 @@ export async function seedUsers() {
         const adminAuth = initializeFirebaseAdmin().auth();
         for (const userData of usersToSeed) {
              let userRecord = null;
+             
+             // If a UID is provided, use it to fetch the user. Otherwise, use email.
+             const userIdentifier = userData.uid || userData.email;
+             
             try {
-                userRecord = await adminAuth.getUserByEmail(userData.email);
+                userRecord = userData.uid 
+                    ? await adminAuth.getUser(userData.uid)
+                    : await adminAuth.getUserByEmail(userData.email);
                 existingCount++;
             } catch (error: any) {
                 if (error.code !== 'auth/user-not-found') {
@@ -225,13 +231,17 @@ export async function seedUsers() {
             }
 
             if (!userRecord) {
-                 userRecord = await adminAuth.createUser({
+                 const createUserPayload: any = {
                     email: userData.email,
                     emailVerified: true,
                     password: password,
                     displayName: `${userData.firstName} ${userData.lastName}`,
-                });
-                createdCount++;
+                 };
+                 if (userData.uid) {
+                     createUserPayload.uid = userData.uid;
+                 }
+                 userRecord = await adminAuth.createUser(createUserPayload);
+                 createdCount++;
             }
             
             // This is the critical part: ensure the Firestore document is always created/updated.
