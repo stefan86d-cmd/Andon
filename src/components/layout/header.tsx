@@ -12,9 +12,10 @@ import { useUser } from "@/contexts/user-context";
 
 interface HeaderProps {
     isCollapsed: boolean;
+    onMenuClick: () => void;
 }
 
-export function Header({ isCollapsed }: HeaderProps) {
+export function Header({ isCollapsed, onMenuClick }: HeaderProps) {
   const { currentUser } = useUser();
   const isMobile = useIsMobile();
   // const newIssuesCount = issues.filter(issue => issue.status === 'reported').length;
@@ -26,10 +27,10 @@ export function Header({ isCollapsed }: HeaderProps) {
   
   return (
     <header className="flex h-14 items-center gap-4 border-b bg-muted/40 px-4 lg:h-[60px] lg:px-6">
-      {isMobile && (
+      {isMobile ? (
         <Sheet>
           <SheetTrigger asChild>
-            <Button variant="outline" size="icon" className="shrink-0 md:hidden">
+            <Button variant="outline" size="icon" className="shrink-0">
                 <Menu className="h-5 w-5" />
               <span className="sr-only">Toggle navigation menu</span>
             </Button>
@@ -38,6 +39,17 @@ export function Header({ isCollapsed }: HeaderProps) {
               {currentUser && <SidebarNav isMobile={true} userRole={currentUser.role} />}
           </SheetContent>
         </Sheet>
+      ) : (
+        <Button variant="outline" size="icon" onClick={onMenuClick} className="shrink-0">
+            <Menu className="h-5 w-5" />
+            <span className="sr-only">Toggle sidebar</span>
+        </Button>
+      )}
+
+      {!isMobile && (
+        <Link href="/">
+            <Logo />
+        </Link>
       )}
       
       <div className="w-full flex-1" />
