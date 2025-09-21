@@ -80,14 +80,11 @@ export default function IssuesPage() {
   return (
     <AppLayout>
       <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background">
-        <div className="flex items-center justify-between">
-          <h1 className="text-lg font-semibold md:text-2xl">Issue Tracker</h1>
-        </div>
         <Tabs defaultValue="active">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between mb-4">
             <TabsList>
               <TabsTrigger value="active">Active</TabsTrigger>
-              <TabsTrigger value="resolved">Resolved</TabsTrigger>
+              <TabsTrigger value="resolved">Resolved (24h)</TabsTrigger>
             </TabsList>
             {currentUser?.role !== 'operator' && (
               <DropdownMenu>

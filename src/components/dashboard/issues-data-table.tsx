@@ -3,19 +3,12 @@
 
 import type { Issue, Priority, Status, User, IssueCategory } from "@/lib/types";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -33,6 +26,8 @@ import {
   HelpCircle,
   LifeBuoy,
   BadgeCheck,
+  Clock,
+  User as UserIcon,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { format, formatDistanceToNow, intervalToDuration } from "date-fns";
@@ -86,10 +81,10 @@ const StatusDisplay = ({ status }: { status: Status }) => {
     const color = status === 'resolved' ? 'text-green-500' : 'text-muted-foreground';
 
     return (
-        <div className={cn("flex items-center gap-2", color)}>
-            <Icon className={cn("h-4 w-4", status === 'in_progress' && 'animate-spin')} />
+        <Badge variant={status === 'resolved' ? 'default' : 'secondary'} className={cn(status === 'resolved' ? 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300' : '')}>
+            <Icon className={cn("h-4 w-4 mr-1", status === 'in_progress' && 'animate-spin')} />
             {label}
-        </div>
+        </Badge>
     );
 };
 
@@ -100,15 +95,81 @@ function formatDuration(start: Date, end: Date) {
   if (duration.days && duration.days > 0) parts.push(`${duration.days}d`);
   if (duration.hours && duration.hours > 0) parts.push(`${duration.hours}h`);
   if (duration.minutes && duration.minutes > 0) parts.push(`${duration.minutes}m`);
-  if (duration.seconds && duration.seconds > 0) parts.push(`${duration.seconds}s`);
   
-  return parts.length > 0 ? parts.slice(0, 2).join(' ') : '0s';
+  if (parts.length > 0) {
+    return parts.slice(0, 2).join(' ');
+  }
+  
+  if (duration.seconds && duration.seconds > 0) {
+    return `${duration.seconds}s`
+  }
+
+  return '0s';
 }
+
+const IssueCard = ({ issue, onSelect, canResolve }: { issue: Issue, onSelect: (issue: Issue) => void, canResolve: boolean }) => {
+    const PriorityIcon = priorityIcons[issue.priority];
+    const categoryInfo = categories[issue.category];
+    const CategoryIcon = categoryInfo.icon;
+    const isResolved = issue.status === 'resolved';
+
+    return (
+        <Card onClick={() => canResolve && onSelect(issue)} className={cn(canResolve && 'cursor-pointer hover:shadow-md transition-shadow')}>
+            <CardHeader>
+                <div className="flex items-start justify-between gap-4">
+                    <div>
+                        <CardTitle className="text-lg">{issue.title}</CardTitle>
+                        <CardDescription>{issue.location}</CardDescription>
+                    </div>
+                     <Badge variant="outline" className={`capitalize border-0 ${priorityColors[issue.priority]}`}>
+                      <PriorityIcon className="mr-2 h-4 w-4" />
+                      {issue.priority}
+                    </Badge>
+                </div>
+            </CardHeader>
+            <CardContent className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+                <div className="flex items-center gap-2">
+                    <CategoryIcon className={cn("h-5 w-5 text-muted-foreground", categoryInfo.color)} />
+                    <div>
+                        <p className="font-medium text-muted-foreground">Category</p>
+                        <p>{categoryInfo.label} {issue.subCategory && `(${issue.subCategory.replace(/-/g, ' ')})`}</p>
+                    </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                    <Clock className="h-5 w-5 text-muted-foreground" />
+                    <div>
+                        <p className="font-medium text-muted-foreground">{isResolved ? 'Resolved At' : 'Reported At'}</p>
+                        <SafeHydrate>
+                            <p>{format(isResolved ? issue.resolvedAt! : issue.reportedAt, 'PPp')}</p>
+                        </SafeHydrate>
+                    </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                    <UserIcon className="h-5 w-5 text-muted-foreground" />
+                    <div>
+                        <p className="font-medium text-muted-foreground">{isResolved ? 'Resolved By' : 'Reported By'}</p>
+                        <p>{isResolved ? issue.resolvedBy?.name : issue.reportedBy.name}</p>
+                    </div>
+                </div>
+            </CardContent>
+            <CardFooter className="flex items-center justify-between">
+                <StatusDisplay status={issue.status} />
+                 {isResolved && issue.resolvedAt && (
+                    <div className="text-sm text-muted-foreground">
+                        Resolution Time: <strong>{formatDuration(issue.reportedAt, issue.resolvedAt)}</strong>
+                    </div>
+                )}
+            </CardFooter>
+        </Card>
+    );
+};
+
 
 export function IssuesDataTable({ issues, title, description, loading }: { issues: Issue[], title?: string, description?: string, loading?: boolean }) {
   const { currentUser } = useUser();
   const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
-  const isResolvedView = issues.length > 0 && issues.every(issue => issue.status === 'resolved');
 
   const handleIssueUpdate = (updatedIssue: Issue) => {
     // In a real app with client-side state management (like SWR or React Query),
@@ -123,133 +184,41 @@ export function IssuesDataTable({ issues, title, description, loading }: { issue
   const canResolveIssues = currentUser?.role === 'admin' || currentUser?.role === 'supervisor';
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{title || (currentUser?.role === 'admin' ? 'Recent Issues' : 'Recent Issues on Your Line')}</CardTitle>
-        <CardDescription>
+    <div className="space-y-4">
+      <div className="px-4 lg:px-6">
+        <h2 className="text-lg font-semibold md:text-xl">{title || (currentUser?.role === 'admin' ? 'Recent Issues' : 'Recent Issues on Your Line')}</h2>
+        <p className="text-sm text-muted-foreground">
           {description || (currentUser?.role === 'admin' ? 'A list of recently reported issues on the production line.' : 'Issues reported on your selected line within the last 24 hours.')}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Category</TableHead>
-              <TableHead>Sub-Category</TableHead>
-              <TableHead className="min-w-[300px]">Description</TableHead>
-              <TableHead>Priority</TableHead>
-              <TableHead>Status</TableHead>
-              {isResolvedView ? (
-                <>
-                  <TableHead>Resolved</TableHead>
-                  <TableHead>Resolution Time</TableHead>
-                  <TableHead>Resolved By</TableHead>
-                </>
-              ) : (
-                <>
-                  <TableHead>Reported At</TableHead>
-                  <TableHead>Reported By</TableHead>
-                </>
-              )}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {loading ? (
-                Array.from({ length: 5 }).map((_, i) => (
-                    <TableRow key={i}>
-                        <TableCell colSpan={isResolvedView ? 8 : 7} className="h-16">
-                           <Skeleton className="h-6 w-full" />
-                        </TableCell>
-                    </TableRow>
-                ))
-            ) : issues.map((issue) => {
-              const PriorityIcon = priorityIcons[issue.priority];
-              const categoryInfo = categories[issue.category];
-              const CategoryIcon = categoryInfo.icon;
-              return (
-                <TableRow 
-                  key={issue.id} 
-                  onClick={() => canResolveIssues && setSelectedIssue(issue)}
-                  className={cn(canResolveIssues && 'cursor-pointer')}
-                >
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                        <CategoryIcon className={cn("h-6 w-6", categoryInfo.color)} />
-                        <div className="font-medium">{categoryInfo.label}</div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    {issue.subCategory && <div className="text-sm capitalize">{issue.subCategory.replace(/-/g, ' ')}</div>}
-                  </TableCell>
-                  <TableCell>
-                    <div className="font-medium">{issue.title}</div>
-                    <div className="text-sm text-muted-foreground">{issue.location}</div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="outline" className={`capitalize border-0 ${priorityColors[issue.priority]}`}>
-                      <PriorityIcon className="mr-2 h-4 w-4" />
-                      {issue.priority}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <StatusDisplay status={issue.status} />
-                  </TableCell>
-                  {isResolvedView ? (
-                     <>
-                        <TableCell>
-                           {issue.resolvedAt && (
-                            <div className="flex flex-col">
-                                <SafeHydrate>
-                                    <span className="font-medium">{format(issue.resolvedAt, 'PPpp')}</span>
-                                    <span className="text-sm text-muted-foreground">{formatDistanceToNow(issue.resolvedAt, { addSuffix: true })}</span>
-                                </SafeHydrate>
-                            </div>
-                           )}
-                        </TableCell>
-                        <TableCell>
-                           {issue.resolvedAt && formatDuration(issue.reportedAt, issue.resolvedAt)}
-                        </TableCell>
-                        <TableCell>
-                           {issue.resolvedBy && (
-                             <div className="flex items-center gap-2">
-                                <Avatar className="h-8 w-8">
-                                    <AvatarImage src={issue.resolvedBy.avatarUrl} alt={issue.resolvedBy.name} />
-                                    <AvatarFallback>{issue.resolvedBy.name.charAt(0)}</AvatarFallback>
-                                </Avatar>
-                                <span>{issue.resolvedBy.name}</span>
-                            </div>
-                           )}
-                        </TableCell>
-                    </>
-                  ) : (
-                    <>
-                        <TableCell>
-                            <div className="flex flex-col">
-                                <SafeHydrate>
-                                    <span className="font-medium">{format(issue.reportedAt, 'PPpp')}</span>
-                                    <span className="text-sm text-muted-foreground">{formatDistanceToNow(issue.reportedAt, { addSuffix: true })}</span>
-                                </SafeHydrate>
-                            </div>
-                        </TableCell>
-                        <TableCell>
-                            {issue.reportedBy && (
-                            <div className="flex items-center gap-2">
-                                <Avatar className="h-8 w-8">
-                                    <AvatarImage src={issue.reportedBy.avatarUrl} alt={issue.reportedBy.name} />
-                                    <AvatarFallback>{issue.reportedBy.name.charAt(0)}</AvatarFallback>
-                                </Avatar>
-                                <span>{issue.reportedBy.name}</span>
-                            </div>
-                            )}
-                        </TableCell>
-                    </>
-                  )}
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
-      </CardContent>
+        </p>
+      </div>
+
+      <div className="space-y-4">
+        {loading ? (
+            Array.from({ length: 3 }).map((_, i) => (
+                <Card key={i}>
+                    <CardHeader><Skeleton className="h-6 w-3/4" /></CardHeader>
+                    <CardContent><Skeleton className="h-10 w-full" /></CardContent>
+                    <CardFooter><Skeleton className="h-8 w-1/4" /></CardFooter>
+                </Card>
+            ))
+        ) : issues.length > 0 ? (
+             issues.map((issue) => (
+                <IssueCard 
+                    key={issue.id} 
+                    issue={issue}
+                    onSelect={setSelectedIssue}
+                    canResolve={canResolveIssues}
+                />
+            ))
+        ) : (
+            <Card>
+                <CardContent className="p-6 text-center text-muted-foreground">
+                    No issues to display.
+                </CardContent>
+            </Card>
+        )}
+      </div>
+
       {selectedIssue && (
          <ResolveIssueDialog
           isOpen={!!selectedIssue}
@@ -258,6 +227,6 @@ export function IssuesDataTable({ issues, title, description, loading }: { issue
           onIssueUpdate={handleIssueUpdate}
         />
       )}
-    </Card>
+    </div>
   );
 }
