@@ -25,32 +25,34 @@ export function Header({ isCollapsed, onMenuClick }: HeaderProps) {
     return s.charAt(0).toUpperCase() + s.slice(1)
   }
   
+  const MenuButton = () => (
+    isMobile ? (
+      <Sheet>
+        <SheetTrigger asChild>
+          <Button variant="outline" size="icon" className="shrink-0">
+              <Menu className="h-5 w-5" />
+            <span className="sr-only">Toggle navigation menu</span>
+          </Button>
+        </SheetTrigger>
+        <SheetContent side="left" className="flex flex-col">
+            {currentUser && <SidebarNav isMobile={true} userRole={currentUser.role} />}
+        </SheetContent>
+      </Sheet>
+    ) : (
+      <Button variant="outline" size="icon" onClick={onMenuClick} className="shrink-0">
+          <Menu className="h-5 w-5" />
+          <span className="sr-only">Toggle sidebar</span>
+      </Button>
+    )
+  );
+
   return (
     <header className="flex h-14 items-center gap-4 border-b bg-muted/40 px-4 lg:h-[60px] lg:px-6">
-      {isMobile ? (
-        <Sheet>
-          <SheetTrigger asChild>
-            <Button variant="outline" size="icon" className="shrink-0">
-                <Menu className="h-5 w-5" />
-              <span className="sr-only">Toggle navigation menu</span>
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="left" className="flex flex-col">
-              {currentUser && <SidebarNav isMobile={true} userRole={currentUser.role} />}
-          </SheetContent>
-        </Sheet>
-      ) : (
-        <Button variant="outline" size="icon" onClick={onMenuClick} className="shrink-0">
-            <Menu className="h-5 w-5" />
-            <span className="sr-only">Toggle sidebar</span>
-        </Button>
-      )}
-
-      {!isMobile && (
-        <Link href="/">
-            <Logo />
-        </Link>
-      )}
+      <MenuButton />
+      
+      <Link href="/">
+          <Logo />
+      </Link>
       
       <div className="w-full flex-1" />
 
