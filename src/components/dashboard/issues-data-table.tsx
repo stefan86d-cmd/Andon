@@ -149,9 +149,9 @@ export function IssuesDataTable({ issues, title, description, loading }: { issue
                       <CategoryDisplay category={issue.category} />
                   </TableCell>
                   <TableCell>
-                    <div className="font-medium">{issue.title}</div>
+                    <div className="font-medium">{issue.location}</div>
                     <div className="text-sm text-muted-foreground">
-                      {issue.location}
+                      {issue.title}
                     </div>
                   </TableCell>
                   <TableCell>
