@@ -94,7 +94,7 @@ export default function PricingPage() {
         <section className="py-20 md:py-32">
             <div className="container">
                 <div className="text-center">
-                <h1 className="text-3xl font-semibold md:text-4xl">Pricing Plans</h1>
+                <h1 className="text-lg font-semibold md:text-2xl">Pricing Plans</h1>
                 <p className="text-lg text-muted-foreground mt-2">
                     Choose the plan that's right for your production needs.
                 </p>
