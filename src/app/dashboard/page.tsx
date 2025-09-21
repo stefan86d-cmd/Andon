@@ -6,7 +6,7 @@ import { IssuesDataTable } from "@/components/dashboard/issues-data-table";
 import { StatsCards } from "@/components/dashboard/stats-cards";
 import { AppLayout } from "@/components/layout/app-layout";
 import { getIssues } from "@/lib/data";
-import { subHours, intervalToDuration, differenceInSeconds } from "date-fns";
+import { subHours, intervalToDuration, differenceInSeconds, min, max } from "date-fns";
 import { useUser } from "@/contexts/user-context";
 import type { Issue } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -43,10 +43,49 @@ export default function Home() {
     issue => issue.productionStopped && issue.reportedAt > twentyFourHoursAgo
   );
 
-  const totalDowntimeSeconds = stoppedIssuesInLast24h.reduce((total, issue) => {
-    const end = issue.resolvedAt && issue.resolvedAt < now ? issue.resolvedAt : now;
-    return total + differenceInSeconds(end, issue.reportedAt);
-  }, 0);
+  // Group issues by production line
+  const issuesByLine: Record<string, Issue[]> = stoppedIssuesInLast24h.reduce((acc, issue) => {
+    const lineId = issue.productionLineId;
+    if (!acc[lineId]) {
+      acc[lineId] = [];
+    }
+    acc[lineId].push(issue);
+    return acc;
+  }, {} as Record<string, Issue[]>);
+
+  let totalDowntimeSeconds = 0;
+
+  // Calculate merged downtime for each line
+  for (const lineId in issuesByLine) {
+    const lineIssues = issuesByLine[lineId];
+    if (lineIssues.length === 0) continue;
+
+    // Create intervals and sort by start time
+    const intervals = lineIssues.map(issue => ({
+      start: issue.reportedAt,
+      end: issue.resolvedAt && issue.resolvedAt < now ? issue.resolvedAt : now,
+    })).sort((a, b) => a.start.getTime() - b.start.getTime());
+    
+    // Merge overlapping intervals
+    const mergedIntervals = [intervals[0]];
+    for (let i = 1; i < intervals.length; i++) {
+      const lastMerged = mergedIntervals[mergedIntervals.length - 1];
+      const current = intervals[i];
+      if (current.start <= lastMerged.end) { // Overlap or contiguous
+        lastMerged.end = max([lastMerged.end, current.end]);
+      } else {
+        mergedIntervals.push(current);
+      }
+    }
+    
+    // Sum durations of merged intervals
+    const lineDowntime = mergedIntervals.reduce((total, interval) => {
+        return total + differenceInSeconds(interval.end, interval.start);
+    }, 0);
+
+    totalDowntimeSeconds += lineDowntime;
+  }
+  
 
   const duration = intervalToDuration({ start: 0, end: totalDowntimeSeconds * 1000 });
 

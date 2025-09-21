@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Calendar as CalendarIcon, Filter, Power, Factory, Grip, LoaderCircle } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { format, startOfWeek, endOfWeek, startOfDay, endOfDay, differenceInHours } from 'date-fns';
+import { format, startOfWeek, endOfWeek, startOfDay, endOfDay, differenceInHours, max } from 'date-fns';
 import type { DateRange } from "react-day-picker";
 import { cn } from "@/lib/utils";
 import {
@@ -83,25 +83,82 @@ function aggregateBy(filteredIssues: Issue[], key: 'category' | 'productionLineI
 
 function aggregateDowntimeByCategory(filteredIssues: Issue[]) {
     const downtime: Record<string, number> = {};
-
     const categoryNameMap = allCategories.reduce((acc, cat) => {
         acc[cat.id] = cat.label;
         return acc;
     }, {} as Record<string, string>);
 
-    filteredIssues.forEach(issue => {
-        if (issue.productionStopped && issue.status === 'resolved' && issue.resolvedAt) {
-            const hours = differenceInHours(issue.resolvedAt, issue.reportedAt);
-            if (!downtime[issue.category]) {
-                downtime[issue.category] = 0;
-            }
-            downtime[issue.category] += hours;
+    const stoppedIssues = filteredIssues.filter(
+        issue => issue.productionStopped && issue.status === 'resolved' && issue.resolvedAt
+    );
+    
+    // Group issues by production line
+    const issuesByLine: Record<string, Issue[]> = stoppedIssues.reduce((acc, issue) => {
+        const lineId = issue.productionLineId;
+        if (!acc[lineId]) {
+          acc[lineId] = [];
         }
-    });
+        acc[lineId].push(issue);
+        return acc;
+    }, {} as Record<string, Issue[]>);
+
+    // Calculate merged downtime for each line and attribute it to categories
+    for (const lineId in issuesByLine) {
+        const lineIssues = issuesByLine[lineId];
+        if (lineIssues.length === 0) continue;
+
+        const intervals = lineIssues.map(issue => ({
+          start: issue.reportedAt,
+          end: issue.resolvedAt!,
+          category: issue.category,
+          duration: differenceInHours(issue.resolvedAt!, issue.reportedAt)
+        })).sort((a, b) => a.start.getTime() - b.start.getTime());
+
+        const mergedIntervals: {start: Date, end: Date, issues: Issue[]}[] = [];
+        for(const currentIssue of lineIssues) {
+            const currentStart = currentIssue.reportedAt;
+            const currentEnd = currentIssue.resolvedAt!;
+
+            let merged = false;
+            for(const mergedInterval of mergedIntervals) {
+                if (currentStart < mergedInterval.end && currentEnd > mergedInterval.start) {
+                    mergedInterval.start = new Date(Math.min(mergedInterval.start.getTime(), currentStart.getTime()));
+                    mergedInterval.end = new Date(Math.max(mergedInterval.end.getTime(), currentEnd.getTime()));
+                    mergedInterval.issues.push(currentIssue);
+                    merged = true;
+                    break;
+                }
+            }
+            if(!merged) {
+                mergedIntervals.push({
+                    start: currentStart,
+                    end: currentEnd,
+                    issues: [currentIssue]
+                });
+            }
+        }
+
+        for (const mergedInterval of mergedIntervals) {
+            const totalDuration = differenceInHours(mergedInterval.end, mergedInterval.start);
+            const totalWeight = mergedInterval.issues.reduce((sum, issue) => sum + differenceInHours(issue.resolvedAt!, issue.reportedAt), 0);
+
+            if (totalWeight > 0) {
+                for(const issue of mergedInterval.issues) {
+                    const issueDuration = differenceInHours(issue.resolvedAt!, issue.reportedAt);
+                    const weightedContribution = (issueDuration / totalWeight) * totalDuration;
+                    
+                    if (!downtime[issue.category]) {
+                        downtime[issue.category] = 0;
+                    }
+                    downtime[issue.category] += weightedContribution;
+                }
+            }
+        }
+    }
 
     return Object.entries(downtime).map(([category, hours]) => ({
         name: categoryNameMap[category] || category,
-        value: hours,
+        value: parseFloat(hours.toFixed(1)), // Keep one decimal place
     })).sort((a, b) => b.value - a.value);
 }
 
@@ -321,7 +378,7 @@ export default function ReportsPage() {
                     <CardDescription>
                         Total issues broken down by production line.
                     </CardDescription>
-                  </CardHeader>
+                  </Header>
                   <CardContent>
                     <FilteredBarChart data={issuesByLine} />
                   </CardContent>
@@ -331,7 +388,7 @@ export default function ReportsPage() {
                 <CardHeader>
                     <CardTitle>Downtime by Category (Hours)</CardTitle>
                     <CardDescription>
-                        Total production stop time in hours, by issue category.
+                        Total production stop time in hours, by issue category. This chart correctly handles overlapping downtime on the same line.
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
