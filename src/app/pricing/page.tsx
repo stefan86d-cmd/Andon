@@ -3,7 +3,7 @@
 
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Check } from "lucide-react";
+import { Users, Factory, ClipboardList, LayoutDashboard, BarChart3, Bot, UserCog, LifeBuoy, Puzzle, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { Logo } from "@/components/layout/logo";
 import { cn } from "@/lib/utils";
@@ -14,10 +14,10 @@ const tiers = [
     price: "Free",
     description: "For small teams getting started with issue tracking.",
     features: [
-      "Up to 5 users",
-      "1 Production Line",
-      "Basic Issue Reporting",
-      "Dashboard View",
+      { text: "Up to 5 users", icon: <Users className="h-5 w-5 text-primary mr-2 shrink-0 mt-0.5" /> },
+      { text: "1 Production Line", icon: <Factory className="h-5 w-5 text-primary mr-2 shrink-0 mt-0.5" /> },
+      { text: "Basic Issue Reporting", icon: <ClipboardList className="h-5 w-5 text-primary mr-2 shrink-0 mt-0.5" /> },
+      { text: "Dashboard View", icon: <LayoutDashboard className="h-5 w-5 text-primary mr-2 shrink-0 mt-0.5" /> },
     ],
     cta: "Get Started",
   },
@@ -27,14 +27,15 @@ const tiers = [
     pricePeriod: "/ month",
     description: "For growing factories that need more power and insights.",
     features: [
-      "Up to 20 users",
-      "Up to 5 Production Lines",
-      "Advanced Reporting & Analytics",
-      "AI-Powered Issue Prioritization",
-      "User Role Management",
+      { text: "Up to 20 users", icon: <Users className="h-5 w-5 text-primary mr-2 shrink-0 mt-0.5" /> },
+      { text: "Up to 5 Production Lines", icon: <Factory className="h-5 w-5 text-primary mr-2 shrink-0 mt-0.5" /> },
+      { text: "Advanced Reporting & Analytics", icon: <BarChart3 className="h-5 w-5 text-primary mr-2 shrink-0 mt-0.5" /> },
+      { text: "AI-Powered Issue Prioritization", icon: <Bot className="h-5 w-5 text-primary mr-2 shrink-0 mt-0.5" /> },
+      { text: "User Role Management", icon: <UserCog className="h-5 w-5 text-primary mr-2 shrink-0 mt-0.5" /> },
     ],
     cta: "Upgrade to Standard",
     badge: "Most Popular",
+    popular: true,
   },
   {
     name: "Pro",
@@ -42,12 +43,12 @@ const tiers = [
     pricePeriod: "/ month",
     description: "For scaling operations with expanded needs.",
     features: [
-        "Up to 50 users",
-        "Up to 10 Production Lines",
-        "Advanced Reporting & Analytics",
-        "AI-Powered Issue Prioritization",
-        "User Role Management",
-        "Priority Support",
+        { text: "Up to 50 users", icon: <Users className="h-5 w-5 text-primary mr-2 shrink-0 mt-0.5" /> },
+        { text: "Up to 10 Production Lines", icon: <Factory className="h-5 w-5 text-primary mr-2 shrink-0 mt-0.5" /> },
+        { text: "Advanced Reporting & Analytics", icon: <BarChart3 className="h-5 w-5 text-primary mr-2 shrink-0 mt-0.5" /> },
+        { text: "AI-Powered Issue Prioritization", icon: <Bot className="h-5 w-5 text-primary mr-2 shrink-0 mt-0.5" /> },
+        { text: "User Role Management", icon: <UserCog className="h-5 w-5 text-primary mr-2 shrink-0 mt-0.5" /> },
+        { text: "Priority Support", icon: <LifeBuoy className="h-5 w-5 text-primary mr-2 shrink-0 mt-0.5" /> },
     ],
     cta: "Upgrade to Pro",
     badge: "Best Value",
@@ -58,10 +59,10 @@ const tiers = [
     price: "Custom",
     description: "For large-scale operations with custom needs.",
     features: [
-      "Unlimited Users & Lines",
-      "Dedicated Support & Onboarding",
-      "Custom Integrations",
-      "Enhanced Security & Compliance",
+      { text: "Unlimited Users & Lines", icon: <Users className="h-5 w-5 text-primary mr-2 shrink-0 mt-0.5" /> },
+      { text: "Dedicated Support & Onboarding", icon: <LifeBuoy className="h-5 w-5 text-primary mr-2 shrink-0 mt-0.5" /> },
+      { text: "Custom Integrations", icon: <Puzzle className="h-5 w-5 text-primary mr-2 shrink-0 mt-0.5" /> },
+      { text: "Enhanced Security & Compliance", icon: <ShieldCheck className="h-5 w-5 text-primary mr-2 shrink-0 mt-0.5" /> },
     ],
     cta: "Contact Sales",
   },
@@ -113,9 +114,9 @@ export default function PricingPage() {
                     <CardContent className="flex-1">
                         <ul className="space-y-4">
                         {tier.features.map((feature) => (
-                            <li key={feature} className="flex items-start">
-                            <Check className="h-5 w-5 text-green-500 mr-2 shrink-0 mt-0.5" />
-                            <span>{feature}</span>
+                            <li key={feature.text} className="flex items-start">
+                            {feature.icon}
+                            <span>{feature.text}</span>
                             </li>
                         ))}
                         </ul>
