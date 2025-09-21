@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import {
@@ -50,6 +50,15 @@ export default function LoginPage() {
   const router = useRouter();
   const { currentUser, loading, login } = useUser();
 
+  useEffect(() => {
+    // If user is already logged in, redirect them.
+    if (!loading && currentUser) {
+      const path = currentUser.role === 'operator' ? '/line-status' : '/dashboard';
+      router.replace(path);
+    }
+  }, [currentUser, loading, router]);
+
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -62,8 +71,9 @@ export default function LoginPage() {
         description: `Welcome back!`,
       });
 
-      // Redirect based on mock user role
-      router.replace('/dashboard');
+      // Redirect is now handled by the useEffect hook.
+      // The router.replace() call here is no longer needed as the component will re-render
+      // and the useEffect will trigger.
 
     } catch (error: any) {
       console.error("Login Error:", error);
@@ -76,23 +86,12 @@ export default function LoginPage() {
     }
   };
   
-  // If user is already logged in, redirect them.
-  if (!loading && currentUser) {
-    const path = currentUser.role === 'operator' ? '/line-status' : '/dashboard';
-    router.replace(path);
-    return (
-          <div className="flex h-screen items-center justify-center">
-            <LoaderCircle className="h-8 w-8 animate-spin" />
-            <p className="ml-2">Redirecting...</p>
-        </div>
-    );
-  }
-
-  // Show a loading spinner while checking auth state on initial load
-  if (loading) {
+  // If user is being checked or is already logged in, show a loading/redirecting state.
+  if (loading || currentUser) {
     return (
         <div className="flex h-screen items-center justify-center">
             <LoaderCircle className="h-8 w-8 animate-spin" />
+            <p className="ml-2">Loading...</p>
         </div>
     );
   }
