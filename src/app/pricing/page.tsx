@@ -22,8 +22,8 @@ const tiers = [
     cta: "Get Started",
   },
   {
-    name: "Pro",
-    price: "$49",
+    name: "Standard",
+    price: "$39",
     pricePeriod: "/ month",
     description: "For growing factories that need more power and insights.",
     features: [
@@ -33,8 +33,21 @@ const tiers = [
       "AI-Powered Issue Prioritization",
       "User Role Management",
     ],
-    cta: "Upgrade to Pro",
+    cta: "Upgrade to Standard",
     popular: true,
+  },
+  {
+    name: "Pro",
+    price: "$59",
+    pricePeriod: "/ month",
+    description: "For scaling operations with expanded needs.",
+    features: [
+        "Up to 50 users",
+        "Up to 10 Production Lines",
+        "Everything in Standard",
+        "Priority Support",
+    ],
+    cta: "Upgrade to Pro",
   },
   {
     name: "Enterprise",
@@ -81,7 +94,7 @@ export default function PricingPage() {
                     Choose the plan that's right for your production needs.
                 </p>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12 max-w-5xl mx-auto">
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 mt-12 max-w-7xl mx-auto">
                 {tiers.map((tier) => (
                     <Card key={tier.name} className={`flex flex-col ${tier.popular ? 'border-primary shadow-lg' : ''}`}>
                     <CardHeader className="text-center">
