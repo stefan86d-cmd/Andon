@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Calendar as CalendarIcon, Filter, Power, Factory, Grip, LoaderCircle } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { format, startOfWeek, endOfWeek, startOfDay, endOfDay } from 'date-fns';
+import { format, startOfWeek, endOfWeek, startOfDay, endOfDay, differenceInHours } from 'date-fns';
 import type { DateRange } from "react-day-picker";
 import { cn } from "@/lib/utils";
 import {
@@ -81,6 +81,30 @@ function aggregateBy(filteredIssues: Issue[], key: 'category' | 'productionLineI
     })).sort((a, b) => b.value - a.value);
 }
 
+function aggregateDowntimeByCategory(filteredIssues: Issue[]) {
+    const downtime: Record<string, number> = {};
+
+    const categoryNameMap = allCategories.reduce((acc, cat) => {
+        acc[cat.id] = cat.label;
+        return acc;
+    }, {} as Record<string, string>);
+
+    filteredIssues.forEach(issue => {
+        if (issue.productionStopped && issue.status === 'resolved' && issue.resolvedAt) {
+            const hours = differenceInHours(issue.resolvedAt, issue.reportedAt);
+            if (!downtime[issue.category]) {
+                downtime[issue.category] = 0;
+            }
+            downtime[issue.category] += hours;
+        }
+    });
+
+    return Object.entries(downtime).map(([category, hours]) => ({
+        name: categoryNameMap[category] || category,
+        value: hours,
+    })).sort((a, b) => b.value - a.value);
+}
+
 
 export default function ReportsPage() {
     const [issues, setIssues] = useState<Issue[]>([]);
@@ -128,6 +152,7 @@ export default function ReportsPage() {
     const issuesByDay = useMemo(() => aggregateIssuesByDate(filteredIssues), [filteredIssues]);
     const issuesByCategory = useMemo(() => aggregateBy(filteredIssues, 'category', productionLines), [filteredIssues, productionLines]);
     const issuesByLine = useMemo(() => aggregateBy(filteredIssues, 'productionLineId', productionLines), [filteredIssues, productionLines]);
+    const downtimeByCategory = useMemo(() => aggregateDowntimeByCategory(filteredIssues), [filteredIssues]);
 
     const resetFilters = () => {
         setDateRange({ from: startOfWeek(new Date()), to: endOfWeek(new Date()) });
@@ -302,6 +327,17 @@ export default function ReportsPage() {
                   </CardContent>
                 </Card>
             </div>
+            <Card>
+                <CardHeader>
+                    <CardTitle>Downtime by Category (Hours)</CardTitle>
+                    <CardDescription>
+                        Total production stop time in hours, by issue category.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <FilteredBarChart data={downtimeByCategory} />
+                </CardContent>
+            </Card>
         </div>
       </main>
     </AppLayout>
