@@ -115,6 +115,7 @@ export default function SettingsPage() {
                                         <div className="rounded-lg border bg-card-foreground/5 p-6">
                                             <h3 className="text-lg font-semibold">Current Plan: Pro</h3>
                                             <p className="text-sm text-muted-foreground">Your workspace is on the Pro plan, which includes AI-powered prioritization and advanced reporting.</p>
+                                            <p className="text-sm text-muted-foreground mt-2">Your plan renews on January 1, 2025.</p>
                                         </div>
                                         <div className="flex flex-col sm:flex-row gap-2">
                                              <Button className="w-full sm:w-auto">Upgrade to Enterprise</Button>
