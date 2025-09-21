@@ -2,35 +2,34 @@
 
 "use client";
 
-import type { Issue, Priority, Status, User, IssueCategory } from "@/lib/types";
+import type { Issue, Priority, Status, User } from "@/lib/types";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table";
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
-  ArrowDownCircle,
-  TriangleAlert,
-  Flame,
-  Siren,
-  CircleDotDashed,
-  LoaderCircle,
-  CheckCircle2,
-  Archive,
-  Monitor,
-  Truck,
-  Wrench,
-  HelpCircle,
-  LifeBuoy,
-  BadgeCheck,
-  Clock,
-  User as UserIcon,
-} from "lucide-react";
-import { format, formatDistanceToNow, intervalToDuration } from "date-fns";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { MoreHorizontal, ArrowDownCircle, TriangleAlert, Flame, Siren, CircleDotDashed, LoaderCircle, CheckCircle2, Archive } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { format, formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
 import { ResolveIssueDialog } from "./resolve-issue-dialog";
 import { useState } from "react";
@@ -59,133 +58,15 @@ const statusIcons: Record<Status, React.ElementType> = {
   archived: Archive,
 };
 
-const statusLabels: Record<Status, string> = {
-    reported: "Reported",
-    in_progress: "In Progress",
-    resolved: "Resolved",
-    archived: "Archived",
-};
-
-const categories: Record<IssueCategory, { label: string, icon: React.ElementType, color: string, bgColor: string }> = {
-    'it': { label: 'It & Network', icon: Monitor, color: 'text-blue-500', bgColor: 'bg-blue-500' },
-    'logistics': { label: 'Logistics', icon: Truck, color: 'text-orange-500', bgColor: 'bg-orange-500' },
-    'tool': { label: 'Tool & Equipment', icon: Wrench, color: 'text-gray-500', bgColor: 'bg-gray-500' },
-    'assistance': { label: 'Need Help', icon: LifeBuoy, color: 'text-red-500', bgColor: 'bg-red-500' },
-    'quality': { label: 'Quality', icon: BadgeCheck, color: 'text-green-500', bgColor: 'bg-green-500' },
-    'other': { label: 'Other', icon: HelpCircle, color: 'text-purple-500', bgColor: 'bg-purple-500' },
-};
-
 const StatusDisplay = ({ status }: { status: Status }) => {
     const Icon = statusIcons[status];
-    const label = statusLabels[status];
-
     return (
-        <div className="flex items-center gap-2 text-sm">
-            <Badge variant={status === 'resolved' ? 'default' : 'secondary'} className={cn('capitalize', status === 'resolved' ? 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300' : '')}>
-                <Icon className={cn("h-3 w-3 mr-1", status === 'in_progress' && 'animate-spin')} />
-                {label}
-            </Badge>
-        </div>
+        <Badge variant={status === 'resolved' ? 'default' : 'secondary'} className={cn('capitalize', status === 'resolved' ? 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300' : '')}>
+            <Icon className={cn("h-3 w-3 mr-1", status === 'in_progress' && 'animate-spin')} />
+            {status.replace("_", " ")}
+        </Badge>
     );
 };
-
-const PriorityDisplay = ({ priority }: { priority: Priority }) => {
-    const Icon = priorityIcons[priority];
-    return (
-        <div className="flex items-center gap-2 text-sm">
-            <Badge variant="outline" className={cn(`capitalize border-0 font-medium`, priorityColors[priority])}>
-                 <Icon className="h-4 w-4 mr-1" />
-                {priority}
-            </Badge>
-        </div>
-    );
-};
-
-
-function formatDuration(start: Date, end: Date) {
-  const duration = intervalToDuration({ start, end });
-  
-  const parts = [];
-  if (duration.days && duration.days > 0) parts.push(`${duration.days}d`);
-  if (duration.hours && duration.hours > 0) parts.push(`${duration.hours}h`);
-  if (duration.minutes && duration.minutes > 0) parts.push(`${duration.minutes}m`);
-  
-  if (parts.length > 0) {
-    return parts.slice(0, 2).join(' ');
-  }
-  
-  if (duration.seconds && duration.seconds > 0) {
-    return `${duration.seconds}s`
-  }
-
-  return '0s';
-}
-
-const DetailItem = ({ icon: Icon, label, value }: { icon: React.ElementType, label: string, value: React.ReactNode }) => (
-    <div className="flex items-center gap-2 text-sm">
-        <Icon className="h-5 w-5 text-muted-foreground" />
-        <div>
-            <p className="font-medium text-muted-foreground">{label}</p>
-            <p>{value}</p>
-        </div>
-    </div>
-);
-
-
-const IssueCard = ({ issue, onSelect, canResolve }: { issue: Issue, onSelect: (issue: Issue) => void, canResolve: boolean }) => {
-    const categoryInfo = categories[issue.category];
-    const CategoryIcon = categoryInfo.icon;
-    const isResolved = issue.status === 'resolved';
-
-    return (
-        <Card onClick={() => canResolve && onSelect(issue)} className={cn('overflow-hidden', canResolve && 'cursor-pointer hover:shadow-md transition-shadow')}>
-            <CardHeader className={cn("pb-4", categoryInfo.bgColor)}>
-                <div className="flex items-start justify-between gap-4">
-                    <div>
-                        <CardTitle className="text-lg text-primary-foreground">{issue.location}</CardTitle>
-                        <CardDescription className="text-primary-foreground/80">{issue.title}</CardDescription>
-                    </div>
-                    <CategoryIcon className={cn("h-8 w-8 text-primary-foreground/80")} />
-                </div>
-            </CardHeader>
-            
-            <CardContent className="flex items-center justify-between gap-x-6 gap-y-4">
-                <div className="flex flex-wrap items-center gap-x-6 gap-y-4">
-                    <DetailItem 
-                        icon={UserIcon}
-                        label={isResolved ? 'Resolved By' : 'Reported By'}
-                        value={isResolved ? issue.resolvedBy?.name : issue.reportedBy.name}
-                    />
-
-                    <StatusDisplay status={issue.status} />
-                     
-                    <DetailItem 
-                        icon={Clock}
-                        label={isResolved ? 'Resolved At' : 'Reported At'}
-                        value={<SafeHydrate>{format(isResolved ? issue.resolvedAt! : issue.reportedAt, 'PPp')}</SafeHydrate>}
-                    />
-                </div>
-                <PriorityDisplay priority={issue.priority} />
-            </CardContent>
-
-            <CardFooter className="flex-wrap !pt-4 gap-x-4 gap-y-2">
-                {issue.subCategory && (
-                    <div className="text-sm flex items-center">
-                        <CategoryIcon className={cn("h-4 w-4 mr-2", categoryInfo.color)} />
-                        <span className="font-medium mr-1">{categoryInfo.label}:</span>
-                        <span className="text-muted-foreground capitalize">{issue.subCategory.replace(/-/g, ' ')}</span>
-                    </div>
-                )}
-                 {isResolved && issue.resolvedAt && (
-                    <div className="text-sm text-muted-foreground">
-                        Resolution Time: <strong>{formatDuration(issue.reportedAt, issue.resolvedAt)}</strong>
-                    </div>
-                )}
-            </CardFooter>
-        </Card>
-    );
-};
-
 
 export function IssuesDataTable({ issues, title, description, loading }: { issues: Issue[], title?: string, description?: string, loading?: boolean }) {
   const { currentUser } = useUser();
@@ -200,46 +81,112 @@ export function IssuesDataTable({ issues, title, description, loading }: { issue
     // For now, we manually reload to see the change.
     window.location.reload();
   };
-
+  
   const canResolveIssues = currentUser?.role === 'admin' || currentUser?.role === 'supervisor';
 
   return (
-    <div className="space-y-4">
-      <div className="px-4 lg:px-6">
-        <h2 className="text-lg font-semibold md:text-xl">{title || (currentUser?.role === 'admin' ? 'Recent Issues' : 'Recent Issues on Your Line')}</h2>
-        <p className="text-sm text-muted-foreground">
+    <Card>
+      <CardHeader>
+        <CardTitle>{title || (currentUser?.role === 'admin' ? 'Recent Issues' : 'Recent Issues on Your Line')}</CardTitle>
+        <CardDescription>
           {description || (currentUser?.role === 'admin' ? 'A list of recently reported issues on the production line.' : 'Issues reported on your selected line within the last 24 hours.')}
-        </p>
-      </div>
-
-      <div className="space-y-4">
-        {loading ? (
-            Array.from({ length: 3 }).map((_, i) => (
-                <Card key={i}>
-                    <CardHeader><Skeleton className="h-6 w-3/4" /></CardHeader>
-                    <CardContent><Skeleton className="h-10 w-full" /></CardContent>
-                    <CardFooter><Skeleton className="h-8 w-1/4" /></CardFooter>
-                </Card>
-            ))
-        ) : issues.length > 0 ? (
-             issues.map((issue) => (
-                <IssueCard 
-                    key={issue.id} 
-                    issue={issue}
-                    onSelect={setSelectedIssue}
-                    canResolve={canResolveIssues}
-                />
-            ))
-        ) : (
-            <Card>
-                <CardContent className="p-6 text-center text-muted-foreground">
-                    No issues to display.
-                </CardContent>
-            </Card>
-        )}
-      </div>
-
-      {selectedIssue && (
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Issue</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Priority</TableHead>
+              <TableHead>Reported By</TableHead>
+              <TableHead>Time</TableHead>
+              {canResolveIssues && (
+                <TableHead>
+                  <span className="sr-only">Actions</span>
+                </TableHead>
+              )}
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {loading ? (
+                Array.from({ length: 5 }).map((_, i) => (
+                    <TableRow key={i}>
+                        <TableCell><Skeleton className="h-6 w-3/4" /></TableCell>
+                        <TableCell><Skeleton className="h-6 w-20" /></TableCell>
+                        <TableCell><Skeleton className="h-6 w-20" /></TableCell>
+                        <TableCell><Skeleton className="h-6 w-24" /></TableCell>
+                        <TableCell><Skeleton className="h-6 w-20" /></TableCell>
+                        {canResolveIssues && <TableCell><Skeleton className="h-8 w-8" /></TableCell>}
+                    </TableRow>
+                ))
+            ) : issues.length > 0 ? (
+              issues.map((issue) => (
+                <TableRow key={issue.id} onClick={() => canResolveIssues && setSelectedIssue(issue)} className={cn(canResolveIssues && "cursor-pointer")}>
+                  <TableCell>
+                    <div className="font-medium">{issue.title}</div>
+                    <div className="text-sm text-muted-foreground">
+                      {issue.location}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <StatusDisplay status={issue.status} />
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                        <Badge variant="outline" className={cn(`capitalize border-0 font-medium`, priorityColors[issue.priority])}>
+                            {React.createElement(priorityIcons[issue.priority], { className: "h-4 w-4 mr-1" })}
+                            {issue.priority}
+                        </Badge>
+                    </div>
+                  </TableCell>
+                   <TableCell>
+                        <div className="flex items-center gap-2">
+                            <Avatar className="h-6 w-6">
+                                <AvatarImage src={issue.reportedBy.avatarUrl} alt={issue.reportedBy.name} />
+                                <AvatarFallback>{issue.reportedBy.name.charAt(0)}</AvatarFallback>
+                            </Avatar>
+                            <span>{issue.reportedBy.name}</span>
+                        </div>
+                   </TableCell>
+                  <TableCell>
+                    <SafeHydrate>
+                        <span className="text-muted-foreground text-sm">{formatDistanceToNow(issue.reportedAt, { addSuffix: true })}</span>
+                    </SafeHydrate>
+                  </TableCell>
+                  {canResolveIssues && (
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            aria-haspopup="true"
+                            size="icon"
+                            variant="ghost"
+                          >
+                            <MoreHorizontal className="h-4 w-4" />
+                            <span className="sr-only">Toggle menu</span>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                          <DropdownMenuItem onSelect={() => setSelectedIssue(issue)}>Resolve</DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  )}
+                </TableRow>
+              ))
+            ) : (
+                <TableRow>
+                    <TableCell colSpan={canResolveIssues ? 6 : 5} className="h-24 text-center">
+                        No issues found.
+                    </TableCell>
+                </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </CardContent>
+       {selectedIssue && (
          <ResolveIssueDialog
           isOpen={!!selectedIssue}
           onOpenChange={(isOpen) => !isOpen && setSelectedIssue(null)}
@@ -247,7 +194,6 @@ export function IssuesDataTable({ issues, title, description, loading }: { issue
           onIssueUpdate={handleIssueUpdate}
         />
       )}
-    </div>
+    </Card>
   );
 }
-
