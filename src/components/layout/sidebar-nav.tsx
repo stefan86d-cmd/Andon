@@ -40,7 +40,7 @@ export function SidebarNav({ isMobile = false, isCollapsed = false, userRole }: 
         <TooltipProvider>
             <nav className={cn("grid items-start text-sm font-medium", isMobile ? "px-4" : "px-2 lg:px-4", isCollapsed && !isMobile && "px-2")}>
                 {isMobile && 
-                <Link href="/dashboard" className="flex items-center gap-2 text-lg font-semibold mb-4">
+                <Link href="/" className="flex items-center gap-2 text-lg font-semibold mb-4">
                 <Logo />
                 <span className="sr-only">AndonPro</span>
                 </Link>
