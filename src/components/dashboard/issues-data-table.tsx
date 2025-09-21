@@ -146,7 +146,7 @@ const IssueCard = ({ issue, onSelect, canResolve }: { issue: Issue, onSelect: (i
                     <DetailItem
                         icon={categoryInfo.icon}
                         label={categoryInfo.label}
-                        value={<p className="capitalize">{issue.subCategory.replace(/-/g, ' ')}</p>}
+                        value={<span className="capitalize">{issue.subCategory.replace(/-/g, ' ')}</span>}
                     />
                 )}
                 
