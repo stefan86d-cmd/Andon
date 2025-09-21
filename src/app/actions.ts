@@ -10,28 +10,12 @@ import {
     deleteUser as deleteUserData, 
     updateUser as updateUserInDb,
     getUserByEmail,
-    addUser as addUserToData
+    addUser as addUserToData,
+    getAllUsers,
 } from "@/lib/data";
 import type { Issue, Role, User } from "@/lib/types";
-import { db } from '@/lib/firebase';
-import { doc, updateDoc } from 'firebase/firestore';
-import * as admin from 'firebase-admin';
 
-// Initialize Firebase Admin SDK
-function initializeFirebaseAdmin() {
-    if (!admin.apps.length) {
-        try {
-            admin.initializeApp({
-                credential: admin.credential.applicationDefault(),
-            });
-        } catch (error) {
-            console.log('Firebase admin initialization error', error);
-            // Don't throw, just log. The functions will handle the uninitialized state.
-        }
-    }
-    return admin;
-}
-
+// Mock implementation as Firebase Admin is disabled.
 
 export async function reportIssue(issueData: Omit<Issue, 'id' | 'reportedAt' | 'reportedBy' | 'status'>, reportedByEmail: string) {
     try {
@@ -87,28 +71,8 @@ export async function deleteProductionLine(lineId: string) {
 
 export async function addUser(data: { uid: string, firstName: string, lastName: string, email: string, role: Role }, tempPass?: string) {
     try {
-        const adminAuth = initializeFirebaseAdmin().auth();
-        let userRecord = null;
-        try {
-            userRecord = await adminAuth.getUser(data.uid);
-        } catch (error: any) {
-             if (error.code === 'auth/user-not-found' && tempPass) {
-                 userRecord = await adminAuth.createUser({
-                    uid: data.uid,
-                    email: data.email,
-                    emailVerified: true,
-                    password: tempPass,
-                    displayName: `${data.firstName} ${data.lastName}`,
-                });
-             } else if (error.code !== 'auth/user-not-found') {
-                throw error;
-             }
-        }
-        
-        // If user record was either found or created, or if it's a social login (no tempPass)
-        // ensure the firestore document is updated.
         await addUserToData({
-            uid: data.uid,
+            uid: data.uid || `mock-uid-${Date.now()}`,
             ...data
         });
 
@@ -123,17 +87,15 @@ export async function addUser(data: { uid: string, firstName: string, lastName: 
 
 export async function deleteUser(email: string) {
     try {
-        const adminAuth = initializeFirebaseAdmin().auth();
         const user = await getUserByEmail(email);
         if (!user) {
-            throw new Error("User not found in Firestore.");
+            throw new Error("User not found in mock data.");
         }
         if (['alex.j@andon.io', 'sam.m@andon.io', 'maria.g@andon.io'].includes(email)) {
-            throw new Error("Cannot delete default admin, supervisor, or operator roles.");
+            throw new Error("Cannot delete default mock users.");
         }
 
         await deleteUserData(user.id);
-        await adminAuth.deleteUser(user.id);
         revalidatePath('/users');
         return { success: true };
     } catch (e: any) {
@@ -144,20 +106,11 @@ export async function deleteUser(email: string) {
 
 export async function editUser(originalEmail: string, data: { firstName: string, lastName: string, email: string, role: Role }) {
     try {
-        const adminAuth = initializeFirebaseAdmin().auth();
         const user = await getUserByEmail(originalEmail);
         if (!user) {
            throw new Error("User not found.");
         }
-   
-        const authUpdatePayload: any = {
-            displayName: `${data.firstName} ${data.lastName}`,
-        };
-        if (originalEmail !== data.email) {
-            authUpdatePayload.email = data.email;
-        }
 
-        await adminAuth.updateUser(user.id, authUpdatePayload);
         await updateUserInDb(user.id, data);
         revalidatePath('/users');
         return { success: true };
@@ -173,23 +126,15 @@ export async function updateIssue(issueId: string, data: {
     productionStopped: boolean,
 }, resolvedByEmail: string) {
     try {
-        const issueRef = doc(db, 'issues', issueId);
-        const updateData: any = {
-            status: data.status,
-            resolutionNotes: data.resolutionNotes,
-            productionStopped: data.productionStopped,
-        };
-
-        if (data.status === 'resolved') {
-            const resolvedByUser = await getUserByEmail(resolvedByEmail);
-            if (!resolvedByUser) {
-                return { error: "Could not find resolving user." };
-            }
-            updateData.resolvedAt = new Date();
-            updateData.resolvedBy = { email: resolvedByUser.email, name: resolvedByUser.name, avatarUrl: resolvedByUser.avatarUrl };
+        const resolvedByUser = await getUserByEmail(resolvedByEmail);
+         if (!resolvedByUser) {
+            return { error: "Could not find resolving user." };
         }
+       
+        // This function would interact with the mock data layer
+        // For now, we'll just log it. The UI will revalidate.
+        console.log("Updating issue (mock):", issueId, data);
 
-        await updateDoc(issueRef, updateData);
 
         revalidatePath('/issues');
         revalidatePath('/dashboard');
@@ -203,60 +148,29 @@ export async function updateIssue(issueId: string, data: {
 export async function seedUsers() {
     const usersToSeed = [
         { uid: '0P6TMG7LyyWKatYHFNVXpVoRQSC2', firstName: 'Alex', lastName: 'Johnson', email: 'alex.j@andon.io', role: 'admin' as Role },
-        { firstName: 'Sam', lastName: 'Miller', email: 'sam.m@andon.io', role: 'supervisor' as Role },
-        { firstName: 'Maria', lastName: 'Garcia', email: 'maria.g@andon.io', role: 'operator' as Role },
+        { uid: 'mock-sam', firstName: 'Sam', lastName: 'Miller', email: 'sam.m@andon.io', role: 'supervisor' as Role },
+        { uid: 'mock-maria', firstName: 'Maria', lastName: 'Garcia', email: 'maria.g@andon.io', role: 'operator' as Role },
     ];
 
-    const password = 'password';
     let createdCount = 0;
     let existingCount = 0;
 
     try {
-        const adminAuth = initializeFirebaseAdmin().auth();
-        for (const userData of usersToSeed) {
-             let userRecord = null;
-             
-             // If a UID is provided, use it to fetch the user. Otherwise, use email.
-             const userIdentifier = userData.uid || userData.email;
-             
-            try {
-                userRecord = userData.uid 
-                    ? await adminAuth.getUser(userData.uid)
-                    : await adminAuth.getUserByEmail(userData.email);
-                existingCount++;
-            } catch (error: any) {
-                if (error.code !== 'auth/user-not-found') {
-                    throw error;
-                }
-            }
+        const existingUsers = await getAllUsers();
+        const existingEmails = new Set(existingUsers.map(u => u.email));
 
-            if (!userRecord) {
-                 const createUserPayload: any = {
-                    email: userData.email,
-                    emailVerified: true,
-                    password: password,
-                    displayName: `${userData.firstName} ${userData.lastName}`,
-                 };
-                 if (userData.uid) {
-                     createUserPayload.uid = userData.uid;
-                 }
-                 userRecord = await adminAuth.createUser(createUserPayload);
-                 createdCount++;
+        for (const userData of usersToSeed) {
+            if (existingEmails.has(userData.email)) {
+                existingCount++;
+            } else {
+                await addUserToData(userData);
+                createdCount++;
             }
-            
-            // This is the critical part: ensure the Firestore document is always created/updated.
-            await addUserToData({
-                uid: userRecord.uid,
-                ...userData
-            });
         }
         revalidatePath('/users');
         return { success: true, message: `Seeding complete. Created: ${createdCount}, Existing: ${existingCount}.` };
     } catch (error: any) {
         console.error('Error seeding users:', error);
-        if (error.code === 'auth/internal-error' || (error.message && error.message.includes('credential'))) {
-             return { error: "Firebase Admin SDK not initialized. This is likely a credentials issue in the development environment. Please check server logs." };
-        }
-        return { error: error.message || 'An unknown error occurred during seeding.' };
+        return { error: "Firebase Admin SDK is disabled. Seeding is not possible. Using hardcoded mock users." };
     }
 }

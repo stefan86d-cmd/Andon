@@ -22,10 +22,9 @@ import { Moon, Sun } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { auth } from "@/lib/firebase";
 
 export function UserNav() {
-  const { currentUser } = useUser();
+  const { currentUser, logout } = useUser();
   const { setTheme } = useTheme()
   const router = useRouter();
 
@@ -33,10 +32,8 @@ export function UserNav() {
     return null;
   }
 
-  const handleLogout = async () => {
-    await auth.signOut();
-    // The onAuthStateChanged listener in UserProvider will handle state cleanup
-    // and redirecting to the login page.
+  const handleLogout = () => {
+    logout();
     router.push('/');
   }
 

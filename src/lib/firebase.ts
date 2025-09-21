@@ -1,22 +1,12 @@
 
-import { initializeApp, getApps, getApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+// This file is intentionally left blank to disable Firebase integration.
+// The configuration has been removed to allow for offline UI/feature development.
 
-const firebaseConfig = {
-  apiKey: "AIzaSyB2GWsEfRVVhwVl-arUo6Px26jLb4WKMQg",
-  authDomain: "studio-5908745554-37561.firebaseapp.com",
-  projectId: "studio-5908745554-37561",
-  storageBucket: "studio-5908745554-37561.appspot.com",
-  messagingSenderId: "122772761857",
-  appId: "1:122772761857:web:9ed040003bdcd05eae3f00",
-};
+const app = {};
+const auth = {};
+const db = {};
+const googleProvider = {};
+const signInWithPopup = async () => { throw new Error("Firebase is disabled."); };
 
-// Initialize Firebase
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-
-const auth = getAuth(app);
-const db = getFirestore(app);
-const googleProvider = new GoogleAuthProvider();
 
 export { app, auth, db, googleProvider, signInWithPopup };

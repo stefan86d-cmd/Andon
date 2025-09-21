@@ -17,11 +17,6 @@ import { Logo } from "@/components/layout/logo";
 import { useUser } from '@/contexts/user-context';
 import { toast } from '@/hooks/use-toast';
 import { LoaderCircle, Database } from 'lucide-react';
-import { auth, googleProvider, signInWithPopup } from '@/lib/firebase';
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { seedUsers, addUser } from './actions';
-import { getUserByEmail } from '@/lib/data';
-import type { Role } from '@/lib/types';
 import { Separator } from '@/components/ui/separator';
 
 function GoogleIcon() {
@@ -48,149 +43,48 @@ function GoogleIcon() {
 }
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('alex.j@andon.io');
+  const [password, setPassword] = useState('password');
   const [isLoading, setIsLoading] = useState(false);
-  const [isSeeding, startSeedingTransition] = useTransition();
   const router = useRouter();
-  const { currentUser, loading } = useUser();
-
-  const postLoginFlow = async (email: string, name: string) => {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      const user = await getUserByEmail(email);
-      if (!user) {
-        throw new Error("User profile not found in the database. Please try seeding the users again.");
-      }
-
-      toast({
-        title: "Login Successful",
-        description: `Welcome back, ${user.name}!`,
-      });
-
-      if (user.role === 'operator') {
-        router.replace('/line-status');
-      } else {
-        router.replace('/dashboard');
-      }
-  }
+  const { currentUser, loading, login } = useUser();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      await login(email);
       
-      if (!userCredential.user.email) {
-        throw new Error("Email not found for the logged-in user.");
-      }
-      
-      await postLoginFlow(userCredential.user.email, userCredential.user.displayName || 'user');
+      toast({
+        title: "Login Successful",
+        description: `Welcome back!`,
+      });
+
+      // Redirect based on mock user role
+      router.replace('/dashboard');
 
     } catch (error: any) {
       console.error("Login Error:", error);
-      let errorMessage = "An unknown error occurred.";
-       if (error.message.includes("User profile not found")) {
-        errorMessage = "User profile not found. Please click 'Seed Default Users' and try again."
-      } else {
-        switch (error.code) {
-          case 'auth/user-not-found':
-          case 'auth/wrong-password':
-          case 'auth/invalid-credential':
-            errorMessage = 'Invalid email or password.';
-            break;
-          case 'auth/invalid-email':
-            errorMessage = 'Please enter a valid email address.';
-            break;
-          default:
-            errorMessage = 'Failed to log in. Please try again.';
-            break;
-        }
-      }
       toast({
         variant: "destructive",
         title: "Login Failed",
-        description: errorMessage,
+        description: error.message,
       });
       setIsLoading(false);
     }
   };
-
-  const handleGoogleSignIn = async () => {
-    setIsLoading(true);
-    try {
-        const result = await signInWithPopup(auth, googleProvider);
-        const user = result.user;
-
-        if (!user.email || !user.displayName) {
-            throw new Error("Could not retrieve user information from Google.");
-        }
-
-        // Check if user exists in our Firestore DB
-        let dbUser = await getUserByEmail(user.email);
-
-        if (!dbUser) {
-            // User does not exist, create a new one
-            const [firstName, ...lastNameParts] = user.displayName.split(' ');
-            const lastName = lastNameParts.join(' ') || ' ';
-
-            const addUserResult = await addUser({
-                uid: user.uid,
-                email: user.email,
-                firstName: firstName,
-                lastName: lastName,
-                role: 'operator' as Role, // Default role for new sign-ups
-            });
-
-            if (addUserResult?.error) {
-              throw new Error(addUserResult.error);
-            }
-        }
-
-        await postLoginFlow(user.email, user.displayName);
-
-    } catch (error: any) {
-        console.error("Google Sign-In Error:", error);
-        toast({
-            variant: "destructive",
-            title: "Sign-in Failed",
-            description: error.message || "Failed to sign in with Google. Please try again.",
-        });
-        setIsLoading(false);
-    }
-  }
-
-
-  const handleSeed = () => {
-    startSeedingTransition(async () => {
-        const result = await seedUsers();
-        if (result.success) {
-            toast({
-                title: "Database Seeded",
-                description: result.message + " You can now log in with default users.",
-            });
-        } else {
-             toast({
-                variant: "destructive",
-                title: "Seeding Failed",
-                description: result.error,
-            });
-        }
-    });
-  }
   
   // If user is already logged in, redirect them.
   if (!loading && currentUser) {
     const path = currentUser.role === 'operator' ? '/line-status' : '/dashboard';
-    if (typeof window !== 'undefined' && window.location.pathname === '/') {
-        router.replace(path);
-        return (
-             <div className="flex h-screen items-center justify-center">
-                <LoaderCircle className="h-8 w-8 animate-spin" />
-                <p className="ml-2">Redirecting...</p>
-            </div>
-        );
-    }
+    router.replace(path);
+    return (
+          <div className="flex h-screen items-center justify-center">
+            <LoaderCircle className="h-8 w-8 animate-spin" />
+            <p className="ml-2">Redirecting...</p>
+        </div>
+    );
   }
 
   // Show a loading spinner while checking auth state on initial load
@@ -211,7 +105,7 @@ export default function LoginPage() {
           </div>
           <CardTitle>Login</CardTitle>
           <CardDescription>
-            Enter your credentials or sign in with Google.
+            Enter mock credentials to proceed. Firebase is disabled.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -243,9 +137,9 @@ export default function LoginPage() {
                     disabled={isLoading}
                 />
               </div>
-              <Button type="submit" className="w-full" disabled={isLoading || isSeeding}>
+              <Button type="submit" className="w-full" disabled={isLoading}>
                   {isLoading && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
-                  Login with Email
+                  Login with Mock User
               </Button>
             </div>
           </form>
@@ -253,31 +147,12 @@ export default function LoginPage() {
             <Separator />
             <span className="absolute left-1/2 -translate-x-1/2 -top-2.5 bg-background px-2 text-xs text-muted-foreground">OR</span>
           </div>
-           <Button variant="outline" className="w-full" onClick={handleGoogleSignIn} disabled={isLoading || isSeeding}>
-              {isLoading ? (
-                <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <GoogleIcon />
-              )}
-              Sign in with Google
+           <Button variant="outline" className="w-full" disabled={true}>
+              <GoogleIcon />
+              Sign in with Google (Disabled)
             </Button>
-           {process.env.NODE_ENV === 'development' && (
-             <div className="mt-4 border-t pt-4">
-                <p className="text-sm text-muted-foreground text-center mb-2">First time? Seed the database with default users.</p>
-                <Button variant="outline" className="w-full" onClick={handleSeed} disabled={isSeeding || isLoading}>
-                    {isSeeding ? (
-                        <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
-                    ) : (
-                        <Database className="mr-2 h-4 w-4" />
-                    )}
-                    Seed Default Users
-                </Button>
-            </div>
-           )}
         </CardContent>
       </Card>
     </div>
   );
 }
-
-    
