@@ -11,9 +11,21 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Camera } from "lucide-react";
 import { useUser } from "@/contexts/user-context";
+import { useState } from "react";
+import { CancelSubscriptionDialog } from "@/components/settings/cancel-subscription-dialog";
+import { format } from "date-fns";
 
 export default function SettingsPage() {
     const { currentUser } = useUser();
+    const [isCancelled, setIsCancelled] = useState(false);
+    const [endDate, setEndDate] = useState<Date | null>(null);
+
+    const handleCancelConfirm = () => {
+        const futureDate = new Date();
+        futureDate.setMonth(futureDate.getMonth() + 1);
+        setEndDate(futureDate);
+        setIsCancelled(true);
+    };
     
     if (!currentUser) {
         return <AppLayout><div>Loading...</div></AppLayout>;
@@ -115,12 +127,20 @@ export default function SettingsPage() {
                                         <div className="rounded-lg border bg-card-foreground/5 p-6">
                                             <h3 className="text-lg font-semibold">Current Plan: Pro</h3>
                                             <p className="text-sm text-muted-foreground">Your workspace is on the Pro plan, which includes AI-powered prioritization and advanced reporting.</p>
-                                            <p className="text-sm text-muted-foreground mt-2">Your plan renews on January 1, 2025.</p>
+                                            {isCancelled && endDate ? (
+                                                <p className="text-sm font-semibold text-destructive mt-2">Your plan is cancelled and will end on {format(endDate, "MMMM d, yyyy")}.</p>
+                                            ) : (
+                                                <p className="text-sm text-muted-foreground mt-2">Your plan renews on January 1, 2025.</p>
+                                            )}
                                         </div>
-                                        <div className="flex flex-col sm:flex-row gap-2">
-                                             <Button className="w-full sm:w-auto">Upgrade to Enterprise</Button>
-                                             <Button variant="destructive" className="w-full sm:w-auto">Cancel Subscription</Button>
-                                        </div>
+                                        {!isCancelled && (
+                                            <div className="flex flex-col sm:flex-row gap-2">
+                                                <Button className="w-full sm:w-auto">Upgrade to Enterprise</Button>
+                                                <CancelSubscriptionDialog onConfirm={handleCancelConfirm}>
+                                                    <Button variant="destructive" className="w-full sm:w-auto">Cancel Subscription</Button>
+                                                </CancelSubscriptionDialog>
+                                            </div>
+                                        )}
                                     </CardContent>
                                 </Card>
                             </TabsContent>
