@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import type { Issue, Priority, Status, User, IssueCategory } from "@/lib/types";
@@ -80,7 +81,6 @@ const StatusDisplay = ({ status }: { status: Status }) => {
 
     return (
         <div className="flex items-center gap-2 text-sm">
-            <Icon className="h-5 w-5 text-muted-foreground" />
             <Badge variant={status === 'resolved' ? 'default' : 'secondary'} className={cn('capitalize', status === 'resolved' ? 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300' : '')}>
                 <Icon className={cn("h-3 w-3 mr-1", status === 'in_progress' && 'animate-spin')} />
                 {label}
@@ -93,8 +93,8 @@ const PriorityDisplay = ({ priority }: { priority: Priority }) => {
     const Icon = priorityIcons[priority];
     return (
         <div className="flex items-center gap-2 text-sm">
-            <Icon className={cn("h-5 w-5", priorityColors[priority])} />
-            <Badge variant="outline" className={`capitalize border-0 font-medium ${priorityColors[priority]}`}>
+            <Badge variant="outline" className={cn(`capitalize border-0 font-medium`, priorityColors[priority])}>
+                 <Icon className="h-4 w-4 mr-1" />
                 {priority}
             </Badge>
         </div>
@@ -133,7 +133,6 @@ const DetailItem = ({ icon: Icon, label, value }: { icon: React.ElementType, lab
 
 
 const IssueCard = ({ issue, onSelect, canResolve }: { issue: Issue, onSelect: (issue: Issue) => void, canResolve: boolean }) => {
-    const PriorityIcon = priorityIcons[issue.priority];
     const categoryInfo = categories[issue.category];
     const CategoryIcon = categoryInfo.icon;
     const isResolved = issue.status === 'resolved';
@@ -152,14 +151,6 @@ const IssueCard = ({ issue, onSelect, canResolve }: { issue: Issue, onSelect: (i
             
             <CardContent className="flex items-center justify-between gap-x-6 gap-y-4">
                 <div className="flex flex-wrap items-center gap-x-6 gap-y-4">
-                    {issue.subCategory && (
-                        <DetailItem
-                            icon={categoryInfo.icon}
-                            label={categoryInfo.label}
-                            value={<span className="capitalize">{issue.subCategory.replace(/-/g, ' ')}</span>}
-                        />
-                    )}
-                    
                     <DetailItem 
                         icon={UserIcon}
                         label={isResolved ? 'Resolved By' : 'Reported By'}
@@ -177,7 +168,14 @@ const IssueCard = ({ issue, onSelect, canResolve }: { issue: Issue, onSelect: (i
                 <PriorityDisplay priority={issue.priority} />
             </CardContent>
 
-            <CardFooter>
+            <CardFooter className="flex-wrap !pt-4 gap-x-4 gap-y-2">
+                {issue.subCategory && (
+                    <div className="text-sm flex items-center">
+                        <CategoryIcon className={cn("h-4 w-4 mr-2", categoryInfo.color)} />
+                        <span className="font-medium mr-1">{categoryInfo.label}:</span>
+                        <span className="text-muted-foreground capitalize">{issue.subCategory.replace(/-/g, ' ')}</span>
+                    </div>
+                )}
                  {isResolved && issue.resolvedAt && (
                     <div className="text-sm text-muted-foreground">
                         Resolution Time: <strong>{formatDuration(issue.reportedAt, issue.resolvedAt)}</strong>
@@ -252,3 +250,4 @@ export function IssuesDataTable({ issues, title, description, loading }: { issue
     </div>
   );
 }
+
