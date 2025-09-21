@@ -79,12 +79,28 @@ const StatusDisplay = ({ status }: { status: Status }) => {
     const label = statusLabels[status];
 
     return (
-        <Badge variant={status === 'resolved' ? 'default' : 'secondary'} className={cn('capitalize', status === 'resolved' ? 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300' : '')}>
-            <Icon className={cn("h-4 w-4 mr-1", status === 'in_progress' && 'animate-spin')} />
-            {label}
-        </Badge>
+        <div className="flex items-center gap-2 text-sm">
+            <Icon className="h-5 w-5 text-muted-foreground" />
+            <Badge variant={status === 'resolved' ? 'default' : 'secondary'} className={cn('capitalize', status === 'resolved' ? 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300' : '')}>
+                <Icon className={cn("h-3 w-3 mr-1", status === 'in_progress' && 'animate-spin')} />
+                {label}
+            </Badge>
+        </div>
     );
 };
+
+const PriorityDisplay = ({ priority }: { priority: Priority }) => {
+    const Icon = priorityIcons[priority];
+    return (
+        <div className="flex items-center gap-2 text-sm">
+            <Icon className={cn("h-5 w-5", priorityColors[priority])} />
+            <Badge variant="outline" className={`capitalize border-0 font-medium ${priorityColors[priority]}`}>
+                {priority}
+            </Badge>
+        </div>
+    );
+};
+
 
 function formatDuration(start: Date, end: Date) {
   const duration = intervalToDuration({ start, end });
@@ -112,13 +128,6 @@ const DetailItem = ({ icon: Icon, label, value }: { icon: React.ElementType, lab
             <p className="font-medium text-muted-foreground">{label}</p>
             <p>{value}</p>
         </div>
-    </div>
-);
-
-const DetailItemBadge = ({ icon: Icon, value, className }: { icon: React.ElementType, value: React.ReactNode, className?: string }) => (
-    <div className="flex items-center gap-2 text-sm">
-        <Icon className="h-5 w-5 text-muted-foreground" />
-        <div className={className}>{value}</div>
     </div>
 );
 
@@ -156,20 +165,9 @@ const IssueCard = ({ issue, onSelect, canResolve }: { issue: Issue, onSelect: (i
                     value={isResolved ? issue.resolvedBy?.name : issue.reportedBy.name}
                 />
 
-                <DetailItemBadge
-                    icon={statusIcons[issue.status]}
-                    value={<StatusDisplay status={issue.status} />}
-                />
+                <StatusDisplay status={issue.status} />
                  
-                <DetailItemBadge
-                    icon={PriorityIcon}
-                    value={
-                        <Badge variant="outline" className={`capitalize border-0 ${priorityColors[issue.priority]}`}>
-                          <PriorityIcon className="mr-2 h-4 w-4" />
-                          {issue.priority}
-                        </Badge>
-                    }
-                />
+                <PriorityDisplay priority={issue.priority} />
 
                 <DetailItem 
                     icon={Clock}
