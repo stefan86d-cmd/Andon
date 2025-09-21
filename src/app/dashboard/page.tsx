@@ -1,22 +1,31 @@
 
+"use client";
+
+import { useEffect, useState } from "react";
 import { IssuesDataTable } from "@/components/dashboard/issues-data-table";
 import { StatsCards } from "@/components/dashboard/stats-cards";
 import { AppLayout } from "@/components/layout/app-layout";
-import { getIssues, getProductionLines } from "@/lib/data";
+import { getIssues } from "@/lib/data";
 import { subHours, intervalToDuration, differenceInSeconds } from "date-fns";
-import { auth } from "@/lib/firebase";
-import { getUserByEmail } from "@/lib/data";
+import { useUser } from "@/contexts/user-context";
+import type { Issue } from "@/lib/types";
+import { Skeleton } from "@/components/ui/skeleton";
 
-export default async function Home() {
-  const [issues, user] = await Promise.all([
-    getIssues(),
-    auth.currentUser ? getUserByEmail(auth.currentUser.email!) : null,
-  ]);
+export default function Home() {
+  const { currentUser } = useUser();
+  const [issues, setIssues] = useState<Issue[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadIssues() {
+      const issuesData = await getIssues();
+      setIssues(issuesData);
+      setLoading(false);
+    }
+    loadIssues();
+  }, []);
   
-  if (!user || (user.role !== 'admin' && user.role !== 'supervisor')) {
-    // This part of the component logic might need adjustment
-    // depending on how you handle auth redirects in Next.js 14 App Router.
-    // For now, it assumes some mechanism prevents non-admins/supervisors from reaching this page.
+  if (!currentUser || (currentUser.role !== 'admin' && currentUser.role !== 'supervisor')) {
     return (
       <AppLayout>
         <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background">
@@ -69,39 +78,51 @@ export default async function Home() {
           <h1 className="text-lg font-semibold md:text-2xl">Dashboard</h1>
         </div>
         
-          <>
-            <StatsCards stats={[
-                {
-                    title: "Open Issues",
-                    value: stats.openIssues.toString(),
-                    change: "+5",
-                    changeType: "increase",
-                    description: "since last hour",
-                },
-                {
-                    title: "Avg. Resolution Time",
-                    value: stats.avgResolutionTime,
-                    change: "-12%",
-                    changeType: "decrease",
-                    description: "this week",
-                },
-                {
-                    title: "Production Stop Time",
-                    value: stats.productionStopTime,
-                    change: "+15m",
-                    changeType: "increase",
-                    description: "in last 24 hours",
-                },
-                {
-                    title: "Critical Alerts",
-                    value: stats.criticalAlerts.toString(),
-                    change: "+1",
-                    changeType: "increase",
-                    description: "in last 24 hours"
-                }
-            ]} />
-            <IssuesDataTable issues={userIssues} title="Recent Issues" />
-          </>
+          {loading ? (
+            <div className="space-y-6">
+                <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
+                  <Skeleton className="h-28" />
+                  <Skeleton className="h-28" />
+                  <Skeleton className="h-28" />
+                  <Skeleton className="h-28" />
+                </div>
+                <Skeleton className="h-96" />
+            </div>
+          ) : (
+            <>
+              <StatsCards stats={[
+                  {
+                      title: "Open Issues",
+                      value: stats.openIssues.toString(),
+                      change: "+5",
+                      changeType: "increase",
+                      description: "since last hour",
+                  },
+                  {
+                      title: "Avg. Resolution Time",
+                      value: stats.avgResolutionTime,
+                      change: "-12%",
+                      changeType: "decrease",
+                      description: "this week",
+                  },
+                  {
+                      title: "Production Stop Time",
+                      value: stats.productionStopTime,
+                      change: "+15m",
+                      changeType: "increase",
+                      description: "in last 24 hours",
+                  },
+                  {
+                      title: "Critical Alerts",
+                      value: stats.criticalAlerts.toString(),
+                      change: "+1",
+                      changeType: "increase",
+                      description: "in last 24 hours"
+                  }
+              ]} />
+              <IssuesDataTable issues={userIssues} title="Recent Issues" />
+            </>
+          )}
       </main>
     </AppLayout>
   );
