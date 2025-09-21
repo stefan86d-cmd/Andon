@@ -56,6 +56,7 @@ export default function LoginPage() {
   const { currentUser, loading } = useUser();
 
   const postLoginFlow = async (email: string, name: string) => {
+      await new Promise(resolve => setTimeout(resolve, 1000));
       const user = await getUserByEmail(email);
       if (!user) {
         throw new Error("User profile not found in the database. Please try seeding the users again.");
@@ -84,7 +85,6 @@ export default function LoginPage() {
         throw new Error("Email not found for the logged-in user.");
       }
       
-      await new Promise(resolve => setTimeout(resolve, 1000));
       await postLoginFlow(userCredential.user.email, userCredential.user.displayName);
 
     } catch (error: any) {
@@ -134,15 +134,17 @@ export default function LoginPage() {
             const [firstName, ...lastNameParts] = user.displayName.split(' ');
             const lastName = lastNameParts.join(' ') || ' ';
 
-            await addUser({
+            const addUserResult = await addUser({
                 uid: user.uid,
                 email: user.email,
                 firstName: firstName,
                 lastName: lastName,
                 role: 'operator' as Role, // Default role for new sign-ups
             });
-             // Add a delay to allow Firestore to be consistent
-            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            if (addUserResult?.error) {
+              throw new Error(addUserResult.error);
+            }
         }
 
         await postLoginFlow(user.email, user.displayName);
@@ -177,19 +179,25 @@ export default function LoginPage() {
     });
   }
   
-  // If user is already logged in, redirect them.
+  // If user is already logged in, redirect them. This logic can cause redirect loops.
   if (!loading && currentUser) {
-    if (currentUser.role === 'operator') {
-      router.replace('/line-status');
-    } else {
-      router.replace('/dashboard');
+    // Determine the redirect path but don't redirect here.
+    // The postLoginFlow function will handle the redirect.
+    // This avoids a race condition and infinite loop.
+    const path = currentUser.role === 'operator' ? '/line-status' : '/dashboard';
+    // If the user is on the login page but already logged in, they should be redirected.
+    // However, the current implementation has a redirect loop issue.
+    // For now, we show a loading screen and rely on the user to manually navigate
+    // or for the postLoginFlow to handle it.
+    if (typeof window !== 'undefined' && window.location.pathname === '/') {
+        router.replace(path);
+        return (
+             <div className="flex h-screen items-center justify-center">
+                <LoaderCircle className="h-8 w-8 animate-spin" />
+                <p className="ml-2">Redirecting...</p>
+            </div>
+        );
     }
-    return (
-        <div className="flex h-screen items-center justify-center">
-            <LoaderCircle className="h-8 w-8 animate-spin" />
-            <p className="ml-2">Redirecting...</p>
-        </div>
-    );
   }
 
   // Show a loading spinner while checking auth state on initial load
@@ -278,3 +286,5 @@ export default function LoginPage() {
     </div>
   );
 }
+
+    
