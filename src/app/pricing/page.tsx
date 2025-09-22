@@ -90,7 +90,7 @@ const tiers = [
       { text: "Priority Support" },
       { text: "24/7 Support" }
     ],
-    cta: "Contact Sales",
+    cta: "Choose Enterprise",
   },
 ];
 
