@@ -235,32 +235,26 @@ export default function ReportsPage() {
             </CardHeader>
         </Card>
 
-        <Tabs defaultValue="overview">
+        <Tabs defaultValue="issues-by-category">
             <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="overview">Overview</TabsTrigger>
+                <TabsTrigger value="issues-by-category">Issues by Category</TabsTrigger>
                 <TabsTrigger value="stops">Production Stops</TabsTrigger>
                 <TabsTrigger value="by-line">By Line</TabsTrigger>
                 <TabsTrigger value="trend">Trend</TabsTrigger>
             </TabsList>
-            <TabsContent value="overview" className="mt-4">
-                 <div className="grid gap-6 md:grid-cols-2">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Issues by Production Line</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                             <FilteredBarChart data={issuesByLine} />
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Issues by Category</CardTitle>
-                        </CardHeader>
-                        <CardContent>
+            <TabsContent value="issues-by-category" className="mt-4">
+                 <Card>
+                    <CardContent className="grid gap-6 md:grid-cols-2 p-6">
+                        <div>
+                            <h3 className="font-semibold mb-4 text-center">Issues by Production Line</h3>
+                            <FilteredBarChart data={issuesByLine} />
+                        </div>
+                         <div>
+                            <h3 className="font-semibold mb-4 text-center">Issues by Category</h3>
                             <PieChartWithPercentages data={issuesByCategoryWithPercentage} />
-                        </CardContent>
-                    </Card>
-                </div>
+                        </div>
+                    </CardContent>
+                </Card>
             </TabsContent>
             <TabsContent value="stops" className="mt-4">
                 <Card>
@@ -298,5 +292,3 @@ export default function ReportsPage() {
     </AppLayout>
   );
 }
-
-    
