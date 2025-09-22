@@ -25,7 +25,7 @@ import { Switch } from '@/components/ui/switch';
 import type { Issue, IssueCategory, ProductionLine } from '@/lib/types';
 import { FilteredBarChart } from '@/components/reports/filtered-bar-chart';
 import { PieChartWithPercentages } from '@/components/reports/pie-chart-with-percentages';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const allCategories: { id: IssueCategory, label: string, color: string }[] = [
     { id: 'it', label: 'IT & Network', color: 'hsl(221.2 83.2% 53.3%)' }, // blue-500
@@ -376,7 +376,7 @@ export default function ReportsPage() {
                             <CardDescription>
                                 Number of issues reported per day based on the selected filters.
                             </CardDescription>
-                        </Header>
+                        </CardHeader>
                         <CardContent>
                             <IssuesTrendChart data={issuesByDay} />
                         </CardContent>
@@ -389,7 +389,7 @@ export default function ReportsPage() {
                             <CardDescription>
                                 Total issues broken down by production line.
                             </CardDescription>
-                        </Header>
+                        </header>
                         <CardContent>
                             <FilteredBarChart data={issuesByLine} />
                         </CardContent>
@@ -402,7 +402,7 @@ export default function ReportsPage() {
                             <CardDescription>
                                 Total production stop time in hours, by issue category. This chart correctly handles overlapping downtime on the same line.
                             </CardDescription>
-                        </Header>
+                        </CardHeader>
                         <CardContent>
                             <FilteredBarChart data={downtimeByCategory} />
                         </CardContent>
