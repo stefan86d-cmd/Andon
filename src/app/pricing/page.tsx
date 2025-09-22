@@ -214,8 +214,8 @@ export default function PricingPage() {
                                     </ul>
                                 </CardContent>
                                 <CardFooter>
-                                    <Button className="w-full" variant={tier.popular ? 'default' : 'outline'}>
-                                    {tier.cta}
+                                    <Button className="w-full" variant={isProBestValue ? 'destructive' : (tier.popular ? 'default' : 'outline')}>
+                                        {tier.cta}
                                     </Button>
                                 </CardFooter>
                             </Card>
@@ -261,5 +261,7 @@ export default function PricingPage() {
     </div>
   );
 }
+
+    
 
     
