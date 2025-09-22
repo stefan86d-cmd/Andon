@@ -6,8 +6,10 @@ import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { PlusCircle, Trash2 } from "lucide-react";
+import { Lock, PlusCircle, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
+import type { Plan } from "@/lib/types";
 
 const lineFormSchema = z.object({
   name: z.string().min(1, "Line name is required."),
@@ -22,9 +24,12 @@ type LineFormValues = z.infer<typeof lineFormSchema>;
 
 interface WorkstationFormFieldProps {
   form: UseFormReturn<LineFormValues>;
+  canAdd: boolean;
+  limit: number;
+  plan: Plan;
 }
 
-export function WorkstationFormField({ form }: WorkstationFormFieldProps) {
+export function WorkstationFormField({ form, canAdd, limit, plan }: WorkstationFormFieldProps) {
   const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: "workstations",
@@ -32,7 +37,17 @@ export function WorkstationFormField({ form }: WorkstationFormFieldProps) {
 
   return (
     <div className="space-y-2">
-      <FormLabel>Workstations</FormLabel>
+      <div className="flex justify-between items-center">
+        <FormLabel>Workstations ({fields.length}/{limit})</FormLabel>
+         {!canAdd && plan !== 'enterprise' && (
+            <Button variant="link" size="sm" asChild className="text-xs h-auto p-0">
+                <Link href="/settings">
+                    <Lock className="mr-1 h-3 w-3" />
+                    Upgrade to add more
+                </Link>
+            </Button>
+        )}
+      </div>
       <div className="space-y-2">
         {fields.map((field, index) => (
           <div key={field.id} className="flex items-center gap-2">
@@ -66,6 +81,7 @@ export function WorkstationFormField({ form }: WorkstationFormFieldProps) {
         size="sm"
         className="gap-1 text-muted-foreground"
         onClick={() => append({ value: "" })}
+        disabled={!canAdd}
       >
         <PlusCircle className="h-4 w-4" />
         Add Workstation

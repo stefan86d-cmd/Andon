@@ -30,6 +30,14 @@ import { LoaderCircle, PlusCircle } from "lucide-react";
 import { editProductionLine } from "@/app/actions";
 import type { ProductionLine } from "@/lib/types";
 import { WorkstationFormField } from "./workstation-form-field";
+import { useUser } from "@/contexts/user-context";
+
+const planLimits = {
+  starter: { workstations: 5 },
+  standard: { workstations: 20 },
+  pro: { workstations: 40 },
+  enterprise: { workstations: Infinity },
+};
 
 const lineFormSchema = z.object({
   name: z.string().min(1, "Line name is required."),
@@ -50,6 +58,7 @@ interface EditProductionLineDialogProps {
 export function EditProductionLineDialog({ children, productionLine }: EditProductionLineDialogProps) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, startSubmittingTransition] = useTransition();
+  const { currentUser } = useUser();
 
   const form = useForm<LineFormValues>({
     resolver: zodResolver(lineFormSchema),
@@ -58,6 +67,11 @@ export function EditProductionLineDialog({ children, productionLine }: EditProdu
       workstations: productionLine.workstations.map(ws => ({ value: ws })),
     },
   });
+
+  const workstationCount = form.watch('workstations').length;
+  const userPlan = currentUser?.plan || 'starter';
+  const workstationLimit = planLimits[userPlan].workstations;
+  const canAddWorkstation = workstationCount < workstationLimit;
 
   function onSubmit(data: LineFormValues) {
     startSubmittingTransition(async () => {
@@ -115,7 +129,12 @@ export function EditProductionLineDialog({ children, productionLine }: EditProdu
               )}
             />
 
-            <WorkstationFormField form={form} />
+            <WorkstationFormField 
+              form={form} 
+              canAdd={canAddWorkstation} 
+              limit={workstationLimit}
+              plan={userPlan}
+            />
 
             <DialogFooter>
                 <Button
