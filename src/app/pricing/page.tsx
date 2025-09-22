@@ -51,8 +51,6 @@ const tiers = [
         { text: "Priority Support", icon: LifeBuoy },
     ],
     cta: "Upgrade to Pro",
-    badge: "Best Value",
-    popular: true,
   },
   {
     name: "Enterprise",
