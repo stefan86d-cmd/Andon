@@ -236,12 +236,14 @@ export default function ReportsPage() {
         </Card>
 
         <Tabs defaultValue="issues-by-category">
-            <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="issues-by-category">Issues by Category</TabsTrigger>
-                <TabsTrigger value="stops">Production Stops</TabsTrigger>
-                <TabsTrigger value="by-line">By Line</TabsTrigger>
-                <TabsTrigger value="trend">Trend</TabsTrigger>
-            </TabsList>
+            <div className="flex justify-center">
+                <TabsList className="grid w-full grid-cols-4 max-w-2xl">
+                    <TabsTrigger value="issues-by-category">Issues by Category</TabsTrigger>
+                    <TabsTrigger value="stops">Production Stops</TabsTrigger>
+                    <TabsTrigger value="by-line">By Line</TabsTrigger>
+                    <TabsTrigger value="trend">Trend</TabsTrigger>
+                </TabsList>
+            </div>
             <TabsContent value="issues-by-category" className="mt-4">
                  <Card>
                     <CardContent className="grid gap-6 md:grid-cols-2 p-6">
