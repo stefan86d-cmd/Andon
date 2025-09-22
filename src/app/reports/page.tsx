@@ -25,6 +25,7 @@ import { Switch } from '@/components/ui/switch';
 import type { Issue, IssueCategory, ProductionLine } from '@/lib/types';
 import { FilteredBarChart } from '@/components/reports/filtered-bar-chart';
 import { PieChartWithPercentages } from '@/components/reports/pie-chart-with-percentages';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const allCategories: { id: IssueCategory, label: string, color: string }[] = [
     { id: 'it', label: 'IT & Network', color: 'hsl(221.2 83.2% 53.3%)' }, // blue-500
@@ -373,56 +374,68 @@ export default function ReportsPage() {
                 </CardContent>
             </Card>
 
-            <div className="grid gap-6 mt-4">
-                 <Card>
-                    <CardHeader>
-                        <CardTitle>Issues by Category</CardTitle>
-                        <CardDescription>
-                        Total issues broken down by category.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent className="grid md:grid-cols-2 gap-6">
-                        <FilteredBarChart data={issuesByCategory} />
-                        <PieChartWithPercentages data={issuesByCategoryWithPercentage} />
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Issues Over Time</CardTitle>
-                        <CardDescription>
-                            Number of issues reported per day based on the selected filters.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <IssuesTrendChart data={issuesByDay} />
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Issues by Production Line</CardTitle>
-                        <CardDescription>
-                            Total issues broken down by production line.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <FilteredBarChart data={issuesByLine} />
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Downtime by Category (Hours)</CardTitle>
-                        <CardDescription>
-                            Total production stop time in hours, by issue category. This chart correctly handles overlapping downtime on the same line.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <FilteredBarChart data={downtimeByCategory} />
-                    </CardContent>
-                </Card>
-            </div>
+            <Tabs defaultValue="category" className="mt-4">
+                <TabsList className="grid w-full grid-cols-1 sm:grid-cols-2 md:grid-cols-4">
+                    <TabsTrigger value="category">Issues by Category</TabsTrigger>
+                    <TabsTrigger value="time">Issues Over Time</TabsTrigger>
+                    <TabsTrigger value="line">Issues by Production Line</TabsTrigger>
+                    <TabsTrigger value="downtime">Downtime by Category</TabsTrigger>
+                </TabsList>
+                <TabsContent value="category">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Issues by Category</CardTitle>
+                            <CardDescription>
+                            Total issues broken down by category.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="grid md:grid-cols-2 gap-6">
+                            <FilteredBarChart data={issuesByCategory} />
+                            <PieChartWithPercentages data={issuesByCategoryWithPercentage} />
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+                <TabsContent value="time">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Issues Over Time</CardTitle>
+                            <CardDescription>
+                                Number of issues reported per day based on the selected filters.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <IssuesTrendChart data={issuesByDay} />
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+                <TabsContent value="line">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Issues by Production Line</CardTitle>
+                            <CardDescription>
+                                Total issues broken down by production line.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <FilteredBarChart data={issuesByLine} />
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+                <TabsContent value="downtime">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Downtime by Category (Hours)</CardTitle>
+                            <CardDescription>
+                                Total production stop time in hours, by issue category. This chart correctly handles overlapping downtime on the same line.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <FilteredBarChart data={downtimeByCategory} />
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+            </Tabs>
         </main>
         </AppLayout>
     );
 }
-
-    
