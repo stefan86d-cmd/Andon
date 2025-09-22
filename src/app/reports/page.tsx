@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Calendar as CalendarIcon, Filter, Power, Factory, LoaderCircle } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { format, startOfWeek, endOfWeek, startOfDay, endOfDay, differenceInHours, max } from 'date-fns';
+import { format, startOfWeek, endOfWeek, startOfDay, endOfDay, differenceInHours } from 'date-fns';
 import type { DateRange } from "react-day-picker";
 import { cn } from "@/lib/utils";
 import {
@@ -28,12 +28,12 @@ import { PieChartWithPercentages } from '@/components/reports/pie-chart-with-per
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const allCategories: { id: IssueCategory, label: string, color: string }[] = [
-    { id: 'it', label: 'IT & Network', color: 'hsl(221.2 83.2% 53.3%)' }, // blue-500
-    { id: 'logistics', label: 'Logistics', color: 'hsl(30.2 92.5% 55.5%)' }, // orange-500
-    { id: 'tool', label: 'Tool & Equipment', color: 'hsl(240 3.7% 46.1%)' }, // gray-500
-    { id: 'assistance', label: 'Need Help', color: 'hsl(0 84.2% 60.2%)' }, // red-500
-    { id: 'quality', label: 'Quality', color: 'hsl(142.1 76.2% 36.3%)' }, // green-500
-    { id: 'other', label: 'Other', color: 'hsl(262.1 83.3% 57.8%)' }, // purple-500
+    { id: 'it', label: 'IT & Network', color: 'hsl(221.2 83.2% 53.3%)' },
+    { id: 'logistics', label: 'Logistics', color: 'hsl(30.2 92.5% 55.5%)' },
+    { id: 'tool', label: 'Tool & Equipment', color: 'hsl(240 3.7% 46.1%)' },
+    { id: 'assistance', label: 'Need Help', color: 'hsl(0 84.2% 60.2%)' },
+    { id: 'quality', label: 'Quality', color: 'hsl(142.1 76.2% 36.3%)' },
+    { id: 'other', label: 'Other', color: 'hsl(262.1 83.3% 57.8%)' },
 ];
 
 function aggregateIssuesByDate(filteredIssues: Issue[]): { date: string; issues: number }[] {
@@ -113,13 +113,6 @@ function aggregateDowntimeByCategory(filteredIssues: Issue[]) {
     for (const lineId in issuesByLine) {
         const lineIssues = issuesByLine[lineId];
         if (lineIssues.length === 0) continue;
-
-        const intervals = lineIssues.map(issue => ({
-          start: issue.reportedAt,
-          end: issue.resolvedAt!,
-          category: issue.category,
-          duration: differenceInHours(issue.resolvedAt!, issue.reportedAt)
-        })).sort((a, b) => a.start.getTime() - b.start.getTime());
 
         const mergedIntervals: {start: Date, end: Date, issues: Issue[]}[] = [];
         for(const currentIssue of lineIssues) {
@@ -376,7 +369,7 @@ export default function ReportsPage() {
                             <CardDescription>
                                 Number of issues reported per day based on the selected filters.
                             </CardDescription>
-                        </CardHeader>
+                        </Header>
                         <CardContent>
                             <IssuesTrendChart data={issuesByDay} />
                         </CardContent>
@@ -402,7 +395,7 @@ export default function ReportsPage() {
                             <CardDescription>
                                 Total production stop time in hours, by issue category. This chart correctly handles overlapping downtime on the same line.
                             </CardDescription>
-                        </CardHeader>
+                        </Header>
                         <CardContent>
                             <FilteredBarChart data={downtimeByCategory} />
                         </CardContent>
