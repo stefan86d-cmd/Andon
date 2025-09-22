@@ -71,7 +71,9 @@ const tiers = [
         { text: "Priority Support" },
     ],
     cta: "Upgrade to Pro",
-    popular: false,
+    badge: "Best Value",
+    popular: true,
+    badgeVariant: "destructive" as "destructive",
   },
   {
     name: "Enterprise",
@@ -180,14 +182,15 @@ export default function PricingPage() {
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 mt-12 max-w-7xl mx-auto">
                 {tiers.map((tier) => {
                     const price = tier.prices[duration][currency];
+                    const isProBestValue = tier.name === "Pro";
                     return (
                         <div key={tier.name} className="relative">
                             {tier.badge && (
                                 <div className="absolute -top-5 left-1/2 -translate-x-1/2">
-                                    <Badge variant="default" className="text-sm">{tier.badge}</Badge>
+                                    <Badge variant={tier.badgeVariant || 'default'} className="text-sm">{tier.badge}</Badge>
                                 </div>
                             )}
-                            <Card className={`flex flex-col h-full ${tier.popular ? 'border-primary shadow-lg' : ''}`}>
+                            <Card className={`flex flex-col h-full ${tier.popular ? (isProBestValue ? 'border-destructive shadow-lg' : 'border-primary shadow-lg') : ''}`}>
                                 <CardHeader className="text-center">
                                     <CardTitle className="text-2xl">{tier.name}</CardTitle>
                                     <div className="flex items-baseline justify-center gap-1">
@@ -258,3 +261,5 @@ export default function PricingPage() {
     </div>
   );
 }
+
+    
