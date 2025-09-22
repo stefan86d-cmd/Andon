@@ -8,11 +8,19 @@ import Link from "next/link";
 import { Logo } from "@/components/layout/logo";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import React, { useState } from 'react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
 
 const tiers = [
   {
     name: "Starter",
-    price: "Free",
+    prices: {
+        monthly: "Free",
+        biannually: "Free",
+        annually: "Free",
+    },
+    pricePeriod: "",
     description: "For small teams getting started with issue tracking.",
     features: [
       { text: "Up to 5 users" },
@@ -25,7 +33,11 @@ const tiers = [
   },
   {
     name: "Standard",
-    price: "$39",
+    prices: {
+        monthly: "$39",
+        biannually: "$35", // approx 10% off
+        annually: "$31", // approx 20% off
+    },
     pricePeriod: "/ month",
     description: "For growing factories that need more power and insights.",
     features: [
@@ -42,7 +54,11 @@ const tiers = [
   },
   {
     name: "Pro",
-    price: "$59",
+    prices: {
+        monthly: "$59",
+        biannually: "$53", // approx 10% off
+        annually: "$47", // approx 20% off
+    },
     pricePeriod: "/ month",
     description: "For scaling operations with expanded needs.",
     features: [
@@ -59,7 +75,11 @@ const tiers = [
   },
   {
     name: "Enterprise",
-    price: "Custom",
+    prices: {
+        monthly: "Custom",
+        biannually: "Custom",
+        annually: "Custom",
+    },
     description: "For large-scale operations with custom needs.",
     features: [
       { text: "Unlimited Users & Lines" },
@@ -90,6 +110,8 @@ const guarantees = [
 ]
 
 export default function PricingPage() {
+    const [duration, setDuration] = useState<'monthly' | 'biannually' | 'annually'>('monthly');
+
   return (
     <div className="flex flex-col min-h-screen bg-background">
         <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -120,7 +142,22 @@ export default function PricingPage() {
                     Choose the plan that's right for your production needs. No hidden fees, clear and simple.
                 </p>
                 </div>
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 mt-16 max-w-7xl mx-auto">
+                <div className="flex justify-center mt-8 space-x-2 items-center">
+                    <Select value={duration} onValueChange={(value) => setDuration(value as any)}>
+                        <SelectTrigger className="w-[180px]">
+                            <SelectValue placeholder="Select duration" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="monthly">One Month</SelectItem>
+                            <SelectItem value="biannually">Half Year</SelectItem>
+                            <SelectItem value="annually">One Year</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    {duration === 'biannually' && <Badge variant="secondary" className="text-sm">Save ~10%</Badge>}
+                    {duration === 'annually' && <Badge variant="secondary" className="text-sm">Save ~20%</Badge>}
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 mt-12 max-w-7xl mx-auto">
                 {tiers.map((tier) => (
                     <div key={tier.name} className="relative">
                         {tier.badge && (
@@ -132,8 +169,8 @@ export default function PricingPage() {
                             <CardHeader className="text-center">
                                 <CardTitle className="text-2xl">{tier.name}</CardTitle>
                                 <div className="flex items-baseline justify-center gap-1">
-                                    <span className="text-4xl font-bold">{tier.price}</span>
-                                    {tier.pricePeriod && <span className="text-muted-foreground">{tier.pricePeriod}</span>}
+                                    <span className="text-4xl font-bold">{tier.prices[duration]}</span>
+                                    {tier.pricePeriod && tier.prices[duration] !== "Free" && tier.prices[duration] !== "Custom" && <span className="text-muted-foreground">{tier.pricePeriod}</span>}
                                 </div>
                                 <CardDescription>{tier.description}</CardDescription>
                             </CardHeader>
