@@ -3,10 +3,11 @@
 
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, Factory, ClipboardList, LayoutDashboard, BarChart3, Bot, UserCog, LifeBuoy, Puzzle, ShieldCheck } from "lucide-react";
+import { Users, Factory, ClipboardList, LayoutDashboard, BarChart3, Bot, UserCog, LifeBuoy, Puzzle, ShieldCheck, Headphones, Shield, BadgeCheck } from "lucide-react";
 import Link from "next/link";
 import { Logo } from "@/components/layout/logo";
 import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 
 const tiers = [
   {
@@ -51,6 +52,7 @@ const tiers = [
         { text: "Priority Support", icon: LifeBuoy },
     ],
     cta: "Upgrade to Pro",
+    popular: false,
   },
   {
     name: "Enterprise",
@@ -65,6 +67,24 @@ const tiers = [
     cta: "Contact Sales",
   },
 ];
+
+const guarantees = [
+    {
+        icon: Headphones,
+        title: "24/7 Support",
+        description: "Our support team is available around the clock to help you with any issues."
+    },
+    {
+        icon: Shield,
+        title: "30-Day Money-Back Guarantee",
+        description: "Not satisfied? Get a full refund within the first 30 days of your subscription."
+    },
+    {
+        icon: BadgeCheck,
+        title: "Cancel Anytime",
+        description: "You can cancel your subscription at any time, no questions asked."
+    }
+]
 
 export default function PricingPage() {
   return (
@@ -92,9 +112,9 @@ export default function PricingPage() {
         <section className="py-20 md:py-32">
             <div className="container">
                 <div className="text-center">
-                <h1 className="text-lg font-semibold md:text-2xl">Pricing Plans</h1>
-                <p className="text-lg text-muted-foreground mt-2">
-                    Choose the plan that's right for your production needs.
+                <h1 className="text-3xl md:text-4xl font-bold">Pricing Plans</h1>
+                <p className="text-lg text-muted-foreground mt-2 max-w-xl mx-auto">
+                    Choose the plan that's right for your production needs. No hidden fees, clear and simple.
                 </p>
                 </div>
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 mt-12 max-w-7xl mx-auto">
@@ -129,6 +149,30 @@ export default function PricingPage() {
                     </CardFooter>
                     </Card>
                 ))}
+                </div>
+            </div>
+        </section>
+        <section className="py-20 border-t bg-muted/50">
+            <div className="container">
+                <div className="text-center mb-12">
+                    <h2 className="text-3xl font-bold">Peace of Mind</h2>
+                    <p className="max-w-2xl mx-auto text-muted-foreground mt-4">
+                        We're committed to your success. Our plans come with guarantees to ensure you're always supported.
+                    </p>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+                    {guarantees.map((guarantee) => {
+                        const Icon = guarantee.icon;
+                        return (
+                            <div key={guarantee.title} className="flex flex-col items-center text-center">
+                                <div className="p-4 bg-background rounded-full border mb-4">
+                                    <Icon className="h-8 w-8 text-primary" />
+                                </div>
+                                <h3 className="font-semibold text-lg">{guarantee.title}</h3>
+                                <p className="text-muted-foreground mt-2 text-sm">{guarantee.description}</p>
+                            </div>
+                        )
+                    })}
                 </div>
             </div>
         </section>
