@@ -28,12 +28,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 
 const allCategories: { id: IssueCategory; label: string; color: string }[] = [
-    { id: 'it', label: 'IT & Network', color: 'hsl(var(--chart-1))' },
-    { id: 'logistics', label: 'Logistics', color: 'hsl(var(--chart-2))' },
-    { id: 'tool', label: 'Tool & Equipment', color: 'hsl(var(--chart-3))' },
-    { id: 'quality', label: 'Quality', color: 'hsl(var(--chart-4))' },
-    { id: 'assistance', label: 'Assistance', color: 'hsl(var(--chart-5))' },
-    { id: 'other', label: 'Other', color: 'hsl(var(--primary))' },
+    { id: 'it', label: 'IT & Network', color: '#3b82f6' }, // blue-500
+    { id: 'logistics', label: 'Logistics', color: '#f97316' }, // orange-500
+    { id: 'tool', label: 'Tool & Equipment', color: '#6b7280' }, // gray-500
+    { id: 'quality', label: 'Quality', color: '#22c55e' }, // green-500
+    { id: 'assistance', label: 'Assistance', color: '#ef4444' }, // red-500
+    { id: 'other', label: 'Other', color: '#8b5cf6' }, // purple-500
 ];
 
 export default function ReportsPage() {
@@ -138,7 +138,7 @@ export default function ReportsPage() {
   const issuesByLine = productionLines.map((line, index) => ({
       name: line.name,
       value: filteredIssues.filter(issue => issue.productionLineId === line.id).length,
-      fill: `hsl(var(--chart-${(index % 5) + 1}))`
+      fill: allCategories[index % allCategories.length].color
   }));
   
   // 4. Production Stop Time by Category
@@ -246,8 +246,8 @@ export default function ReportsPage() {
                  <Card>
                     <CardContent className="grid gap-6 md:grid-cols-2 p-6">
                         <div>
-                            <h3 className="font-semibold mb-4 text-center">Issues by Production Line</h3>
-                            <FilteredBarChart data={issuesByLine} />
+                            <h3 className="font-semibold mb-4 text-center">Production Stop Time by Category (Hours)</h3>
+                            <FilteredBarChart data={stopTimeByCategory} />
                         </div>
                          <div>
                             <h3 className="font-semibold mb-4 text-center">Issues by Category</h3>
