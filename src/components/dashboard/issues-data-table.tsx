@@ -38,20 +38,20 @@ import { useUser } from "@/contexts/user-context";
 import { SafeHydrate } from "../layout/safe-hydrate";
 import { Skeleton } from "../ui/skeleton";
 
-const categoryInfo: Record<IssueCategory, { label: string; icon: React.ElementType }> = {
-    it: { label: 'IT & Network', icon: Monitor },
-    logistics: { label: 'Logistics', icon: Truck },
-    tool: { label: 'Tool & Equipment', icon: Wrench },
-    quality: { label: 'Quality', icon: BadgeCheck },
-    assistance: { label: 'Need Help', icon: LifeBuoy },
-    other: { label: 'Other', icon: HelpCircle },
+const categoryInfo: Record<IssueCategory, { label: string; icon: React.ElementType, color: string }> = {
+    it: { label: 'IT & Network', icon: Monitor, color: 'text-blue-500' },
+    logistics: { label: 'Logistics', icon: Truck, color: 'text-orange-500' },
+    tool: { label: 'Tool & Equipment', icon: Wrench, color: 'text-gray-500' },
+    quality: { label: 'Quality', icon: BadgeCheck, color: 'text-green-500' },
+    assistance: { label: 'Need Help', icon: LifeBuoy, color: 'text-red-500' },
+    other: { label: 'Other', icon: HelpCircle, color: 'text-purple-500' },
 };
 
 const CategoryDisplay = ({ category }: { category: IssueCategory }) => {
-    const { icon: Icon, label } = categoryInfo[category] || categoryInfo.other;
+    const { icon: Icon, label, color } = categoryInfo[category] || categoryInfo.other;
     return (
-        <Badge variant="outline" className="capitalize border-0 font-medium">
-            <Icon className="mr-2 h-4 w-4 text-muted-foreground" />
+        <Badge variant="outline" className={cn("capitalize border-0 font-medium", color)}>
+            <Icon className="mr-2 h-4 w-4" />
             {label}
         </Badge>
     );
