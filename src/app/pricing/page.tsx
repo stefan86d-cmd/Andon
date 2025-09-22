@@ -144,7 +144,7 @@ export default function PricingPage() {
             </div>
       </header>
       <main className="flex-1">
-        <section className="py-20 md:py-32">
+        <section className="py-20 md:py-32 bg-muted/50">
             <div className="container">
                 <div className="text-center">
                 <h1 className="text-3xl md:text-4xl font-bold">Pricing Plans</h1>
