@@ -3,7 +3,7 @@
 
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, Factory, ClipboardList, LayoutDashboard, BarChart3, Bot, UserCog, LifeBuoy, Puzzle, ShieldCheck, Headphones, Shield, BadgeCheck } from "lucide-react";
+import { Users, Factory, ClipboardList, LayoutDashboard, BarChart3, Bot, UserCog, LifeBuoy, Puzzle, ShieldCheck, Headphones, Shield, BadgeCheck, CheckCircle } from "lucide-react";
 import Link from "next/link";
 import { Logo } from "@/components/layout/logo";
 import { cn } from "@/lib/utils";
@@ -15,10 +15,10 @@ const tiers = [
     price: "Free",
     description: "For small teams getting started with issue tracking.",
     features: [
-      { text: "Up to 5 users", icon: Users },
-      { text: "1 Production Line", icon: Factory },
-      { text: "Basic Issue Reporting", icon: ClipboardList },
-      { text: "Dashboard View", icon: LayoutDashboard },
+      { text: "Up to 5 users" },
+      { text: "1 Production Line" },
+      { text: "Basic Issue Reporting" },
+      { text: "Dashboard View" },
     ],
     cta: "Get Started",
   },
@@ -28,11 +28,11 @@ const tiers = [
     pricePeriod: "/ month",
     description: "For growing factories that need more power and insights.",
     features: [
-      { text: "Up to 20 users", icon: Users },
-      { text: "Up to 5 Production Lines", icon: Factory },
-      { text: "Advanced Reporting & Analytics", icon: BarChart3 },
-      { text: "AI-Powered Issue Prioritization", icon: Bot },
-      { text: "User Role Management", icon: UserCog },
+      { text: "Up to 20 users" },
+      { text: "Up to 5 Production Lines" },
+      { text: "Advanced Reporting & Analytics" },
+      { text: "AI-Powered Issue Prioritization" },
+      { text: "User Role Management" },
     ],
     cta: "Upgrade to Standard",
     badge: "Most Popular",
@@ -44,12 +44,12 @@ const tiers = [
     pricePeriod: "/ month",
     description: "For scaling operations with expanded needs.",
     features: [
-        { text: "Up to 50 users", icon: Users },
-        { text: "Up to 10 Production Lines", icon: Factory },
-        { text: "Advanced Reporting & Analytics", icon: BarChart3 },
-        { text: "AI-Powered Issue Prioritization", icon: Bot },
-        { text: "User Role Management", icon: UserCog },
-        { text: "Priority Support", icon: LifeBuoy },
+        { text: "Up to 50 users" },
+        { text: "Up to 10 Production Lines" },
+        { text: "Advanced Reporting & Analytics" },
+        { text: "AI-Powered Issue Prioritization" },
+        { text: "User Role Management" },
+        { text: "Priority Support" },
     ],
     cta: "Upgrade to Pro",
     popular: false,
@@ -59,10 +59,10 @@ const tiers = [
     price: "Custom",
     description: "For large-scale operations with custom needs.",
     features: [
-      { text: "Unlimited Users & Lines", icon: Users },
-      { text: "Dedicated Support & Onboarding", icon: LifeBuoy },
-      { text: "Custom Integrations", icon: Puzzle },
-      { text: "Enhanced Security & Compliance", icon: ShieldCheck },
+      { text: "Unlimited Users & Lines" },
+      { text: "Dedicated Support & Onboarding" },
+      { text: "Custom Integrations" },
+      { text: "Enhanced Security & Compliance" },
     ],
     cta: "Contact Sales",
   },
@@ -137,11 +137,26 @@ export default function PricingPage() {
                             <CardContent className="flex-1">
                                 <ul className="space-y-4">
                                 {tier.features.map((feature) => {
-                                    const Icon = feature.icon;
+                                    const isUserFeature = feature.text.toLowerCase().includes('user');
+                                    const isLineFeature = feature.text.toLowerCase().includes('line');
+
+                                    if (isUserFeature || isLineFeature) {
+                                        return (
+                                            <li key={feature.text}>
+                                                <Badge variant="secondary" className="w-full justify-start py-2">
+                                                    {isUserFeature ? <Users className="h-4 w-4 mr-2" /> : <Factory className="h-4 w-4 mr-2" />}
+                                                    {feature.text}
+                                                </Badge>
+                                            </li>
+                                        );
+                                    }
+
                                     return (
-                                        <li key={feature.text} className="flex items-start">
-                                            <Icon className="h-5 w-5 text-primary mr-2 shrink-0 mt-0.5" />
-                                            <span>{feature.text}</span>
+                                        <li key={feature.text} className="flex items-center">
+                                            <Badge variant="outline" className="border-0 font-medium text-green-600">
+                                                <CheckCircle className="h-5 w-5 mr-2" />
+                                                <span>{feature.text}</span>
+                                            </Badge>
                                         </li>
                                     );
                                 })}
