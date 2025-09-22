@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { subHours } from "date-fns";
 import { useUser } from "@/contexts/user-context";
 import { getIssues, getProductionLines } from "@/lib/data";
+import { cn } from "@/lib/utils";
 
 export default function IssuesPage() {
   const { currentUser } = useUser();
@@ -87,7 +88,7 @@ export default function IssuesPage() {
           
           {currentUser?.role !== 'operator' && (
             <div className="relative flex justify-center mb-4">
-              <TabsList>
+              <TabsList className="grid w-full grid-cols-2 max-w-sm">
                 <TabsTrigger value="active">Active</TabsTrigger>
                 <TabsTrigger value="resolved">Resolved</TabsTrigger>
               </TabsList>
