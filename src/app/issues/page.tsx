@@ -82,15 +82,16 @@ export default function IssuesPage() {
       <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background">
         <Tabs defaultValue="active">
           <div className="flex items-center justify-between mb-4">
-             <div>
-                <h1 className="text-lg font-semibold md:text-2xl">Issue Tracker</h1>
-            </div>
-            {currentUser?.role !== 'operator' && (
-              <div className="flex items-center gap-2">
-                <TabsList>
-                  <TabsTrigger value="active">Active</TabsTrigger>
-                  <TabsTrigger value="resolved">Resolved (24h)</TabsTrigger>
-                </TabsList>
+            <h1 className="text-lg font-semibold md:text-2xl">Issue Tracker</h1>
+          </div>
+          
+          {currentUser?.role !== 'operator' && (
+            <div className="relative flex justify-center mb-4">
+              <TabsList>
+                <TabsTrigger value="active">Active</TabsTrigger>
+                <TabsTrigger value="resolved">Resolved (24h)</TabsTrigger>
+              </TabsList>
+              <div className="absolute right-0">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="outline" size="sm" className="gap-1">
@@ -123,8 +124,9 @@ export default function IssuesPage() {
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
-            )}
-          </div>
+            </div>
+          )}
+
           <TabsContent value="active">
             <IssuesDataTable
               issues={activeIssues}
