@@ -117,37 +117,43 @@ export default function PricingPage() {
                     Choose the plan that's right for your production needs. No hidden fees, clear and simple.
                 </p>
                 </div>
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 mt-12 max-w-7xl mx-auto">
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 mt-16 max-w-7xl mx-auto">
                 {tiers.map((tier) => (
-                    <Card key={tier.name} className={`flex flex-col ${tier.popular ? 'border-primary shadow-lg' : ''}`}>
-                    <CardHeader className="text-center">
-                        {tier.badge && <div className="text-primary font-semibold mb-2">{tier.badge}</div>}
-                        <CardTitle className="text-2xl">{tier.name}</CardTitle>
-                        <div className="flex items-baseline justify-center gap-1">
-                            <span className="text-4xl font-bold">{tier.price}</span>
-                            {tier.pricePeriod && <span className="text-muted-foreground">{tier.pricePeriod}</span>}
-                        </div>
-                        <CardDescription>{tier.description}</CardDescription>
-                    </CardHeader>
-                    <CardContent className="flex-1">
-                        <ul className="space-y-4">
-                        {tier.features.map((feature) => {
-                            const Icon = feature.icon;
-                            return (
-                                <li key={feature.text} className="flex items-start">
-                                    <Icon className="h-5 w-5 text-primary mr-2 shrink-0 mt-0.5" />
-                                    <span>{feature.text}</span>
-                                </li>
-                            );
-                        })}
-                        </ul>
-                    </CardContent>
-                    <CardFooter>
-                        <Button className="w-full" variant={tier.popular ? 'default' : 'outline'}>
-                        {tier.cta}
-                        </Button>
-                    </CardFooter>
-                    </Card>
+                    <div key={tier.name} className="relative">
+                        {tier.badge && (
+                            <div className="absolute -top-5 left-1/2 -translate-x-1/2">
+                                <Badge variant="default" className="text-sm">{tier.badge}</Badge>
+                            </div>
+                        )}
+                        <Card className={`flex flex-col h-full ${tier.popular ? 'border-primary shadow-lg' : ''}`}>
+                            <CardHeader className="text-center">
+                                <CardTitle className="text-2xl">{tier.name}</CardTitle>
+                                <div className="flex items-baseline justify-center gap-1">
+                                    <span className="text-4xl font-bold">{tier.price}</span>
+                                    {tier.pricePeriod && <span className="text-muted-foreground">{tier.pricePeriod}</span>}
+                                </div>
+                                <CardDescription>{tier.description}</CardDescription>
+                            </CardHeader>
+                            <CardContent className="flex-1">
+                                <ul className="space-y-4">
+                                {tier.features.map((feature) => {
+                                    const Icon = feature.icon;
+                                    return (
+                                        <li key={feature.text} className="flex items-start">
+                                            <Icon className="h-5 w-5 text-primary mr-2 shrink-0 mt-0.5" />
+                                            <span>{feature.text}</span>
+                                        </li>
+                                    );
+                                })}
+                                </ul>
+                            </CardContent>
+                            <CardFooter>
+                                <Button className="w-full" variant={tier.popular ? 'default' : 'outline'}>
+                                {tier.cta}
+                                </Button>
+                            </CardFooter>
+                        </Card>
+                    </div>
                 ))}
                 </div>
             </div>
