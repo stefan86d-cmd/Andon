@@ -196,6 +196,7 @@ export default function PricingPage() {
                     {tiers.map((tier) => {
                         const price = tier.prices[duration][currency];
                         const isProBestValue = tier.name === "Pro";
+                        const linkHref = `/register?plan=${tier.name.toLowerCase()}&duration=${duration}&currency=${currency}`;
                         return (
                             <div key={tier.name} className="relative">
                                 {tier.badge && (
@@ -227,9 +228,11 @@ export default function PricingPage() {
                                         </ul>
                                     </CardContent>
                                     <CardFooter>
-                                        <Button className="w-full" variant={isProBestValue ? 'destructive' : (tier.popular ? 'default' : 'outline')}>
+                                        <Link href={linkHref} className={cn(buttonVariants({ 
+                                            variant: isProBestValue ? 'destructive' : (tier.popular ? 'default' : 'outline'),
+                                        }), "w-full")}>
                                             {tier.cta}
-                                        </Button>
+                                        </Link>
                                     </CardFooter>
                                 </Card>
                             </div>
