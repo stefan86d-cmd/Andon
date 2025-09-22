@@ -3,7 +3,7 @@
 
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, Factory, ClipboardList, LayoutDashboard, BarChart3, Bot, UserCog, LifeBuoy, Puzzle, ShieldCheck, Headset, Shield, BadgeCheck, CheckCircle } from "lucide-react";
+import { Users, Factory, ClipboardList, LayoutDashboard, BarChart3, Bot, UserCog, LifeBuoy, Puzzle, ShieldCheck, Headset, Shield, BadgeCheck, CheckCircle, Globe } from "lucide-react";
 import Link from "next/link";
 import { Logo } from "@/components/layout/logo";
 import { cn } from "@/lib/utils";
@@ -16,9 +16,9 @@ const tiers = [
   {
     name: "Starter",
     prices: {
-        monthly: "Free",
-        biannually: "Free",
-        annually: "Free",
+        monthly: { usd: 0, eur: 0 },
+        biannually: { usd: 0, eur: 0 },
+        annually: { usd: 0, eur: 0 },
     },
     pricePeriod: "",
     description: "For small teams getting started with issue tracking.",
@@ -34,9 +34,9 @@ const tiers = [
   {
     name: "Standard",
     prices: {
-        monthly: "$39",
-        biannually: "$35", // approx 10% off
-        annually: "$31", // approx 20% off
+        monthly: { usd: 39, eur: 36 },
+        biannually: { usd: 35, eur: 32 }, // approx 10% off
+        annually: { usd: 31, eur: 29 }, // approx 20% off
     },
     pricePeriod: "/ month",
     description: "For growing factories that need more power and insights.",
@@ -55,9 +55,9 @@ const tiers = [
   {
     name: "Pro",
     prices: {
-        monthly: "$59",
-        biannually: "$53", // approx 10% off
-        annually: "$47", // approx 20% off
+        monthly: { usd: 59, eur: 54 },
+        biannually: { usd: 53, eur: 49 }, // approx 10% off
+        annually: { usd: 47, eur: 43 }, // approx 20% off
     },
     pricePeriod: "/ month",
     description: "For scaling operations with expanded needs.",
@@ -76,9 +76,9 @@ const tiers = [
   {
     name: "Enterprise",
     prices: {
-        monthly: "Custom",
-        biannually: "Custom",
-        annually: "Custom",
+        monthly: { usd: 'Custom', eur: 'Custom' },
+        biannually: { usd: 'Custom', eur: 'Custom' },
+        annually: { usd: 'Custom', eur: 'Custom' },
     },
     description: "For large-scale operations with custom needs.",
     features: [
@@ -111,6 +111,11 @@ const guarantees = [
 
 export default function PricingPage() {
     const [duration, setDuration] = useState<'monthly' | 'biannually' | 'annually'>('monthly');
+    const [currency, setCurrency] = useState<'usd' | 'eur'>('usd');
+    const currencySymbols = {
+        usd: '$',
+        eur: '€',
+    }
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
@@ -153,47 +158,64 @@ export default function PricingPage() {
                             <SelectItem value="annually">One Year</SelectItem>
                         </SelectContent>
                     </Select>
+                     <Select value={currency} onValueChange={(value) => setCurrency(value as any)}>
+                        <SelectTrigger className="w-[150px]">
+                            <div className="flex items-center gap-2">
+                                <Globe className="h-4 w-4 text-muted-foreground" />
+                                <SelectValue placeholder="Select currency" />
+                            </div>
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="usd">USD ($)</SelectItem>
+                            <SelectItem value="eur">EUR (€)</SelectItem>
+                        </SelectContent>
+                    </Select>
                     {duration === 'biannually' && <Badge variant="secondary" className="text-sm">Save ~10%</Badge>}
                     {duration === 'annually' && <Badge variant="secondary" className="text-sm">Save ~20%</Badge>}
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 mt-12 max-w-7xl mx-auto">
-                {tiers.map((tier) => (
-                    <div key={tier.name} className="relative">
-                        {tier.badge && (
-                            <div className="absolute -top-5 left-1/2 -translate-x-1/2">
-                                <Badge variant="default" className="text-sm">{tier.badge}</Badge>
-                            </div>
-                        )}
-                        <Card className={`flex flex-col h-full ${tier.popular ? 'border-primary shadow-lg' : ''}`}>
-                            <CardHeader className="text-center">
-                                <CardTitle className="text-2xl">{tier.name}</CardTitle>
-                                <div className="flex items-baseline justify-center gap-1">
-                                    <span className="text-4xl font-bold">{tier.prices[duration]}</span>
-                                    {tier.pricePeriod && tier.prices[duration] !== "Free" && tier.prices[duration] !== "Custom" && <span className="text-muted-foreground">{tier.pricePeriod}</span>}
+                {tiers.map((tier) => {
+                    const price = tier.prices[duration][currency];
+                    return (
+                        <div key={tier.name} className="relative">
+                            {tier.badge && (
+                                <div className="absolute -top-5 left-1/2 -translate-x-1/2">
+                                    <Badge variant="default" className="text-sm">{tier.badge}</Badge>
                                 </div>
-                                <CardDescription>{tier.description}</CardDescription>
-                            </CardHeader>
-                            <CardContent className="flex-1">
-                                <ul className="space-y-4">
-                                {tier.features.map((feature) => (
-                                    <li key={feature.text} className="flex items-center">
-                                        <Badge variant="outline" className="border-0 font-medium text-green-600">
-                                            <CheckCircle className="h-5 w-5 mr-2" />
-                                            <span>{feature.text}</span>
-                                        </Badge>
-                                    </li>
-                                ))}
-                                </ul>
-                            </CardContent>
-                            <CardFooter>
-                                <Button className="w-full" variant={tier.popular ? 'default' : 'outline'}>
-                                {tier.cta}
-                                </Button>
-                            </CardFooter>
-                        </Card>
-                    </div>
-                ))}
+                            )}
+                            <Card className={`flex flex-col h-full ${tier.popular ? 'border-primary shadow-lg' : ''}`}>
+                                <CardHeader className="text-center">
+                                    <CardTitle className="text-2xl">{tier.name}</CardTitle>
+                                    <div className="flex items-baseline justify-center gap-1">
+                                        <span className="text-4xl font-bold">
+                                            {typeof price === 'number' ? `${currencySymbols[currency]}${price}` : price}
+                                        </span>
+                                        {tier.pricePeriod && typeof price === 'number' && price > 0 && <span className="text-muted-foreground">{tier.pricePeriod}</span>}
+                                    </div>
+                                    <CardDescription>{tier.description}</CardDescription>
+                                </CardHeader>
+                                <CardContent className="flex-1">
+                                    <ul className="space-y-4">
+                                    {tier.features.map((feature) => (
+                                        <li key={feature.text} className="flex items-center">
+                                            <Badge variant="outline" className="border-0 font-medium text-green-600">
+                                                <CheckCircle className="h-5 w-5 mr-2" />
+                                                <span>{feature.text}</span>
+                                            </Badge>
+                                        </li>
+                                    ))}
+                                    </ul>
+                                </CardContent>
+                                <CardFooter>
+                                    <Button className="w-full" variant={tier.popular ? 'default' : 'outline'}>
+                                    {tier.cta}
+                                    </Button>
+                                </CardFooter>
+                            </Card>
+                        </div>
+                    )
+                })}
                 </div>
             </div>
         </section>
