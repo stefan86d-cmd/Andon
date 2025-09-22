@@ -137,30 +137,14 @@ export default function PricingPage() {
                             </CardHeader>
                             <CardContent className="flex-1">
                                 <ul className="space-y-4">
-                                {tier.features.map((feature) => {
-                                    const isUserFeature = feature.text.toLowerCase().includes('user');
-                                    const isLineFeature = feature.text.toLowerCase().includes('line');
-
-                                    if (isUserFeature || isLineFeature) {
-                                        return (
-                                            <li key={feature.text}>
-                                                <Badge variant="secondary" className="w-full justify-start py-2">
-                                                    {isUserFeature ? <Users className="h-4 w-4 mr-2" /> : <Factory className="h-4 w-4 mr-2" />}
-                                                    {feature.text}
-                                                </Badge>
-                                            </li>
-                                        );
-                                    }
-
-                                    return (
-                                        <li key={feature.text} className="flex items-center">
-                                            <Badge variant="outline" className="border-0 font-medium text-green-600">
-                                                <CheckCircle className="h-5 w-5 mr-2" />
-                                                <span>{feature.text}</span>
-                                            </Badge>
-                                        </li>
-                                    );
-                                })}
+                                {tier.features.map((feature) => (
+                                    <li key={feature.text} className="flex items-center">
+                                        <Badge variant="outline" className="border-0 font-medium text-green-600">
+                                            <CheckCircle className="h-5 w-5 mr-2" />
+                                            <span>{feature.text}</span>
+                                        </Badge>
+                                    </li>
+                                ))}
                                 </ul>
                             </CardContent>
                             <CardFooter>
