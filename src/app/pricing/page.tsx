@@ -17,6 +17,7 @@ const tiers = [
     features: [
       { text: "Up to 5 users" },
       { text: "1 Production Line" },
+      { text: "Up to 5 workstations" },
       { text: "Basic Issue Reporting" },
       { text: "Dashboard View" },
     ],
@@ -139,8 +140,9 @@ export default function PricingPage() {
                                 {tier.features.map((feature) => {
                                     const isUserFeature = feature.text.toLowerCase().includes('user');
                                     const isLineFeature = feature.text.toLowerCase().includes('line');
+                                    const isWorkstationFeature = feature.text.toLowerCase().includes('workstation');
 
-                                    if (isUserFeature || isLineFeature) {
+                                    if (isUserFeature || isLineFeature || isWorkstationFeature) {
                                         return (
                                             <li key={feature.text}>
                                                 <Badge variant="secondary" className="w-full justify-start py-2">
