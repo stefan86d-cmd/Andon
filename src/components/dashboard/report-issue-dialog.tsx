@@ -5,7 +5,7 @@ import React, { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { reportIssue } from "@/app/actions";
+import { reportIssue, prioritizeIssue } from "@/app/actions";
 import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
@@ -38,7 +38,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
 import { LoaderCircle, Monitor, Truck, Wrench, HelpCircle, ArrowLeft, LifeBuoy, BadgeCheck, Factory, Zap } from "lucide-react";
-import type { ProductionLine, User } from "@/lib/types";
+import type { ProductionLine, User, Priority } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { useUser } from "@/contexts/user-context";
 
@@ -132,6 +132,7 @@ export function ReportIssueDialog({
 }) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, startSubmittingTransition] = useTransition();
+  const [isSuggesting, startSuggestionTransition] = useTransition();
   const [step, setStep] = useState(1);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const router = useRouter();
@@ -180,6 +181,7 @@ export function ReportIssueDialog({
   }, [open, getLocation, form]);
 
   const subCategoryValue = form.watch("subCategory");
+  const descriptionValue = form.watch("description");
 
   function onSubmit(data: IssueFormValues) {
     if (!currentUser?.email) {
@@ -253,6 +255,29 @@ export function ReportIssueDialog({
     }
     setOpen(isOpen);
   }
+
+  const handleAiSuggestion = () => {
+    if (!descriptionValue) {
+        toast({
+            variant: "destructive",
+            title: "Description needed",
+            description: "Please provide a description before getting an AI suggestion."
+        });
+        return;
+    }
+    startSuggestionTransition(async () => {
+        try {
+            const result = await prioritizeIssue({ description: descriptionValue });
+            form.setValue("priority", result.priorityLevel as Priority);
+            toast({
+                title: "AI Suggestion",
+                description: `The AI suggested a priority of "${result.priorityLevel}".`
+            });
+        } catch (error) {
+            toast({ variant: "destructive", title: "AI Suggestion Failed" });
+        }
+    });
+  }
   
   const currentCategory = categories.find(c => c.id === selectedCategory);
   const location = getLocation();
@@ -274,7 +299,7 @@ export function ReportIssueDialog({
     if (step === 3) return "Provide details for the issue.";
   }
 
-  const isAiPriorityDisabled = currentUser?.plan === 'starter';
+  const isAiPriorityEnabled = currentUser?.plan !== 'starter';
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -403,33 +428,35 @@ export function ReportIssueDialog({
               name="priority"
               render={({ field }) => (
                 <FormItem>
-                  <div className="flex items-center justify-between">
-                    <FormLabel>Priority</FormLabel>
-                    {!isAiPriorityDisabled && (
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                            <Zap className="h-3 w-3 text-yellow-500" />
-                            AI suggestion enabled
-                        </div>
-                    )}
-                  </div>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                    value={field.value}
-                    disabled={!isAiPriorityDisabled}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a priority" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="low">Low</SelectItem>
-                      <SelectItem value="medium">Medium</SelectItem>
-                      <SelectItem value="high">High</SelectItem>
-                      <SelectItem value="critical">Critical</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <FormLabel>Priority</FormLabel>
+                    <div className="flex gap-2">
+                        <Select
+                            onValueChange={field.onChange}
+                            value={field.value}
+                        >
+                            <FormControl>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select a priority" />
+                            </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                            <SelectItem value="low">Low</SelectItem>
+                            <SelectItem value="medium">Medium</SelectItem>
+                            <SelectItem value="high">High</SelectItem>
+                            <SelectItem value="critical">Critical</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        {isAiPriorityEnabled && (
+                            <Button type="button" variant="outline" onClick={handleAiSuggestion} disabled={isSuggesting || !descriptionValue}>
+                                {isSuggesting ? (
+                                    <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+                                ) : (
+                                    <Zap className="mr-2 h-4 w-4 text-yellow-500" />
+                                )}
+                                AI Suggest
+                            </Button>
+                        )}
+                    </div>
                   <FormMessage />
                 </FormItem>
               )}

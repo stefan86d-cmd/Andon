@@ -26,13 +26,7 @@ export async function reportIssue(issueData: Omit<Issue, 'id' | 'reportedAt' | '
             return { error: "Could not find current user."};
         }
 
-        let priority = issueData.priority;
-        if (reportedByUser.plan !== 'starter') {
-            const priorityResponse = await prioritizeIssue({ description: issueData.title });
-            priority = priorityResponse.priorityLevel;
-        }
-
-        await addIssueToData({ ...issueData, priority }, reportedByUser);
+        await addIssueToData({ ...issueData }, reportedByUser);
         revalidatePath('/dashboard');
         revalidatePath('/issues');
         revalidatePath('/line-status');
@@ -78,7 +72,7 @@ export async function deleteProductionLine(lineId: string) {
     }
 }
 
-export async function addUser(data: { uid: string, firstName: string, lastName: string, email: string, role: Role }, tempPass?: string) {
+export async function addUser(data: { uid: string, firstName: string, lastName: string, email: string, role: Role, plan: User['plan'] }, tempPass?: string) {
     try {
         await addUserToData({
             uid: data.uid || `mock-uid-${Date.now()}`,
