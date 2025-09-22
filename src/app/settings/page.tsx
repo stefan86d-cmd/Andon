@@ -39,6 +39,9 @@ export default function SettingsPage() {
     }
 
     const [firstName, lastName] = currentUser.name.split(" ");
+    const hasNotificationsTab = currentUser.role === 'admin' || currentUser.role === 'supervisor';
+    const hasSubscriptionTab = currentUser.role === 'admin';
+    const tabCount = 1 + (hasNotificationsTab ? 1 : 0) + (hasSubscriptionTab ? 1 : 0);
 
     return (
         <AppLayout>
@@ -48,15 +51,17 @@ export default function SettingsPage() {
                 </div>
                 <div className="mx-auto grid w-full max-w-6xl items-start gap-6">
                     <Tabs defaultValue="profile" className="w-full">
-                        <TabsList>
-                            <TabsTrigger value="profile">My Profile</TabsTrigger>
-                            {(currentUser.role === 'admin' || currentUser.role === 'supervisor') && (
-                                <TabsTrigger value="notifications">Notifications</TabsTrigger>
-                            )}
-                             {(currentUser.role === 'admin') && (
-                                <TabsTrigger value="subscription">Subscription</TabsTrigger>
-                            )}
-                        </TabsList>
+                         <div className="flex justify-center mb-4">
+                            <TabsList className={`grid w-full max-w-lg grid-cols-${tabCount}`}>
+                                <TabsTrigger value="profile">My Profile</TabsTrigger>
+                                {hasNotificationsTab && (
+                                    <TabsTrigger value="notifications">Notifications</TabsTrigger>
+                                )}
+                                {hasSubscriptionTab && (
+                                    <TabsTrigger value="subscription">Subscription</TabsTrigger>
+                                )}
+                            </TabsList>
+                        </div>
                         <TabsContent value="profile">
                             <Card>
                                 <CardHeader>
@@ -92,7 +97,7 @@ export default function SettingsPage() {
                                 </CardContent>
                             </Card>
                         </TabsContent>
-                        {(currentUser.role === 'admin' || currentUser.role === 'supervisor') && (
+                        {hasNotificationsTab && (
                             <TabsContent value="notifications">
                                 <Card>
                                     <CardHeader>
@@ -123,7 +128,7 @@ export default function SettingsPage() {
                                 </Card>
                             </TabsContent>
                         )}
-                        {(currentUser.role === 'admin') && (
+                        {hasSubscriptionTab && (
                             <TabsContent value="subscription">
                                 <Card>
                                     <CardHeader>
