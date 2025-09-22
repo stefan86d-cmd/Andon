@@ -82,42 +82,47 @@ export default function IssuesPage() {
       <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background">
         <Tabs defaultValue="active">
           <div className="flex items-center justify-between mb-4">
-            <TabsList>
-              <TabsTrigger value="active">Active</TabsTrigger>
-              <TabsTrigger value="resolved">Resolved (24h)</TabsTrigger>
-            </TabsList>
+             <div>
+                <h1 className="text-lg font-semibold md:text-2xl">Issue Tracker</h1>
+            </div>
             {currentUser?.role !== 'operator' && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="gap-1">
-                    <ListFilter className="h-4 w-4" />
-                    <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                      Filter Lines
-                    </span>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuLabel>Filter by production line</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  {productionLines.map((line) => (
-                    <DropdownMenuCheckboxItem
-                      key={line.id}
-                      checked={tempSelectedLines.includes(line.id)}
-                      onCheckedChange={() => handleLineFilterChange(line.id)}
-                      onSelect={(e) => e.preventDefault()}
-                    >
-                      {line.name}
-                    </DropdownMenuCheckboxItem>
-                  ))}
-                  <DropdownMenuSeparator />
-                  <div className="p-2 flex justify-end gap-2">
-                    <Button variant="outline" size="sm" onClick={handleFilterReset}>Reset</Button>
-                    <DropdownMenuCheckboxItem onSelect={handleFilterConfirm} className="p-0">
-                      <Button size="sm" className="w-full">Confirm</Button>
-                    </DropdownMenuCheckboxItem>
-                  </div>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <div className="flex items-center gap-2">
+                <TabsList>
+                  <TabsTrigger value="active">Active</TabsTrigger>
+                  <TabsTrigger value="resolved">Resolved (24h)</TabsTrigger>
+                </TabsList>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm" className="gap-1">
+                      <ListFilter className="h-4 w-4" />
+                      <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                        Filter Lines
+                      </span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56">
+                    <DropdownMenuLabel>Filter by production line</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    {productionLines.map((line) => (
+                      <DropdownMenuCheckboxItem
+                        key={line.id}
+                        checked={tempSelectedLines.includes(line.id)}
+                        onCheckedChange={() => handleLineFilterChange(line.id)}
+                        onSelect={(e) => e.preventDefault()}
+                      >
+                        {line.name}
+                      </DropdownMenuCheckboxItem>
+                    ))}
+                    <DropdownMenuSeparator />
+                    <div className="p-2 flex justify-end gap-2">
+                      <Button variant="outline" size="sm" onClick={handleFilterReset}>Reset</Button>
+                      <DropdownMenuCheckboxItem onSelect={handleFilterConfirm} className="p-0">
+                        <Button size="sm" className="w-full">Confirm</Button>
+                      </DropdownMenuCheckboxItem>
+                    </div>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
             )}
           </div>
           <TabsContent value="active">
