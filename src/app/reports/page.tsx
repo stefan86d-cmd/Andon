@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { getIssues, getProductionLines } from "@/lib/data";
 import { IssuesTrendChart } from "@/components/reports/issues-trend-chart";
 import { Button } from "@/components/ui/button";
-import { Calendar as CalendarIcon, Filter, Power, Factory, Grip, LoaderCircle } from "lucide-react";
+import { Calendar as CalendarIcon, Filter, Power, Factory, LoaderCircle } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { format, startOfWeek, endOfWeek, startOfDay, endOfDay, differenceInHours, max } from 'date-fns';
@@ -185,7 +185,6 @@ export default function ReportsPage() {
         from: startOfWeek(new Date()),
         to: endOfWeek(new Date()),
     });
-    const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
     const [selectedLines, setSelectedLines] = useState<string[]>([]);
     const [productionStopped, setProductionStopped] = useState<boolean>(false);
 
@@ -211,13 +210,12 @@ export default function ReportsPage() {
 
             if (from && issueDate < from) return false;
             if (to && issueDate > to) return false;
-            if (selectedCategories.length > 0 && !selectedCategories.includes(issue.category)) return false;
             if (selectedLines.length > 0 && !selectedLines.includes(issue.productionLineId)) return false;
             if (productionStopped && !issue.productionStopped) return false;
             
             return true;
         });
-    }, [issues, dateRange, selectedCategories, selectedLines, productionStopped]);
+    }, [issues, dateRange, selectedLines, productionStopped]);
 
     const issuesByDay = useMemo(() => aggregateIssuesByDate(filteredIssues), [filteredIssues]);
     const issuesByCategory = useMemo(() => aggregateBy(filteredIssues, 'category', productionLines), [filteredIssues, productionLines]);
@@ -239,7 +237,6 @@ export default function ReportsPage() {
 
     const resetFilters = () => {
         setDateRange({ from: startOfWeek(new Date()), to: endOfWeek(new Date()) });
-        setSelectedCategories([]);
         setSelectedLines([]);
         setProductionStopped(false);
     }
@@ -272,7 +269,7 @@ export default function ReportsPage() {
                     <CardDescription>Refine the data shown in the reports below.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                         <div className="grid gap-2">
                             <Popover>
                                 <PopoverTrigger asChild>
@@ -311,29 +308,6 @@ export default function ReportsPage() {
                                 </PopoverContent>
                             </Popover>
                         </div>
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                            <Button variant="outline" className="justify-start text-left font-normal">
-                                <Grip className="mr-2 h-4 w-4" />
-                                {selectedCategories.length > 0 ? `${selectedCategories.length} categories selected` : 'Filter by Category'}
-                            </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent className="w-56">
-                            <DropdownMenuLabel>Issue Category</DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                            {allCategories.map((category) => (
-                                <DropdownMenuCheckboxItem
-                                    key={category.id}
-                                    checked={selectedCategories.includes(category.id)}
-                                    onCheckedChange={(checked) => {
-                                        setSelectedCategories(prev => checked ? [...prev, category.id] : prev.filter(id => id !== category.id))
-                                    }}
-                                >
-                                {category.label}
-                                </DropdownMenuCheckboxItem>
-                            ))}
-                            </DropdownMenuContent>
-                        </DropdownMenu>
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                             <Button variant="outline" className="justify-start text-left font-normal">
@@ -402,7 +376,7 @@ export default function ReportsPage() {
                             <CardDescription>
                                 Number of issues reported per day based on the selected filters.
                             </CardDescription>
-                        </CardHeader>
+                        </Header>
                         <CardContent>
                             <IssuesTrendChart data={issuesByDay} />
                         </CardContent>
@@ -415,7 +389,7 @@ export default function ReportsPage() {
                             <CardDescription>
                                 Total issues broken down by production line.
                             </CardDescription>
-                        </CardHeader>
+                        </Header>
                         <CardContent>
                             <FilteredBarChart data={issuesByLine} />
                         </CardContent>
@@ -428,7 +402,7 @@ export default function ReportsPage() {
                             <CardDescription>
                                 Total production stop time in hours, by issue category. This chart correctly handles overlapping downtime on the same line.
                             </CardDescription>
-                        </CardHeader>
+                        </Header>
                         <CardContent>
                             <FilteredBarChart data={downtimeByCategory} />
                         </CardContent>
