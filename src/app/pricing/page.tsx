@@ -76,16 +76,19 @@ const tiers = [
   {
     name: "Enterprise",
     prices: {
-        monthly: { usd: 'Custom', eur: 'Custom' },
-        biannually: { usd: 'Custom', eur: 'Custom' },
-        annually: { usd: 'Custom', eur: 'Custom' },
+        monthly: { usd: 149, eur: 139 },
+        biannually: { usd: 134, eur: 125 },
+        annually: { usd: 119, eur: 111 },
     },
+    pricePeriod: "/ month",
     description: "For large-scale operations with custom needs.",
     features: [
       { text: "Unlimited Users & Lines" },
-      { text: "Dedicated Support & Onboarding" },
-      { text: "Custom Integrations" },
-      { text: "Enhanced Security & Compliance" },
+      { text: "Advanced Reporting & Analytics" },
+      { text: "AI-Powered Issue Prioritization" },
+      { text: "User Role Management" },
+      { text: "Priority Support" },
+      { text: "24/7 Support" }
     ],
     cta: "Contact Sales",
   },
