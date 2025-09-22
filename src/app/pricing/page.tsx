@@ -16,9 +16,10 @@ const tiers = [
   {
     name: "Starter",
     prices: {
-        monthly: { usd: 0, eur: 0 },
-        biannually: { usd: 0, eur: 0 },
-        annually: { usd: 0, eur: 0 },
+        '1': { usd: 0, eur: 0 },
+        '12': { usd: 0, eur: 0 },
+        '24': { usd: 0, eur: 0 },
+        '48': { usd: 0, eur: 0 },
     },
     pricePeriod: "",
     description: "For small teams getting started with issue tracking.",
@@ -34,9 +35,10 @@ const tiers = [
   {
     name: "Standard",
     prices: {
-        monthly: { usd: 39, eur: 36 },
-        biannually: { usd: 35, eur: 32 }, // approx 10% off
-        annually: { usd: 31, eur: 29 }, // approx 20% off
+        '1': { usd: 39, eur: 36 },
+        '12': { usd: 31, eur: 29 }, // ~20% off
+        '24': { usd: 27, eur: 25 }, // ~30% off
+        '48': { usd: 23, eur: 21 }, // ~40% off
     },
     pricePeriod: "/ month",
     description: "For growing factories that need more power and insights.",
@@ -55,9 +57,10 @@ const tiers = [
   {
     name: "Pro",
     prices: {
-        monthly: { usd: 59, eur: 54 },
-        biannually: { usd: 53, eur: 49 }, // approx 10% off
-        annually: { usd: 47, eur: 43 }, // approx 20% off
+        '1': { usd: 59, eur: 54 },
+        '12': { usd: 47, eur: 43 }, // ~20% off
+        '24': { usd: 41, eur: 38 }, // ~30% off
+        '48': { usd: 35, eur: 32 }, // ~40% off
     },
     pricePeriod: "/ month",
     description: "For scaling operations with expanded needs.",
@@ -78,9 +81,10 @@ const tiers = [
   {
     name: "Enterprise",
     prices: {
-        monthly: { usd: 149, eur: 139 },
-        biannually: { usd: 134, eur: 125 },
-        annually: { usd: 119, eur: 111 },
+        '1': { usd: 149, eur: 139 },
+        '12': { usd: 119, eur: 111 }, // ~20% off
+        '24': { usd: 104, eur: 97 },  // ~30% off
+        '48': { usd: 89, eur: 83 },   // ~40% off
     },
     pricePeriod: "/ month",
     description: "For large-scale operations with unlimited resources and dedicated support.",
@@ -114,8 +118,10 @@ const guarantees = [
     }
 ]
 
+type Duration = '1' | '12' | '24' | '48';
+
 export default function PricingPage() {
-    const [duration, setDuration] = useState<'monthly' | 'biannually' | 'annually'>('monthly');
+    const [duration, setDuration] = useState<Duration>('12');
     const [currency, setCurrency] = useState<'usd' | 'eur'>('usd');
     const currencySymbols = {
         usd: '$',
@@ -163,9 +169,10 @@ export default function PricingPage() {
                             <SelectValue placeholder="Select duration" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="monthly">One Month</SelectItem>
-                            <SelectItem value="biannually">Half Year</SelectItem>
-                            <SelectItem value="annually">One Year</SelectItem>
+                            <SelectItem value="1">1 Month</SelectItem>
+                            <SelectItem value="12">12 Months</SelectItem>
+                            <SelectItem value="24">24 Months</SelectItem>
+                            <SelectItem value="48">48 Months</SelectItem>
                         </SelectContent>
                     </Select>
                      <Select value={currency} onValueChange={(value) => setCurrency(value as any)}>
@@ -180,8 +187,9 @@ export default function PricingPage() {
                             <SelectItem value="eur">EUR (€)</SelectItem>
                         </SelectContent>
                     </Select>
-                    {duration === 'biannually' && <Badge variant="secondary" className="text-sm">Save ~10%</Badge>}
-                    {duration === 'annually' && <Badge variant="secondary" className="text-sm">Save ~20%</Badge>}
+                    {duration === '12' && <Badge variant="secondary" className="text-sm">Save ~20%</Badge>}
+                    {duration === '24' && <Badge variant="secondary" className="text-sm">Save ~30%</Badge>}
+                    {duration === '48' && <Badge variant="secondary" className="text-sm">Save ~40%</Badge>}
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
@@ -266,4 +274,3 @@ export default function PricingPage() {
       </footer>
     </div>
   );
-}
