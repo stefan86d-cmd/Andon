@@ -81,7 +81,7 @@ const tiers = [
         annually: { usd: 119, eur: 111 },
     },
     pricePeriod: "/ month",
-    description: "For large-scale operations with custom needs.",
+    description: "For large-scale operations with unlimited resources and dedicated support.",
     features: [
       { text: "Unlimited Users & Lines" },
       { text: "Advanced Reporting & Analytics" },
