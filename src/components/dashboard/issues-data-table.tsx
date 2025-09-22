@@ -43,7 +43,7 @@ const categoryInfo: Record<IssueCategory, { label: string; icon: React.ElementTy
     logistics: { label: 'Logistics', icon: Truck, color: 'text-orange-500' },
     tool: { label: 'Tool & Equipment', icon: Wrench, color: 'text-gray-500' },
     quality: { label: 'Quality', icon: BadgeCheck, color: 'text-green-500' },
-    assistance: { label: 'Need Help', icon: LifeBuoy, color: 'text-red-500' },
+    assistance: { label: 'Assistance', icon: LifeBuoy, color: 'text-red-500' },
     other: { label: 'Other', icon: HelpCircle, color: 'text-purple-500' },
 };
 

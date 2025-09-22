@@ -106,7 +106,7 @@ const categories = [
     },
     { 
         id: 'assistance', 
-        label: 'Need Help', 
+        label: 'Assistance', 
         icon: LifeBuoy, 
         color: 'text-red-500',
         subCategories: []
