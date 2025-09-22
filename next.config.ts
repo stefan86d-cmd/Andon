@@ -40,8 +40,9 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withPWA({
+const pwaConfig = withPWA({
   dest: 'public',
+  disable: process.env.NODE_ENV === 'development',
   cacheOnFrontEndNav: true,
   aggressiveFrontEndNavCaching: true,
   reloadOnOnline: true,
@@ -49,4 +50,6 @@ export default withPWA({
   workboxOptions: {
     disableDevLogs: true,
   },
-})(nextConfig);
+});
+
+export default pwaConfig(nextConfig);
