@@ -31,12 +31,13 @@ const tiers = [
     features: [
       { text: "Up to 20 users" },
       { text: "Up to 5 Production Lines" },
+      { text: "Up to 20 workstations per line" },
       { text: "Advanced Reporting & Analytics" },
       { text: "AI-Powered Issue Prioritization" },
       { text: "User Role Management" },
     ],
     cta: "Upgrade to Standard",
-    badge: "Most Popular",
+    badge: "Most popular",
     popular: true,
   },
   {
@@ -47,6 +48,7 @@ const tiers = [
     features: [
         { text: "Up to 50 users" },
         { text: "Up to 10 Production Lines" },
+        { text: "Up to 40 workstations per line" },
         { text: "Advanced Reporting & Analytics" },
         { text: "AI-Powered Issue Prioritization" },
         { text: "User Role Management" },
