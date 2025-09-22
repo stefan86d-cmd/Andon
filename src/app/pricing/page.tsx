@@ -144,15 +144,20 @@ export default function PricingPage() {
             </div>
       </header>
       <main className="flex-1">
-        <section className="py-20 md:py-32 bg-muted/50">
+        <section className="py-20 bg-muted/50">
             <div className="container">
                 <div className="text-center">
-                <h1 className="text-3xl md:text-4xl font-bold">Pricing Plans</h1>
-                <p className="text-lg text-muted-foreground mt-2 max-w-xl mx-auto">
-                    Choose the plan that's right for your production needs. No hidden fees, clear and simple.
-                </p>
+                    <h1 className="text-3xl md:text-4xl font-bold">Pricing Plans</h1>
+                    <p className="text-lg text-muted-foreground mt-2 max-w-xl mx-auto">
+                        Choose the plan that's right for your production needs. No hidden fees, clear and simple.
+                    </p>
                 </div>
-                <div className="flex justify-center mt-8 space-x-2 items-center">
+            </div>
+        </section>
+        
+        <section className="py-20 bg-background">
+            <div className="container">
+                 <div className="flex justify-center mb-12 space-x-2 items-center">
                     <Select value={duration} onValueChange={(value) => setDuration(value as any)}>
                         <SelectTrigger className="w-[180px]">
                             <SelectValue placeholder="Select duration" />
@@ -179,52 +184,53 @@ export default function PricingPage() {
                     {duration === 'annually' && <Badge variant="secondary" className="text-sm">Save ~20%</Badge>}
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 mt-12 max-w-7xl mx-auto">
-                {tiers.map((tier) => {
-                    const price = tier.prices[duration][currency];
-                    const isProBestValue = tier.name === "Pro";
-                    return (
-                        <div key={tier.name} className="relative">
-                            {tier.badge && (
-                                <div className="absolute -top-5 left-1/2 -translate-x-1/2">
-                                    <Badge variant={tier.badgeVariant || 'default'} className="text-sm">{tier.badge}</Badge>
-                                </div>
-                            )}
-                            <Card className={`flex flex-col h-full ${tier.popular ? (isProBestValue ? 'border-destructive shadow-lg' : 'border-primary shadow-lg') : ''}`}>
-                                <CardHeader className="text-center">
-                                    <CardTitle className="text-2xl">{tier.name}</CardTitle>
-                                    <div className="flex items-baseline justify-center gap-1">
-                                        <span className="text-4xl font-bold">
-                                            {typeof price === 'number' ? `${currencySymbols[currency]}${price}` : price}
-                                        </span>
-                                        {tier.pricePeriod && typeof price === 'number' && price > 0 && <span className="text-muted-foreground">{tier.pricePeriod}</span>}
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
+                    {tiers.map((tier) => {
+                        const price = tier.prices[duration][currency];
+                        const isProBestValue = tier.name === "Pro";
+                        return (
+                            <div key={tier.name} className="relative">
+                                {tier.badge && (
+                                    <div className="absolute -top-5 left-1/2 -translate-x-1/2">
+                                        <Badge variant={tier.badgeVariant || 'default'} className="text-sm">{tier.badge}</Badge>
                                     </div>
-                                    <CardDescription>{tier.description}</CardDescription>
-                                </CardHeader>
-                                <CardContent className="flex-1">
-                                    <ul className="space-y-4">
-                                    {tier.features.map((feature) => (
-                                        <li key={feature.text} className="flex items-center">
-                                            <Badge variant="outline" className="border-0 font-medium text-green-600">
-                                                <CheckCircle className="h-5 w-5 mr-2" />
-                                                <span>{feature.text}</span>
-                                            </Badge>
-                                        </li>
-                                    ))}
-                                    </ul>
-                                </CardContent>
-                                <CardFooter>
-                                    <Button className="w-full" variant={isProBestValue ? 'destructive' : (tier.popular ? 'default' : 'outline')}>
-                                        {tier.cta}
-                                    </Button>
-                                </CardFooter>
-                            </Card>
-                        </div>
-                    )
-                })}
+                                )}
+                                <Card className={`flex flex-col h-full ${tier.popular ? (isProBestValue ? 'border-destructive shadow-lg' : 'border-primary shadow-lg') : ''}`}>
+                                    <CardHeader className="text-center">
+                                        <CardTitle className="text-2xl">{tier.name}</CardTitle>
+                                        <div className="flex items-baseline justify-center gap-1">
+                                            <span className="text-4xl font-bold">
+                                                {typeof price === 'number' ? `${currencySymbols[currency]}${price}` : price}
+                                            </span>
+                                            {tier.pricePeriod && typeof price === 'number' && price > 0 && <span className="text-muted-foreground">{tier.pricePeriod}</span>}
+                                        </div>
+                                        <CardDescription>{tier.description}</CardDescription>
+                                    </CardHeader>
+                                    <CardContent className="flex-1">
+                                        <ul className="space-y-4">
+                                        {tier.features.map((feature) => (
+                                            <li key={feature.text} className="flex items-center">
+                                                <Badge variant="outline" className="border-0 font-medium text-green-600">
+                                                    <CheckCircle className="h-5 w-5 mr-2" />
+                                                    <span>{feature.text}</span>
+                                                </Badge>
+                                            </li>
+                                        ))}
+                                        </ul>
+                                    </CardContent>
+                                    <CardFooter>
+                                        <Button className="w-full" variant={isProBestValue ? 'destructive' : (tier.popular ? 'default' : 'outline')}>
+                                            {tier.cta}
+                                        </Button>
+                                    </CardFooter>
+                                </Card>
+                            </div>
+                        )
+                    })}
                 </div>
             </div>
         </section>
+
         <section className="py-20 border-t bg-muted/50">
             <div className="container">
                 <div className="text-center mb-12">
@@ -261,7 +267,3 @@ export default function PricingPage() {
     </div>
   );
 }
-
-    
-
-    
