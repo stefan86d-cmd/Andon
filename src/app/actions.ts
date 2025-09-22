@@ -13,6 +13,7 @@ import {
     addUser as addUserToData,
     getAllUsers,
 } from "@/lib/data";
+import { prioritizeIssue } from '@/ai/flows/prioritize-reported-issues';
 import type { Issue, Role, User } from "@/lib/types";
 
 // Mock implementation as Firebase Admin is disabled.
@@ -23,7 +24,14 @@ export async function reportIssue(issueData: Omit<Issue, 'id' | 'reportedAt' | '
         if (!reportedByUser) {
             return { error: "Could not find current user."};
         }
-        await addIssueToData(issueData, reportedByUser);
+
+        let priority = issueData.priority;
+        if (reportedByUser.plan !== 'starter') {
+            const priorityResponse = await prioritizeIssue({ description: issueData.title });
+            priority = priorityResponse.priorityLevel;
+        }
+
+        await addIssueToData({ ...issueData, priority }, reportedByUser);
         revalidatePath('/dashboard');
         revalidatePath('/issues');
         revalidatePath('/line-status');
@@ -147,9 +155,9 @@ export async function updateIssue(issueId: string, data: {
 
 export async function seedUsers() {
     const usersToSeed = [
-        { uid: '0P6TMG7LyyWKatYHFNVXpVoRQSC2', firstName: 'Alex', lastName: 'Johnson', email: 'alex.j@andon.io', role: 'admin' as Role },
-        { uid: 'mock-sam', firstName: 'Sam', lastName: 'Miller', email: 'sam.m@andon.io', role: 'supervisor' as Role },
-        { uid: 'mock-maria', firstName: 'Maria', lastName: 'Garcia', email: 'maria.g@andon.io', role: 'operator' as Role },
+        { uid: '0P6TMG7LyyWKatYHFNVXpVoRQSC2', firstName: 'Alex', lastName: 'Johnson', email: 'alex.j@andon.io', role: 'admin' as Role, plan: 'pro' as const },
+        { uid: 'mock-sam', firstName: 'Sam', lastName: 'Miller', email: 'sam.m@andon.io', role: 'supervisor' as Role, plan: 'pro' as const },
+        { uid: 'mock-maria', firstName: 'Maria', lastName: 'Garcia', email: 'maria.g@andon.io', role: 'operator' as Role, plan: 'pro' as const },
     ];
 
     let createdCount = 0;

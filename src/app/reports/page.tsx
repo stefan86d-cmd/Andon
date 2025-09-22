@@ -3,12 +3,12 @@
 
 import { useEffect, useState } from "react";
 import { AppLayout } from "@/components/layout/app-layout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { getIssues, getProductionLines } from "@/lib/data";
 import type { Issue, IssueCategory, ProductionLine } from "@/lib/types";
 import { IssuesTrendChart } from "@/components/reports/issues-trend-chart";
 import { format, subDays, eachDayOfInterval, startOfDay, differenceInSeconds } from "date-fns";
-import { Calendar as CalendarIcon, LoaderCircle, ListFilter } from "lucide-react";
+import { Calendar as CalendarIcon, LoaderCircle, ListFilter, Lock } from "lucide-react";
 import { PieChartWithPercentages } from "@/components/reports/pie-chart-with-percentages";
 import { FilteredBarChart } from "@/components/reports/filtered-bar-chart";
 import { useUser } from "@/contexts/user-context";
@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { DateRange } from "react-day-picker";
+import Link from "next/link";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -102,6 +103,35 @@ export default function ReportsPage() {
         </main>
       </AppLayout>
     );
+  }
+  
+  // --- Feature Gate for Reports ---
+  if (currentUser.plan === 'starter') {
+    return (
+      <AppLayout>
+        <main className="flex flex-1 items-center justify-center">
+          <Card className="w-full max-w-md text-center">
+            <CardHeader>
+              <CardTitle className="flex items-center justify-center gap-2">
+                <Lock className="h-6 w-6" />
+                Advanced Reporting Locked
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <CardDescription>
+                The reports and analytics features are not available on the Starter plan.
+                Upgrade your plan to gain access to valuable insights.
+              </CardDescription>
+            </CardContent>
+            <CardContent>
+               <Button asChild>
+                <Link href="/settings">Upgrade Plan</Link>
+              </Button>
+            </CardContent>
+          </Card>
+        </main>
+      </AppLayout>
+    )
   }
   
   // --- Filtered Data ---

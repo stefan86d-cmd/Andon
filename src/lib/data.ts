@@ -1,14 +1,15 @@
 
-import type { User, Issue, ProductionLine, Role, IssueCategory } from "@/lib/types";
+
+import type { User, Issue, ProductionLine, Role, IssueCategory, Plan } from "@/lib/types";
 import { format, subDays, subHours } from "date-fns";
 
 // --- MOCK DATA ---
 // This is a mock database for development when Firebase is disabled.
 
 let mockUsers: User[] = [
-    { id: '0P6TMG7LyyWKatYHFNVXpVoRQSC2', name: 'Alex Johnson', email: 'alex.j@andon.io', avatarUrl: 'https://picsum.photos/seed/0P6TMG7LyyWKatYHFNVXpVoRQSC2/100/100', role: 'admin' },
-    { id: 'mock-sam', name: 'Sam Miller', email: 'sam.m@andon.io', avatarUrl: 'https://picsum.photos/seed/mock-sam/100/100', role: 'supervisor' },
-    { id: 'mock-maria', name: 'Maria Garcia', email: 'maria.g@andon.io', avatarUrl: 'https://picsum.photos/seed/mock-maria/100/100', role: 'operator' },
+    { id: '0P6TMG7LyyWKatYHFNVXpVoRQSC2', name: 'Alex Johnson', email: 'alex.j@andon.io', avatarUrl: 'https://picsum.photos/seed/0P6TMG7LyyWKatYHFNVXpVoRQSC2/100/100', role: 'admin', plan: 'pro' },
+    { id: 'mock-sam', name: 'Sam Miller', email: 'sam.m@andon.io', avatarUrl: 'https://picsum.photos/seed/mock-sam/100/100', role: 'supervisor', plan: 'pro' },
+    { id: 'mock-maria', name: 'Maria Garcia', email: 'maria.g@andon.io', avatarUrl: 'https://picsum.photos/seed/mock-maria/100/100', role: 'operator', plan: 'pro' },
 ];
 
 let mockProductionLines: ProductionLine[] = [
@@ -259,12 +260,13 @@ export async function getUserByEmail(email: string): Promise<User | null> {
     return Promise.resolve(user || null);
 }
 
-export async function addUser(data: { uid: string, firstName: string, lastName: string, email: string, role: Role }) {
+export async function addUser(data: { uid: string, firstName: string, lastName: string, email: string, role: Role, plan: Plan }) {
     const newUser: User = {
         id: data.uid,
         name: `${data.firstName} ${data.lastName}`,
         email: data.email,
         role: data.role,
+        plan: data.plan,
         avatarUrl: `https://picsum.photos/seed/${data.uid}/100/100`, // Placeholder avatar
     };
     mockUsers.push(newUser);

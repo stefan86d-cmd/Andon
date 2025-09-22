@@ -43,6 +43,8 @@ export default function SettingsPage() {
     const hasSubscriptionTab = currentUser.role === 'admin';
     const tabCount = 1 + (hasNotificationsTab ? 1 : 0) + (hasSubscriptionTab ? 1 : 0);
 
+    const planName = currentUser.plan.charAt(0).toUpperCase() + currentUser.plan.slice(1);
+
     return (
         <AppLayout>
             <main className="flex min-h-[calc(100vh_-_theme(spacing.16))] flex-1 flex-col gap-4 bg-background p-4 md:gap-8 md:p-10">
@@ -141,8 +143,8 @@ export default function SettingsPage() {
                                     </CardHeader>
                                     <CardContent className="space-y-4">
                                         <div className="rounded-lg border bg-card-foreground/5 p-6">
-                                            <h3 className="text-lg font-semibold">Current Plan: Pro</h3>
-                                            <p className="text-sm text-muted-foreground">Your workspace is on the Pro plan, which includes AI-powered prioritization and advanced reporting.</p>
+                                            <h3 className="text-lg font-semibold">Current Plan: {planName}</h3>
+                                            <p className="text-sm text-muted-foreground">Your workspace is on the {planName} plan.</p>
                                             {isCancelled && endDate ? (
                                                 <p className="text-sm font-semibold text-destructive mt-2">Your plan is cancelled and will end on {format(endDate, "MMMM d, yyyy")}.</p>
                                             ) : (
@@ -151,7 +153,9 @@ export default function SettingsPage() {
                                         </div>
                                         {!isCancelled ? (
                                             <div className="flex flex-col sm:flex-row gap-2">
-                                                <Button className="w-full sm:w-auto">Upgrade to Enterprise</Button>
+                                                 <Link href="/pricing" className={cn(buttonVariants({ variant: "default" }), "w-full sm:w-auto")}>
+                                                    Upgrade or Change Plan
+                                                </Link>
                                                 <CancelSubscriptionDialog onConfirm={handleCancelConfirm}>
                                                     <Button variant="destructive" className="w-full sm:w-auto">Cancel Subscription</Button>
                                                 </CancelSubscriptionDialog>

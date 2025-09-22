@@ -37,10 +37,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
-import { LoaderCircle, Monitor, Truck, Wrench, HelpCircle, ArrowLeft, LifeBuoy, BadgeCheck, Factory } from "lucide-react";
+import { LoaderCircle, Monitor, Truck, Wrench, HelpCircle, ArrowLeft, LifeBuoy, BadgeCheck, Factory, Zap } from "lucide-react";
 import type { ProductionLine, User } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { useUser } from "@/contexts/user-context";
+import { Checkbox } from "../ui/checkbox";
 
 const issueFormSchema = z.object({
   category: z.string().min(1, "Category is required."),
@@ -149,6 +150,7 @@ export function ReportIssueDialog({
       priority: "medium",
       itemNumber: "",
       quantity: '' as any,
+      productionStopped: false,
     },
   });
   
@@ -174,6 +176,7 @@ export function ReportIssueDialog({
         priority: "medium",
         itemNumber: "",
         quantity: '' as any,
+        productionStopped: false,
       });
       setStep(1);
       setSelectedCategory(null);
@@ -275,6 +278,8 @@ export function ReportIssueDialog({
     if (step === 2) return "Select a sub-category.";
     if (step === 3) return "Provide details for the issue.";
   }
+
+  const isAiPriorityDisabled = currentUser?.plan === 'starter';
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -385,6 +390,26 @@ export function ReportIssueDialog({
                 </FormItem>
               )}
             />
+             <FormField
+                control={form.control}
+                name="productionStopped"
+                render={({ field }) => (
+                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                        <FormControl>
+                            <Checkbox
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                            />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                            <FormLabel>Production Stop</FormLabel>
+                            <p className="text-sm text-muted-foreground">
+                                Check this if the issue has stopped production.
+                            </p>
+                        </div>
+                    </FormItem>
+                )}
+            />
             <FormField
               control={form.control}
               name="location"
@@ -405,11 +430,18 @@ export function ReportIssueDialog({
                 <FormItem>
                   <div className="flex items-center justify-between">
                     <FormLabel>Priority</FormLabel>
+                    {!isAiPriorityDisabled && (
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                            <Zap className="h-3 w-3 text-yellow-500" />
+                            AI suggestion enabled
+                        </div>
+                    )}
                   </div>
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value}
                     value={field.value}
+                    disabled={!isAiPriorityDisabled}
                   >
                     <FormControl>
                       <SelectTrigger>

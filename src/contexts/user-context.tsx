@@ -23,6 +23,7 @@ const mockUsersByEmail: { [email: string]: User } = {
     email: 'alex.j@andon.io',
     avatarUrl: 'https://picsum.photos/seed/0P6TMG7LyyWKatYHFNVXpVoRQSC2/100/100',
     role: 'admin',
+    plan: 'pro',
   },
   'sam.m@andon.io': {
     id: 'mock-sam',
@@ -30,6 +31,7 @@ const mockUsersByEmail: { [email: string]: User } = {
     email: 'sam.m@andon.io',
     avatarUrl: 'https://picsum.photos/seed/mock-sam/100/100',
     role: 'supervisor',
+    plan: 'pro',
   },
     'maria.g@andon.io': {
     id: 'mock-maria',
@@ -37,6 +39,7 @@ const mockUsersByEmail: { [email: string]: User } = {
     email: 'maria.g@andon.io',
     avatarUrl: 'https://picsum.photos/seed/mock-maria/100/100',
     role: 'operator',
+    plan: 'pro',
   }
 };
 
