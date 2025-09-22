@@ -140,9 +140,8 @@ export default function PricingPage() {
                                 {tier.features.map((feature) => {
                                     const isUserFeature = feature.text.toLowerCase().includes('user');
                                     const isLineFeature = feature.text.toLowerCase().includes('line');
-                                    const isWorkstationFeature = feature.text.toLowerCase().includes('workstation');
 
-                                    if (isUserFeature || isLineFeature || isWorkstationFeature) {
+                                    if (isUserFeature || isLineFeature) {
                                         return (
                                             <li key={feature.text}>
                                                 <Badge variant="secondary" className="w-full justify-start py-2">
