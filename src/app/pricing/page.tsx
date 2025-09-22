@@ -155,7 +155,7 @@ export default function PricingPage() {
             </div>
         </section>
         
-        <section className="py-20 bg-background">
+        <section className="py-20 border-t bg-background">
             <div className="container">
                  <div className="flex justify-center mb-12 space-x-2 items-center">
                     <Select value={duration} onValueChange={(value) => setDuration(value as any)}>
