@@ -53,21 +53,23 @@ export default function SettingsPage() {
                 </div>
                 <div className="mx-auto grid w-full max-w-6xl items-start gap-6">
                     <Tabs defaultValue="profile" className="w-full">
-                         <div className="flex justify-center mb-4">
-                            <TabsList className={cn(
-                                "grid w-full max-w-lg",
-                                tabCount === 2 && "grid-cols-2",
-                                tabCount === 3 && "grid-cols-3"
-                            )}>
-                                <TabsTrigger value="profile">My Profile</TabsTrigger>
-                                {hasNotificationsTab && (
-                                    <TabsTrigger value="notifications">Notifications</TabsTrigger>
-                                )}
-                                {hasSubscriptionTab && (
-                                    <TabsTrigger value="subscription">Subscription</TabsTrigger>
-                                )}
-                            </TabsList>
-                        </div>
+                        {tabCount > 1 && (
+                            <div className="flex justify-center mb-4">
+                                <TabsList className={cn(
+                                    "grid w-full max-w-lg",
+                                    tabCount === 2 && "grid-cols-2",
+                                    tabCount === 3 && "grid-cols-3"
+                                )}>
+                                    <TabsTrigger value="profile">My Profile</TabsTrigger>
+                                    {hasNotificationsTab && (
+                                        <TabsTrigger value="notifications">Notifications</TabsTrigger>
+                                    )}
+                                    {hasSubscriptionTab && (
+                                        <TabsTrigger value="subscription">Subscription</TabsTrigger>
+                                    )}
+                                </TabsList>
+                            </div>
+                        )}
                         <TabsContent value="profile">
                             <Card>
                                 <CardHeader>
