@@ -158,12 +158,7 @@ export default function PricingPage() {
                         Choose the plan that's right for your production needs. No hidden fees, clear and simple.
                     </p>
                 </div>
-            </div>
-        </section>
-        
-        <section className="py-20 border-t bg-background">
-            <div className="container">
-                 <div className="flex justify-center mb-12 space-x-2 items-center">
+                 <div className="flex justify-center mt-12 mb-0 space-x-2 items-center">
                     <Select value={duration} onValueChange={(value) => setDuration(value as any)}>
                         <SelectTrigger className="w-[180px]">
                             <SelectValue placeholder="Select duration" />
@@ -191,6 +186,11 @@ export default function PricingPage() {
                     {duration === '24' && <Badge variant="secondary" className="text-sm">Save ~30%</Badge>}
                     {duration === '48' && <Badge variant="secondary" className="text-sm">Save ~40%</Badge>}
                 </div>
+            </div>
+        </section>
+        
+        <section className="py-20 border-t bg-background">
+            <div className="container">
 
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
                     {tiers.map((tier) => {
