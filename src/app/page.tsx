@@ -2,7 +2,7 @@
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
-import { ArrowRight, Factory, BarChart3, Users, Bot } from 'lucide-react';
+import { ArrowRight, Factory, BarChart3, Users, Bot, Wrench } from 'lucide-react';
 import { Logo } from "@/components/layout/logo";
 import { cn } from "@/lib/utils";
 
@@ -23,9 +23,9 @@ const features = [
     description: 'Track key performance indicators, analyze downtime, and identify recurring problems with our comprehensive reports.',
   },
   {
-    icon: <Users className="h-10 w-10 text-primary" />,
-    title: 'Seamless Collaboration',
-    description: 'Connect operators, supervisors, and management with a centralized system for reporting and resolving issues.',
+    icon: <Wrench className="h-10 w-10 text-primary" />,
+    title: 'Customizable Workflows',
+    description: 'Unlike other monitoring tools, AndonPro allows you to fully customize and edit your production lines and workstations.',
   },
 ];
 
