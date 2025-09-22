@@ -306,7 +306,7 @@ export async function getIssueById(id: string): Promise<Issue | null> {
     return Promise.resolve(issue || null);
 }
 
-export async function addIssue(issueData: Omit<Issue, 'id' | 'reportedAt' | 'reportedBy' | 'status'>, currentUser: User) {
+export async function addIssue(issueData: Omit<Issue, 'id' | 'reportedAt' | 'reportedBy' | 'status' | 'productionStopped'>, currentUser: User) {
     if (!currentUser) {
         throw new Error("Cannot report issue without a logged in user.");
     }
@@ -319,7 +319,7 @@ export async function addIssue(issueData: Omit<Issue, 'id' | 'reportedAt' | 'rep
         category: issueData.category as IssueCategory,
         reportedBy: currentUser,
         subCategory: issueData.subCategory || "",
-        productionStopped: issueData.productionStopped || false,
+        productionStopped: false,
         itemNumber: issueData.itemNumber || "",
         quantity: issueData.quantity || undefined,
         resolutionNotes: "",
@@ -328,5 +328,12 @@ export async function addIssue(issueData: Omit<Issue, 'id' | 'reportedAt' | 'rep
     };
 
     mockIssues.push(newIssue);
+    return Promise.resolve();
+}
+
+export async function updateIssue(issueId: string, data: Partial<Omit<Issue, 'id'>>) {
+    mockIssues = mockIssues.map(issue => 
+        issue.id === issueId ? { ...issue, ...data } as Issue : issue
+    );
     return Promise.resolve();
 }

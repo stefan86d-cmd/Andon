@@ -12,13 +12,14 @@ import {
     getUserByEmail,
     addUser as addUserToData,
     getAllUsers,
+    updateIssue as updateIssueInData,
 } from "@/lib/data";
 import { prioritizeIssue } from '@/ai/flows/prioritize-reported-issues';
 import type { Issue, Role, User } from "@/lib/types";
 
 // Mock implementation as Firebase Admin is disabled.
 
-export async function reportIssue(issueData: Omit<Issue, 'id' | 'reportedAt' | 'reportedBy' | 'status'>, reportedByEmail: string) {
+export async function reportIssue(issueData: Omit<Issue, 'id' | 'reportedAt' | 'reportedBy' | 'status' | 'productionStopped'>, reportedByEmail: string) {
     try {
         const reportedByUser = await getUserByEmail(reportedByEmail);
         if (!reportedByUser) {
@@ -139,9 +140,7 @@ export async function updateIssue(issueId: string, data: {
             return { error: "Could not find resolving user." };
         }
        
-        // This function would interact with the mock data layer
-        // For now, we'll just log it. The UI will revalidate.
-        console.log("Updating issue (mock):", issueId, data);
+        await updateIssueInData(issueId, { ...data, resolvedBy: resolvedByUser });
 
 
         revalidatePath('/issues');

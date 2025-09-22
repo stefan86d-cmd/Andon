@@ -46,7 +46,7 @@ export type Issue = {
   resolutionNotes?: string;
   resolvedAt?: Date;
   resolvedBy?: User | null; // This is a fully populated User object for display
-  productionStopped?: boolean;
+  productionStopped: boolean;
   itemNumber?: string;
   quantity?: number;
 };

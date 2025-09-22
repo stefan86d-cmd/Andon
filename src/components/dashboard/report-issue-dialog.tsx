@@ -41,7 +41,6 @@ import { LoaderCircle, Monitor, Truck, Wrench, HelpCircle, ArrowLeft, LifeBuoy, 
 import type { ProductionLine, User } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { useUser } from "@/contexts/user-context";
-import { Checkbox } from "../ui/checkbox";
 
 const issueFormSchema = z.object({
   category: z.string().min(1, "Category is required."),
@@ -51,7 +50,6 @@ const issueFormSchema = z.object({
   priority: z.enum(["low", "medium", "high", "critical"]),
   itemNumber: z.string().optional(),
   quantity: z.coerce.number().optional(),
-  productionStopped: z.boolean().default(false),
 });
 
 type IssueFormValues = z.infer<typeof issueFormSchema>;
@@ -150,7 +148,6 @@ export function ReportIssueDialog({
       priority: "medium",
       itemNumber: "",
       quantity: '' as any,
-      productionStopped: false,
     },
   });
   
@@ -176,7 +173,6 @@ export function ReportIssueDialog({
         priority: "medium",
         itemNumber: "",
         quantity: '' as any,
-        productionStopped: false,
       });
       setStep(1);
       setSelectedCategory(null);
@@ -204,7 +200,6 @@ export function ReportIssueDialog({
             subCategory: data.subCategory,
             itemNumber: data.itemNumber,
             quantity: data.quantity,
-            productionStopped: data.productionStopped,
         };
         const result = await reportIssue(issueData, currentUser.email!);
 
@@ -389,26 +384,6 @@ export function ReportIssueDialog({
                   <FormMessage />
                 </FormItem>
               )}
-            />
-             <FormField
-                control={form.control}
-                name="productionStopped"
-                render={({ field }) => (
-                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                        <FormControl>
-                            <Checkbox
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                            />
-                        </FormControl>
-                        <div className="space-y-1 leading-none">
-                            <FormLabel>Production Stop</FormLabel>
-                            <p className="text-sm text-muted-foreground">
-                                Check this if the issue has stopped production.
-                            </p>
-                        </div>
-                    </FormItem>
-                )}
             />
             <FormField
               control={form.control}
