@@ -250,7 +250,7 @@ export default function ReportsPage() {
                     </div>
                 </main>
             </AppLayout>
-        )
+        );
     }
   
     return (
