@@ -89,7 +89,7 @@ export default function IssuesPage() {
             <div className="relative flex justify-center mb-4">
               <TabsList>
                 <TabsTrigger value="active">Active</TabsTrigger>
-                <TabsTrigger value="resolved">Resolved (24h)</TabsTrigger>
+                <TabsTrigger value="resolved">Resolved</TabsTrigger>
               </TabsList>
               <div className="absolute right-0">
                 <DropdownMenu>
