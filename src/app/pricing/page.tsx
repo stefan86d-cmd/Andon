@@ -37,10 +37,10 @@ const tiers = [
   {
     name: "Standard",
     prices: {
-        '1': { usd: 39, eur: 36 },
-        '12': { usd: 31, eur: 29 }, // ~20% off
-        '24': { usd: 27, eur: 25 }, // ~30% off
-        '48': { usd: 23, eur: 21 }, // ~40% off
+        '1': { usd: 39.99, eur: 36.99 },
+        '12': { usd: 31.99, eur: 29.99 }, // ~20% off
+        '24': { usd: 27.99, eur: 25.99 }, // ~30% off
+        '48': { usd: 23.99, eur: 21.99 }, // ~40% off
     },
     pricePeriod: "/ month",
     description: "For growing factories that need more power and insights.",
@@ -59,10 +59,10 @@ const tiers = [
   {
     name: "Pro",
     prices: {
-        '1': { usd: 59, eur: 54 },
-        '12': { usd: 47, eur: 43 }, // ~20% off
-        '24': { usd: 41, eur: 38 }, // ~30% off
-        '48': { usd: 35, eur: 32 }, // ~40% off
+        '1': { usd: 59.99, eur: 54.99 },
+        '12': { usd: 47.99, eur: 43.99 }, // ~20% off
+        '24': { usd: 41.99, eur: 38.99 }, // ~30% off
+        '48': { usd: 35.99, eur: 32.99 }, // ~40% off
     },
     pricePeriod: "/ month",
     description: "For scaling operations with expanded needs.",
@@ -83,10 +83,10 @@ const tiers = [
   {
     name: "Enterprise",
     prices: {
-        '1': { usd: 149, eur: 139 },
-        '12': { usd: 119, eur: 111 }, // ~20% off
-        '24': { usd: 104, eur: 97 },  // ~30% off
-        '48': { usd: 89, eur: 83 },   // ~40% off
+        '1': { usd: 149.99, eur: 139.99 },
+        '12': { usd: 119.99, eur: 111.99 }, // ~20% off
+        '24': { usd: 104.99, eur: 97.99 },  // ~30% off
+        '48': { usd: 89.99, eur: 83.99 },   // ~40% off
     },
     pricePeriod: "/ month",
     description: "For large-scale operations with unlimited resources and dedicated support.",
@@ -151,6 +151,14 @@ export default function PricingPage() {
     const servicesImage = PlaceHolderImages.find(img => img.id === 'mega-menu-services');
     const exploreImage = PlaceHolderImages.find(img => img.id === 'mega-menu-explore');
     const supportImage = PlaceHolderImages.find(img => img.id === 'mega-menu-support');
+    
+    const formatPrice = (price: number, currency: 'usd' | 'eur') => {
+        const locale = currency === 'eur' ? 'de-DE' : 'en-US';
+        return price.toLocaleString(locale, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+        });
+    };
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
@@ -250,7 +258,10 @@ export default function PricingPage() {
                                         <CardTitle className="text-2xl">{tier.name}</CardTitle>
                                         <div className="flex items-baseline justify-center gap-1">
                                             <span className="text-4xl font-bold">
-                                                {typeof price === 'number' ? `${currencySymbols[currency]}${price}` : price}
+                                                 {typeof price === 'number'
+                                                    ? `${currencySymbols[currency]}${formatPrice(price, currency)}`
+                                                    : price
+                                                }
                                             </span>
                                             {tier.pricePeriod && typeof price === 'number' && price > 0 && <span className="text-muted-foreground">{tier.pricePeriod}</span>}
                                         </div>
@@ -319,3 +330,5 @@ export default function PricingPage() {
     </div>
   );
 }
+
+    
