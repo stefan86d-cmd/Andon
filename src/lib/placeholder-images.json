@@ -69,8 +69,8 @@
     {
       "id": "mega-menu-support",
       "description": "Image for support mega menu",
-      "imageUrl": "https://images.unsplash.com/photo-1560264418-c4445382edbc?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8Y3VzdG9tZXIlMjBzdXBwb3J0fGVufDB8fHx8MTc1ODU5MDMyMHww&ixlib-rb-4.1.0&q=80&w=1080",
-      "imageHint": "customer support"
+      "imageUrl": "/Tech_support.jpg",
+      "imageHint": "technical support"
     },
     {
       "id": "dashboard-screenshot",
