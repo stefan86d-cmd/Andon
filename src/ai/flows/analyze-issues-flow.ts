@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview An AI-powered flow to analyze production issues and generate insights.
@@ -19,15 +20,15 @@ const IssueForAnalysisSchema = z.object({
   resolvedAt: z.string().optional(),
 });
 
-export const AnalyzeIssuesInputSchema = z.object({
+const AnalyzeIssuesInputSchema = z.object({
   issues: z.array(IssueForAnalysisSchema).describe('A list of issues to be analyzed.'),
 });
-export type AnalyzeIssuesInput = z.infer<typeof AnalyzeIssuesInputSchema>;
+type AnalyzeIssuesInput = z.infer<typeof AnalyzeIssuesInputSchema>;
 
-export const AnalyzeIssuesOutputSchema = z.object({
+const AnalyzeIssuesOutputSchema = z.object({
   analysis: z.string().describe('A concise, insightful analysis of the provided production issues. Use markdown for formatting, including headers, lists, and bold text.'),
 });
-export type AnalyzeIssuesOutput = z.infer<typeof AnalyzeIssuesOutputSchema>;
+type AnalyzeIssuesOutput = z.infer<typeof AnalyzeIssuesOutputSchema>;
 
 
 export async function analyzeIssues(input: AnalyzeIssuesInput): Promise<AnalyzeIssuesOutput> {
