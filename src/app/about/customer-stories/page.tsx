@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { MegaMenu } from "@/components/layout/mega-menu";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { buttonVariants } from "@/components/ui/button";
+import { Construction } from "lucide-react";
 
 const servicesMenuItems = [
     { title: "Production Monitoring", description: "Get a live overview of your entire production line.", badge: "", href: "/services/monitoring" },
@@ -69,10 +70,23 @@ export default function CustomerStoriesPage() {
       </header>
 
       <main className="flex-1">
-        <div className="container py-20">
-          <h1 className="text-4xl font-bold mb-4">Customer Stories</h1>
-          <p className="text-muted-foreground">See how other companies are succeeding with AndonPro.</p>
-        </div>
+        <section className="py-20 text-center bg-background">
+            <div className="container">
+                <h1 className="text-4xl font-bold mb-4">Customer Stories</h1>
+                <p className="text-muted-foreground max-w-2xl mx-auto">See how other companies are succeeding with AndonPro.</p>
+            </div>
+        </section>
+        <section className="py-20 bg-muted">
+            <div className="container text-center">
+                <div className="max-w-md mx-auto">
+                    <Construction className="h-16 w-16 mx-auto text-primary mb-4" />
+                    <h2 className="text-2xl font-semibold mb-2">Coming Soon!</h2>
+                    <p className="text-muted-foreground">
+                        We've just launched and are busy helping our first customers achieve amazing results. Check back soon to read their success stories!
+                    </p>
+                </div>
+            </div>
+        </section>
       </main>
 
       <footer className="py-6 md:px-8 md:py-0 border-t bg-primary text-primary-foreground">
