@@ -121,21 +121,21 @@ const guarantees = [
 ]
 
 const servicesMenuItems = [
-    { title: "Production Monitoring", description: "Get a live overview of your entire production line.", badge: "Live", href: "#" },
-    { title: "Issue Tracking", description: "Report, track, and resolve issues in real-time.", badge: "Essential", href: "#" },
-    { title: "Analytics & Reporting", description: "Gain insights into your production efficiency.", badge: "Pro", href: "#" },
+    { title: "Production Monitoring", description: "Get a live overview of your entire production line.", badge: "Live", href: "/services/monitoring" },
+    { title: "Issue Tracking", description: "Report, track, and resolve issues in real-time.", badge: "Essential", href: "/services/tracking" },
+    { title: "Analytics & Reporting", description: "Gain insights into your production efficiency.", badge: "Pro", href: "/services/reporting" },
 ];
 
 const exploreMenuItems = [
-    { title: "Our Story", description: "Learn about the mission and vision behind AndonPro.", badge: "", href: "#" },
-    { title: "Latest News", description: "Read our latest product announcements and company news.", badge: "", href: "#" },
-    { title: "Customer Stories", description: "See how other companies are succeeding with AndonPro.", badge: "", href: "#" },
+    { title: "Our Story", description: "Learn about the mission and vision behind AndonPro.", badge: "", href: "/about/our-story" },
+    { title: "Latest News", description: "Read our latest product announcements and company news.", badge: "", href: "/about/news" },
+    { title: "Customer Stories", description: "See how other companies are succeeding with AndonPro.", badge: "", href: "/about/customer-stories" },
 ];
 
 const supportMenuItems = [
-    { title: "FAQs", description: "Find answers to common questions about our platform.", badge: "", href: "#" },
-    { title: "Tutorials", description: "Explore step-by-step guides to get the most out of AndonPro.", badge: "", href: "#" },
-    { title: "Contact Us", description: "Get in touch with our team for personalized support.", badge: "", href: "#" },
+    { title: "FAQs", description: "Find answers to common questions about our platform.", badge: "", href: "/support/faq" },
+    { title: "Tutorials", description: "Explore step-by-step guides to get the most out of AndonPro.", badge: "", href: "/support/tutorials" },
+    { title: "Contact Us", description: "Get in touch with our team for personalized support.", badge: "", href: "/support/contact" },
 ];
 
 type Duration = '1' | '12' | '24' | '48';
