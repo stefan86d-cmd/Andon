@@ -63,11 +63,9 @@ export default function HomePage() {
                     Explore <ChevronDown className="h-4 w-4" />
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
-                    <DropdownMenuItem asChild>
-                        <Link href="/pricing">Pricing</Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>Customer Stories</DropdownMenuItem>
-                    <DropdownMenuItem>Blog</DropdownMenuItem>
+                    <DropdownMenuItem>Our story</DropdownMenuItem>
+                    <DropdownMenuItem>latest news</DropdownMenuItem>
+                    <DropdownMenuItem>customer stories</DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
                 
