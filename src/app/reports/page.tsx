@@ -8,7 +8,7 @@ import { getIssues, getProductionLines } from "@/lib/data";
 import type { Issue, IssueCategory, ProductionLine } from "@/lib/types";
 import { IssuesTrendChart } from "@/components/reports/issues-trend-chart";
 import { format, subDays, eachDayOfInterval, startOfDay, differenceInSeconds } from "date-fns";
-import { Calendar as CalendarIcon, LoaderCircle, ListFilter, Lock } from "lucide-react";
+import { Calendar as CalendarIcon, LoaderCircle, ListFilter, Lock, Zap } from "lucide-react";
 import { PieChartWithPercentages } from "@/components/reports/pie-chart-with-percentages";
 import { FilteredBarChart } from "@/components/reports/filtered-bar-chart";
 import { useUser } from "@/contexts/user-context";
@@ -27,6 +27,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
+import { analyzeIssues } from "@/ai/flows/analyze-issues-flow";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const allCategories: { id: IssueCategory; label: string; color: string }[] = [
     { id: 'it', label: 'IT & Network', color: '#3b82f6' }, // blue-500
@@ -42,6 +44,8 @@ export default function ReportsPage() {
   const [issues, setIssues] = useState<Issue[]>([]);
   const [productionLines, setProductionLines] = useState<ProductionLine[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [analysisResult, setAnalysisResult] = useState<string | null>(null);
 
   const [date, setDate] = useState<DateRange | undefined>({
     from: subDays(new Date(), 29),
@@ -78,12 +82,50 @@ export default function ReportsPage() {
 
   const handleFilterConfirm = () => {
     setSelectedLines(tempSelectedLines);
+    setAnalysisResult(null); // Reset analysis on filter change
   };
   
   const handleFilterReset = () => {
     setTempSelectedLines([]);
     setSelectedLines([]);
+    setAnalysisResult(null);
   };
+  
+  const handleDateChange = (newDate: DateRange | undefined) => {
+      setDate(newDate);
+      setAnalysisResult(null);
+  }
+
+  // --- Filtered Data ---
+  const filteredIssues = issues.filter(issue => {
+      const issueDate = issue.reportedAt;
+      const isInDateRange = date?.from && date?.to && issueDate >= startOfDay(date.from) && issueDate <= date.to;
+      const isLineSelected = selectedLines.length === 0 || selectedLines.includes(issue.productionLineId);
+      return isInDateRange && isLineSelected;
+  });
+
+  const handleGenerateAnalysis = async () => {
+    setIsGenerating(true);
+    setAnalysisResult(null);
+    try {
+        const issuesForAnalysis = filteredIssues.map(i => ({
+            title: i.title,
+            category: i.category,
+            priority: i.priority,
+            productionStopped: i.productionStopped,
+            reportedAt: i.reportedAt.toISOString(),
+            resolvedAt: i.resolvedAt?.toISOString(),
+        }));
+
+        const result = await analyzeIssues({ issues: issuesForAnalysis });
+        setAnalysisResult(result.analysis);
+    } catch (error) {
+        console.error("Failed to generate analysis", error);
+        setAnalysisResult("Sorry, there was an error generating the analysis. Please try again.");
+    } finally {
+        setIsGenerating(false);
+    }
+  }
 
   if (!currentUser || (currentUser.role !== 'admin' && currentUser.role !== 'supervisor')) {
     return (
@@ -134,13 +176,7 @@ export default function ReportsPage() {
     )
   }
   
-  // --- Filtered Data ---
-  const filteredIssues = issues.filter(issue => {
-      const issueDate = issue.reportedAt;
-      const isInDateRange = date?.from && date?.to && issueDate >= date.from && issueDate <= date.to;
-      const isLineSelected = selectedLines.length === 0 || selectedLines.includes(issue.productionLineId);
-      return isInDateRange && isLineSelected;
-  });
+  
 
   // --- Chart Data Processing ---
 
@@ -192,7 +228,7 @@ export default function ReportsPage() {
         
         <Card>
             <CardHeader className="flex-row items-center justify-between">
-                <CardTitle>Filters</CardTitle>
+                <CardTitle>Filters & Analysis</CardTitle>
                  <div className="flex items-center gap-2">
                     <Popover>
                         <PopoverTrigger asChild>
@@ -225,7 +261,7 @@ export default function ReportsPage() {
                             mode="range"
                             defaultMonth={date?.from}
                             selected={date}
-                            onSelect={setDate}
+                            onSelect={handleDateChange}
                             numberOfMonths={2}
                         />
                         </PopoverContent>
@@ -261,9 +297,32 @@ export default function ReportsPage() {
                         </div>
                         </DropdownMenuContent>
                     </DropdownMenu>
+                     <Button onClick={handleGenerateAnalysis} disabled={isGenerating}>
+                        {isGenerating ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : <Zap className="mr-2 h-4 w-4 text-yellow-300" />}
+                        Generate Analysis
+                    </Button>
                  </div>
             </CardHeader>
         </Card>
+
+        {(isGenerating || analysisResult) && (
+            <Card>
+                <CardHeader>
+                    <CardTitle>AI-Driven Analysis</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    {isGenerating ? (
+                        <div className="space-y-2">
+                           <Skeleton className="h-4 w-3/4" />
+                           <Skeleton className="h-4 w-full" />
+                           <Skeleton className="h-4 w-5/6" />
+                        </div>
+                    ) : (
+                         <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: analysisResult || "" }} />
+                    )}
+                </CardContent>
+            </Card>
+        )}
 
         <Tabs defaultValue="issues-by-category">
             <div className="flex justify-center">
