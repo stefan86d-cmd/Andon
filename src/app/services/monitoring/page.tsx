@@ -1,9 +1,11 @@
+
 import Link from "next/link";
 import { Logo } from "@/components/layout/logo";
 import { cn } from "@/lib/utils";
 import { MegaMenu } from "@/components/layout/mega-menu";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { buttonVariants } from "@/components/ui/button";
+import { ArrowRight } from "lucide-react";
 
 const servicesMenuItems = [
     { title: "Production Monitoring", description: "Get a live overview of your entire production line.", badge: "Live", href: "/services/monitoring" },
@@ -68,10 +70,22 @@ export default function ProductionMonitoringPage() {
       </header>
 
       <main className="flex-1">
-        <div className="container py-20">
-          <h1 className="text-4xl font-bold mb-4">Production Monitoring</h1>
-          <p className="text-muted-foreground">Get a live overview of your entire production line.</p>
-        </div>
+        <section className="container py-20 text-center">
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">Production Monitoring</h1>
+          <p className="text-lg text-muted-foreground max-w-3xl mx-auto">Get a live, bird's-eye view of your entire production line. AndonPro's real-time monitoring empowers your team to make informed decisions instantly.</p>
+        </section>
+
+        <section className="py-20 bg-muted">
+            <div className="container text-center">
+                <h2 className="text-3xl font-bold mb-6">What is Production Monitoring?</h2>
+                <p className="max-w-3xl mx-auto text-muted-foreground mb-8">
+                    Production Monitoring is the backbone of a smart factory. It involves the continuous tracking and visualization of every workstation's status, ongoing issues, and overall line performance. With AndonPro, you can move from reactive problem-solving to proactive optimization by seeing bottlenecks before they happen, understanding downtime causes, and ensuring your production targets are always within reach.
+                </p>
+                <Link href="/pricing" className={cn(buttonVariants({ size: "lg" }))}>
+                    Explore Pricing Options <ArrowRight className="ml-2 h-5 w-5" />
+                </Link>
+            </div>
+        </section>
       </main>
 
       <footer className="py-6 md:px-8 md:py-0 border-t">
