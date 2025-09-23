@@ -1,9 +1,11 @@
+
 import Link from "next/link";
 import { Logo } from "@/components/layout/logo";
 import { cn } from "@/lib/utils";
 import { MegaMenu } from "@/components/layout/mega-menu";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { buttonVariants } from "@/components/ui/button";
+import { ArrowRight } from "lucide-react";
 
 const servicesMenuItems = [
     { title: "Production Monitoring", description: "Get a live overview of your entire production line.", badge: "Live", href: "/services/monitoring" },
@@ -68,10 +70,22 @@ export default function AnalyticsReportingPage() {
       </header>
 
       <main className="flex-1">
-        <div className="container py-20">
-          <h1 className="text-4xl font-bold mb-4">Analytics & Reporting</h1>
-          <p className="text-muted-foreground">Gain insights into your production efficiency.</p>
-        </div>
+        <section className="container py-20 text-center">
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">Analytics & Reporting</h1>
+          <p className="text-lg text-muted-foreground max-w-3xl mx-auto">Gain insights into your production efficiency with powerful data visualization and AI-driven analysis.</p>
+        </section>
+
+        <section className="py-20 bg-muted">
+            <div className="container text-center">
+                <h2 className="text-3xl font-bold mb-6">What is Analytics & Reporting?</h2>
+                <p className="max-w-3xl mx-auto text-muted-foreground mb-8">
+                    Data is useless without understanding. AndonPro’s Analytics & Reporting tools transform raw data from your production line into actionable insights. Track key performance indicators (KPIs), visualize downtime by cause, identify recurring bottlenecks, and measure team response times. Our AI helps you spot trends and correlations you might otherwise miss, enabling you to make data-driven decisions for continuous improvement.
+                </p>
+                <Link href="/pricing" className={cn(buttonVariants({ size: "lg" }))}>
+                    Explore Pricing Options <ArrowRight className="ml-2 h-5 w-5" />
+                </Link>
+            </div>
+        </section>
       </main>
 
       <footer className="py-6 md:px-8 md:py-0 border-t">

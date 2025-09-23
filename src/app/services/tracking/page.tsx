@@ -1,9 +1,11 @@
+
 import Link from "next/link";
 import { Logo } from "@/components/layout/logo";
 import { cn } from "@/lib/utils";
 import { MegaMenu } from "@/components/layout/mega-menu";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { buttonVariants } from "@/components/ui/button";
+import { ArrowRight } from "lucide-react";
 
 const servicesMenuItems = [
     { title: "Production Monitoring", description: "Get a live overview of your entire production line.", badge: "Live", href: "/services/monitoring" },
@@ -68,10 +70,22 @@ export default function IssueTrackingPage() {
       </header>
 
       <main className="flex-1">
-        <div className="container py-20">
-          <h1 className="text-4xl font-bold mb-4">Issue Tracking</h1>
-          <p className="text-muted-foreground">Report, track, and resolve issues in real-time.</p>
-        </div>
+        <section className="container py-20 text-center">
+            <h1 className="text-4xl md:text-5xl font-bold mb-4">Issue Tracking</h1>
+            <p className="text-lg text-muted-foreground max-w-3xl mx-auto">Report, track, and resolve issues in real-time with an intelligent system that keeps everyone in the loop.</p>
+        </section>
+
+        <section className="py-20 bg-muted">
+            <div className="container text-center">
+                <h2 className="text-3xl font-bold mb-6">What is Issue Tracking?</h2>
+                <p className="max-w-3xl mx-auto text-muted-foreground mb-8">
+                    Issue Tracking is the core of AndonPro's system, allowing any operator to report problems from their workstation the moment they occur. This instantly alerts supervisors and relevant teams, ensuring rapid response. Our AI-powered prioritization automatically assesses the urgency of each issue, so your team can focus on what matters most to keep the production line moving and minimize costly downtime.
+                </p>
+                <Link href="/pricing" className={cn(buttonVariants({ size: "lg" }))}>
+                    Explore Pricing Options <ArrowRight className="ml-2 h-5 w-5" />
+                </Link>
+            </div>
+        </section>
       </main>
 
       <footer className="py-6 md:px-8 md:py-0 border-t">
