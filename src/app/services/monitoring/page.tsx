@@ -71,9 +71,19 @@ export default function ProductionMonitoringPage() {
       </header>
 
       <main className="flex-1">
-        <section className="container pt-20 pb-20 text-center">
+        <section className="container pt-20 pb-10 text-center">
             <h1 className="text-4xl md:text-5xl font-bold mb-4">Production Monitoring</h1>
             <p className="text-lg text-muted-foreground max-w-3xl mx-auto">Get a live, bird's-eye view of your entire production line. AndonPro's real-time monitoring empowers your team to make informed decisions instantly.</p>
+        </section>
+
+        <section className="container text-center pb-20">
+          <Image
+            src="/Production_monitoring.png"
+            alt="Production Monitoring Screenshot"
+            width={1200}
+            height={675}
+            className="rounded-lg shadow-xl mx-auto"
+          />
         </section>
 
         <section className="py-20 bg-muted">
