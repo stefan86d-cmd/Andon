@@ -5,6 +5,12 @@ import { cn } from "@/lib/utils";
 import { MegaMenu } from "@/components/layout/mega-menu";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { buttonVariants } from "@/components/ui/button";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion"
 
 const servicesMenuItems = [
     { title: "Production Monitoring", description: "Get a live overview of your entire production line.", badge: "", href: "/services/monitoring" },
@@ -23,6 +29,25 @@ const supportMenuItems = [
     { title: "Tutorials", description: "Explore step-by-step guides to get the most out of AndonPro.", badge: "", href: "/support/tutorials" },
     { title: "Contact Us", description: "Get in touch with our team for personalized support.", badge: "", href: "/support/contact" },
 ];
+
+const faqs = [
+    {
+        question: "What is AndonPro?",
+        answer: "AndonPro is a modern, intuitive application designed to monitor and manage production line workflows. It allows operators to report issues in real-time from any workstation, which helps teams minimize downtime and improve overall efficiency. Supervisors and administrators get a live overview of the entire production line, can track key performance indicators, and use AI-powered insights to make data-driven decisions."
+    },
+    {
+        question: "What pricing tiers are available?",
+        answer: "We offer a range of pricing tiers to fit teams of all sizes. Our plans include a free **Starter** tier for small teams just getting started, a **Standard** tier for growing factories, a **Pro** tier with advanced features like AI-powered analytics and priority support, and an **Enterprise** plan for large-scale operations requiring unlimited resources and dedicated support. You can find detailed information on our <a href='/pricing' class='text-primary underline'>Pricing Page</a>."
+    },
+    {
+        question: "How customizable is the platform?",
+        answer: "AndonPro is highly customizable. Administrators can define their own production lines and add, edit, or remove the specific workstations within each line. This ensures that the application's structure perfectly mirrors your factory's layout and workflow. Unlike rigid, off-the-shelf solutions, AndonPro adapts to your environment, not the other way around."
+    },
+    {
+        question: "How does AndonPro use AI?",
+        answer: "AndonPro integrates AI to provide intelligent insights and streamline your workflow. When an operator reports an issue, our AI can analyze the description to suggest an appropriate priority level, helping supervisors focus on the most critical problems first. Additionally, our reporting tools use AI to analyze issue data, identify trends, and generate actionable recommendations to help you prevent future downtime."
+    }
+]
 
 export default function FaqPage() {
     const servicesImage = PlaceHolderImages.find(img => img.id === 'mega-menu-services');
@@ -69,10 +94,27 @@ export default function FaqPage() {
       </header>
 
       <main className="flex-1">
-        <div className="container py-20">
-          <h1 className="text-4xl font-bold mb-4">Frequently Asked Questions</h1>
-          <p className="text-muted-foreground">Find answers to common questions about our platform.</p>
-        </div>
+        <section className="bg-background py-20">
+            <div className="container text-center">
+              <h1 className="text-4xl font-bold mb-4">Frequently Asked Questions</h1>
+              <p className="text-muted-foreground max-w-xl mx-auto">Find answers to common questions about our platform. Can't find what you're looking for? <Link href="/support/contact" className="text-primary hover:underline">Contact us</Link>.</p>
+            </div>
+        </section>
+
+        <section className="bg-muted py-20">
+            <div className="container max-w-4xl mx-auto">
+                <Accordion type="single" collapsible className="w-full">
+                    {faqs.map((faq, index) => (
+                        <AccordionItem value={`item-${index + 1}`} key={index}>
+                            <AccordionTrigger className="text-lg text-left">{faq.question}</AccordionTrigger>
+                            <AccordionContent className="text-base text-muted-foreground leading-relaxed">
+                                <div dangerouslySetInnerHTML={{ __html: faq.answer }} />
+                            </AccordionContent>
+                        </AccordionItem>
+                    ))}
+                </Accordion>
+            </div>
+        </section>
       </main>
 
       <footer className="py-6 md:px-8 md:py-0 border-t bg-primary text-primary-foreground">
