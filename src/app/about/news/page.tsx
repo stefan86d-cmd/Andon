@@ -5,6 +5,8 @@ import { cn } from "@/lib/utils";
 import { MegaMenu } from "@/components/layout/mega-menu";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { buttonVariants } from "@/components/ui/button";
+import Image from "next/image";
+import { format } from "date-fns";
 
 const servicesMenuItems = [
     { title: "Production Monitoring", description: "Get a live overview of your entire production line.", badge: "", href: "/services/monitoring" },
@@ -69,10 +71,43 @@ export default function NewsPage() {
       </header>
 
       <main className="flex-1">
-        <div className="container py-20">
-          <h1 className="text-4xl font-bold mb-4">Latest News</h1>
-          <p className="text-muted-foreground">Read our latest product announcements and company news.</p>
-        </div>
+        <section className="bg-background">
+            <div className="container py-20 text-center">
+              <h1 className="text-4xl font-bold mb-4">Latest News</h1>
+              <p className="text-muted-foreground max-w-2xl mx-auto">Read our latest product announcements and company news.</p>
+            </div>
+        </section>
+        <section className="bg-muted">
+          <div className="container py-20">
+            <article className="max-w-3xl mx-auto">
+              <div className="text-center mb-8">
+                <h2 className="text-3xl font-bold">AndonPro Has Officially Launched!</h2>
+                <p className="text-muted-foreground mt-2">Published on {format(new Date(), "MMMM d, yyyy")}</p>
+              </div>
+              <Image 
+                src="https://picsum.photos/seed/launch/1200/600"
+                alt="Launch celebration"
+                width={1200}
+                height={600}
+                className="rounded-lg shadow-lg mb-8"
+                data-ai-hint="celebration launch"
+              />
+              <div className="prose prose-lg dark:prose-invert mx-auto">
+                <p>
+                  After months of hard work, our dedicated team has made it possible. We are thrilled to announce that the AndonPro app has officially launched and is ready for our customers! This marks a significant milestone in our journey to revolutionize production line management and make powerful, intuitive tools accessible to everyone.
+                </p>
+                <p>
+                  We can't wait for you to experience the difference AndonPro can make.
+                </p>
+                 <div className="not-prose text-center mt-12">
+                    <Link href="/login" className={cn(buttonVariants({ size: "lg" }))}>
+                        Get Started Now
+                    </Link>
+                </div>
+              </div>
+            </article>
+          </div>
+        </section>
       </main>
 
       <footer className="py-6 md:px-8 md:py-0 border-t bg-primary text-primary-foreground">
