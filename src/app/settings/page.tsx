@@ -295,5 +295,4 @@ export default function SettingsPage() {
             </main>
         </AppLayout>
     );
-
-    
+}
