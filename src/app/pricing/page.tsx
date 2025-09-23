@@ -10,6 +10,8 @@ import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import React, { useState } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { MegaMenu } from "@/components/layout/mega-menu";
+import { PlaceHolderImages } from "@/lib/placeholder-images";
 
 
 const tiers = [
@@ -118,6 +120,24 @@ const guarantees = [
     }
 ]
 
+const servicesMenuItems = [
+    { title: "Production Monitoring", description: "Get a live overview of your entire production line.", badge: "Live", href: "#" },
+    { title: "Issue Tracking", description: "Report, track, and resolve issues in real-time.", badge: "Essential", href: "#" },
+    { title: "Analytics & Reporting", description: "Gain insights into your production efficiency.", badge: "Pro", href: "#" },
+];
+
+const exploreMenuItems = [
+    { title: "Our Story", description: "Learn about the mission and vision behind AndonPro.", badge: "", href: "#" },
+    { title: "Latest News", description: "Read our latest product announcements and company news.", badge: "", href: "#" },
+    { title: "Customer Stories", description: "See how other companies are succeeding with AndonPro.", badge: "", href: "#" },
+];
+
+const supportMenuItems = [
+    { title: "FAQs", description: "Find answers to common questions about our platform.", badge: "", href: "#" },
+    { title: "Tutorials", description: "Watch step-by-step guides to get the most out of AndonPro.", badge: "Video", href: "#" },
+    { title: "Contact Us", description: "Get in touch with our team for personalized support.", badge: "", href: "#" },
+];
+
 type Duration = '1' | '12' | '24' | '48';
 
 export default function PricingPage() {
@@ -128,25 +148,46 @@ export default function PricingPage() {
         eur: '€',
     }
 
+    const servicesImage = PlaceHolderImages.find(img => img.id === 'mega-menu-services');
+    const exploreImage = PlaceHolderImages.find(img => img.id === 'mega-menu-explore');
+    const supportImage = PlaceHolderImages.find(img => img.id === 'mega-menu-support');
+
   return (
     <div className="flex flex-col min-h-screen bg-background">
         <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             <div className="container flex h-14 items-center">
-            <div className="mr-4 hidden md:flex">
-                <Link href="/" className="mr-6 flex items-center space-x-2">
-                <Logo />
-                </Link>
-            </div>
-            <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
-                <nav className="flex items-center space-x-4">
-                <Link href="/pricing" className={cn(buttonVariants({ variant: "ghost" }))}>
-                    Pricing
-                </Link>
-                <Link href="/login" className={cn(buttonVariants({ variant: "default" }))}>
-                    Login
-                </Link>
-                </nav>
-            </div>
+                <div className="mr-4 hidden md:flex items-center">
+                    <Link href="/" className="mr-6 flex items-center space-x-2">
+                        <Logo />
+                    </Link>
+                    <nav className="flex items-center space-x-1 text-sm">
+                        <MegaMenu 
+                            triggerText="Services" 
+                            items={servicesMenuItems}
+                            image={servicesImage}
+                        />
+                        <MegaMenu 
+                            triggerText="Explore" 
+                            items={exploreMenuItems}
+                            image={exploreImage}
+                        />
+                        <MegaMenu 
+                            triggerText="Support" 
+                            items={supportMenuItems}
+                            image={supportImage}
+                        />
+                    </nav>
+                </div>
+                <div className="flex flex-1 items-center justify-end">
+                    <nav className="flex items-center space-x-2">
+                    <Link href="/pricing" className={cn(buttonVariants({ variant: "ghost" }))}>
+                        Pricing
+                    </Link>
+                    <Link href="/login" className={cn(buttonVariants({ variant: "default" }))}>
+                        Login
+                    </Link>
+                    </nav>
+                </div>
             </div>
       </header>
       <main className="flex-1">
