@@ -11,6 +11,7 @@ interface UserContextType {
   loading: boolean;
   login: (email: string) => Promise<void>;
   logout: () => void;
+  updateCurrentUser: (user: User) => void;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -21,7 +22,7 @@ const mockUsersByEmail: { [email: string]: User } = {
     id: '0P6TMG7LyyWKatYHFNVXpVoRQSC2',
     name: 'Alex Johnson',
     email: 'alex.j@andon.io',
-    avatarUrl: 'https://picsum.photos/seed/0P6TMG7LyyWKatYHFNVXpVoRQSC2/100/100',
+    avatarUrl: '',
     role: 'admin',
     plan: 'pro',
   },
@@ -29,7 +30,7 @@ const mockUsersByEmail: { [email: string]: User } = {
     id: 'mock-sam',
     name: 'Sam Miller',
     email: 'sam.m@andon.io',
-    avatarUrl: 'https://picsum.photos/seed/mock-sam/100/100',
+    avatarUrl: '',
     role: 'supervisor',
     plan: 'pro',
   },
@@ -37,7 +38,7 @@ const mockUsersByEmail: { [email: string]: User } = {
     id: 'mock-maria',
     name: 'Maria Garcia',
     email: 'maria.g@andon.io',
-    avatarUrl: 'https://picsum.photos/seed/mock-maria/100/100',
+    avatarUrl: '',
     role: 'operator',
     plan: 'pro',
   }
@@ -79,10 +80,18 @@ export function UserProvider({ children }: { children: ReactNode }) {
     setCurrentUser(null);
     router.push('/');
   };
+  
+  const updateCurrentUser = (user: User) => {
+    setCurrentUser(user);
+    // Also update the mock data so it persists across reloads for this session
+    if (user && user.email) {
+        mockUsersByEmail[user.email] = user;
+    }
+  }
 
 
   return (
-    <UserContext.Provider value={{ currentUser, loading, login, logout }}>
+    <UserContext.Provider value={{ currentUser, loading, login, logout, updateCurrentUser }}>
       {children}
     </UserContext.Provider>
   );

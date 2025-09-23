@@ -88,6 +88,14 @@ const StatusDisplay = ({ status }: { status: Status }) => {
     );
 };
 
+const getInitials = (name: string) => {
+    const parts = name.split(' ');
+    if (parts.length > 1) {
+        return `${parts[0][0]}${parts[parts.length - 1][0]}`;
+    }
+    return parts[0]?.[0] || '';
+}
+
 export function IssuesDataTable({ issues, title, description, loading }: { issues: Issue[], title?: string, description?: string, loading?: boolean }) {
   const { currentUser } = useUser();
   const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
@@ -169,7 +177,7 @@ export function IssuesDataTable({ issues, title, description, loading }: { issue
                         <div className="flex items-center gap-2">
                             <Avatar className="h-6 w-6">
                                 <AvatarImage src={issue.reportedBy.avatarUrl} alt={issue.reportedBy.name} />
-                                <AvatarFallback>{issue.reportedBy.name.charAt(0)}</AvatarFallback>
+                                <AvatarFallback>{getInitials(issue.reportedBy.name)}</AvatarFallback>
                             </Avatar>
                             <span>{issue.reportedBy.name}</span>
                         </div>

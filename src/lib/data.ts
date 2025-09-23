@@ -1,5 +1,4 @@
 
-
 import type { User, Issue, ProductionLine, Role, IssueCategory, Plan } from "@/lib/types";
 import { format, subDays, subHours } from "date-fns";
 
@@ -7,9 +6,9 @@ import { format, subDays, subHours } from "date-fns";
 // This is a mock database for development when Firebase is disabled.
 
 let mockUsers: User[] = [
-    { id: '0P6TMG7LyyWKatYHFNVXpVoRQSC2', name: 'Alex Johnson', email: 'alex.j@andon.io', avatarUrl: 'https://picsum.photos/seed/0P6TMG7LyyWKatYHFNVXpVoRQSC2/100/100', role: 'admin', plan: 'pro' },
-    { id: 'mock-sam', name: 'Sam Miller', email: 'sam.m@andon.io', avatarUrl: 'https://picsum.photos/seed/mock-sam/100/100', role: 'supervisor', plan: 'pro' },
-    { id: 'mock-maria', name: 'Maria Garcia', email: 'maria.g@andon.io', avatarUrl: 'https://picsum.photos/seed/mock-maria/100/100', role: 'operator', plan: 'pro' },
+    { id: '0P6TMG7LyyWKatYHFNVXpVoRQSC2', name: 'Alex Johnson', email: 'alex.j@andon.io', avatarUrl: '', role: 'admin', plan: 'pro' },
+    { id: 'mock-sam', name: 'Sam Miller', email: 'sam.m@andon.io', avatarUrl: '', role: 'supervisor', plan: 'pro' },
+    { id: 'mock-maria', name: 'Maria Garcia', email: 'maria.g@andon.io', avatarUrl: '', role: 'operator', plan: 'pro' },
 ];
 
 let mockProductionLines: ProductionLine[] = [
@@ -267,7 +266,7 @@ export async function addUser(data: { uid: string, firstName: string, lastName: 
         email: data.email,
         role: data.role,
         plan: data.plan,
-        avatarUrl: `https://picsum.photos/seed/${data.uid}/100/100`, // Placeholder avatar
+        avatarUrl: '', // No more placeholder images
     };
     mockUsers.push(newUser);
     return Promise.resolve();

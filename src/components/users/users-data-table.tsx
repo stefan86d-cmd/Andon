@@ -47,6 +47,14 @@ const RoleDisplay = ({ role }: { role: Role }) => {
     );
 };
 
+const getInitials = (name: string) => {
+    const parts = name.split(' ');
+    if (parts.length > 1) {
+        return `${parts[0][0]}${parts[parts.length - 1][0]}`;
+    }
+    return parts[0]?.[0] || '';
+}
+
 
 export function UsersDataTable({ users }: { users: User[] }) {
   return (
@@ -77,7 +85,7 @@ export function UsersDataTable({ users }: { users: User[] }) {
                             <div className="flex items-center gap-3">
                                 <Avatar className="h-9 w-9">
                                     <AvatarImage src={user.avatarUrl} alt={user.name} />
-                                    <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                                    <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
                                 </Avatar>
                                 <div className="font-medium">{user.name}</div>
                             </div>

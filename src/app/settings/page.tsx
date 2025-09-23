@@ -36,7 +36,7 @@ type PasswordFormValues = z.infer<typeof passwordFormSchema>;
 
 
 export default function SettingsPage() {
-    const { currentUser } = useUser();
+    const { currentUser, updateCurrentUser } = useUser();
     const [isCancelled, setIsCancelled] = useState(false);
     const [endDate, setEndDate] = useState<Date | null>(null);
     const [isPasswordSubmitting, startPasswordTransition] = useTransition();
@@ -102,7 +102,26 @@ export default function SettingsPage() {
         if (parts.length > 1) {
             return `${parts[0][0]}${parts[parts.length - 1][0]}`;
         }
-        return parts[0][0] || '';
+        return parts[0]?.[0] || '';
+    }
+
+    const handleProfileUpdate = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        const formData = new FormData(e.currentTarget);
+        const newFirstName = formData.get('firstName') as string;
+        const newLastName = formData.get('lastName') as string;
+        
+        if (currentUser) {
+            const updatedUser = {
+                ...currentUser,
+                name: `${newFirstName} ${newLastName}`,
+            };
+            updateCurrentUser(updatedUser);
+            toast({
+                title: "Profile Updated",
+                description: "Your name has been updated.",
+            });
+        }
     }
 
     return (
@@ -133,34 +152,36 @@ export default function SettingsPage() {
                         <TabsContent value="profile">
                              <div className="grid gap-6">
                                 <Card>
-                                    <CardHeader>
-                                        <CardTitle>My Profile</CardTitle>
-                                        <CardDescription>Update your personal information.</CardDescription>
-                                    </CardHeader>
-                                    <CardContent className="space-y-6">
-                                        <div className="flex items-center gap-4">
-                                            <Avatar className="h-20 w-20 text-3xl">
-                                                <AvatarFallback>{getInitials(currentUser.name)}</AvatarFallback>
-                                            </Avatar>
-                                        </div>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            <div className="space-y-2">
-                                                <Label htmlFor="firstName">First Name</Label>
-                                                <Input id="firstName" defaultValue={firstName} />
+                                    <form onSubmit={handleProfileUpdate}>
+                                        <CardHeader>
+                                            <CardTitle>My Profile</CardTitle>
+                                            <CardDescription>Update your personal information.</CardDescription>
+                                        </CardHeader>
+                                        <CardContent className="space-y-6">
+                                            <div className="flex items-center gap-4">
+                                                <Avatar className="h-20 w-20 text-3xl">
+                                                    <AvatarFallback>{getInitials(currentUser.name)}</AvatarFallback>
+                                                </Avatar>
+                                            </div>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <div className="space-y-2">
+                                                    <Label htmlFor="firstName">First Name</Label>
+                                                    <Input name="firstName" id="firstName" defaultValue={firstName} />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <Label htmlFor="lastName">Last Name</Label>
+                                                    <Input name="lastName" id="lastName" defaultValue={lastName} />
+                                                </div>
                                             </div>
                                             <div className="space-y-2">
-                                                <Label htmlFor="lastName">Last Name</Label>
-                                                <Input id="lastName" defaultValue={lastName} />
+                                                <Label htmlFor="email">Email</Label>
+                                                <Input id="email" type="email" defaultValue={currentUser.email} readOnly disabled/>
                                             </div>
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="email">Email</Label>
-                                            <Input id="email" type="email" defaultValue={currentUser.email} readOnly disabled/>
-                                        </div>
-                                    </CardContent>
-                                    <CardFooter>
-                                        <Button>Update Profile</Button>
-                                    </CardFooter>
+                                        </CardContent>
+                                        <CardFooter>
+                                            <Button>Update Profile</Button>
+                                        </CardFooter>
+                                    </form>
                                 </Card>
                                  <Card>
                                     <CardHeader>
