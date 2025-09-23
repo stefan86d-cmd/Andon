@@ -30,7 +30,6 @@ export default function ProductionMonitoringPage() {
     const servicesImage = PlaceHolderImages.find(img => img.id === 'mega-menu-services');
     const exploreImage = PlaceHolderImages.find(img => img.id === 'mega-menu-explore');
     const supportImage = PlaceHolderImages.find(img => img.id === 'mega-menu-support');
-    const dashboardImage = PlaceHolderImages.find(img => img.id === 'dashboard-screenshot');
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
@@ -77,21 +76,7 @@ export default function ProductionMonitoringPage() {
             <p className="text-lg text-muted-foreground max-w-3xl mx-auto">Get a live, bird's-eye view of your entire production line. AndonPro's real-time monitoring empowers your team to make informed decisions instantly.</p>
         </section>
 
-        {dashboardImage && (
-            <section className="container -mt-40">
-                <div className="relative aspect-video w-full max-w-4xl mx-auto overflow-hidden rounded-lg shadow-2xl">
-                    <Image 
-                        src={dashboardImage.imageUrl}
-                        alt={dashboardImage.description}
-                        data-ai-hint={dashboardImage.imageHint}
-                        fill
-                        className="object-cover object-top"
-                    />
-                </div>
-            </section>
-        )}
-
-        <section className="py-20 bg-muted mt-20">
+        <section className="py-20 bg-muted">
             <div className="container text-center">
                 <h2 className="text-3xl font-bold mb-6">What is Production Monitoring?</h2>
                 <p className="max-w-3xl mx-auto text-muted-foreground mb-8">
