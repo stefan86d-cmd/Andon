@@ -5,6 +5,12 @@ import { cn } from "@/lib/utils";
 import { MegaMenu } from "@/components/layout/mega-menu";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { buttonVariants } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Mail, Phone, Building } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
 
 const servicesMenuItems = [
     { title: "Production Monitoring", description: "Get a live overview of your entire production line.", badge: "", href: "/services/monitoring" },
@@ -69,10 +75,73 @@ export default function ContactPage() {
       </header>
 
       <main className="flex-1">
-        <div className="container py-20">
-          <h1 className="text-4xl font-bold mb-4">Contact Us</h1>
-          <p className="text-muted-foreground">Get in touch with our team for personalized support.</p>
-        </div>
+        <section className="bg-muted/40 py-20">
+            <div className="container text-center">
+              <h1 className="text-4xl font-bold mb-4">Contact Us</h1>
+              <p className="text-muted-foreground max-w-xl mx-auto">We're here to help. Whether you have a question about features, pricing, or anything else, our team is ready to answer all your questions.</p>
+            </div>
+        </section>
+
+        <section className="py-20">
+            <div className="container">
+                <div className="grid md:grid-cols-2 gap-12">
+                    <div className="space-y-8">
+                        <div>
+                            <h2 className="text-2xl font-semibold mb-4">Get in Touch</h2>
+                            <p className="text-muted-foreground">
+                                Have a question or need help? Fill out the form, and we'll get back to you as soon as possible. For specific inquiries, you can also reach us at the email addresses below.
+                            </p>
+                        </div>
+                        <div className="space-y-4">
+                            <div className="flex items-start gap-4">
+                                <Mail className="h-6 w-6 text-primary mt-1" />
+                                <div>
+                                    <h3 className="font-semibold">Email Us</h3>
+                                    <p className="text-muted-foreground text-sm">For sales inquiries:</p>
+                                    <a href="mailto:sales@andon.pro" className="text-primary hover:underline">sales@andon.pro</a>
+                                    <p className="text-muted-foreground text-sm mt-2">For support:</p>
+                                    <a href="mailto:support@andon.pro" className="text-primary hover:underline">support@andon.pro</a>
+                                </div>
+                            </div>
+                            <div className="flex items-start gap-4">
+                                <Building className="h-6 w-6 text-primary mt-1" />
+                                <div>
+                                    <h3 className="font-semibold">Our Office</h3>
+                                    <p className="text-muted-foreground">
+                                        Mannerheimintie 123<br />
+                                        00100 Helsinki, Finland
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Send us a Message</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <form className="space-y-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="name">Name</Label>
+                                        <Input id="name" placeholder="Your Name" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="email">Email</Label>
+                                        <Input id="email" type="email" placeholder="you@example.com" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="message">Message</Label>
+                                        <Textarea id="message" placeholder="How can we help you?" />
+                                    </div>
+                                    <Button type="submit" className="w-full">Send Message</Button>
+                                </form>
+                            </CardContent>
+                        </Card>
+                    </div>
+                </div>
+            </div>
+        </section>
       </main>
 
       <footer className="py-6 md:px-8 md:py-0 border-t bg-primary text-primary-foreground">
