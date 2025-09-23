@@ -150,7 +150,7 @@ export default function SettingsPage() {
                             </div>
                         )}
                         <TabsContent value="profile">
-                             <div className="grid gap-6">
+                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <Card>
                                     <form onSubmit={handleProfileUpdate}>
                                         <CardHeader>
