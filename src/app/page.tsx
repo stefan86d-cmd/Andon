@@ -1,10 +1,17 @@
 
+
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
-import { ArrowRight, Factory, BarChart3, Users, Bot, Wrench } from 'lucide-react';
+import { ArrowRight, Factory, BarChart3, Users, Bot, Wrench, ChevronDown } from 'lucide-react';
 import { Logo } from "@/components/layout/logo";
 import { cn } from "@/lib/utils";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 const features = [
   {
@@ -42,6 +49,41 @@ export default function HomePage() {
           </div>
           <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
             <nav className="flex items-center space-x-4">
+              <DropdownMenu>
+                <DropdownMenuTrigger className="flex items-center text-sm font-medium text-muted-foreground hover:text-primary focus:outline-none">
+                  Services <ChevronDown className="h-4 w-4 ml-1" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem>Production Monitoring</DropdownMenuItem>
+                  <DropdownMenuItem>Issue Tracking</DropdownMenuItem>
+                  <DropdownMenuItem>Analytics & Reporting</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger className="flex items-center text-sm font-medium text-muted-foreground hover:text-primary focus:outline-none">
+                  Explore <ChevronDown className="h-4 w-4 ml-1" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem asChild>
+                    <Link href="/pricing">Pricing</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>Customer Stories</DropdownMenuItem>
+                  <DropdownMenuItem>Blog</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              
+              <DropdownMenu>
+                <DropdownMenuTrigger className="flex items-center text-sm font-medium text-muted-foreground hover:text-primary focus:outline-none">
+                  Support <ChevronDown className="h-4 w-4 ml-1" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem>Help Center</DropdownMenuItem>
+                  <DropdownMenuItem>Contact Us</DropdownMenuItem>
+                  <DropdownMenuItem>API Documentation</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
                <Link href="/pricing" className={cn(buttonVariants({ variant: "ghost" }))}>
                 Pricing
               </Link>
