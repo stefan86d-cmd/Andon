@@ -1,3 +1,4 @@
+
 import Link from "next/link";
 import { Logo } from "@/components/layout/logo";
 import { cn } from "@/lib/utils";
@@ -6,9 +7,9 @@ import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { buttonVariants } from "@/components/ui/button";
 
 const servicesMenuItems = [
-    { title: "Production Monitoring", description: "Get a live overview of your entire production line.", badge: "Live", href: "/services/monitoring" },
-    { title: "Issue Tracking", description: "Report, track, and resolve issues in real-time.", badge: "Essential", href: "/services/tracking" },
-    { title: "Analytics & Reporting", description: "Gain insights into your production efficiency.", badge: "Pro", href: "/services/reporting" },
+    { title: "Production Monitoring", description: "Get a live overview of your entire production line.", badge: "", href: "/services/monitoring" },
+    { title: "Issue Tracking", description: "Report, track, and resolve issues in real-time.", badge: "", href: "/services/tracking" },
+    { title: "Analytics & Reporting", description: "Gain insights into your production efficiency.", badge: "", href: "/services/reporting" },
 ];
 
 const exploreMenuItems = [
