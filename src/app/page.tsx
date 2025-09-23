@@ -7,6 +7,7 @@ import { Logo } from "@/components/layout/logo";
 import { cn } from "@/lib/utils";
 import { MegaMenu } from "@/components/layout/mega-menu";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
+import FooterLogo from "@/components/layout/footer-logo";
 
 const features = [
   {
@@ -150,11 +151,11 @@ export default function HomePage() {
           </div>
         </section>
       </main>
-      <footer className="bg-gray-900 text-gray-300">
+      <footer className="bg-gray-800 text-gray-300">
         <div className="container py-8">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="mb-4 md:mb-0">
-              <Logo />
+              <FooterLogo />
             </div>
             <div className="text-center md:text-right">
               <p>&copy; {new Date().getFullYear()} AndonPro. All rights reserved.</p>

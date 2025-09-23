@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { MegaMenu } from "@/components/layout/mega-menu";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { buttonVariants } from "@/components/ui/button";
+import FooterLogo from "@/components/layout/footer-logo";
 
 const servicesMenuItems = [
     { title: "Production Monitoring", description: "Get a live overview of your entire production line.", badge: "", href: "/services/monitoring" },
@@ -74,11 +75,11 @@ export default function TutorialsPage() {
           <p className="text-muted-foreground">Explore step-by-step guides to get the most out of AndonPro.</p>
         </div>
       </main>
-      <footer className="bg-gray-900 text-gray-300">
+      <footer className="bg-gray-800 text-gray-300">
         <div className="container py-8">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="mb-4 md:mb-0">
-              <Logo />
+              <FooterLogo />
             </div>
             <div className="text-center md:text-right">
               <p>&copy; {new Date().getFullYear()} AndonPro. All rights reserved.</p>
