@@ -75,14 +75,14 @@ export default function ContactPage() {
       </header>
 
       <main className="flex-1">
-        <section className="bg-muted/40 py-20">
+        <section className="bg-background py-20">
             <div className="container text-center">
               <h1 className="text-4xl font-bold mb-4">Contact Us</h1>
               <p className="text-muted-foreground max-w-xl mx-auto">We're here to help. Whether you have a question about features, pricing, or anything else, our team is ready to answer all your questions.</p>
             </div>
         </section>
 
-        <section className="py-20">
+        <section className="py-20 bg-muted">
             <div className="container">
                 <div className="grid md:grid-cols-2 gap-12">
                     <div className="space-y-8">
