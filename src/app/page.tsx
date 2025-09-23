@@ -46,10 +46,10 @@ export default function HomePage() {
             <Link href="/" className="mr-6 flex items-center space-x-2">
               <Logo />
             </Link>
-            <nav className="flex items-center space-x-6 text-sm">
+            <nav className="flex items-center space-x-1 text-sm">
                 <DropdownMenu>
-                    <DropdownMenuTrigger className="flex items-center font-medium text-muted-foreground hover:text-primary focus:outline-none">
-                    Services <ChevronDown className="h-4 w-4 ml-1" />
+                    <DropdownMenuTrigger className={cn(buttonVariants({ variant: "ghost" }), "flex items-center gap-1")}>
+                    Services <ChevronDown className="h-4 w-4" />
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
                     <DropdownMenuItem>Production Monitoring</DropdownMenuItem>
@@ -59,8 +59,8 @@ export default function HomePage() {
                 </DropdownMenu>
 
                 <DropdownMenu>
-                    <DropdownMenuTrigger className="flex items-center font-medium text-muted-foreground hover:text-primary focus:outline-none">
-                    Explore <ChevronDown className="h-4 w-4 ml-1" />
+                    <DropdownMenuTrigger className={cn(buttonVariants({ variant: "ghost" }), "flex items-center gap-1")}>
+                    Explore <ChevronDown className="h-4 w-4" />
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
                     <DropdownMenuItem asChild>
@@ -72,8 +72,8 @@ export default function HomePage() {
                 </DropdownMenu>
                 
                 <DropdownMenu>
-                    <DropdownMenuTrigger className="flex items-center font-medium text-muted-foreground hover:text-primary focus:outline-none">
-                    Support <ChevronDown className="h-4 w-4 ml-1" />
+                    <DropdownMenuTrigger className={cn(buttonVariants({ variant: "ghost" }), "flex items-center gap-1")}>
+                    Support <ChevronDown className="h-4 w-4" />
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
                     <DropdownMenuItem>Help Center</DropdownMenuItem>
@@ -164,3 +164,4 @@ export default function HomePage() {
     </div>
   );
 }
+
