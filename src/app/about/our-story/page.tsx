@@ -70,7 +70,7 @@ export default function OurStoryPage() {
       </header>
 
       <main className="flex-1">
-        <section className="bg-muted">
+        <section>
             <div className="container py-20">
               <div className="text-center mb-12">
                 <h1 className="text-4xl font-bold mb-4">Our Story</h1>
