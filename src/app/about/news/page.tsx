@@ -84,14 +84,15 @@ export default function NewsPage() {
                 <h2 className="text-3xl font-bold">AndonPro Has Officially Launched!</h2>
                 <p className="text-muted-foreground mt-2">Published on {format(new Date(), "MMMM d, yyyy")}</p>
               </div>
-              <Image 
-                src="https://picsum.photos/seed/launch/1200/600"
-                alt="Launch celebration"
-                width={1200}
-                height={600}
-                className="rounded-lg shadow-lg mb-8"
-                data-ai-hint="celebration launch"
-              />
+              <div className="flex justify-center mb-8">
+                <Image 
+                  src="/Andonpro_Logo_Musta_Syvätty.png"
+                  alt="AndonPro Logo"
+                  width={300}
+                  height={72}
+                  className="rounded-lg"
+                />
+              </div>
               <div className="prose prose-lg dark:prose-invert mx-auto">
                 <p>
                   After months of hard work, our dedicated team has made it possible. We are thrilled to announce that the AndonPro app has officially launched and is ready for our customers! This marks a significant milestone in our journey to revolutionize production line management and make powerful, intuitive tools accessible to everyone.
