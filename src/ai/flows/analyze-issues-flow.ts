@@ -37,18 +37,22 @@ const prompt = ai.definePrompt({
   name: 'analyzeIssuesPrompt',
   input: {schema: AnalyzeIssuesInputSchema},
   output: {schema: AnalyzeIssuesOutputSchema},
-  prompt: `You are a production efficiency expert. Your task is to analyze a list of production issues and generate a clear, structured report in markdown format.
+  prompt: `You are a seasoned production efficiency expert with decades of experience on the factory floor. Your task is to analyze a list of production issues and generate a clear, insightful, and structured report in markdown format.
 
-Your report must be easy to read and must contain the following sections. Use short paragraphs and ensure there is space between them.
+Your report must be easy to read and must contain the following sections. Use short paragraphs and ensure there is space between them. Your analysis should be data-driven and quantify the impact where possible (e.g., "3 out of 10 issues caused production stoppages").
 
 ### Overall Summary
-Provide a brief, high-level overview of the current situation based on the provided issue list. Keep this section concise.
+As an executive summary, provide a brief, high-level overview of the current situation based on the provided issue list. Synthesize the key problems and their overall impact on production. Keep this section concise and to the point.
 
 ### Key Observations
-In this section, use a bulleted list to highlight important trends, recurring problems, or significant impacts. Focus on patterns related to issue categories, priorities, and production stoppages. Each bullet point should be clear and to the point.
+In this section, use a bulleted list to highlight your most important findings. Focus on patterns, trends, and significant impacts. Do not just list the issues; analyze them. For example:
+- Identify which categories or priorities are most common.
+- Point out the primary drivers of production stoppages.
+- Highlight recurring problems that suggest a systemic root cause.
+- Quantify your observations (e.g., "Category X accounted for 40% of all high-priority issues.").
 
 ### Actionable Recommendations
-Provide a numbered list of clear, concise, and actionable recommendations to address the problems identified in the observations section.
+Provide a numbered list of clear, concise, and actionable recommendations to address the problems identified in your observations. Each recommendation should be a concrete step the team can take to improve the situation.
 
 Here is the list of issues for your analysis:
 {{#each issues}}
@@ -56,7 +60,7 @@ Here is the list of issues for your analysis:
   Reported: {{reportedAt}}{{#if resolvedAt}}, Resolved: {{resolvedAt}}{{/if}}
 {{/each}}
 
-Generate the structured analysis now. Ensure the final output is well-formatted markdown.`,
+Generate the structured analysis now. Ensure the final output is well-formatted markdown that is both insightful and easy to digest for a busy supervisor.`,
 });
 
 const analyzeIssuesFlow = ai.defineFlow(
