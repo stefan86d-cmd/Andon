@@ -117,8 +117,8 @@ export function IssuesDataTable({ issues, title, description, loading }: { issue
             <TableRow>
               <TableHead>Category</TableHead>
               <TableHead>Issue</TableHead>
-              <TableHead>Status</TableHead>
               <TableHead>Priority</TableHead>
+              <TableHead>Status</TableHead>
               <TableHead>Reported By</TableHead>
               <TableHead>Time</TableHead>
               {canResolveIssues && (
@@ -161,15 +161,15 @@ export function IssuesDataTable({ issues, title, description, loading }: { issue
                     </div>
                   </TableCell>
                   <TableCell>
-                    <StatusDisplay status={issue.status} />
-                  </TableCell>
-                  <TableCell>
                     <div className="flex items-center gap-2">
                         <Badge variant="outline" className={cn(`capitalize border-0 font-medium`, priorityColors[issue.priority])}>
                             {React.createElement(priorityIcons[issue.priority], { className: "h-4 w-4 mr-1" })}
                             {issue.priority}
                         </Badge>
                     </div>
+                  </TableCell>
+                  <TableCell>
+                    <StatusDisplay status={issue.status} />
                   </TableCell>
                    <TableCell>
                         {issue.reportedBy.name}
@@ -207,4 +207,5 @@ export function IssuesDataTable({ issues, title, description, loading }: { issue
     </Card>
   );
 }
+
 
