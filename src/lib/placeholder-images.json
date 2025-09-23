@@ -57,7 +57,7 @@
     {
       "id": "mega-menu-services",
       "description": "Image for services mega menu of a factory production line",
-      "imageUrl": "https://images.unsplash.com/photo-1567789884554-0b844b597180?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxwcm9kdWN0aW9uJTIwbGluZSUyMGZhY3Rvcnl8ZW58MHx8fHwxNzIyNDk5NTM4fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1621992497652-4458da7f47b2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxjYXIlMjBhc3NlbWJseSUyMGxpbmV8ZW58MHx8fHwxNzU4NjA4OTkxfDA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "production line"
     },
     {
@@ -71,6 +71,12 @@
       "description": "Image for support mega menu",
       "imageUrl": "https://images.unsplash.com/photo-1560264418-c4445382edbc?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8Y3VzdG9tZXIlMjBzdXBwb3J0fGVufDB8fHx8MTc1ODU5MDMyMHww&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "customer support"
+    },
+    {
+      "id": "dashboard-screenshot",
+      "description": "A placeholder screenshot of the AndonPro dashboard",
+      "imageUrl": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxEYXNoYm9hcmQlMjBBbmFseXRpY3N8ZW58MHx8fHwxNzU4NjA5MzUwfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "dashboard analytics"
     }
   ]
 }

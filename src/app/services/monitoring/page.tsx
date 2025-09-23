@@ -6,6 +6,7 @@ import { MegaMenu } from "@/components/layout/mega-menu";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { buttonVariants } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
+import Image from "next/image";
 
 const servicesMenuItems = [
     { title: "Production Monitoring", description: "Get a live overview of your entire production line.", badge: "Live", href: "/services/monitoring" },
@@ -29,6 +30,7 @@ export default function ProductionMonitoringPage() {
     const servicesImage = PlaceHolderImages.find(img => img.id === 'mega-menu-services');
     const exploreImage = PlaceHolderImages.find(img => img.id === 'mega-menu-explore');
     const supportImage = PlaceHolderImages.find(img => img.id === 'mega-menu-support');
+    const dashboardImage = PlaceHolderImages.find(img => img.id === 'dashboard-screenshot');
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
@@ -74,6 +76,20 @@ export default function ProductionMonitoringPage() {
           <h1 className="text-4xl md:text-5xl font-bold mb-4">Production Monitoring</h1>
           <p className="text-lg text-muted-foreground max-w-3xl mx-auto">Get a live, bird's-eye view of your entire production line. AndonPro's real-time monitoring empowers your team to make informed decisions instantly.</p>
         </section>
+
+        {dashboardImage && (
+            <section className="container mb-20">
+                <div className="relative aspect-video w-full max-w-5xl mx-auto overflow-hidden rounded-lg shadow-2xl">
+                    <Image 
+                        src={dashboardImage.imageUrl}
+                        alt={dashboardImage.description}
+                        data-ai-hint={dashboardImage.imageHint}
+                        fill
+                        className="object-cover object-top"
+                    />
+                </div>
+            </section>
+        )}
 
         <section className="py-20 bg-muted">
             <div className="container text-center">
