@@ -37,22 +37,23 @@ const prompt = ai.definePrompt({
   name: 'analyzeIssuesPrompt',
   input: {schema: AnalyzeIssuesInputSchema},
   output: {schema: AnalyzeIssuesOutputSchema},
-  prompt: `You are a seasoned production efficiency expert with decades of experience on the factory floor. Your task is to analyze a list of production issues and generate a clear, insightful, and structured report in markdown format.
+  prompt: `You are a seasoned production efficiency expert. Your task is to analyze a list of production issues and generate a clear, insightful, and structured report in markdown format.
 
-Your report must be easy to read and must contain the following sections. Use short paragraphs and ensure there is space between them. Your analysis should be data-driven and quantify the impact where possible (e.g., "3 out of 10 issues caused production stoppages").
+Your report must be easy to read and must contain the following sections. Your analysis should be data-driven and quantify the impact where possible (e.g., "3 out of 10 issues caused production stoppages").
+
+**IMPORTANT**: Format your response exactly like this example, using the same markdown structure, spacing, and headings:
 
 ### Overall Summary
-As an executive summary, provide a brief, high-level overview of the current situation based on the provided issue list. Synthesize the key problems and their overall impact on production. Keep this section concise and to the point.
+A brief, high-level overview of the situation. Synthesize the key problems and their overall impact.
 
 ### Key Observations
-In this section, use a bulleted list to highlight your most important findings. Focus on patterns, trends, and significant impacts. Do not just list the issues; analyze them. For example:
-- Identify which categories or priorities are most common.
-- Point out the primary drivers of production stoppages.
-- Highlight recurring problems that suggest a systemic root cause.
-- Quantify your observations (e.g., "Category X accounted for 40% of all high-priority issues.").
+- **Observation 1**: A quantified finding about a key trend (e.g., "Category X accounted for 40% of all high-priority issues.").
+- **Observation 2**: Another data-driven insight about a pattern or significant impact.
+- **Observation 3**: A point about a recurring problem suggesting a systemic root cause.
 
 ### Actionable Recommendations
-Provide a numbered list of clear, concise, and actionable recommendations to address the problems identified in your observations. Each recommendation should be a concrete step the team can take to improve the situation.
+1.  **Recommendation 1**: A clear, concise, and actionable step.
+2.  **Recommendation 2**: Another concrete step the team can take.
 
 Here is the list of issues for your analysis:
 {{#each issues}}
@@ -60,7 +61,7 @@ Here is the list of issues for your analysis:
   Reported: {{reportedAt}}{{#if resolvedAt}}, Resolved: {{resolvedAt}}{{/if}}
 {{/each}}
 
-Generate the structured analysis now. Ensure the final output is well-formatted markdown that is both insightful and easy to digest for a busy supervisor.`,
+Generate the structured analysis now. Ensure the final output is well-formatted markdown that is insightful and easy to digest.`,
 });
 
 const analyzeIssuesFlow = ai.defineFlow(
