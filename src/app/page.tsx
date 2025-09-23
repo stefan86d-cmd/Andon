@@ -48,7 +48,7 @@ export default function HomePage() {
             </Link>
             <nav className="flex items-center space-x-1 text-sm">
                 <DropdownMenu>
-                    <DropdownMenuTrigger className={cn(buttonVariants({ variant: "ghost" }), "flex items-center gap-1")}>
+                    <DropdownMenuTrigger className={cn(buttonVariants({ variant: "ghost" }), "flex items-center gap-1 focus-visible:ring-0 focus-visible:ring-offset-0")}>
                     Services <ChevronDown className="h-4 w-4" />
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
@@ -59,7 +59,7 @@ export default function HomePage() {
                 </DropdownMenu>
 
                 <DropdownMenu>
-                    <DropdownMenuTrigger className={cn(buttonVariants({ variant: "ghost" }), "flex items-center gap-1")}>
+                    <DropdownMenuTrigger className={cn(buttonVariants({ variant: "ghost" }), "flex items-center gap-1 focus-visible:ring-0 focus-visible:ring-offset-0")}>
                     Explore <ChevronDown className="h-4 w-4" />
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
@@ -72,7 +72,7 @@ export default function HomePage() {
                 </DropdownMenu>
                 
                 <DropdownMenu>
-                    <DropdownMenuTrigger className={cn(buttonVariants({ variant: "ghost" }), "flex items-center gap-1")}>
+                    <DropdownMenuTrigger className={cn(buttonVariants({ variant: "ghost" }), "flex items-center gap-1 focus-visible:ring-0 focus-visible:ring-offset-0")}>
                     Support <ChevronDown className="h-4 w-4" />
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
