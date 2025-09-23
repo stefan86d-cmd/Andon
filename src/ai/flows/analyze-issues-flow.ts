@@ -39,13 +39,13 @@ const prompt = ai.definePrompt({
   output: {schema: AnalyzeIssuesOutputSchema},
   prompt: `You are a production efficiency expert. Your task is to analyze a list of production issues and generate a clear, structured report in markdown format.
 
-Your report must be easy to read and must contain the following sections:
+Your report must be easy to read and must contain the following sections. Use short paragraphs and ensure there is space between them.
 
 ### Overall Summary
-Provide a brief, high-level overview of the current situation based on the provided issue list.
+Provide a brief, high-level overview of the current situation based on the provided issue list. Keep this section concise.
 
 ### Key Observations
-In this section, use a bulleted list to highlight important trends, recurring problems, or significant impacts. Focus on patterns related to issue categories, priorities, and production stoppages.
+In this section, use a bulleted list to highlight important trends, recurring problems, or significant impacts. Focus on patterns related to issue categories, priorities, and production stoppages. Each bullet point should be clear and to the point.
 
 ### Actionable Recommendations
 Provide a numbered list of clear, concise, and actionable recommendations to address the problems identified in the observations section.
@@ -56,7 +56,7 @@ Here is the list of issues for your analysis:
   Reported: {{reportedAt}}{{#if resolvedAt}}, Resolved: {{resolvedAt}}{{/if}}
 {{/each}}
 
-Generate the structured analysis now.`,
+Generate the structured analysis now. Ensure the final output is well-formatted markdown.`,
 });
 
 const analyzeIssuesFlow = ai.defineFlow(
@@ -73,4 +73,3 @@ const analyzeIssuesFlow = ai.defineFlow(
     return output!;
   }
 );
-
