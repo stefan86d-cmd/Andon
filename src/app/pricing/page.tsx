@@ -134,7 +134,7 @@ const exploreMenuItems = [
 
 const supportMenuItems = [
     { title: "FAQs", description: "Find answers to common questions about our platform.", badge: "", href: "#" },
-    { title: "Tutorials", description: "Watch step-by-step guides to get the most out of AndonPro.", badge: "Video", href: "#" },
+    { title: "Tutorials", description: "Explore step-by-step guides to get the most out of AndonPro.", badge: "", href: "#" },
     { title: "Contact Us", description: "Get in touch with our team for personalized support.", badge: "", href: "#" },
 ];
 
