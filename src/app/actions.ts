@@ -175,3 +175,22 @@ export async function seedUsers() {
         return { error: "Firebase Admin SDK is disabled. Seeding is not possible. Using hardcoded mock users." };
     }
 }
+
+
+export async function changePassword(userEmail: string, currentPassword: string, newPassword: string) {
+    // In a real app, you would verify the current password against a hash in the database.
+    // For this mock, we'll assume the current password for all users is "password".
+    if (currentPassword !== 'password') {
+        return { success: false, error: 'Incorrect current password.' };
+    }
+
+    try {
+        // Here you would typically update the user's password in your authentication system.
+        // Since this is a mock, we'll just log it and return success.
+        console.log(`Password for ${userEmail} changed successfully (mock).`);
+        return { success: true };
+    } catch (e: any) {
+        console.error('Error changing password:', e);
+        return { success: false, error: 'Failed to change password.' };
+    }
+}

@@ -9,18 +9,46 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Camera } from "lucide-react";
+import { Camera, LoaderCircle } from "lucide-react";
 import { useUser } from "@/contexts/user-context";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { CancelSubscriptionDialog } from "@/components/settings/cancel-subscription-dialog";
 import { format } from "date-fns";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { toast } from "@/hooks/use-toast";
+import { changePassword } from "@/app/actions";
+
+const passwordFormSchema = z.object({
+  currentPassword: z.string().min(1, "Current password is required."),
+  newPassword: z.string().min(6, "New password must be at least 6 characters."),
+  confirmPassword: z.string(),
+}).refine((data) => data.newPassword === data.confirmPassword, {
+  message: "Passwords do not match.",
+  path: ["confirmPassword"],
+});
+
+type PasswordFormValues = z.infer<typeof passwordFormSchema>;
+
 
 export default function SettingsPage() {
     const { currentUser } = useUser();
     const [isCancelled, setIsCancelled] = useState(false);
     const [endDate, setEndDate] = useState<Date | null>(null);
+    const [isPasswordSubmitting, startPasswordTransition] = useTransition();
+
+    const form = useForm<PasswordFormValues>({
+        resolver: zodResolver(passwordFormSchema),
+        defaultValues: {
+            currentPassword: "",
+            newPassword: "",
+            confirmPassword: "",
+        },
+    });
 
     const handleCancelConfirm = () => {
         const futureDate = new Date();
@@ -36,6 +64,30 @@ export default function SettingsPage() {
     
     if (!currentUser) {
         return <AppLayout><div>Loading...</div></AppLayout>;
+    }
+
+    const onPasswordSubmit = (data: PasswordFormValues) => {
+        startPasswordTransition(async () => {
+            const result = await changePassword(currentUser.email, data.currentPassword, data.newPassword);
+
+            if (result.success) {
+                toast({
+                    title: "Password Updated",
+                    description: "Your password has been changed successfully.",
+                });
+                form.reset();
+            } else {
+                toast({
+                    variant: "destructive",
+                    title: "Update Failed",
+                    description: result.error,
+                });
+                 form.setError("currentPassword", {
+                    type: "manual",
+                    message: result.error,
+                });
+            }
+        });
     }
 
     const [firstName, lastName] = currentUser.name.split(" ");
@@ -112,23 +164,57 @@ export default function SettingsPage() {
                                         <CardTitle>Change Password</CardTitle>
                                         <CardDescription>Update your password. Make sure it's a strong one.</CardDescription>
                                     </CardHeader>
-                                    <CardContent className="space-y-4">
-                                        <div className="space-y-2">
-                                            <Label htmlFor="current-password">Current Password</Label>
-                                            <Input id="current-password" type="password" />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="new-password">New Password</Label>
-                                            <Input id="new-password" type="password" />
-                                        </div>
-                                         <div className="space-y-2">
-                                            <Label htmlFor="confirm-password">Confirm New Password</Label>
-                                            <Input id="confirm-password" type="password" />
-                                        </div>
-                                    </CardContent>
-                                    <CardFooter>
-                                        <Button>Update Password</Button>
-                                    </CardFooter>
+                                     <Form {...form}>
+                                        <form onSubmit={form.handleSubmit(onPasswordSubmit)}>
+                                            <CardContent className="space-y-4">
+                                                <FormField
+                                                    control={form.control}
+                                                    name="currentPassword"
+                                                    render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormLabel>Current Password</FormLabel>
+                                                            <FormControl>
+                                                                <Input type="password" {...field} />
+                                                            </FormControl>
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                                <FormField
+                                                    control={form.control}
+                                                    name="newPassword"
+                                                    render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormLabel>New Password</FormLabel>
+                                                            <FormControl>
+                                                                <Input type="password" {...field} />
+                                                            </FormControl>
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                                <FormField
+                                                    control={form.control}
+                                                    name="confirmPassword"
+                                                    render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormLabel>Confirm New Password</FormLabel>
+                                                            <FormControl>
+                                                                <Input type="password" {...field} />
+                                                            </FormControl>
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                            </CardContent>
+                                            <CardFooter>
+                                                <Button type="submit" disabled={isPasswordSubmitting}>
+                                                    {isPasswordSubmitting && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
+                                                    Update Password
+                                                </Button>
+                                            </CardFooter>
+                                        </form>
+                                    </Form>
                                 </Card>
                              </div>
                         </TabsContent>
