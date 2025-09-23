@@ -1,4 +1,6 @@
 
+"use client";
+
 import { Bell, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UserNav } from "@/components/layout/user-nav";
@@ -11,9 +13,52 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useEffect, useState } from "react";
+import { getIssues } from "@/lib/data";
+import type { Issue } from "@/lib/types";
+import { Badge } from "../ui/badge";
 
 export function Header() {
   const { currentUser } = useUser();
+  const [newIssuesCount, setNewIssuesCount] = useState(0);
+
+  useEffect(() => {
+    if (currentUser?.role === 'admin' || currentUser?.role === 'supervisor') {
+      const calculateNewIssues = async () => {
+        const issues = await getIssues();
+        const lastSeenTimestamp = localStorage.getItem('lastSeenIssueTimestamp');
+        
+        if (!lastSeenTimestamp) {
+          setNewIssuesCount(issues.filter(i => i.status === 'reported' || i.status === 'in_progress').length);
+        } else {
+          const newCount = issues.filter(issue => 
+            new Date(issue.reportedAt).getTime() > parseInt(lastSeenTimestamp, 10)
+          ).length;
+          setNewIssuesCount(newCount);
+        }
+      };
+
+      calculateNewIssues();
+
+      // Listen for storage changes from other tabs
+      const handleStorageChange = (event: StorageEvent) => {
+        if (event.key === 'lastSeenIssueTimestamp') {
+          calculateNewIssues();
+        }
+      };
+      
+      window.addEventListener('storage', handleStorageChange);
+
+      // Poll for new issues as a simple real-time mechanism
+      const interval = setInterval(calculateNewIssues, 30000); // Check every 30 seconds
+
+      return () => {
+        clearInterval(interval);
+        window.removeEventListener('storage', handleStorageChange);
+      };
+    }
+  }, [currentUser]);
+
 
   const capitalize = (s: string) => {
     if (typeof s !== 'string') return ''
@@ -41,15 +86,17 @@ export function Header() {
       <div className="w-full flex-1" />
 
       {currentUser && currentUser.role !== 'operator' && (
-        <Link href="/issues">
-            <Button variant="ghost" size="icon" className="relative">
-            <Bell className="h-5 w-5" />
-            <span className="sr-only">Toggle notifications</span>
-            {/* {newIssuesCount > 0 && (
-                <Badge className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 h-4 w-4 shrink-0 items-center justify-center rounded-full p-0 text-xs font-medium">{newIssuesCount}</Badge>
-            )} */}
-            </Button>
-        </Link>
+        <Button asChild variant="ghost" size="icon" className="relative">
+            <Link href="/issues">
+                <Bell className="h-5 w-5" />
+                <span className="sr-only">Toggle notifications</span>
+                {newIssuesCount > 0 && (
+                    <Badge className="absolute top-0 right-0 h-5 w-5 shrink-0 items-center justify-center rounded-full p-0 text-xs font-medium">
+                        {newIssuesCount}
+                    </Badge>
+                )}
+            </Link>
+        </Button>
       )}
       {currentUser && (
         <div className="flex items-center gap-2">

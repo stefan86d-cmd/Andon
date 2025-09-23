@@ -38,6 +38,15 @@ export default function IssuesPage() {
       ]);
       setIssues(issuesData);
       setProductionLines(linesData);
+
+      // Reset the new issues notification badge
+      if (issuesData.length > 0) {
+        const latestIssueTimestamp = new Date(issuesData[0].reportedAt).getTime();
+        localStorage.setItem('lastSeenIssueTimestamp', latestIssueTimestamp.toString());
+        // Dispatch a storage event to notify the header in the same tab
+        window.dispatchEvent(new StorageEvent('storage', { key: 'lastSeenIssueTimestamp' }));
+      }
+      
       setLoading(false);
     }
     fetchData();
