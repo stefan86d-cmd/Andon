@@ -78,7 +78,7 @@ export default function AnalyticsReportingPage() {
 
         <section className="container text-center pb-20">
           <Image
-            src="/Reports.png"
+            src="/Reports2.png"
             alt="Analytics & Reporting Screenshot"
             width={1200}
             height={675}
