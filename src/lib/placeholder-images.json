@@ -21,7 +21,7 @@
     {
       "id": "user-avatar-bob",
       "description": "Placeholder avatar for Bob Smith",
-      "imageUrl": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxwZXJzb24lMjBwb3J0cmFpdHxlbnwwfHx8fDE3NTg1ODUxMDl8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxwZXJzb24lMjBwb3J0cmFpdHxlbnwwfHx8fDE3NTg1ODUxMDl8MA&ixlibrb-4.1.0&q=80&w=1080",
       "imageHint": "person portrait"
     },
     {
@@ -45,13 +45,13 @@
     {
       "id": "category-tool",
       "description": "Icon for tool problems",
-      "imageUrl": "https://images.unsplash.com/photo-1742828732544-7f1e8849cd99?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHx3cmVuY2glMjB0b29sfGVufDB8fHx8MTc1ODYwNzg2N3ww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1742828732544-7f1e8849cd99?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHx3cmVuY2glMjB0b29sfGVufDB8fHx8MTc1ODYwNzg2N3ww&ixlibrb-4.1.0&q=80&w=1080",
       "imageHint": "wrench tool"
     },
     {
       "id": "category-other",
       "description": "Icon for other problems",
-      "imageUrl": "https://images.unsplash.com/photo-1663465374413-83cba00bff6f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxxdWVzdGlvbiUyMG1hcmt8ZW58MHx8fHwxNzU4NjA3ODY3fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1663465374413-83cba00bff6f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxxdWVzdGlvbiUyMG1hcmt8ZW58MHx8fHwxNzU4NjA3ODY3fDA&ixlib-rb-4.1.0&q=80&w=1080",
       "imageHint": "question mark"
     },
     {
@@ -62,20 +62,20 @@
     },
     {
       "id": "mega-menu-explore",
-      "description": "Image for explore mega menu",
-      "imageUrl": "https://images.unsplash.com/photo-1622675363311-3e1904dc1885?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHx0ZWFtJTIwY29sbGFib3JhdGlvbnxlbnwwfHx8fDE3NTg1ODUzMjF8MA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "team collaboration"
+      "description": "Image of Helsinki for explore mega menu",
+      "imageUrl": "/Helsinki.jpg",
+      "imageHint": "Helsinki cityscape"
     },
     {
       "id": "mega-menu-support",
       "description": "Image for support mega menu",
-      "imageUrl": "https://images.unsplash.com/photo-1560264418-c4445382edbc?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8Y3VzdG9tZXIlMjBzdXBwb3J0fGVufDB8fHx8MTc1ODU5MDMyMHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1560264418-c4445382edbc?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8Y3VzdG9tZXIlMjBzdXBwb3J0fGVufDB8fHx8MTc1ODU5MDMyMHww&ixlib-rb-4.1.0&q=80&w=1080",
       "imageHint": "customer support"
     },
     {
       "id": "dashboard-screenshot",
       "description": "A placeholder screenshot of the AndonPro dashboard",
-      "imageUrl": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxEYXNoYm9hcmQlMjBBbmFseXRpY3N8ZW58MHx8fHwxNzU4NjA5MzUwfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxEYXNoYm9hcmQlMjBBbmFseXRpY3N8ZW58MHx8fHwxNzU4NjA5MzUwfDA&ixlib-rb-4.1.0&q=80&w=1080",
       "imageHint": "dashboard analytics"
     }
   ]
