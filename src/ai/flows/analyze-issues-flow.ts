@@ -4,8 +4,6 @@
  * @fileOverview An AI-powered flow to analyze production issues and generate insights.
  *
  * - analyzeIssues - A function that analyzes a list of issues and returns a summary.
- * - AnalyzeIssuesInput - The input type for the analyzeIssues function.
- * - AnalyzeIssuesOutput - The return type for the analyzeIssues function.
  */
 
 import {ai} from '@/ai/genkit';
@@ -39,20 +37,26 @@ const prompt = ai.definePrompt({
   name: 'analyzeIssuesPrompt',
   input: {schema: AnalyzeIssuesInputSchema},
   output: {schema: AnalyzeIssuesOutputSchema},
-  prompt: `You are a production efficiency expert. Analyze the following list of production issues and provide a concise analysis in markdown format.
+  prompt: `You are a production efficiency expert. Your task is to analyze a list of production issues and generate a clear, structured report in markdown format.
 
-Your analysis should include:
-- A brief overall summary of the situation.
-- Key observations, highlighting any trends, recurring problems, or significant impacts (like production stoppages).
-- Actionable recommendations to address the identified problems.
+Your report must be easy to read and must contain the following sections:
 
-Here is the list of issues to analyze:
+### Overall Summary
+Provide a brief, high-level overview of the current situation based on the provided issue list.
+
+### Key Observations
+In this section, use a bulleted list to highlight important trends, recurring problems, or significant impacts. Focus on patterns related to issue categories, priorities, and production stoppages.
+
+### Actionable Recommendations
+Provide a numbered list of clear, concise, and actionable recommendations to address the problems identified in the observations section.
+
+Here is the list of issues for your analysis:
 {{#each issues}}
 - **{{title}}** (Priority: {{priority}}, Category: {{category}}, Production Stopped: {{productionStopped}})
   Reported: {{reportedAt}}{{#if resolvedAt}}, Resolved: {{resolvedAt}}{{/if}}
 {{/each}}
 
-Generate the analysis now.`,
+Generate the structured analysis now.`,
 });
 
 const analyzeIssuesFlow = ai.defineFlow(
@@ -69,3 +73,4 @@ const analyzeIssuesFlow = ai.defineFlow(
     return output!;
   }
 );
+
