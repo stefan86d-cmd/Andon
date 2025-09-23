@@ -96,6 +96,14 @@ export default function SettingsPage() {
     const tabCount = 1 + (hasNotificationsTab ? 1 : 0) + (hasSubscriptionTab ? 1 : 0);
 
     const planName = currentUser.plan.charAt(0).toUpperCase() + currentUser.plan.slice(1);
+    
+    const getInitials = (name: string) => {
+        const parts = name.split(' ');
+        if (parts.length > 1) {
+            return `${parts[0][0]}${parts[parts.length - 1][0]}`;
+        }
+        return parts[0][0] || '';
+    }
 
     return (
         <AppLayout>
@@ -131,14 +139,9 @@ export default function SettingsPage() {
                                     </CardHeader>
                                     <CardContent className="space-y-6">
                                         <div className="flex items-center gap-4">
-                                            <Avatar className="h-20 w-20">
-                                                <AvatarImage src={currentUser.avatarUrl} alt={currentUser.name} />
-                                                <AvatarFallback>{currentUser.name.charAt(0)}</AvatarFallback>
+                                            <Avatar className="h-20 w-20 text-3xl">
+                                                <AvatarFallback>{getInitials(currentUser.name)}</AvatarFallback>
                                             </Avatar>
-                                            <Button variant="outline">
-                                                <Camera className="mr-2 h-4 w-4" />
-                                                Change Photo
-                                            </Button>
                                         </div>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div className="space-y-2">
@@ -292,4 +295,5 @@ export default function SettingsPage() {
             </main>
         </AppLayout>
     );
-}
+
+    
