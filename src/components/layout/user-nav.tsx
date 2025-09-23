@@ -37,22 +37,20 @@ export function UserNav() {
     router.push('/');
   }
 
+  const getInitials = (name: string) => {
+    const parts = name.split(' ');
+    if (parts.length > 1) {
+        return `${parts[0][0]}${parts[parts.length - 1][0]}`;
+    }
+    return parts[0]?.[0] || '';
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar className="h-9 w-9">
-            {currentUser.avatarUrl && (
-              <Image 
-                src={currentUser.avatarUrl} 
-                alt={currentUser.name}
-                width={36}
-                height={36}
-                className="rounded-full"
-                data-ai-hint="person portrait"
-              />
-            )}
-            <AvatarFallback>{currentUser.name.charAt(0)}</AvatarFallback>
+            <AvatarFallback>{getInitials(currentUser.name)}</AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
