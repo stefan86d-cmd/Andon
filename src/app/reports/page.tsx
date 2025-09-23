@@ -112,7 +112,7 @@ export default function ReportsPage() {
             title: i.title,
             category: i.category,
             priority: i.priority,
-            productionStopped: i.productionStopped,
+            productionStopped: i.productionStopped || false,
             reportedAt: i.reportedAt.toISOString(),
             resolvedAt: i.resolvedAt?.toISOString(),
         }));
