@@ -145,12 +145,14 @@ export function IssuesDataTable({ issues, title, description, loading }: { issue
               issues.map((issue) => (
                 <TableRow key={issue.id} onClick={() => canResolveIssues && setSelectedIssue(issue)} className={cn(canResolveIssues && "cursor-pointer")}>
                   <TableCell>
+                    <div>
                       <CategoryDisplay category={issue.category} />
                       {issue.subCategory && (
-                        <div className="text-xs text-muted-foreground capitalize pl-1 mt-1">
+                        <div className="text-xs text-muted-foreground capitalize pl-7 mt-1">
                           {issue.subCategory.replace(/-/g, ' ')}
                         </div>
                       )}
+                    </div>
                   </TableCell>
                   <TableCell>
                     <div className="font-medium">{issue.location}</div>
@@ -205,3 +207,4 @@ export function IssuesDataTable({ issues, title, description, loading }: { issue
     </Card>
   );
 }
+
