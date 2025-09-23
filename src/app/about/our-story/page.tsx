@@ -70,12 +70,16 @@ export default function OurStoryPage() {
       </header>
 
       <main className="flex-1">
-        <section>
+        <section className="bg-background">
             <div className="container py-20">
-              <div className="text-center mb-12">
+              <div className="text-center">
                 <h1 className="text-4xl font-bold mb-4">Our Story</h1>
                 <p className="text-muted-foreground max-w-2xl mx-auto">From the factory floor to your fingertips.</p>
               </div>
+            </div>
+        </section>
+        <section className="bg-muted">
+            <div className="container py-20">
               <div className="grid md:grid-cols-2 gap-12 items-center">
                 <div className="space-y-4">
                     <h2 className="text-3xl font-semibold">Born from Experience</h2>
