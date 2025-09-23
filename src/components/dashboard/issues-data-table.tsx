@@ -19,7 +19,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -88,14 +87,6 @@ const StatusDisplay = ({ status }: { status: Status }) => {
     );
 };
 
-const getInitials = (name: string) => {
-    const parts = name.split(' ');
-    if (parts.length > 1) {
-        return `${parts[0][0]}${parts[parts.length - 1][0]}`;
-    }
-    return parts[0]?.[0] || '';
-}
-
 export function IssuesDataTable({ issues, title, description, loading }: { issues: Issue[], title?: string, description?: string, loading?: boolean }) {
   const { currentUser } = useUser();
   const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
@@ -155,6 +146,11 @@ export function IssuesDataTable({ issues, title, description, loading }: { issue
                 <TableRow key={issue.id} onClick={() => canResolveIssues && setSelectedIssue(issue)} className={cn(canResolveIssues && "cursor-pointer")}>
                   <TableCell>
                       <CategoryDisplay category={issue.category} />
+                      {issue.subCategory && (
+                        <div className="text-xs text-muted-foreground capitalize pl-1 mt-1">
+                          {issue.subCategory.replace(/-/g, ' ')}
+                        </div>
+                      )}
                   </TableCell>
                   <TableCell>
                     <div className="font-medium">{issue.location}</div>
@@ -174,13 +170,7 @@ export function IssuesDataTable({ issues, title, description, loading }: { issue
                     </div>
                   </TableCell>
                    <TableCell>
-                        <div className="flex items-center gap-2">
-                            <Avatar className="h-6 w-6">
-                                <AvatarImage src={issue.reportedBy.avatarUrl} alt={issue.reportedBy.name} />
-                                <AvatarFallback>{getInitials(issue.reportedBy.name)}</AvatarFallback>
-                            </Avatar>
-                            <span>{issue.reportedBy.name}</span>
-                        </div>
+                        {issue.reportedBy.name}
                    </TableCell>
                   <TableCell>
                     <SafeHydrate>
