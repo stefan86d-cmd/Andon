@@ -11,7 +11,6 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { FooterLogo } from "@/components/layout/footer-logo";
 
 const servicesMenuItems = [
     { title: "Production Monitoring", description: "Get a live overview of your entire production line.", badge: "", href: "/services/monitoring" },
@@ -150,10 +149,8 @@ export default function ContactPage() {
           <p className="text-center text-sm leading-loose md:text-left">
             Built by you and your AI partner.
           </p>
-          <div className="flex items-center gap-2 text-sm">
-            <span>&copy; {new Date().getFullYear()}</span>
-            <FooterLogo />
-            <span>AndonPro, Inc. All rights reserved.</span>
+          <div className="text-sm">
+            &copy; {new Date().getFullYear()} AndonPro, Inc. All rights reserved.
           </div>
         </div>
       </footer>

@@ -12,7 +12,6 @@ import React, { useState } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MegaMenu } from "@/components/layout/mega-menu";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
-import { FooterLogo } from "@/components/layout/footer-logo";
 
 
 const tiers = [
@@ -325,10 +324,8 @@ export default function PricingPage() {
           <p className="text-center text-sm leading-loose md:text-left">
             Built by you and your AI partner.
           </p>
-          <div className="flex items-center gap-2 text-sm">
-            <span>&copy; {new Date().getFullYear()}</span>
-            <FooterLogo />
-            <span>AndonPro, Inc. All rights reserved.</span>
+          <div className="text-sm">
+            &copy; {new Date().getFullYear()} AndonPro, Inc. All rights reserved.
           </div>
         </div>
       </footer>
