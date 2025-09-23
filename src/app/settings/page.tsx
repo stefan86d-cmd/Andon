@@ -159,7 +159,7 @@ export default function SettingsPage() {
                                         </CardHeader>
                                         <CardContent className="space-y-6">
                                             <div className="flex items-center gap-4">
-                                                <Avatar className="h-20 w-20 text-3xl">
+                                                <Avatar className="h-20 w-20 text-3xl border-2 border-primary">
                                                     <AvatarFallback>{getInitials(currentUser.name)}</AvatarFallback>
                                                 </Avatar>
                                             </div>
@@ -317,5 +317,3 @@ export default function SettingsPage() {
         </AppLayout>
     );
 }
-
-    

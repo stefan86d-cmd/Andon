@@ -83,7 +83,7 @@ export function UsersDataTable({ users }: { users: User[] }) {
                     <TableRow key={user.email}>
                         <TableCell>
                             <div className="flex items-center gap-3">
-                                <Avatar className="h-9 w-9">
+                                <Avatar className="h-9 w-9 border-2 border-primary">
                                     <AvatarImage src={user.avatarUrl} alt={user.name} />
                                     <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
                                 </Avatar>
