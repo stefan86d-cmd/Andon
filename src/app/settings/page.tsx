@@ -3,7 +3,7 @@
 
 import { AppLayout } from "@/components/layout/app-layout";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -71,39 +71,66 @@ export default function SettingsPage() {
                             </div>
                         )}
                         <TabsContent value="profile">
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>My Profile</CardTitle>
-                                    <CardDescription>Update your personal information.</CardDescription>
-                                </CardHeader>
-                                <CardContent className="space-y-6">
-                                    <div className="flex items-center gap-4">
-                                        <Avatar className="h-20 w-20">
-                                            <AvatarImage src={currentUser.avatarUrl} alt={currentUser.name} />
-                                            <AvatarFallback>{currentUser.name.charAt(0)}</AvatarFallback>
-                                        </Avatar>
-                                        <Button variant="outline">
-                                            <Camera className="mr-2 h-4 w-4" />
-                                            Change Photo
-                                        </Button>
-                                    </div>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                            <Label htmlFor="firstName">First Name</Label>
-                                            <Input id="firstName" defaultValue={firstName} />
+                             <div className="grid gap-6">
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>My Profile</CardTitle>
+                                        <CardDescription>Update your personal information.</CardDescription>
+                                    </CardHeader>
+                                    <CardContent className="space-y-6">
+                                        <div className="flex items-center gap-4">
+                                            <Avatar className="h-20 w-20">
+                                                <AvatarImage src={currentUser.avatarUrl} alt={currentUser.name} />
+                                                <AvatarFallback>{currentUser.name.charAt(0)}</AvatarFallback>
+                                            </Avatar>
+                                            <Button variant="outline">
+                                                <Camera className="mr-2 h-4 w-4" />
+                                                Change Photo
+                                            </Button>
+                                        </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div className="space-y-2">
+                                                <Label htmlFor="firstName">First Name</Label>
+                                                <Input id="firstName" defaultValue={firstName} />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label htmlFor="lastName">Last Name</Label>
+                                                <Input id="lastName" defaultValue={lastName} />
+                                            </div>
                                         </div>
                                         <div className="space-y-2">
-                                            <Label htmlFor="lastName">Last Name</Label>
-                                            <Input id="lastName" defaultValue={lastName} />
+                                            <Label htmlFor="email">Email</Label>
+                                            <Input id="email" type="email" defaultValue={currentUser.email} readOnly disabled/>
                                         </div>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="email">Email</Label>
-                                        <Input id="email" type="email" defaultValue={currentUser.email} readOnly disabled/>
-                                    </div>
-                                    <Button>Update Profile</Button>
-                                </CardContent>
-                            </Card>
+                                    </CardContent>
+                                    <CardFooter>
+                                        <Button>Update Profile</Button>
+                                    </CardFooter>
+                                </Card>
+                                 <Card>
+                                    <CardHeader>
+                                        <CardTitle>Change Password</CardTitle>
+                                        <CardDescription>Update your password. Make sure it's a strong one.</CardDescription>
+                                    </CardHeader>
+                                    <CardContent className="space-y-4">
+                                        <div className="space-y-2">
+                                            <Label htmlFor="current-password">Current Password</Label>
+                                            <Input id="current-password" type="password" />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="new-password">New Password</Label>
+                                            <Input id="new-password" type="password" />
+                                        </div>
+                                         <div className="space-y-2">
+                                            <Label htmlFor="confirm-password">Confirm New Password</Label>
+                                            <Input id="confirm-password" type="password" />
+                                        </div>
+                                    </CardContent>
+                                    <CardFooter>
+                                        <Button>Update Password</Button>
+                                    </CardFooter>
+                                </Card>
+                             </div>
                         </TabsContent>
                         {hasNotificationsTab && (
                             <TabsContent value="notifications">
