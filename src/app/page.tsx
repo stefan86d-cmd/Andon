@@ -42,48 +42,49 @@ export default function HomePage() {
     <div className="flex flex-col min-h-screen bg-background">
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-14 items-center">
-          <div className="mr-4 hidden md:flex">
+          <div className="mr-4 hidden md:flex items-center">
             <Link href="/" className="mr-6 flex items-center space-x-2">
               <Logo />
             </Link>
+            <nav className="flex items-center space-x-6 text-sm">
+                <DropdownMenu>
+                    <DropdownMenuTrigger className="flex items-center font-medium text-muted-foreground hover:text-primary focus:outline-none">
+                    Services <ChevronDown className="h-4 w-4 ml-1" />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                    <DropdownMenuItem>Production Monitoring</DropdownMenuItem>
+                    <DropdownMenuItem>Issue Tracking</DropdownMenuItem>
+                    <DropdownMenuItem>Analytics & Reporting</DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+
+                <DropdownMenu>
+                    <DropdownMenuTrigger className="flex items-center font-medium text-muted-foreground hover:text-primary focus:outline-none">
+                    Explore <ChevronDown className="h-4 w-4 ml-1" />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                    <DropdownMenuItem asChild>
+                        <Link href="/pricing">Pricing</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>Customer Stories</DropdownMenuItem>
+                    <DropdownMenuItem>Blog</DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+                
+                <DropdownMenu>
+                    <DropdownMenuTrigger className="flex items-center font-medium text-muted-foreground hover:text-primary focus:outline-none">
+                    Support <ChevronDown className="h-4 w-4 ml-1" />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                    <DropdownMenuItem>Help Center</DropdownMenuItem>
+                    <DropdownMenuItem>Contact Us</DropdownMenuItem>
+                    <DropdownMenuItem>API Documentation</DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            </nav>
           </div>
-          <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
-            <nav className="flex items-center space-x-4">
-              <DropdownMenu>
-                <DropdownMenuTrigger className="flex items-center text-sm font-medium text-muted-foreground hover:text-primary focus:outline-none">
-                  Services <ChevronDown className="h-4 w-4 ml-1" />
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                  <DropdownMenuItem>Production Monitoring</DropdownMenuItem>
-                  <DropdownMenuItem>Issue Tracking</DropdownMenuItem>
-                  <DropdownMenuItem>Analytics & Reporting</DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-
-              <DropdownMenu>
-                <DropdownMenuTrigger className="flex items-center text-sm font-medium text-muted-foreground hover:text-primary focus:outline-none">
-                  Explore <ChevronDown className="h-4 w-4 ml-1" />
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                  <DropdownMenuItem asChild>
-                    <Link href="/pricing">Pricing</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>Customer Stories</DropdownMenuItem>
-                  <DropdownMenuItem>Blog</DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-              
-              <DropdownMenu>
-                <DropdownMenuTrigger className="flex items-center text-sm font-medium text-muted-foreground hover:text-primary focus:outline-none">
-                  Support <ChevronDown className="h-4 w-4 ml-1" />
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                  <DropdownMenuItem>Help Center</DropdownMenuItem>
-                  <DropdownMenuItem>Contact Us</DropdownMenuItem>
-                  <DropdownMenuItem>API Documentation</DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-
+          <div className="flex flex-1 items-center justify-end">
+            <nav className="flex items-center space-x-2">
                <Link href="/pricing" className={cn(buttonVariants({ variant: "ghost" }))}>
                 Pricing
               </Link>
