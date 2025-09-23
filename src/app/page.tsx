@@ -3,15 +3,11 @@
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
-import { ArrowRight, Factory, BarChart3, Users, Bot, Wrench, ChevronDown } from 'lucide-react';
+import { ArrowRight, Factory, BarChart3, Bot, Wrench } from 'lucide-react';
 import { Logo } from "@/components/layout/logo";
 import { cn } from "@/lib/utils";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+import { MegaMenu } from "@/components/layout/mega-menu";
+import { PlaceHolderImages } from "@/lib/placeholder-images";
 
 const features = [
   {
@@ -36,8 +32,30 @@ const features = [
   },
 ];
 
+const servicesMenuItems = [
+    { title: "Production Monitoring", description: "Get a live overview of your entire production line.", badge: "Live", href: "#" },
+    { title: "Issue Tracking", description: "Report, track, and resolve issues in real-time.", badge: "Essential", href: "#" },
+    { title: "Analytics & Reporting", description: "Gain insights into your production efficiency.", badge: "Pro", href: "#" },
+];
+
+const exploreMenuItems = [
+    { title: "Our Story", description: "Learn about the mission and vision behind AndonPro.", badge: "", href: "#" },
+    { title: "Latest News", description: "Read our latest product announcements and company news.", badge: "", href: "#" },
+    { title: "Customer Stories", description: "See how other companies are succeeding with AndonPro.", badge: "", href: "#" },
+];
+
+const supportMenuItems = [
+    { title: "FAQs", description: "Find answers to common questions about our platform.", badge: "", href: "#" },
+    { title: "Tutorials", description: "Watch step-by-step guides to get the most out of AndonPro.", badge: "Video", href: "#" },
+    { title: "Contact Us", description: "Get in touch with our team for personalized support.", badge: "", href: "#" },
+];
+
 
 export default function HomePage() {
+    const servicesImage = PlaceHolderImages.find(img => img.id === 'mega-menu-services');
+    const exploreImage = PlaceHolderImages.find(img => img.id === 'mega-menu-explore');
+    const supportImage = PlaceHolderImages.find(img => img.id === 'mega-menu-support');
+
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -47,38 +65,21 @@ export default function HomePage() {
               <Logo />
             </Link>
             <nav className="flex items-center space-x-1 text-sm">
-                <DropdownMenu>
-                    <DropdownMenuTrigger className={cn(buttonVariants({ variant: "ghost" }), "flex items-center gap-1 focus-visible:ring-0 focus-visible:ring-offset-0")}>
-                    Services <ChevronDown className="h-4 w-4" />
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent>
-                    <DropdownMenuItem>Production Monitoring</DropdownMenuItem>
-                    <DropdownMenuItem>Issue Tracking</DropdownMenuItem>
-                    <DropdownMenuItem>Analytics & Reporting</DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
-
-                <DropdownMenu>
-                    <DropdownMenuTrigger className={cn(buttonVariants({ variant: "ghost" }), "flex items-center gap-1 focus-visible:ring-0 focus-visible:ring-offset-0")}>
-                    Explore <ChevronDown className="h-4 w-4" />
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent>
-                    <DropdownMenuItem>Our story</DropdownMenuItem>
-                    <DropdownMenuItem>latest news</DropdownMenuItem>
-                    <DropdownMenuItem>customer stories</DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
-                
-                <DropdownMenu>
-                    <DropdownMenuTrigger className={cn(buttonVariants({ variant: "ghost" }), "flex items-center gap-1 focus-visible:ring-0 focus-visible:ring-offset-0")}>
-                    Support <ChevronDown className="h-4 w-4" />
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent>
-                    <DropdownMenuItem>FAQs</DropdownMenuItem>
-                    <DropdownMenuItem>Tutorials</DropdownMenuItem>
-                    <DropdownMenuItem>Contact Us</DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
+                <MegaMenu 
+                    triggerText="Services" 
+                    items={servicesMenuItems}
+                    image={servicesImage}
+                />
+                <MegaMenu 
+                    triggerText="Explore" 
+                    items={exploreMenuItems}
+                    image={exploreImage}
+                />
+                <MegaMenu 
+                    triggerText="Support" 
+                    items={supportMenuItems}
+                    image={supportImage}
+                />
             </nav>
           </div>
           <div className="flex flex-1 items-center justify-end">
@@ -162,4 +163,3 @@ export default function HomePage() {
     </div>
   );
 }
-

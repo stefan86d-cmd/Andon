@@ -3,56 +3,74 @@
     {
       "id": "app-logo",
       "description": "Application logo",
-      "imageUrl": "https://picsum.photos/seed/logo/40/40",
+      "imageUrl": "https://images.unsplash.com/photo-1755435140567-3c9df5ceffa1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxhYnN0cmFjdCUyMGxvZ298ZW58MHx8fHwxNzU4NTg0MjExfDA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "abstract logo"
     },
     {
       "id": "user-avatar-alex",
       "description": "Placeholder avatar for Alex Johnson",
-      "imageUrl": "https://picsum.photos/seed/user-alex/40/40",
+      "imageUrl": "https://images.unsplash.com/photo-1590086782792-42dd2350140d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxwZXJzb24lMjBwb3J0cmFpdHxlbnwwfHx8fDE3NTg1ODUxMDl8MA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "person portrait"
     },
     {
       "id": "user-avatar-jane",
       "description": "Placeholder avatar for Jane Jones",
-      "imageUrl": "https://picsum.photos/seed/user-jane/40/40",
+      "imageUrl": "https://images.unsplash.com/flagged/photo-1595514191830-3e96a518989b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxwZXJzb24lMjBwb3J0cmFpdHxlbnwwfHx8fDE3NTg1ODUxMDl8MA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "person portrait"
     },
     {
       "id": "user-avatar-bob",
       "description": "Placeholder avatar for Bob Smith",
-      "imageUrl": "https://picsum.photos/seed/user-bob/40/40",
+      "imageUrl": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxwZXJzb24lMjBwb3J0cmFpdHxlbnwwfHx8fDE3NTg1ODUxMDl8MA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "person portrait"
     },
     {
       "id": "user-avatar-alice",
       "description": "Placeholder avatar for Alice Williams",
-      "imageUrl": "https://picsum.photos/seed/user-alice/40/40",
+      "imageUrl": "https://images.unsplash.com/photo-1535643302794-19c3804b874b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxwZXJzb24lMjBwb3J0cmFpdHxlbnwwfHx8fDE3NTg1ODUxMDl8MA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "person portrait"
     },
     {
-        "id": "category-it",
-        "description": "Icon for IT problems",
-        "imageUrl": "https://picsum.photos/seed/monitor/100/100",
-        "imageHint": "monitor computer"
+      "id": "category-it",
+      "description": "Icon for IT problems",
+      "imageUrl": "https://images.unsplash.com/photo-1628134094608-4a7c88c376ed?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxtb25pdG9yJTIwY29tcHV0ZXJ8ZW58MHx8fHwxNzU4NjA3ODY4fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "monitor computer"
     },
     {
-        "id": "category-logistics",
-        "description": "Icon for logistics problems",
-        "imageUrl": "https://picsum.photos/seed/truck/100/100",
-        "imageHint": "truck logistics"
+      "id": "category-logistics",
+      "description": "Icon for logistics problems",
+      "imageUrl": "https://images.unsplash.com/photo-1599134997921-f217f695c40c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8dHJ1Y2slMjBsb2dpc3RpY3N8ZW58MHx8fHwxNzU4NjA3ODY4fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "truck logistics"
     },
     {
-        "id": "category-tool",
-        "description": "Icon for tool problems",
-        "imageUrl": "https://picsum.photos/seed/wrench/100/100",
-        "imageHint": "wrench tool"
+      "id": "category-tool",
+      "description": "Icon for tool problems",
+      "imageUrl": "https://images.unsplash.com/photo-1742828732544-7f1e8849cd99?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHx3cmVuY2glMjB0b29sfGVufDB8fHx8MTc1ODYwNzg2N3ww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "wrench tool"
     },
     {
-        "id": "category-other",
-        "description": "Icon for other problems",
-        "imageUrl": "https://picsum.photos/seed/help/100/100",
-        "imageHint": "question mark"
+      "id": "category-other",
+      "description": "Icon for other problems",
+      "imageUrl": "https://images.unsplash.com/photo-1663465374413-83cba00bff6f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxxdWVzdGlvbiUyMG1hcmt8ZW58MHx8fHwxNzU4NjA3ODY3fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "question mark"
+    },
+    {
+      "id": "mega-menu-services",
+      "description": "Image for services mega menu",
+      "imageUrl": "https://images.unsplash.com/photo-1722149255986-a34ec3cd68a6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxmYWN0b3J5JTIwcHJvZHVjdGlvbnxlbnwwfHx8fDE3NTg2MDc4Njh8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "factory production"
+    },
+    {
+      "id": "mega-menu-explore",
+      "description": "Image for explore mega menu",
+      "imageUrl": "https://images.unsplash.com/photo-1622675363311-3e1904dc1885?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHx0ZWFtJTIwY29sbGFib3JhdGlvbnxlbnwwfHx8fDE3NTg1ODUzMjF8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "team collaboration"
+    },
+    {
+      "id": "mega-menu-support",
+      "description": "Image for support mega menu",
+      "imageUrl": "https://images.unsplash.com/photo-1560264418-c4445382edbc?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8Y3VzdG9tZXIlMjBzdXBwb3J0fGVufDB8fHx8MTc1ODU5MDMyMHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "customer support"
     }
   ]
 }
