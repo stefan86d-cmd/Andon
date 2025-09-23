@@ -76,9 +76,9 @@ export default function HomePage() {
                     Support <ChevronDown className="h-4 w-4" />
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
-                    <DropdownMenuItem>Help Center</DropdownMenuItem>
+                    <DropdownMenuItem>FAQs</DropdownMenuItem>
+                    <DropdownMenuItem>Tutorials</DropdownMenuItem>
                     <DropdownMenuItem>Contact Us</DropdownMenuItem>
-                    <DropdownMenuItem>API Documentation</DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
             </nav>
