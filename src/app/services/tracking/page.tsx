@@ -6,6 +6,7 @@ import { MegaMenu } from "@/components/layout/mega-menu";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { buttonVariants } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
+import Image from "next/image";
 
 const servicesMenuItems = [
     { title: "Production Monitoring", description: "Get a live overview of your entire production line.", badge: "Live", href: "/services/monitoring" },
@@ -70,9 +71,19 @@ export default function IssueTrackingPage() {
       </header>
 
       <main className="flex-1">
-        <section className="container py-20 text-center">
+        <section className="container pt-20 pb-10 text-center">
             <h1 className="text-4xl md:text-5xl font-bold mb-4">Issue Tracking</h1>
             <p className="text-lg text-muted-foreground max-w-3xl mx-auto">Report, track, and resolve issues in real-time with an intelligent system that keeps everyone in the loop.</p>
+        </section>
+
+        <section className="container text-center pb-20">
+          <Image
+            src="/Issue_tracker.png"
+            alt="Issue Tracking Screenshot"
+            width={1200}
+            height={675}
+            className="rounded-lg shadow-xl mx-auto"
+          />
         </section>
 
         <section className="py-20 bg-muted">
