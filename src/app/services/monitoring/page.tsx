@@ -72,25 +72,26 @@ export default function ProductionMonitoringPage() {
       </header>
 
       <main className="flex-1">
-        <section className="relative container pt-20 pb-40 text-center">
+        <section className="container pt-20 pb-20 text-center">
             <h1 className="text-4xl md:text-5xl font-bold mb-4">Production Monitoring</h1>
             <p className="text-lg text-muted-foreground max-w-3xl mx-auto">Get a live, bird's-eye view of your entire production line. AndonPro's real-time monitoring empowers your team to make informed decisions instantly.</p>
-             {dashboardImage && (
-                <div className="absolute left-1/2 -translate-x-1/2 bottom-0 translate-y-1/2 w-full max-w-4xl px-4">
-                    <div className="relative aspect-video w-full mx-auto overflow-hidden rounded-lg shadow-2xl">
-                        <Image 
-                            src={dashboardImage.imageUrl}
-                            alt={dashboardImage.description}
-                            data-ai-hint={dashboardImage.imageHint}
-                            fill
-                            className="object-cover object-top"
-                        />
-                    </div>
-                </div>
-             )}
         </section>
 
-        <section className="py-20 bg-muted pt-40">
+        {dashboardImage && (
+            <section className="container -mt-40">
+                <div className="relative aspect-video w-full max-w-4xl mx-auto overflow-hidden rounded-lg shadow-2xl">
+                    <Image 
+                        src={dashboardImage.imageUrl}
+                        alt={dashboardImage.description}
+                        data-ai-hint={dashboardImage.imageHint}
+                        fill
+                        className="object-cover object-top"
+                    />
+                </div>
+            </section>
+        )}
+
+        <section className="py-20 bg-muted mt-20">
             <div className="container text-center">
                 <h2 className="text-3xl font-bold mb-6">What is Production Monitoring?</h2>
                 <p className="max-w-3xl mx-auto text-muted-foreground mb-8">
