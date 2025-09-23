@@ -161,12 +161,10 @@ export function IssuesDataTable({ issues, title, description, loading }: { issue
                     </div>
                   </TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-2">
-                        <Badge variant="outline" className={cn(`capitalize border-0 font-medium`, priorityColors[issue.priority])}>
-                            {React.createElement(priorityIcons[issue.priority], { className: "h-4 w-4 mr-1" })}
-                            {issue.priority}
-                        </Badge>
-                    </div>
+                    <Badge variant="outline" className={cn(`capitalize border-0 font-medium`, priorityColors[issue.priority])}>
+                        {React.createElement(priorityIcons[issue.priority], { className: "h-4 w-4 mr-1" })}
+                        {issue.priority}
+                    </Badge>
                   </TableCell>
                   <TableCell>
                     <StatusDisplay status={issue.status} />
@@ -207,5 +205,6 @@ export function IssuesDataTable({ issues, title, description, loading }: { issue
     </Card>
   );
 }
+
 
 
