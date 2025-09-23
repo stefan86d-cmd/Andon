@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { MegaMenu } from "@/components/layout/mega-menu";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { buttonVariants } from "@/components/ui/button";
+import Image from "next/image";
 
 const servicesMenuItems = [
     { title: "Production Monitoring", description: "Get a live overview of your entire production line.", badge: "", href: "/services/monitoring" },
@@ -69,10 +70,36 @@ export default function OurStoryPage() {
       </header>
 
       <main className="flex-1">
-        <div className="container py-20">
-          <h1 className="text-4xl font-bold mb-4">Our Story</h1>
-          <p className="text-muted-foreground">Learn about the mission and vision behind AndonPro.</p>
-        </div>
+        <section className="container py-20">
+          <div className="text-center mb-12">
+            <h1 className="text-4xl font-bold mb-4">Our Story</h1>
+            <p className="text-muted-foreground max-w-2xl mx-auto">From the factory floor to your fingertips.</p>
+          </div>
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <div className="space-y-4">
+                <h2 className="text-3xl font-semibold">Born from Experience</h2>
+                <p className="text-muted-foreground leading-relaxed">
+                    From the heart of Helsinki, Finland, AndonPro was born out of decades of hands-on experience on the factory floor. We're a small, passionate team that has lived and breathed the production environment, witnessing firsthand the communication breakdowns, the costly downtimes, and the daily frustrations that chip away at efficiency.
+                </p>
+                <p className="text-muted-foreground leading-relaxed">
+                    We saw a gap. Existing solutions were often overly complex, rigid, and priced out of reach for smaller businesses. We knew there had to be a better way—a tool that was both powerful and accessible. That's why we decided to build AndonPro: an intuitive, affordable platform designed to solve the very issues we faced.
+                </p>
+                <p className="text-muted-foreground leading-relaxed">
+                    Our core philosophy is simple: empower the user. We believe that the people on the line are the experts, which is why our app is built for ease of use and complete customization. Whether you're a small workshop or a large-scale operation, AndonPro adapts to your unique workflow, not the other way around.
+                </p>
+            </div>
+            <div>
+                <Image 
+                    src="/Helsinki2.jpg"
+                    alt="Helsinki cityscape"
+                    width={800}
+                    height={600}
+                    className="rounded-lg shadow-xl"
+                    data-ai-hint="Helsinki city"
+                />
+            </div>
+          </div>
+        </section>
       </main>
 
       <footer className="py-6 md:px-8 md:py-0 border-t">
