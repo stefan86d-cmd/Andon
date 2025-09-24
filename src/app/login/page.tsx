@@ -43,6 +43,17 @@ function GoogleIcon() {
   );
 }
 
+function MicrosoftIcon() {
+    return (
+        <svg viewBox="0 0 21 21" className="h-5 w-5 mr-2">
+            <path fill="#f25022" d="M1 1h9v9H1z" />
+            <path fill="#00a4ef" d="M1 11h9v9H1z" />
+            <path fill="#7fba00" d="M11 1h9v9h-9z" />
+            <path fill="#ffb900" d="M11 11h9v9h-9z" />
+        </svg>
+    )
+}
+
 export default function LoginPage() {
   const [email, setEmail] = useState('maria.g@andon.io');
   const [password, setPassword] = useState('password');
@@ -155,10 +166,16 @@ export default function LoginPage() {
             <span className="absolute left-1/2 -translate-x-1/2 -top-2.5 bg-background px-2 text-xs text-muted-foreground">OR</span>
           </div>
 
-           <Button variant="outline" className="w-full" disabled={true}>
-              <GoogleIcon />
-              Sign in with Google (Disabled)
-            </Button>
+            <div className="grid grid-cols-1 gap-2">
+                <Button variant="outline" className="w-full" disabled={true}>
+                    <GoogleIcon />
+                    Sign in with Google (Disabled)
+                </Button>
+                <Button variant="outline" className="w-full" disabled={true}>
+                    <MicrosoftIcon />
+                    Sign in with Microsoft (Disabled)
+                </Button>
+            </div>
             
           <div className="mt-4 text-center text-sm">
             Don't have an account?{' '}
