@@ -162,7 +162,7 @@ export default function LoginPage() {
             
           <div className="mt-4 text-center text-sm">
             Don't have an account?{' '}
-            <Link href="/register" passHref>
+            <Link href="/pricing" passHref>
                 <span className="underline cursor-pointer">
                     Sign up
                 </span>
