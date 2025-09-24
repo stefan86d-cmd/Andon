@@ -18,8 +18,7 @@ import { Separator } from "@/components/ui/separator";
 import { Logo } from "@/components/layout/logo";
 import { useUser } from '@/contexts/user-context';
 import { toast } from '@/hooks/use-toast';
-import { LoaderCircle, CreditCard, Calendar, Lock } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { LoaderCircle, CreditCard, Calendar, Lock, Globe } from 'lucide-react';
 import Link from 'next/link';
 import {
   Select,
@@ -30,11 +29,45 @@ import {
 } from "@/components/ui/select";
 
 const tiers: any = {
-  starter: { name: "Starter", prices: { '1': 0, '12': 0, '24': 0, '48': 0 } },
-  standard: { name: "Standard", prices: { '1': 39.99, '12': 31.99, '24': 27.99, '48': 23.99 } },
-  pro: { name: "Pro", prices: { '1': 59.99, '12': 47.99, '24': 41.99, '48': 35.99 } },
-  enterprise: { name: "Enterprise", prices: { '1': 149.99, '12': 119.99, '24': 104.99, '48': 89.99 } },
+  starter: { 
+    name: "Starter", 
+    prices: {
+        '1': { usd: 0, eur: 0 }, '12': { usd: 0, eur: 0 }, '24': { usd: 0, eur: 0 }, '48': { usd: 0, eur: 0 }
+    } 
+  },
+  standard: { 
+    name: "Standard", 
+    prices: {
+        '1': { usd: 39.99, eur: 36.99 }, '12': { usd: 31.99, eur: 29.99 }, '24': { usd: 27.99, eur: 25.99 }, '48': { usd: 23.99, eur: 21.99 }
+    }
+  },
+  pro: { 
+    name: "Pro", 
+    prices: {
+        '1': { usd: 59.99, eur: 54.99 }, '12': { usd: 47.99, eur: 43.99 }, '24': { usd: 41.99, eur: 38.99 }, '48': { usd: 35.99, eur: 32.99 }
+    }
+  },
+  enterprise: { 
+    name: "Enterprise", 
+    prices: {
+        '1': { usd: 149.99, eur: 139.99 }, '12': { usd: 119.99, eur: 111.99 }, '24': { usd: 104.99, eur: 97.99 }, '48': { usd: 89.99, eur: 83.99 }
+    }
+  },
 };
+
+const currencySymbols = {
+    usd: '$',
+    eur: '€',
+};
+
+const formatPrice = (price: number, currency: 'usd' | 'eur') => {
+    const locale = currency === 'eur' ? 'de-DE' : 'en-US';
+    return price.toLocaleString(locale, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    });
+};
+
 
 function GoogleIcon() {
   return (
@@ -73,7 +106,7 @@ function MicrosoftIcon() {
 function RegisterContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { currentUser, loading: userLoading, login } = useUser();
+  const { currentUser, login } = useUser();
 
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState('');
@@ -82,14 +115,15 @@ function RegisterContent() {
 
   const [selectedPlan, setSelectedPlan] = useState(searchParams.get('plan') || 'standard');
   const [selectedDuration, setSelectedDuration] = useState(searchParams.get('duration') || '12');
+  const [selectedCurrency, setSelectedCurrency] = useState<'usd' | 'eur'>(searchParams.get('currency') as 'usd' | 'eur' || 'usd');
   
   const selectedTier = tiers[selectedPlan];
   const isFreePlan = selectedPlan === 'starter';
-  const price = selectedTier.prices[selectedDuration];
-  const originalPrice = selectedTier.prices['1'];
-  const discountPercent = selectedDuration !== '1' ? Math.round(((originalPrice - price) / originalPrice) * 100) : 0;
+  const price = selectedTier.prices[selectedDuration][selectedCurrency];
+  const originalPrice = selectedTier.prices['1'][selectedCurrency];
+  const discountPercent = selectedDuration !== '1' && originalPrice > 0 ? Math.round(((originalPrice - price) / originalPrice) * 100) : 0;
   const totalSaved = (originalPrice - price) * parseInt(selectedDuration);
-
+  const currencySymbol = currencySymbols[selectedCurrency];
 
   const handleRegistration = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -120,14 +154,6 @@ function RegisterContent() {
       });
     }, 2000);
   }
-
-  if (userLoading) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <LoaderCircle className="h-8 w-8 animate-spin" />
-      </div>
-    );
-  }
   
   const formAction = isFreePlan ? handleRegistration : (currentUser ? handlePayment : handleRegistration);
   const mainFormId = isFreePlan ? 'registration-form' : (currentUser ? 'payment-form' : 'registration-form');
@@ -143,11 +169,99 @@ function RegisterContent() {
                         <Logo />
                     </Link>
                 </div>
+
+                <Card className="w-full">
+                    <CardHeader className="flex flex-row justify-between items-center">
+                        <CardTitle>Order Summary</CardTitle>
+                         <Link href="/pricing" className="text-sm font-medium text-primary hover:underline">
+                            Explore plans
+                        </Link>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="space-y-2">
+                            <div className="flex justify-between items-center">
+                                <Label>Plan</Label>
+                                 <Select value={selectedPlan} onValueChange={setSelectedPlan}>
+                                    <SelectTrigger className="w-[180px]">
+                                        <SelectValue placeholder="Select plan" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {Object.keys(tiers).map(key => (
+                                            <SelectItem key={key} value={key}>{tiers[key].name}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="flex justify-between items-center">
+                                <Label>Billing Duration</Label>
+                                <Select value={selectedDuration} onValueChange={setSelectedDuration} disabled={isFreePlan}>
+                                    <SelectTrigger className="w-[180px]">
+                                        <SelectValue placeholder="Select duration" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="1">1 Month</SelectItem>
+                                        <SelectItem value="12">12 Months</SelectItem>
+                                        <SelectItem value="24">24 Months</SelectItem>
+                                        <SelectItem value="48">48 Months</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                             <div className="flex justify-between items-center">
+                                <Label>Currency</Label>
+                                <Select value={selectedCurrency} onValueChange={(v) => setSelectedCurrency(v as any)} disabled={isFreePlan}>
+                                    <SelectTrigger className="w-[180px]">
+                                         <div className="flex items-center gap-2">
+                                            <Globe className="h-4 w-4 text-muted-foreground" />
+                                            <SelectValue placeholder="Select currency" />
+                                        </div>
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                       <SelectItem value="usd">USD ($)</SelectItem>
+                                       <SelectItem value="eur">EUR (€)</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+                        <Separator/>
+                        {isFreePlan ? (
+                            <div className="flex justify-between items-center font-bold text-lg">
+                                <span>Total due today</span>
+                                <span>{currencySymbol}0.00</span>
+                            </div>
+                        ): (
+                            <div className="space-y-2">
+                                <div className="flex justify-between items-center">
+                                    <span className="text-muted-foreground">{selectedTier.name} Plan</span>
+                                    <span className="font-semibold text-lg">
+                                        {currencySymbol}{formatPrice(price, selectedCurrency)}
+                                        <span className="text-sm font-normal text-muted-foreground">/mo</span>
+                                    </span>
+                                </div>
+                                {discountPercent > 0 && (
+                                    <div className="flex justify-between items-center text-sm">
+                                    <span className="text-muted-foreground">Original price</span>
+                                    <span className="text-muted-foreground line-through">{currencySymbol}{formatPrice(originalPrice, selectedCurrency)}/mo</span>
+                                    </div>
+                                )}
+                                {totalSaved > 0 && (
+                                    <div className="flex justify-between items-center text-sm p-2 rounded-md bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300">
+                                        <span className="font-medium">Save {discountPercent}%</span>
+                                        <span className="font-bold">-{currencySymbol}{formatPrice(totalSaved, selectedCurrency)}</span>
+                                    </div>
+                                )}
+                                <Separator />
+                                <div className="flex justify-between items-center font-bold text-lg">
+                                    <span>Total due today</span>
+                                    <span>{currencySymbol}{(formatPrice(price * parseInt(selectedDuration), selectedCurrency))}</span>
+                                </div>
+                            </div>
+                        )}
+                        
+                    </CardContent>
+                </Card>
+                
                  <div>
-                  <h1 className="text-3xl font-bold mt-2">Create your Account</h1>
-                  <p className="text-muted-foreground mt-2">
-                      Get started with AndonPro today.
-                  </p>
+                  <h2 className="text-2xl font-bold mt-2">Your Details</h2>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
@@ -200,37 +314,40 @@ function RegisterContent() {
                     )}
 
                     {!isFreePlan && (
-                        <div className="space-y-4">
-                            <Separator />
-                            <h3 className="text-lg font-semibold">Payment Information</h3>
-                            <div className="space-y-2">
-                                <Label htmlFor="cardNumber">Card Number</Label>
-                                <div className="relative">
-                                    <Input id="cardNumber" placeholder="0000 0000 0000 0000" required />
-                                    <CreditCard className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                                </div>
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Payment Information</CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
                                 <div className="space-y-2">
-                                    <Label htmlFor="expiryDate">Expires</Label>
+                                    <Label htmlFor="cardNumber">Card Number</Label>
                                     <div className="relative">
-                                        <Input id="expiryDate" placeholder="MM / YY" required />
-                                        <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                                        <Input id="cardNumber" placeholder="0000 0000 0000 0000" required />
+                                        <CreditCard className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="expiryDate">Expires</Label>
+                                        <div className="relative">
+                                            <Input id="expiryDate" placeholder="MM / YY" required />
+                                            <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="cvc">CVC</Label>
+                                        <div className="relative">
+                                            <Input id="cvc" placeholder="123" required />
+                                            <Lock className="absolute right-3 top-1.2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                                        </div>
                                     </div>
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="cvc">CVC</Label>
-                                    <div className="relative">
-                                        <Input id="cvc" placeholder="123" required />
-                                        <Lock className="absolute right-3 top-1.2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                                    </div>
+                                    <Label htmlFor="cardName">Name on Card</Label>
+                                    <Input id="cardName" placeholder="John Doe" required />
                                 </div>
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="cardName">Name on Card</Label>
-                                <Input id="cardName" placeholder="John Doe" required />
-                            </div>
-                        </div>
+                            </CardContent>
+                        </Card>
                     )}
                      <p className="text-sm text-muted-foreground pt-2">
                         By clicking the button below, you agree to our <Link href="#" className="underline">Terms of Service</Link>.
@@ -243,85 +360,8 @@ function RegisterContent() {
 
             </div>
 
-            {/* Right Side: Order Summary */}
-            <div className="flex flex-col justify-center bg-muted/50 p-8 rounded-lg">
-                <Card className="w-full">
-                    <CardHeader>
-                        <CardTitle>Order Summary</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="space-y-2">
-                            <div className="flex justify-between items-center">
-                                <Label>Plan</Label>
-                                 <Select value={selectedPlan} onValueChange={setSelectedPlan}>
-                                    <SelectTrigger className="w-[180px]">
-                                        <SelectValue placeholder="Select plan" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {Object.keys(tiers).map(key => (
-                                            <SelectItem key={key} value={key}>{tiers[key].name}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div className="flex justify-between items-center">
-                                <Label>Billing Duration</Label>
-                                <Select value={selectedDuration} onValueChange={setSelectedDuration} disabled={isFreePlan}>
-                                    <SelectTrigger className="w-[180px]">
-                                        <SelectValue placeholder="Select duration" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="1">1 Month</SelectItem>
-                                        <SelectItem value="12">12 Months</SelectItem>
-                                        <SelectItem value="24">24 Months</SelectItem>
-                                        <SelectItem value="48">48 Months</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        </div>
-                        <Separator/>
-                        {isFreePlan ? (
-                            <div className="flex justify-between items-center font-bold text-lg">
-                                <span>Total due today</span>
-                                <span>$0.00</span>
-                            </div>
-                        ): (
-                            <div className="space-y-2">
-                                <div className="flex justify-between items-center">
-                                    <span className="text-muted-foreground">{selectedTier.name} Plan</span>
-                                    <span className="font-semibold text-lg">
-                                        ${(price).toFixed(2)}
-                                        <span className="text-sm font-normal text-muted-foreground">/mo</span>
-                                    </span>
-                                </div>
-                                {discountPercent > 0 && (
-                                    <div className="flex justify-between items-center text-sm">
-                                    <span className="text-muted-foreground">Original price</span>
-                                    <span className="text-muted-foreground line-through">${originalPrice.toFixed(2)}/mo</span>
-                                    </div>
-                                )}
-                                {totalSaved > 0 && (
-                                    <div className="flex justify-between items-center text-sm p-2 rounded-md bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300">
-                                        <span className="font-medium">Save {discountPercent}%</span>
-                                        <span className="font-bold">-${totalSaved.toFixed(2)}</span>
-                                    </div>
-                                )}
-                                <Separator />
-                                <div className="flex justify-between items-center font-bold text-lg">
-                                    <span>Total due today</span>
-                                    <span>${(price * parseInt(selectedDuration)).toFixed(2)}</span>
-                                </div>
-                            </div>
-                        )}
-                        
-                    </CardContent>
-                    <CardFooter>
-                         <Link href="/pricing" className="text-sm font-medium text-primary hover:underline w-full text-center">
-                            Explore all plans
-                        </Link>
-                    </CardFooter>
-                </Card>
-            </div>
+            {/* Right Side: Spacer */}
+            <div className="hidden lg:block" />
         </div>
     </div>
   );
@@ -339,3 +379,5 @@ export default function RegisterPage() {
         </Suspense>
     )
 }
+
+    
