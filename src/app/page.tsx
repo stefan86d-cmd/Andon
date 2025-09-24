@@ -117,7 +117,7 @@ export default function HomePage() {
             <p className="max-w-2xl mx-auto text-lg text-gray-200 mb-8">
               AndonPro is the modern solution to monitor workflow, report issues instantly, and minimize downtime with AI-powered insights.
             </p>
-            <Link href="/login" className={cn(buttonVariants({ size: "lg" }))}>
+            <Link href="/pricing" className={cn(buttonVariants({ size: "lg" }))}>
               Get Started Free <ArrowRight className="ml-2 h-5 w-5" />
             </Link>
           </div>
