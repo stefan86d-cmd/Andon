@@ -227,6 +227,11 @@ function RegisterContent() {
                         <Card>
                             <CardHeader>
                                 <CardTitle>Payment Information</CardTitle>
+                                {currentUser && (
+                                     <CardDescription>
+                                        The remaining value of your current plan will be credited towards this upgrade.
+                                    </CardDescription>
+                                )}
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 <div className="space-y-2">
