@@ -52,6 +52,9 @@ function RegisterContent() {
   const selectedTier = tiers[selectedPlan];
   const isFreePlan = selectedPlan === 'starter';
   const price = selectedTier.prices[selectedDuration];
+  const originalPrice = selectedTier.prices['1'];
+  const discount = selectedDuration !== '1' ? Math.round(((originalPrice - price) / originalPrice) * 100) : 0;
+
 
   const handleRegistration = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -195,7 +198,7 @@ function RegisterContent() {
                 {isFreePlan ? (
                     <Card className="w-full">
                         <CardHeader>
-                            <CardTitle>Plan Summary</CardTitle>
+                            <CardTitle>Order Summary</CardTitle>
                             <CardDescription>You are signing up for the free Starter plan.</CardDescription>
                         </CardHeader>
                         <CardContent>
@@ -213,61 +216,87 @@ function RegisterContent() {
                         </CardContent>
                     </Card>
                 ) : (
-                    <Card className="w-full">
-                        <CardHeader>
-                            <CardTitle>Payment Information</CardTitle>
-                            <CardDescription>
-                                {currentUser ? 'Confirm your subscription.' : 'Enter your payment details to complete registration.'}
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <form id="payment-form" onSubmit={handlePayment} className="space-y-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="cardNumber">Card Number</Label>
-                                    <div className="relative">
-                                        <Input id="cardNumber" placeholder="0000 0000 0000 0000" required />
-                                        <CreditCard className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                                    </div>
+                    <div className="flex flex-col gap-8">
+                      <Card className="w-full">
+                          <CardHeader>
+                              <CardTitle>Order Summary</CardTitle>
+                          </CardHeader>
+                          <CardContent className="space-y-4">
+                              <div className="flex justify-between items-center">
+                                  <span className="text-muted-foreground">{selectedTier.name} Plan</span>
+                                  <div className="flex items-center gap-2">
+                                      {discount > 0 && (
+                                        <Badge variant="secondary">Save {discount}%</Badge>
+                                      )}
+                                      <span className="font-semibold text-lg">
+                                          ${(price).toFixed(2)}
+                                          <span className="text-sm font-normal text-muted-foreground">/mo</span>
+                                      </span>
+                                  </div>
+                              </div>
+                               {discount > 0 && (
+                                <div className="flex justify-between items-center text-sm">
+                                  <span className="text-muted-foreground">Original price</span>
+                                  <span className="text-muted-foreground line-through">${originalPrice.toFixed(2)}/mo</span>
                                 </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <Label htmlFor="expiryDate">Expires</Label>
-                                        <div className="relative">
-                                            <Input id="expiryDate" placeholder="MM / YY" required />
-                                            <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                                        </div>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="cvc">CVC</Label>
-                                        <div className="relative">
-                                            <Input id="cvc" placeholder="123" required />
-                                            <Lock className="absolute right-3 top-1.2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="cardName">Name on Card</Label>
-                                    <Input id="cardName" placeholder="John Doe" required />
-                                </div>
+                              )}
+                              <Separator />
+                              <div className="flex justify-between items-center font-bold text-lg">
+                                  <span>Total due today</span>
+                                  <span>${(price * parseInt(selectedDuration)).toFixed(2)}</span>
+                              </div>
+                          </CardContent>
+                      </Card>
 
-                                <Separator className="my-4" />
-
-                                <div className="flex justify-between items-center font-medium">
-                                    <span>{selectedTier.name} Plan ({selectedDuration} months)</span>
-                                    <span>USD ${ (price * Number(selectedDuration)).toFixed(2) }</span>
-                                </div>
-                                <p className="text-sm text-muted-foreground">
-                                    By clicking the button below, you agree to our Terms of Service.
-                                </p>
-                            </form>
-                        </CardContent>
-                         <CardFooter>
-                             <Button type="submit" form={mainFormId} className="w-full" disabled={isLoading}>
-                                {isLoading && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
-                                {currentUser ? "Confirm Payment" : "Create Account & Pay"}
-                            </Button>
-                        </CardFooter>
-                    </Card>
+                      <Card className="w-full">
+                          <CardHeader>
+                              <CardTitle>Payment Information</CardTitle>
+                              <CardDescription>
+                                  {currentUser ? 'Confirm your subscription.' : 'Enter your payment details to complete registration.'}
+                              </CardDescription>
+                          </CardHeader>
+                          <CardContent>
+                              <form id="payment-form" onSubmit={handlePayment} className="space-y-4">
+                                  <div className="space-y-2">
+                                      <Label htmlFor="cardNumber">Card Number</Label>
+                                      <div className="relative">
+                                          <Input id="cardNumber" placeholder="0000 0000 0000 0000" required />
+                                          <CreditCard className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                                      </div>
+                                  </div>
+                                  <div className="grid grid-cols-2 gap-4">
+                                      <div className="space-y-2">
+                                          <Label htmlFor="expiryDate">Expires</Label>
+                                          <div className="relative">
+                                              <Input id="expiryDate" placeholder="MM / YY" required />
+                                              <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                                          </div>
+                                      </div>
+                                      <div className="space-y-2">
+                                          <Label htmlFor="cvc">CVC</Label>
+                                          <div className="relative">
+                                              <Input id="cvc" placeholder="123" required />
+                                              <Lock className="absolute right-3 top-1.2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                                          </div>
+                                      </div>
+                                  </div>
+                                  <div className="space-y-2">
+                                      <Label htmlFor="cardName">Name on Card</Label>
+                                      <Input id="cardName" placeholder="John Doe" required />
+                                  </div>
+                                   <p className="text-sm text-muted-foreground pt-2">
+                                      By clicking the button below, you agree to our Terms of Service.
+                                  </p>
+                              </form>
+                          </CardContent>
+                           <CardFooter>
+                               <Button type="submit" form={mainFormId} className="w-full" disabled={isLoading}>
+                                  {isLoading && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
+                                  {currentUser ? "Confirm Payment" : "Create Account & Pay"}
+                              </Button>
+                          </CardFooter>
+                      </Card>
+                    </div>
                 )}
             </div>
         </div>
@@ -287,3 +316,5 @@ export default function RegisterPage() {
         </Suspense>
     )
 }
+
+    
