@@ -113,43 +113,6 @@ function RegisterContent() {
                 </div>
 
                 <Card>
-                    <CardHeader>
-                        <CardTitle>Your Details</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        {currentUser ? (
-                            <div className="space-y-4">
-                                <div className="flex justify-between items-center">
-                                    <span className="text-muted-foreground">Name</span>
-                                    <span className="font-medium">{currentUser.name}</span>
-                                </div>
-                                <div className="flex justify-between items-center">
-                                    <span className="text-muted-foreground">Email</span>
-                                    <span className="font-medium">{currentUser.email}</span>
-                                </div>
-                                 <div className="text-center pt-4">
-                                    <p className="text-sm text-muted-foreground">Not you? <button onClick={() => { localStorage.removeItem('currentUserEmail'); window.location.reload(); }} className="text-primary hover:underline">Log out</button></p>
-                                </div>
-                            </div>
-                        ) : (
-                             <form id="registration-form" onSubmit={formAction} className="space-y-4">
-                                <div>
-                                    <Label htmlFor="name">Full Name</Label>
-                                    <Input id="name" type="text" placeholder="John Doe" required value={name} onChange={(e) => setName(e.target.value)} />
-                                </div>
-                                <div>
-                                    <Label htmlFor="email">Email</Label>
-                                    <Input id="email" type="email" placeholder="john.d@example.com" required value={email} onChange={(e) => setEmail(e.target.value)} />
-                                </div>
-                                <div>
-                                    <Label htmlFor="password">Password</Label>
-                                    <Input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
-                                </div>
-                            </form>
-                        )}
-                    </CardContent>
-                </Card>
-                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between">
                         <CardTitle>Selected Plan</CardTitle>
                         <Link href="/pricing" className="text-sm font-medium text-primary hover:underline">
@@ -186,6 +149,45 @@ function RegisterContent() {
                         </div>
                     </CardContent>
                 </Card>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Your Details</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        {currentUser ? (
+                            <div className="space-y-4">
+                                <div className="flex justify-between items-center">
+                                    <span className="text-muted-foreground">Name</span>
+                                    <span className="font-medium">{currentUser.name}</span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                    <span className="text-muted-foreground">Email</span>
+                                    <span className="font-medium">{currentUser.email}</span>
+                                </div>
+                                 <div className="text-center pt-4">
+                                    <p className="text-sm text-muted-foreground">Not you? <button onClick={() => { localStorage.removeItem('currentUserEmail'); window.location.reload(); }} className="text-primary hover:underline">Log out</button></p>
+                                </div>
+                            </div>
+                        ) : (
+                             <form id="registration-form" onSubmit={formAction} className="space-y-4">
+                                <div>
+                                    <Label htmlFor="name">Full Name</Label>
+                                    <Input id="name" type="text" placeholder="John Doe" required value={name} onChange={(e) => setName(e.target.value)} />
+                                </div>
+                                <div>
+                                    <Label htmlFor="email">Email</Label>
+                                    <Input id="email" type="email" placeholder="john.d@example.com" required value={email} onChange={(e) => setEmail(e.target.value)} />
+                                </div>
+                                <div>
+                                    <Label htmlFor="password">Password</Label>
+                                    <Input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
+                                </div>
+                            </form>
+                        )}
+                    </CardContent>
+                </Card>
+
             </div>
 
             {/* Right Side: Payment Form or Summary */}
