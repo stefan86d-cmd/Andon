@@ -79,9 +79,7 @@ export function Header() {
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <Link href="/">
-          <Logo />
-      </Link>
+      <Logo />
       
       <div className="w-full flex-1" />
 
