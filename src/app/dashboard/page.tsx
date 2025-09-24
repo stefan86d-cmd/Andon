@@ -102,10 +102,32 @@ export default function Home() {
   }
 
   const productionStopTime = formatDuration(duration);
+
+  // --- Calculate Average Resolution Time ---
+  const resolvedIssues = issues.filter(issue => issue.status === 'resolved' && issue.resolvedAt);
+
+  const totalResolutionSeconds = resolvedIssues.reduce((acc, issue) => {
+    return acc + differenceInSeconds(issue.resolvedAt!, issue.reportedAt);
+  }, 0);
+
+  const avgResolutionSeconds = resolvedIssues.length > 0 ? totalResolutionSeconds / resolvedIssues.length : 0;
+
+  const formatAverageDuration = (seconds: number) => {
+    if (seconds === 0) return 'N/A';
+    const hours = seconds / 3600;
+    if (hours < 1) {
+      const minutes = Math.round(seconds / 60);
+      return `${minutes} min`;
+    }
+    return `${hours.toFixed(1)} hours`;
+  };
+
+  const avgResolutionTime = formatAverageDuration(avgResolutionSeconds);
+  // --- End Calculation ---
   
   const stats = {
     openIssues: issues.filter(issue => issue.status === 'in_progress' || issue.status === 'reported').length,
-    avgResolutionTime: '3.2 hours',
+    avgResolutionTime: avgResolutionTime,
     productionStopTime: productionStopTime,
     criticalAlerts: issues.filter(issue => issue.priority === 'critical' && issue.reportedAt > twentyFourHoursAgo).length,
   };
