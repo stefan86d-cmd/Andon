@@ -196,16 +196,17 @@ export default function ReportsPage() {
     return { date: formattedDate, issues: issuesCount };
   });
 
-  // 2. Issues by Category (Pie Chart)
+  // 2. Issues by Category (Pie Chart & Bar Chart)
   const issuesByCategory = allCategories.map(category => {
       const count = filteredIssues.filter(issue => issue.category === category.id).length;
       return { name: category.label, value: count, fill: `url(#gradient-${category.id})`, color: category.color };
-  });
+  }).filter(c => c.value > 0);
+  
   const totalIssues = filteredIssues.length;
   const issuesByCategoryWithPercentage = issuesByCategory.map(cat => ({
       ...cat,
       percentage: totalIssues > 0 ? (cat.value / totalIssues) * 100 : 0,
-  })).filter(cat => cat.value > 0);
+  }));
 
   // 3. Issues by Production Line (Bar Chart)
   const issuesByLine = productionLines.map((line, index) => {
@@ -349,11 +350,11 @@ export default function ReportsPage() {
                  <Card>
                     <CardContent className="grid gap-6 md:grid-cols-2 p-6">
                         <div>
-                            <h3 className="font-semibold mb-4 text-center">Production Stop Time by Category (Hours)</h3>
-                            <FilteredBarChart data={stopTimeByCategory} />
+                            <h3 className="font-semibold mb-4 text-center">Volume by Category</h3>
+                            <FilteredBarChart data={issuesByCategory} />
                         </div>
                          <div>
-                            <h3 className="font-semibold mb-4 text-center">Issues by Category</h3>
+                            <h3 className="font-semibold mb-4 text-center">Issues by Category (%)</h3>
                             <PieChartWithPercentages data={issuesByCategoryWithPercentage} />
                         </div>
                     </CardContent>
@@ -395,5 +396,7 @@ export default function ReportsPage() {
     </AppLayout>
   );
 }
+
+    
 
     
