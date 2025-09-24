@@ -1,7 +1,7 @@
 
 "use client";
 
-import { Bell, Menu, VolumeX, Volume2 } from "lucide-react";
+import { Bell, Menu, VolumeX, Volume2, BellOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UserNav } from "@/components/layout/user-nav";
 import Link from "next/link";
@@ -111,7 +111,7 @@ export function Header() {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="relative">
-                <Bell className="h-5 w-5" />
+                {isMuted ? <BellOff className="h-5 w-5" /> : <Bell className="h-5 w-5" />}
                 <span className="sr-only">Toggle notifications</span>
                 {newIssuesCount > 0 && (
                     <Badge className="absolute top-0 right-0 h-5 w-5 shrink-0 items-center justify-center rounded-full p-0 text-xs font-medium">
