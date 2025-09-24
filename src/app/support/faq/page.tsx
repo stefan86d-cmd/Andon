@@ -37,6 +37,10 @@ const faqs = [
         answer: "AndonPro is a modern, intuitive application designed to monitor and manage production line workflows. It allows operators to report issues in real-time from any workstation, which helps teams minimize downtime and improve overall efficiency. Supervisors and administrators get a live overview of the entire production line, can track key performance indicators, and use AI-powered insights to make data-driven decisions."
     },
     {
+        question: "How do I sign up for AndonPro?",
+        answer: "You can sign up using your existing Google or Microsoft account for a fast and secure registration process. Alternatively, you can register directly with your email address and create a new password. Simply choose your preferred option on the registration page to get started."
+    },
+    {
         question: "What pricing tiers are available?",
         answer: "We offer a range of pricing tiers to fit teams of all sizes. Our plans include a free **Starter** tier for small teams just getting started, a **Standard** tier for growing factories, a **Pro** tier with advanced features like AI-powered analytics and priority support, and an **Enterprise** plan for large-scale operations requiring unlimited resources and dedicated support. You can find detailed information on our <a href='/pricing' class='text-primary underline'>Pricing Page</a>."
     },
