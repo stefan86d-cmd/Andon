@@ -53,7 +53,8 @@ function RegisterContent() {
   const isFreePlan = selectedPlan === 'starter';
   const price = selectedTier.prices[selectedDuration];
   const originalPrice = selectedTier.prices['1'];
-  const discount = selectedDuration !== '1' ? Math.round(((originalPrice - price) / originalPrice) * 100) : 0;
+  const discountPercent = selectedDuration !== '1' ? Math.round(((originalPrice - price) / originalPrice) * 100) : 0;
+  const totalSaved = (originalPrice - price) * parseInt(selectedDuration);
 
 
   const handleRegistration = async (e: React.FormEvent) => {
@@ -224,21 +225,22 @@ function RegisterContent() {
                           <CardContent className="space-y-4">
                               <div className="flex justify-between items-center">
                                   <span className="text-muted-foreground">{selectedTier.name} Plan</span>
-                                  <div className="flex items-center gap-2">
-                                      {discount > 0 && (
-                                        <Badge variant="secondary">Save {discount}%</Badge>
-                                      )}
-                                      <span className="font-semibold text-lg">
-                                          ${(price).toFixed(2)}
-                                          <span className="text-sm font-normal text-muted-foreground">/mo</span>
-                                      </span>
-                                  </div>
+                                  <span className="font-semibold text-lg">
+                                      ${(price).toFixed(2)}
+                                      <span className="text-sm font-normal text-muted-foreground">/mo</span>
+                                  </span>
                               </div>
-                               {discount > 0 && (
+                               {discountPercent > 0 && (
                                 <div className="flex justify-between items-center text-sm">
                                   <span className="text-muted-foreground">Original price</span>
                                   <span className="text-muted-foreground line-through">${originalPrice.toFixed(2)}/mo</span>
                                 </div>
+                              )}
+                              {totalSaved > 0 && (
+                                  <div className="flex justify-between items-center text-sm p-2 rounded-md bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300">
+                                      <span className="font-medium">Save {discountPercent}%</span>
+                                      <span className="font-bold">-${totalSaved.toFixed(2)}</span>
+                                  </div>
                               )}
                               <Separator />
                               <div className="flex justify-between items-center font-bold text-lg">
@@ -316,5 +318,3 @@ export default function RegisterPage() {
         </Suspense>
     )
 }
-
-    
