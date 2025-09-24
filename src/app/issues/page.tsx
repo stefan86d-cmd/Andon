@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { IssuesDataTable } from "@/components/dashboard/issues-data-table";
 import { AppLayout } from "@/components/layout/app-layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import type { Issue, ProductionLine } from "@/lib/types";
+import type { Issue, ProductionLine, IssueCategory } from "@/lib/types";
 import { ListFilter } from "lucide-react";
 import {
   DropdownMenu,
@@ -19,14 +19,18 @@ import { Button } from "@/components/ui/button";
 import { subHours } from "date-fns";
 import { useUser } from "@/contexts/user-context";
 import { getIssues, getProductionLines } from "@/lib/data";
-import { cn } from "@/lib/utils";
+import { allCategories } from "@/lib/constants";
 
 export default function IssuesPage() {
   const { currentUser } = useUser();
   const [issues, setIssues] = useState<Issue[]>([]);
   const [productionLines, setProductionLines] = useState<ProductionLine[]>([]);
+  
   const [selectedLines, setSelectedLines] = useState<string[]>([]);
   const [tempSelectedLines, setTempSelectedLines] = useState<string[]>([]);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [tempSelectedCategories, setTempSelectedCategories] = useState<string[]>([]);
+
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -50,19 +54,21 @@ export default function IssuesPage() {
 
     fetchData();
 
-    // Set up polling to refresh issues every 30 seconds
     const interval = setInterval(async () => {
         const issuesData = await getIssues();
         setIssues(issuesData);
     }, 30000);
 
-    // Clean up the interval on component unmount
     return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
     setTempSelectedLines(selectedLines);
   }, [selectedLines]);
+  
+  useEffect(() => {
+    setTempSelectedCategories(selectedCategories);
+  }, [selectedCategories]);
 
   const handleLineFilterChange = (lineId: string) => {
     setTempSelectedLines((prev) =>
@@ -71,20 +77,32 @@ export default function IssuesPage() {
         : [...prev, lineId]
     );
   };
+  
+  const handleCategoryFilterChange = (categoryId: string) => {
+    setTempSelectedCategories((prev) =>
+      prev.includes(categoryId)
+        ? prev.filter((id) => id !== categoryId)
+        : [...prev, categoryId]
+    );
+  }
 
   const handleFilterConfirm = () => {
     setSelectedLines(tempSelectedLines);
+    setSelectedCategories(tempSelectedCategories);
   };
   
   const handleFilterReset = () => {
     setTempSelectedLines([]);
     setSelectedLines([]);
+    setTempSelectedCategories([]);
+    setSelectedCategories([]);
   };
 
-  const filteredIssues =
-    selectedLines.length > 0
-      ? issues.filter((issue) => selectedLines.includes(issue.productionLineId))
-      : issues;
+  const filteredIssues = issues.filter(issue => {
+    const lineMatch = selectedLines.length === 0 || selectedLines.includes(issue.productionLineId);
+    const categoryMatch = selectedCategories.length === 0 || selectedCategories.includes(issue.category);
+    return lineMatch && categoryMatch;
+  });
 
   const activeIssues: Issue[] = filteredIssues.filter(
     (issue) => issue.status === "reported" || issue.status === "in_progress"
@@ -109,7 +127,7 @@ export default function IssuesPage() {
                 <TabsTrigger value="active">Active</TabsTrigger>
                 <TabsTrigger value="resolved">Resolved</TabsTrigger>
               </TabsList>
-              <div className="absolute right-0">
+              <div className="absolute right-0 flex gap-2">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="outline" size="sm" className="gap-1">
@@ -132,15 +150,40 @@ export default function IssuesPage() {
                         {line.name}
                       </DropdownMenuCheckboxItem>
                     ))}
-                    <DropdownMenuSeparator />
-                    <div className="p-2 flex justify-end gap-2">
-                      <Button variant="outline" size="sm" onClick={handleFilterReset}>Reset</Button>
-                      <DropdownMenuCheckboxItem onSelect={handleFilterConfirm} className="p-0">
-                        <Button size="sm" className="w-full">Confirm</Button>
-                      </DropdownMenuCheckboxItem>
-                    </div>
                   </DropdownMenuContent>
                 </DropdownMenu>
+
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm" className="gap-1">
+                      <ListFilter className="h-4 w-4" />
+                      <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                        Filter Category
+                      </span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56">
+                    <DropdownMenuLabel>Filter by category</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    {allCategories.map((category) => (
+                      <DropdownMenuCheckboxItem
+                        key={category.id}
+                        checked={tempSelectedCategories.includes(category.id)}
+                        onCheckedChange={() => handleCategoryFilterChange(category.id)}
+                        onSelect={(e) => e.preventDefault()}
+                      >
+                        {category.label}
+                      </DropdownMenuCheckboxItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
+                <div className="pl-2 border-l">
+                    <Button variant="outline" size="sm" onClick={handleFilterReset}>Reset</Button>
+                </div>
+                <div >
+                    <Button size="sm" onClick={handleFilterConfirm}>Confirm</Button>
+                </div>
               </div>
             </div>
           )}
