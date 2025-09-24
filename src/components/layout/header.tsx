@@ -1,7 +1,7 @@
 
 "use client";
 
-import { Bell, Menu, SpeakerOff, Volume2 } from "lucide-react";
+import { Bell, Menu, VolumeX, Volume2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UserNav } from "@/components/layout/user-nav";
 import Link from "next/link";
@@ -130,7 +130,7 @@ export function Header() {
                 {isMuted ? (
                     <Volume2 className="mr-2 h-4 w-4" />
                 ) : (
-                    <SpeakerOff className="mr-2 h-4 w-4" />
+                    <VolumeX className="mr-2 h-4 w-4" />
                 )}
                 <span>{isMuted ? 'Unmute' : 'Mute'}</span>
             </DropdownMenuItem>
