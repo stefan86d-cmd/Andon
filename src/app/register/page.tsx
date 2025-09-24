@@ -36,6 +36,40 @@ const tiers: any = {
   enterprise: { name: "Enterprise", prices: { '1': 149.99, '12': 119.99, '24': 104.99, '48': 89.99 } },
 };
 
+function GoogleIcon() {
+  return (
+    <svg viewBox="0 0 48 48" className="h-5 w-5 mr-2">
+      <path
+        fill="#FFC107"
+        d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8c-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4C12.955 4 4 12.955 4 24s8.955 20 20 20s20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"
+      />
+      <path
+        fill="#FF3D00"
+        d="M6.306 14.691l6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4C16.318 4 9.656 8.337 6.306 14.691z"
+      />
+      <path
+        fill="#4CAF50"
+        d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238A11.91 11.91 0 0 1 24 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z"
+      />
+      <path
+        fill="#1976D2"
+        d="M43.611 20.083H42V20H24v8h11.303c-.792 2.237-2.231 4.166-4.087 5.571l6.19 5.238C42.021 35.816 44 30.138 44 24c0-1.341-.138-2.65-.389-3.917z"
+      />
+    </svg>
+  );
+}
+
+function MicrosoftIcon() {
+    return (
+        <svg viewBox="0 0 21 21" className="h-5 w-5 mr-2">
+            <path fill="#f25022" d="M1 1h9v9H1z" />
+            <path fill="#00a4ef" d="M1 11h9v9H1z" />
+            <path fill="#7fba00" d="M11 1h9v9h-9z" />
+            <path fill="#ffb900" d="M11 11h9v9h-9z" />
+        </svg>
+    )
+}
+
 function RegisterContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -101,205 +135,192 @@ function RegisterContent() {
 
   return (
     <div className="container mx-auto flex min-h-screen items-center justify-center py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 w-full max-w-5xl">
-            {/* Left Side: Plan and User Details */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 w-full max-w-6xl">
+            {/* Left Side: Registration / Payment */}
             <div className="flex flex-col gap-8">
                 <div className="flex justify-start">
                     <Link href="/">
                         <Logo />
                     </Link>
                 </div>
-                <div>
-                  <h1 className="text-4xl font-bold mt-2">Create your Account</h1>
+                 <div>
+                  <h1 className="text-3xl font-bold mt-2">Create your Account</h1>
                   <p className="text-muted-foreground mt-2">
-                      Complete your registration to get started with AndonPro.
+                      Get started with AndonPro today.
                   </p>
                 </div>
 
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between">
-                        <CardTitle>Selected Plan</CardTitle>
-                        <Link href="/pricing" className="text-sm font-medium text-primary hover:underline">
-                            Explore plans
-                        </Link>
-                    </CardHeader>
-                    <CardContent className="grid grid-cols-2 gap-4">
-                         <div className="space-y-2">
-                            <Label>Plan</Label>
-                            <Select value={selectedPlan} onValueChange={setSelectedPlan}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Select plan" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {Object.keys(tiers).map(key => (
-                                        <SelectItem key={key} value={key}>{tiers[key].name}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div className="space-y-2">
-                            <Label>Billing Duration</Label>
-                            <Select value={selectedDuration} onValueChange={setSelectedDuration} disabled={isFreePlan}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Select duration" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="1">1 Month</SelectItem>
-                                    <SelectItem value="12">12 Months</SelectItem>
-                                    <SelectItem value="24">24 Months</SelectItem>
-                                    <SelectItem value="48">48 Months</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                    </CardContent>
-                </Card>
+                <div className="grid grid-cols-2 gap-4">
+                    <Button variant="outline" disabled>
+                        <GoogleIcon />
+                        Sign up with Google
+                    </Button>
+                    <Button variant="outline" disabled>
+                        <MicrosoftIcon />
+                        Sign up with Microsoft
+                    </Button>
+                </div>
 
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Your Details</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        {currentUser ? (
-                            <div className="space-y-4">
-                                <div className="flex justify-between items-center">
-                                    <span className="text-muted-foreground">Name</span>
-                                    <span className="font-medium">{currentUser.name}</span>
-                                </div>
-                                <div className="flex justify-between items-center">
-                                    <span className="text-muted-foreground">Email</span>
-                                    <span className="font-medium">{currentUser.email}</span>
-                                </div>
-                                 <div className="text-center pt-4">
-                                    <p className="text-sm text-muted-foreground">Not you? <button onClick={() => { localStorage.removeItem('currentUserEmail'); window.location.reload(); }} className="text-primary hover:underline">Log out</button></p>
+                <div className="relative">
+                    <Separator />
+                    <span className="absolute left-1/2 -translate-x-1/2 -top-2.5 bg-background px-2 text-xs text-muted-foreground">OR</span>
+                </div>
+                
+                <form id={mainFormId} onSubmit={formAction} className="space-y-6">
+                    {currentUser ? (
+                         <div className="space-y-4 rounded-lg border bg-card-foreground/5 p-6">
+                            <h3 className="font-semibold">Logged in as:</h3>
+                            <div className="flex justify-between items-center">
+                                <span className="text-muted-foreground">Name</span>
+                                <span className="font-medium">{currentUser.name}</span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                                <span className="text-muted-foreground">Email</span>
+                                <span className="font-medium">{currentUser.email}</span>
+                            </div>
+                                <div className="text-center pt-2">
+                                <p className="text-sm text-muted-foreground">Not you? <button onClick={() => { localStorage.removeItem('currentUserEmail'); window.location.reload(); }} className="text-primary hover:underline">Log out</button></p>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="space-y-4">
+                            <div>
+                                <Label htmlFor="name">Full Name</Label>
+                                <Input id="name" type="text" placeholder="John Doe" required value={name} onChange={(e) => setName(e.target.value)} />
+                            </div>
+                            <div>
+                                <Label htmlFor="email">Email</Label>
+                                <Input id="email" type="email" placeholder="john.d@example.com" required value={email} onChange={(e) => setEmail(e.target.value)} />
+                            </div>
+                            <div>
+                                <Label htmlFor="password">Password</Label>
+                                <Input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
+                            </div>
+                        </div>
+                    )}
+
+                    {!isFreePlan && (
+                        <div className="space-y-4">
+                            <Separator />
+                            <h3 className="text-lg font-semibold">Payment Information</h3>
+                            <div className="space-y-2">
+                                <Label htmlFor="cardNumber">Card Number</Label>
+                                <div className="relative">
+                                    <Input id="cardNumber" placeholder="0000 0000 0000 0000" required />
+                                    <CreditCard className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                                 </div>
                             </div>
-                        ) : (
-                             <form id="registration-form" onSubmit={formAction} className="space-y-4">
-                                <div>
-                                    <Label htmlFor="name">Full Name</Label>
-                                    <Input id="name" type="text" placeholder="John Doe" required value={name} onChange={(e) => setName(e.target.value)} />
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="expiryDate">Expires</Label>
+                                    <div className="relative">
+                                        <Input id="expiryDate" placeholder="MM / YY" required />
+                                        <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                                    </div>
                                 </div>
-                                <div>
-                                    <Label htmlFor="email">Email</Label>
-                                    <Input id="email" type="email" placeholder="john.d@example.com" required value={email} onChange={(e) => setEmail(e.target.value)} />
+                                <div className="space-y-2">
+                                    <Label htmlFor="cvc">CVC</Label>
+                                    <div className="relative">
+                                        <Input id="cvc" placeholder="123" required />
+                                        <Lock className="absolute right-3 top-1.2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                                    </div>
                                 </div>
-                                <div>
-                                    <Label htmlFor="password">Password</Label>
-                                    <Input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
-                                </div>
-                            </form>
-                        )}
-                    </CardContent>
-                </Card>
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="cardName">Name on Card</Label>
+                                <Input id="cardName" placeholder="John Doe" required />
+                            </div>
+                        </div>
+                    )}
+                     <p className="text-sm text-muted-foreground pt-2">
+                        By clicking the button below, you agree to our <Link href="#" className="underline">Terms of Service</Link>.
+                    </p>
+                    <Button type="submit" form={mainFormId} className="w-full" disabled={isLoading}>
+                        {isLoading && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
+                        {isFreePlan ? "Create Account" : (currentUser ? "Confirm Payment" : "Create Account & Pay")}
+                    </Button>
+                </form>
 
             </div>
 
-            {/* Right Side: Payment Form or Summary */}
-            <div className="flex flex-col justify-center">
-                {isFreePlan ? (
-                    <Card className="w-full">
-                        <CardHeader>
-                            <CardTitle>Order Summary</CardTitle>
-                            <CardDescription>You are signing up for the free Starter plan.</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                             <div className="flex justify-between items-center font-medium text-lg">
-                                <span>Starter Plan</span>
+            {/* Right Side: Order Summary */}
+            <div className="flex flex-col justify-center bg-muted/50 p-8 rounded-lg">
+                <Card className="w-full">
+                    <CardHeader>
+                        <CardTitle>Order Summary</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="space-y-2">
+                            <div className="flex justify-between items-center">
+                                <Label>Plan</Label>
+                                 <Select value={selectedPlan} onValueChange={setSelectedPlan}>
+                                    <SelectTrigger className="w-[180px]">
+                                        <SelectValue placeholder="Select plan" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {Object.keys(tiers).map(key => (
+                                            <SelectItem key={key} value={key}>{tiers[key].name}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="flex justify-between items-center">
+                                <Label>Billing Duration</Label>
+                                <Select value={selectedDuration} onValueChange={setSelectedDuration} disabled={isFreePlan}>
+                                    <SelectTrigger className="w-[180px]">
+                                        <SelectValue placeholder="Select duration" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="1">1 Month</SelectItem>
+                                        <SelectItem value="12">12 Months</SelectItem>
+                                        <SelectItem value="24">24 Months</SelectItem>
+                                        <SelectItem value="48">48 Months</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+                        <Separator/>
+                        {isFreePlan ? (
+                            <div className="flex justify-between items-center font-bold text-lg">
+                                <span>Total due today</span>
                                 <span>$0.00</span>
                             </div>
-                             <p className="text-sm text-muted-foreground mt-4">
-                                By clicking "Create Account", you agree to our Terms of Service.
-                            </p>
-                            <Button type="submit" form="registration-form" className="w-full mt-6" disabled={isLoading}>
-                                {isLoading && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
-                                Create Account
-                            </Button>
-                        </CardContent>
-                    </Card>
-                ) : (
-                    <div className="flex flex-col gap-8">
-                      <Card className="w-full">
-                          <CardHeader>
-                              <CardTitle>Order Summary</CardTitle>
-                          </CardHeader>
-                          <CardContent className="space-y-4">
-                              <div className="flex justify-between items-center">
-                                  <span className="text-muted-foreground">{selectedTier.name} Plan</span>
-                                  <span className="font-semibold text-lg">
-                                      ${(price).toFixed(2)}
-                                      <span className="text-sm font-normal text-muted-foreground">/mo</span>
-                                  </span>
-                              </div>
-                               {discountPercent > 0 && (
-                                <div className="flex justify-between items-center text-sm">
-                                  <span className="text-muted-foreground">Original price</span>
-                                  <span className="text-muted-foreground line-through">${originalPrice.toFixed(2)}/mo</span>
+                        ): (
+                            <div className="space-y-2">
+                                <div className="flex justify-between items-center">
+                                    <span className="text-muted-foreground">{selectedTier.name} Plan</span>
+                                    <span className="font-semibold text-lg">
+                                        ${(price).toFixed(2)}
+                                        <span className="text-sm font-normal text-muted-foreground">/mo</span>
+                                    </span>
                                 </div>
-                              )}
-                              {totalSaved > 0 && (
-                                  <div className="flex justify-between items-center text-sm p-2 rounded-md bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300">
-                                      <span className="font-medium">Save {discountPercent}%</span>
-                                      <span className="font-bold">-${totalSaved.toFixed(2)}</span>
-                                  </div>
-                              )}
-                              <Separator />
-                              <div className="flex justify-between items-center font-bold text-lg">
-                                  <span>Total due today</span>
-                                  <span>${(price * parseInt(selectedDuration)).toFixed(2)}</span>
-                              </div>
-                          </CardContent>
-                      </Card>
-
-                      <Card className="w-full">
-                          <CardHeader>
-                              <CardTitle>Payment Information</CardTitle>
-                              <CardDescription>
-                                  {currentUser ? 'Confirm your subscription.' : 'Enter your payment details to complete registration.'}
-                              </CardDescription>
-                          </CardHeader>
-                          <CardContent>
-                              <form id="payment-form" onSubmit={handlePayment} className="space-y-4">
-                                  <div className="space-y-2">
-                                      <Label htmlFor="cardNumber">Card Number</Label>
-                                      <div className="relative">
-                                          <Input id="cardNumber" placeholder="0000 0000 0000 0000" required />
-                                          <CreditCard className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                                      </div>
-                                  </div>
-                                  <div className="grid grid-cols-2 gap-4">
-                                      <div className="space-y-2">
-                                          <Label htmlFor="expiryDate">Expires</Label>
-                                          <div className="relative">
-                                              <Input id="expiryDate" placeholder="MM / YY" required />
-                                              <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                                          </div>
-                                      </div>
-                                      <div className="space-y-2">
-                                          <Label htmlFor="cvc">CVC</Label>
-                                          <div className="relative">
-                                              <Input id="cvc" placeholder="123" required />
-                                              <Lock className="absolute right-3 top-1.2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                                          </div>
-                                      </div>
-                                  </div>
-                                  <div className="space-y-2">
-                                      <Label htmlFor="cardName">Name on Card</Label>
-                                      <Input id="cardName" placeholder="John Doe" required />
-                                  </div>
-                                   <p className="text-sm text-muted-foreground pt-2">
-                                      By clicking the button below, you agree to our Terms of Service.
-                                  </p>
-                              </form>
-                          </CardContent>
-                           <CardFooter>
-                               <Button type="submit" form={mainFormId} className="w-full" disabled={isLoading}>
-                                  {isLoading && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
-                                  {currentUser ? "Confirm Payment" : "Create Account & Pay"}
-                              </Button>
-                          </CardFooter>
-                      </Card>
-                    </div>
-                )}
+                                {discountPercent > 0 && (
+                                    <div className="flex justify-between items-center text-sm">
+                                    <span className="text-muted-foreground">Original price</span>
+                                    <span className="text-muted-foreground line-through">${originalPrice.toFixed(2)}/mo</span>
+                                    </div>
+                                )}
+                                {totalSaved > 0 && (
+                                    <div className="flex justify-between items-center text-sm p-2 rounded-md bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300">
+                                        <span className="font-medium">Save {discountPercent}%</span>
+                                        <span className="font-bold">-${totalSaved.toFixed(2)}</span>
+                                    </div>
+                                )}
+                                <Separator />
+                                <div className="flex justify-between items-center font-bold text-lg">
+                                    <span>Total due today</span>
+                                    <span>${(price * parseInt(selectedDuration)).toFixed(2)}</span>
+                                </div>
+                            </div>
+                        )}
+                        
+                    </CardContent>
+                    <CardFooter>
+                         <Link href="/pricing" className="text-sm font-medium text-primary hover:underline w-full text-center">
+                            Explore all plans
+                        </Link>
+                    </CardFooter>
+                </Card>
             </div>
         </div>
     </div>
