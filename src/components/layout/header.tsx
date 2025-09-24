@@ -34,7 +34,7 @@ export function Header() {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       if (!audioRef.current) {
-        audioRef.current = new Audio('/audio/notification.mp3');
+        audioRef.current = new Audio('/audio/notification_sound.mp3');
       }
     }
     
