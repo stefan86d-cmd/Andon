@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { MegaMenu } from "@/components/layout/mega-menu";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import FooterLogo from "@/components/layout/footer-logo";
+import { useUser } from "@/contexts/user-context";
 
 
 const tiers = [
@@ -144,6 +145,7 @@ type Duration = '1' | '12' | '24' | '48';
 export default function PricingPage() {
     const [duration, setDuration] = useState<Duration>('12');
     const [currency, setCurrency] = useState<'usd' | 'eur'>('usd');
+    const { currentUser } = useUser();
     const currencySymbols = {
         usd: '$',
         eur: '€',
@@ -252,6 +254,12 @@ export default function PricingPage() {
                         const price = tier.prices[duration][currency];
                         const isProBestValue = tier.name === "Pro";
                         const linkHref = `/register?plan=${tier.name.toLowerCase()}&duration=${duration}&currency=${currency}`;
+                        
+                        let ctaText = tier.cta;
+                        if (!currentUser && (tier.name === "Standard" || tier.name === "Pro")) {
+                            ctaText = "Choose Plan";
+                        }
+                        
                         return (
                             <div key={tier.name} className="relative">
                                 {tier.badge && (
@@ -289,7 +297,7 @@ export default function PricingPage() {
                                         <Link href={linkHref} className={cn(buttonVariants({ 
                                             variant: isProBestValue ? 'destructive' : (tier.popular ? 'default' : 'outline'),
                                         }), "w-full")}>
-                                            {tier.cta}
+                                            {ctaText}
                                         </Link>
                                     </CardFooter>
                                 </Card>
@@ -345,5 +353,3 @@ export default function PricingPage() {
     </div>
   );
 }
-
-    
