@@ -150,8 +150,11 @@ function RegisterContent() {
                     </CardContent>
                 </Card>
                  <Card>
-                    <CardHeader>
+                    <CardHeader className="flex flex-row items-center justify-between">
                         <CardTitle>Selected Plan</CardTitle>
+                        <Link href="/pricing" className="text-sm font-medium text-primary hover:underline">
+                            Explore plans
+                        </Link>
                     </CardHeader>
                     <CardContent className="grid grid-cols-2 gap-4">
                          <div className="space-y-2">
@@ -236,7 +239,7 @@ function RegisterContent() {
                                         <Label htmlFor="cvc">CVC</Label>
                                         <div className="relative">
                                             <Input id="cvc" placeholder="123" required />
-                                            <Lock className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                                            <Lock className="absolute right-3 top-1.2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                                         </div>
                                     </div>
                                 </div>
