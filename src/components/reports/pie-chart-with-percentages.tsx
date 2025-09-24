@@ -9,6 +9,7 @@ interface PieChartWithPercentagesProps {
         value: number;
         percentage: number;
         fill?: string;
+        color?: string;
     }[];
 }
 
@@ -27,6 +28,24 @@ const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, per
     );
 };
 
+const CustomLegend = (props: any) => {
+    const { payload } = props;
+    return (
+        <ul className="flex justify-center flex-wrap gap-x-4 gap-y-2 mt-4">
+            {
+                payload.map((entry: any, index: number) => {
+                    const { dataKey, color } = entry.payload;
+                    return (
+                        <li key={`item-${index}`} className="flex items-center text-sm">
+                            <span className="w-3 h-3 rounded-full mr-2" style={{backgroundColor: color}}></span>
+                            <span>{entry.value}</span>
+                        </li>
+                    )
+                })
+            }
+        </ul>
+    )
+}
 
 export function PieChartWithPercentages({ data }: PieChartWithPercentagesProps) {
     const defaultFill = "hsl(var(--primary))";
@@ -50,7 +69,7 @@ export function PieChartWithPercentages({ data }: PieChartWithPercentagesProps) 
                         return [`${props.payload.value} (${props.payload.percentage.toFixed(1)}%)`, name];
                     }}
                 />
-                 <Legend verticalAlign="bottom" height={36}/>
+                 <Legend content={<CustomLegend />} verticalAlign="bottom" />
                 <Pie
                     data={data}
                     cx="50%"
@@ -63,12 +82,10 @@ export function PieChartWithPercentages({ data }: PieChartWithPercentagesProps) 
                     nameKey="name"
                 >
                     {data.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.fill || defaultFill} />
+                        <Cell key={`cell-${index}`} fill={entry.fill || defaultFill} stroke={entry.color} />
                     ))}
                 </Pie>
             </PieChart>
         </ResponsiveContainer>
     )
 }
-
-    

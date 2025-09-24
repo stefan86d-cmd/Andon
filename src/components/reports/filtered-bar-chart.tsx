@@ -8,6 +8,7 @@ interface FilteredBarChartProps {
         name: string;
         value: number;
         fill?: string;
+        color?: string;
     }[];
 }
 

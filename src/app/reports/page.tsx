@@ -39,6 +39,20 @@ const allCategories: { id: IssueCategory; label: string; color: string }[] = [
     { id: 'other', label: 'Other', color: '#8b5cf6' }, // purple-500
 ];
 
+const ChartGradients = () => (
+    <svg width="0" height="0" className="absolute">
+        <defs>
+            {allCategories.map(category => (
+                <linearGradient key={category.id} id={`gradient-${category.id}`} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor={category.color} stopOpacity={0.8}/>
+                    <stop offset="95%" stopColor={category.color} stopOpacity={0.4}/>
+                </linearGradient>
+            ))}
+        </defs>
+    </svg>
+);
+
+
 export default function ReportsPage() {
   const { currentUser } = useUser();
   const [issues, setIssues] = useState<Issue[]>([]);
@@ -192,7 +206,7 @@ export default function ReportsPage() {
   // 2. Issues by Category (Pie Chart)
   const issuesByCategory = allCategories.map(category => {
       const count = filteredIssues.filter(issue => issue.category === category.id).length;
-      return { name: category.label, value: count, fill: category.color };
+      return { name: category.label, value: count, fill: `url(#gradient-${category.id})`, color: category.color };
   });
   const totalIssues = filteredIssues.length;
   const issuesByCategoryWithPercentage = issuesByCategory.map(cat => ({
@@ -201,11 +215,15 @@ export default function ReportsPage() {
   })).filter(cat => cat.value > 0);
 
   // 3. Issues by Production Line (Bar Chart)
-  const issuesByLine = productionLines.map((line, index) => ({
-      name: line.name,
-      value: filteredIssues.filter(issue => issue.productionLineId === line.id).length,
-      fill: allCategories[index % allCategories.length].color
-  }));
+  const issuesByLine = productionLines.map((line, index) => {
+    const category = allCategories[index % allCategories.length];
+      return {
+          name: line.name,
+          value: filteredIssues.filter(issue => issue.productionLineId === line.id).length,
+          fill: `url(#gradient-${category.id})`,
+          color: category.color,
+      }
+  });
   
   // 4. Production Stop Time by Category
   const stoppedIssues = filteredIssues.filter(i => i.productionStopped);
@@ -216,12 +234,13 @@ export default function ReportsPage() {
           return acc + differenceInSeconds(end, issue.reportedAt);
       }, 0);
       const hours = totalSeconds / 3600;
-      return { name: category.label, value: parseFloat(hours.toFixed(1)), fill: category.color };
+      return { name: category.label, value: parseFloat(hours.toFixed(1)), fill: `url(#gradient-${category.id})`, color: category.color };
   }).filter(c => c.value > 0);
 
   return (
     <AppLayout>
       <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background">
+        <ChartGradients />
         <div className="flex items-center justify-between">
           <h1 className="text-lg font-semibold md:text-2xl">Reports</h1>
         </div>
