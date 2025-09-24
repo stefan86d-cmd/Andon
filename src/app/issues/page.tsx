@@ -39,17 +39,25 @@ export default function IssuesPage() {
       setIssues(issuesData);
       setProductionLines(linesData);
 
-      // Reset the new issues notification badge
       if (issuesData.length > 0) {
         const latestIssueTimestamp = new Date(issuesData[0].reportedAt).getTime();
         localStorage.setItem('lastSeenIssueTimestamp', latestIssueTimestamp.toString());
-        // Dispatch a storage event to notify the header in the same tab
         window.dispatchEvent(new StorageEvent('storage', { key: 'lastSeenIssueTimestamp' }));
       }
       
       setLoading(false);
     }
+
     fetchData();
+
+    // Set up polling to refresh issues every 30 seconds
+    const interval = setInterval(async () => {
+        const issuesData = await getIssues();
+        setIssues(issuesData);
+    }, 30000);
+
+    // Clean up the interval on component unmount
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
