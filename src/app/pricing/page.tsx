@@ -208,33 +208,38 @@ export default function PricingPage() {
                         Choose the plan that's right for your production needs. No hidden fees, clear and simple.
                     </p>
                 </div>
-                 <div className="flex justify-center mt-12 mb-0 space-x-2 items-center">
-                    <Select value={duration} onValueChange={(value) => setDuration(value as any)}>
-                        <SelectTrigger className="w-[180px]">
-                            <SelectValue placeholder="Select duration" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="1">1 Month</SelectItem>
-                            <SelectItem value="12">12 Months</SelectItem>
-                            <SelectItem value="24">24 Months</SelectItem>
-                            <SelectItem value="48">48 Months</SelectItem>
-                        </SelectContent>
-                    </Select>
-                     <Select value={currency} onValueChange={(value) => setCurrency(value as any)}>
-                        <SelectTrigger className="w-[150px]">
-                            <div className="flex items-center gap-2">
-                                <Globe className="h-4 w-4 text-muted-foreground" />
-                                <SelectValue placeholder="Select currency" />
-                            </div>
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="usd">USD ($)</SelectItem>
-                            <SelectItem value="eur">EUR (€)</SelectItem>
-                        </SelectContent>
-                    </Select>
-                    {duration === '12' && <Badge variant="secondary" className="text-sm">Save ~20%</Badge>}
-                    {duration === '24' && <Badge variant="secondary" className="text-sm">Save ~30%</Badge>}
-                    {duration === '48' && <Badge variant="secondary" className="text-sm">Save ~40%</Badge>}
+                 <div className="flex flex-col items-center justify-center mt-12 mb-0 space-y-2">
+                    <div className="flex space-x-2 items-center">
+                        <Select value={duration} onValueChange={(value) => setDuration(value as any)}>
+                            <SelectTrigger className="w-[180px]">
+                                <SelectValue placeholder="Select duration" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="1">1 Month</SelectItem>
+                                <SelectItem value="12">12 Months</SelectItem>
+                                <SelectItem value="24">24 Months</SelectItem>
+                                <SelectItem value="48">48 Months</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <Select value={currency} onValueChange={(value) => setCurrency(value as any)}>
+                            <SelectTrigger className="w-[150px]">
+                                <div className="flex items-center gap-2">
+                                    <Globe className="h-4 w-4 text-muted-foreground" />
+                                    <SelectValue placeholder="Select currency" />
+                                </div>
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="usd">USD ($)</SelectItem>
+                                <SelectItem value="eur">EUR (€)</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        {duration === '12' && <Badge variant="secondary" className="text-sm">Save ~20%</Badge>}
+                        {duration === '24' && <Badge variant="secondary" className="text-sm">Save ~30%</Badge>}
+                        {duration === '48' && <Badge variant="secondary" className="text-sm">Save ~40%</Badge>}
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                        Savings apply to your first billing period.
+                    </p>
                 </div>
             </div>
         </section>
@@ -340,3 +345,5 @@ export default function PricingPage() {
     </div>
   );
 }
+
+    
