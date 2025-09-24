@@ -145,7 +145,7 @@ export default function HomePage() {
             <p className="text-muted-foreground mb-8">
               Sign up today and take the first step towards a smarter production line.
             </p>
-            <Link href="/login" className={cn(buttonVariants({ size: "lg" }), "w-full sm:w-auto")}>
+            <Link href="/pricing" className={cn(buttonVariants({ size: "lg" }), "w-full sm:w-auto")}>
               Sign Up Now
             </Link>
           </div>
