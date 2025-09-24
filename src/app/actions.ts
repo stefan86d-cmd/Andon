@@ -194,3 +194,35 @@ export async function changePassword(userEmail: string, currentPassword: string,
         return { success: false, error: 'Failed to change password.' };
     }
 }
+
+export async function requestPasswordReset(email: string) {
+    try {
+        // In a real app, you'd check if the user exists and send an email.
+        // For this mock, we'll check if the user exists in our mock data.
+        const user = await getUserByEmail(email);
+        if (!user) {
+            // It's good practice not to reveal if an email exists in the system.
+            console.log(`Password reset requested for non-existent email: ${email} (mock).`);
+            return { success: true, message: 'If an account with this email exists, a password reset link has been sent.' };
+        }
+
+        console.log(`Password reset requested for: ${email} (mock). In a real app, an email would be sent.`);
+        return { success: true, message: 'If an account with this email exists, a password reset link has been sent.' };
+    } catch (e: any) {
+        console.error('Error requesting password reset:', e);
+        // Don't reveal specific errors to the user.
+        return { success: true, message: 'If an account with this email exists, a password reset link has been sent.' };
+    }
+}
+
+export async function resetPassword(token: string, newPassword: string) {
+    // In a real app, you would validate the token before resetting the password.
+    // For this mock, we'll assume the token is always valid.
+    try {
+        console.log(`Password has been reset successfully (mock).`);
+        return { success: true, message: 'Your password has been reset successfully.' };
+    } catch (e: any) {
+        console.error('Error resetting password:', e);
+        return { success: false, error: 'Failed to reset password.' };
+    }
+}

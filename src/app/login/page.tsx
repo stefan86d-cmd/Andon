@@ -18,6 +18,7 @@ import { useUser } from '@/contexts/user-context';
 import { toast } from '@/hooks/use-toast';
 import { LoaderCircle, Database } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
+import Link from 'next/link';
 
 function GoogleIcon() {
   return (
@@ -125,6 +126,11 @@ export default function LoginPage() {
               <div className="grid gap-2">
                 <div className="flex items-center">
                   <Label htmlFor="password">Password</Label>
+                  <Link href="/forgot-password" passHref>
+                    <span className="ml-auto inline-block text-sm underline cursor-pointer">
+                      Forgot password?
+                    </span>
+                  </Link>
                 </div>
                 <Input 
                     id="password" 
