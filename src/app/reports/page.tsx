@@ -283,7 +283,7 @@ export default function ReportsPage() {
                         <Button variant="outline" size="sm" className="gap-1">
                             <ListFilter className="h-4 w-4" />
                             <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                            Filter Lines
+                            Lines
                             </span>
                         </Button>
                         </DropdownMenuTrigger>
@@ -395,3 +395,5 @@ export default function ReportsPage() {
     </AppLayout>
   );
 }
+
+    
