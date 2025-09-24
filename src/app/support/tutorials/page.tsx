@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { MegaMenu } from "@/components/layout/mega-menu";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { buttonVariants } from "@/components/ui/button";
+import { Construction } from "lucide-react";
 import FooterLogo from "@/components/layout/footer-logo";
 
 const servicesMenuItems = [
@@ -70,10 +71,23 @@ export default function TutorialsPage() {
       </header>
 
       <main className="flex-1">
-        <div className="container py-20">
-          <h1 className="text-4xl font-bold mb-4">Tutorials</h1>
-          <p className="text-muted-foreground">Explore step-by-step guides to get the most out of AndonPro.</p>
-        </div>
+        <section className="py-20 text-center bg-background">
+            <div className="container">
+                <h1 className="text-4xl font-bold mb-4">Tutorials</h1>
+                <p className="text-muted-foreground max-w-2xl mx-auto">Explore step-by-step guides to get the most out of AndonPro.</p>
+            </div>
+        </section>
+        <section className="py-20 bg-muted flex-1">
+            <div className="container text-center">
+                <div className="max-w-md mx-auto">
+                    <Construction className="h-16 w-16 mx-auto text-primary mb-4" />
+                    <h2 className="text-2xl font-semibold mb-2">Coming Soon!</h2>
+                    <p className="text-muted-foreground">
+                        We are busy creating helpful tutorials and step-by-step guides for you. Please check back soon!
+                    </p>
+                </div>
+            </div>
+        </section>
       </main>
       <footer className="bg-gray-800 text-gray-300">
         <div className="container py-8">
