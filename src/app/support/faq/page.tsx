@@ -37,6 +37,10 @@ const faqs = [
         answer: "AndonPro is a modern, intuitive application designed to monitor and manage production line workflows. It allows operators to report issues in real-time from any workstation, which helps teams minimize downtime and improve overall efficiency. Supervisors and administrators get a live overview of the entire production line, can track key performance indicators, and use AI-powered insights to make data-driven decisions."
     },
     {
+        question: "What are the different user roles?",
+        answer: "AndonPro has three distinct user roles to ensure that team members have access to the features they need: <ul class='list-disc pl-5 space-y-2 mt-2'><li><strong>Admin:</strong> Has full control over the entire system, including user management, production line configuration, billing, and access to all reports and dashboards.</li><li><strong>Supervisor:</strong> Oversees production line operations. They can manage and resolve issues, monitor dashboards, and view reports, but cannot manage users or billing.</li><li><strong>Operator:</strong> Works on the production line. Their primary function is to report issues from their assigned workstation quickly and efficiently.</li></ul>"
+    },
+    {
         question: "How do I sign up for AndonPro?",
         answer: "You can sign up using your existing Google or Microsoft account for a fast and secure registration process. Alternatively, you can register directly with your email address and create a new password. Simply choose your preferred option on the registration page to get started."
     },
