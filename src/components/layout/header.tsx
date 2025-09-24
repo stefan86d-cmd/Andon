@@ -1,7 +1,7 @@
 
 "use client";
 
-import { Bell, Menu } from "lucide-react";
+import { Bell, Menu, SpeakerOff, Volume2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UserNav } from "@/components/layout/user-nav";
 import Link from "next/link";
@@ -11,9 +11,10 @@ import { useUser } from "@/contexts/user-context";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { getIssues } from "@/lib/data";
 import type { Issue } from "@/lib/types";
 import { Badge } from "../ui/badge";
@@ -21,26 +22,46 @@ import { Badge } from "../ui/badge";
 export function Header() {
   const { currentUser } = useUser();
   const [newIssuesCount, setNewIssuesCount] = useState(0);
+  const [isMuted, setIsMuted] = useState(true);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const prevIssuesCountRef = useRef(newIssuesCount);
 
   useEffect(() => {
+    const muted = localStorage.getItem('notificationMuted') === 'true';
+    setIsMuted(muted);
+  }, []);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      if (!audioRef.current) {
+        audioRef.current = new Audio('/audio/notification.mp3');
+      }
+    }
+    
     if (currentUser?.role === 'admin' || currentUser?.role === 'supervisor') {
       const calculateNewIssues = async () => {
         const issues = await getIssues();
         const lastSeenTimestamp = localStorage.getItem('lastSeenIssueTimestamp');
         
+        let newCount;
         if (!lastSeenTimestamp) {
-          setNewIssuesCount(issues.filter(i => i.status === 'reported' || i.status === 'in_progress').length);
+          newCount = issues.filter(i => i.status === 'reported' || i.status === 'in_progress').length;
         } else {
-          const newCount = issues.filter(issue => 
+          newCount = issues.filter(issue => 
             new Date(issue.reportedAt).getTime() > parseInt(lastSeenTimestamp, 10)
           ).length;
-          setNewIssuesCount(newCount);
         }
+
+        if (newCount > prevIssuesCountRef.current && !isMuted && audioRef.current) {
+            audioRef.current.play().catch(e => console.error("Audio play failed", e));
+        }
+
+        setNewIssuesCount(newCount);
+        prevIssuesCountRef.current = newCount;
       };
 
       calculateNewIssues();
 
-      // Listen for storage changes from other tabs
       const handleStorageChange = (event: StorageEvent) => {
         if (event.key === 'lastSeenIssueTimestamp') {
           calculateNewIssues();
@@ -48,17 +69,20 @@ export function Header() {
       };
       
       window.addEventListener('storage', handleStorageChange);
-
-      // Poll for new issues as a simple real-time mechanism
-      const interval = setInterval(calculateNewIssues, 30000); // Check every 30 seconds
+      const interval = setInterval(calculateNewIssues, 30000); 
 
       return () => {
         clearInterval(interval);
         window.removeEventListener('storage', handleStorageChange);
       };
     }
-  }, [currentUser]);
-
+  }, [currentUser, isMuted]);
+  
+  const toggleMute = () => {
+    const newMutedState = !isMuted;
+    setIsMuted(newMutedState);
+    localStorage.setItem('notificationMuted', String(newMutedState));
+  }
 
   const capitalize = (s: string) => {
     if (typeof s !== 'string') return ''
@@ -84,8 +108,9 @@ export function Header() {
       <div className="w-full flex-1" />
 
       {currentUser && currentUser.role !== 'operator' && (
-        <Button asChild variant="ghost" size="icon" className="relative">
-            <Link href="/issues">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" className="relative">
                 <Bell className="h-5 w-5" />
                 <span className="sr-only">Toggle notifications</span>
                 {newIssuesCount > 0 && (
@@ -93,8 +118,24 @@ export function Header() {
                         {newIssuesCount}
                     </Badge>
                 )}
-            </Link>
-        </Button>
+            </Button>
+          </DropdownMenuTrigger>
+           <DropdownMenuContent align="end">
+            <DropdownMenuItem asChild>
+                <Link href="/issues">
+                    View Issues
+                </Link>
+            </DropdownMenuItem>
+             <DropdownMenuItem onClick={toggleMute}>
+                {isMuted ? (
+                    <Volume2 className="mr-2 h-4 w-4" />
+                ) : (
+                    <SpeakerOff className="mr-2 h-4 w-4" />
+                )}
+                <span>{isMuted ? 'Unmute' : 'Mute'}</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       )}
       {currentUser && (
         <div className="flex items-center gap-2">
