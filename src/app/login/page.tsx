@@ -124,14 +124,7 @@ export default function LoginPage() {
                 />
               </div>
               <div className="grid gap-2">
-                <div className="flex items-center">
-                  <Label htmlFor="password">Password</Label>
-                  <Link href="/forgot-password" passHref>
-                    <span className="ml-auto inline-block text-sm underline cursor-pointer">
-                      Forgot password?
-                    </span>
-                  </Link>
-                </div>
+                <Label htmlFor="password">Password</Label>
                 <Input 
                     id="password" 
                     type="password"
@@ -148,14 +141,34 @@ export default function LoginPage() {
               </Button>
             </div>
           </form>
+          
+          <div className="mt-4 text-center text-sm">
+            <Link href="/forgot-password" passHref>
+              <span className="underline cursor-pointer">
+                Forgot password?
+              </span>
+            </Link>
+          </div>
+
           <div className="relative my-4">
             <Separator />
             <span className="absolute left-1/2 -translate-x-1/2 -top-2.5 bg-background px-2 text-xs text-muted-foreground">OR</span>
           </div>
+
            <Button variant="outline" className="w-full" disabled={true}>
               <GoogleIcon />
               Sign in with Google (Disabled)
             </Button>
+            
+          <div className="mt-4 text-center text-sm">
+            Don't have an account?{' '}
+            <Link href="/register" passHref>
+                <span className="underline cursor-pointer">
+                    Sign up
+                </span>
+            </Link>
+          </div>
+
         </CardContent>
       </Card>
     </div>
