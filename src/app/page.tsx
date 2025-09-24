@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { MegaMenu } from "@/components/layout/mega-menu";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import FooterLogo from "@/components/layout/footer-logo";
+import Image from "next/image";
 
 const features = [
   {
@@ -97,12 +98,23 @@ export default function HomePage() {
 
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="py-20 md:py-32">
-          <div className="container text-center">
+        <section className="relative py-20 md:py-32 text-white">
+            <div className="absolute inset-0">
+                <Image
+                src="/Production.jpg"
+                alt="Factory production line"
+                fill
+                className="object-cover"
+                data-ai-hint="production factory"
+                priority
+                />
+                <div className="absolute inset-0 bg-black/60" />
+            </div>
+          <div className="container text-center relative z-10">
             <h1 className="text-4xl md:text-6xl font-bold tracking-tighter mb-6">
               Empower Your Production Line
             </h1>
-            <p className="max-w-2xl mx-auto text-lg text-muted-foreground mb-8">
+            <p className="max-w-2xl mx-auto text-lg text-gray-200 mb-8">
               AndonPro is the modern solution to monitor workflow, report issues instantly, and minimize downtime with AI-powered insights.
             </p>
             <Link href="/login" className={cn(buttonVariants({ size: "lg" }))}>
