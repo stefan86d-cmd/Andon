@@ -74,7 +74,7 @@ export default function AnalyticsReportingPage() {
       <main className="flex-1">
         <section className="container pt-20 pb-10 text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">Analytics & Reporting</h1>
-          <p className="text-lg text-muted-foreground max-w-3xl mx-auto">Gain insights into your production efficiency with powerful data visualization and AI-driven analysis.</p>
+          <p className="text-lg text-muted-foreground max-w-3xl mx-auto">Gain insights into your production efficiency with powerful data visualization and flexible data exports.</p>
         </section>
 
         <section className="container text-center pb-20">
@@ -91,7 +91,7 @@ export default function AnalyticsReportingPage() {
             <div className="container text-center">
                 <h2 className="text-3xl font-bold mb-6">What is Analytics & Reporting?</h2>
                 <p className="max-w-3xl mx-auto text-muted-foreground mb-8">
-                    Data is useless without understanding. AndonPro’s Analytics & Reporting tools transform raw data from your production line into actionable insights. Track key performance indicators (KPIs), visualize downtime by cause, identify recurring bottlenecks, and measure team response times. Our AI helps you spot trends and correlations you might otherwise miss, enabling you to make data-driven decisions for continuous improvement.
+                    Data is useless without understanding. AndonPro’s Analytics & Reporting tools transform raw data from your production line into actionable insights. Track key performance indicators (KPIs), visualize downtime, and identify recurring bottlenecks, all within our interactive dashboard. For deeper analysis, you can easily export your filtered data to a CSV file and open it in your favorite spreadsheet software like Excel or Google Sheets, enabling truly custom reporting.
                 </p>
                 <Link href="/pricing" className={cn(buttonVariants({ size: "lg" }))}>
                     Explore Pricing Options <ArrowRight className="ml-2 h-5 w-5" />
