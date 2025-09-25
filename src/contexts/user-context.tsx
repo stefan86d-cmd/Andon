@@ -51,6 +51,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
   }, [auth, firestore]);
 
   const login = async (email: string, password: string) => {
+    // This function now only handles the sign-in attempt.
+    // The onAuthStateChanged listener will handle the state update and profile fetching.
     await signInWithEmailAndPassword(auth, email, password);
   };
 

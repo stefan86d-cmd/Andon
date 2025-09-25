@@ -69,14 +69,6 @@ export default function LoginPage() {
   const router = useRouter();
   const { currentUser, loading, login } = useUser();
 
-  useEffect(() => {
-    if (!loading && currentUser) {
-      const path = currentUser.role === 'operator' ? '/line-status' : '/dashboard';
-      router.replace(path);
-    }
-  }, [currentUser, loading, router]);
-
-
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     startLoginTransition(async () => {
@@ -84,15 +76,13 @@ export default function LoginPage() {
         await login(email, password);
         toast({
           title: "Login Successful",
-          description: `Welcome back!`,
+          description: `Welcome back! Redirecting...`,
         });
-        // The useEffect hook will handle redirection.
-
+        // Redirection is now handled by AppLayout
       } catch (error: any) {
         console.error("Login Error:", error);
         let description = "An unexpected error occurred.";
         
-        // This is where you can check for over-limit errors after other auth errors
         if (error.message === 'ACCOUNT_OVER_LIMIT') {
             description = "Account user limit reached. Please contact an administrator.";
         } else if (error.code) {
