@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { 
     getAllUsers as getAllUsersFromData,
 } from "@/lib/data";
-import type { Role, User, UserRef } from "@/lib/types";
+import type { Plan, Role, User, UserRef } from "@/lib/types";
 import { getFirestore, doc, setDoc, deleteDoc, updateDoc, addDoc, collection, Timestamp, writeBatch, query, where, getDocs } from 'firebase/firestore';
 import { initializeFirebase } from '@/firebase/server-init';
 import { handleFirestoreError } from '@/lib/firestore-helpers';
@@ -181,6 +181,27 @@ export async function editUser(uid: string, data: { firstName: string, lastName:
         return { success: false, error: 'Failed to update user data.' };
     }
 }
+
+export async function updateUserPlan(uid: string, newPlan: Plan) {
+    const { firestore } = initializeFirebase();
+    const userRef = doc(firestore, "users", uid);
+
+    try {
+        await updateDoc(userRef, { plan: newPlan });
+        revalidatePath('/settings');
+        revalidatePath('/users');
+        revalidatePath('/lines');
+        return { success: true, message: `Plan updated to ${newPlan}.` };
+    } catch (error) {
+        handleFirestoreError(error, {
+            operation: 'update',
+            path: userRef.path,
+            requestResourceData: { plan: newPlan },
+        });
+        return { success: false, error: 'Failed to update plan.' };
+    }
+}
+
 
 export async function updateIssue(issueId: string, data: {
     status: 'in_progress' | 'resolved',

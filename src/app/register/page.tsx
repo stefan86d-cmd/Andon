@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { Suspense, useState, useEffect } from 'react';
+import React, { Suspense, useState, useEffect, useTransition } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -33,8 +33,9 @@ import {
 } from "@/components/ui/select";
 import { useAuth } from '@/firebase';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { addUser } from '@/app/actions';
+import { addUser, updateUserPlan } from '@/app/actions';
 import { countries } from '@/lib/countries';
+import type { Plan } from '@/lib/types';
 
 const registerFormSchema = z.object({
   firstName: z.string().min(1, "First name is required."),
@@ -149,13 +150,14 @@ function MicrosoftIcon() {
 function RegisterContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { currentUser, login, signInWithGoogle, signInWithMicrosoft } = useUser();
+  const { currentUser, login, signInWithGoogle, signInWithMicrosoft, updateCurrentUser } = useUser();
   const auth = useAuth();
 
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [isMicrosoftLoading, setIsMicrosoftLoading] = useState(false);
-  
+  const [isSubmitting, startTransition] = useTransition();
+
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerFormSchema),
     defaultValues: {
@@ -170,12 +172,21 @@ function RegisterContent() {
     },
   });
 
-  const [selectedPlan, setSelectedPlan] = useState(searchParams.get('plan') || 'standard');
+  const [selectedPlan, setSelectedPlan] = useState<Plan>(searchParams.get('plan') as Plan || 'standard');
   const [selectedDuration, setSelectedDuration] = useState(searchParams.get('duration') || '12');
   const [selectedCurrency, setSelectedCurrency] = useState<Currency>(searchParams.get('currency') as Currency || 'usd');
   
   const selectedTier = tiers[selectedPlan];
   const isFreePlan = selectedPlan === 'starter';
+
+  // State for plan change UI
+  const [newPlan, setNewPlan] = useState<Plan | undefined>();
+
+  useEffect(() => {
+    if (currentUser) {
+      setNewPlan(Object.keys(tiers).find(p => p !== currentUser.plan) as Plan);
+    }
+  }, [currentUser]);
 
   const handleRegistration = async (data: RegisterFormValues) => {
     setIsLoading(true);
@@ -281,18 +292,67 @@ function RegisterContent() {
     }
   };
   
+  const handlePlanUpgrade = () => {
+    if (!currentUser || !newPlan) return;
+
+    startTransition(async () => {
+      const result = await updateUserPlan(currentUser.id, newPlan);
+      if (result.success) {
+        toast({
+          title: "Plan Updated!",
+          description: `Your plan has been successfully updated to ${newPlan}.`,
+        });
+        updateCurrentUser({ ...currentUser, plan: newPlan });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Update Failed",
+          description: result.error || "Could not update your plan.",
+        });
+      }
+    });
+  }
+
   if (currentUser) {
+    const availablePlans = Object.keys(tiers).filter(p => p !== currentUser.plan) as Plan[];
     // If the user is already logged in, this page becomes a plan upgrade page.
     return (
       <div className="container mx-auto flex min-h-screen items-center justify-center py-12">
         <Card className="w-full max-w-md">
           <CardHeader>
             <CardTitle>Change Your Plan</CardTitle>
-            <CardDescription>You are currently on the {currentUser.plan} plan.</CardDescription>
+            <CardDescription>
+              You are currently on the{' '}
+              <span className="font-semibold capitalize">{currentUser.plan}</span> plan.
+            </CardDescription>
           </CardHeader>
-          <CardContent>
-            <p>This is where the plan upgrade UI would go. For now, please log out to register a new account.</p>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="new-plan">Select New Plan</Label>
+              <Select value={newPlan} onValueChange={(value) => setNewPlan(value as Plan)}>
+                  <SelectTrigger id="new-plan">
+                      <SelectValue placeholder="Choose a plan to upgrade to" />
+                  </SelectTrigger>
+                  <SelectContent>
+                      {availablePlans.map(p => (
+                          <SelectItem key={p} value={p} className="capitalize">{p}</SelectItem>
+                      ))}
+                  </SelectContent>
+              </Select>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Billing changes will apply on your next cycle.
+            </p>
           </CardContent>
+          <CardFooter className="flex flex-col gap-4">
+            <Button onClick={handlePlanUpgrade} className="w-full" disabled={isSubmitting || !newPlan}>
+              {isSubmitting && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
+              Upgrade to {newPlan ? newPlan.charAt(0).toUpperCase() + newPlan.slice(1) : '...'}
+            </Button>
+            <Button variant="ghost" asChild>
+                <Link href="/dashboard">Back to Dashboard</Link>
+            </Button>
+          </CardFooter>
         </Card>
       </div>
     )
@@ -482,13 +542,13 @@ function RegisterContent() {
                         <div className="space-y-2">
                             <div className="flex justify-between items-center">
                                 <Label>Plan</Label>
-                                 <Select value={selectedPlan} onValueChange={setSelectedPlan}>
+                                 <Select value={selectedPlan} onValueChange={(value) => setSelectedPlan(value as Plan)}>
                                     <SelectTrigger className="w-[180px]">
                                         <SelectValue placeholder="Select plan" />
                                     </SelectTrigger>
                                     <SelectContent>
                                         {Object.keys(tiers).map(key => (
-                                            <SelectItem key={key} value={key}>{tiers[key].name}</SelectItem>
+                                            <SelectItem key={key} value={key} className="capitalize">{tiers[key].name}</SelectItem>
                                         ))}
                                     </SelectContent>
                                 </Select>
@@ -525,3 +585,5 @@ export default function RegisterPage() {
         </Suspense>
     )
 }
+
+    
