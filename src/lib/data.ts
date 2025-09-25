@@ -1,51 +1,20 @@
 
-import type { User, Issue, ProductionLine, Role, IssueCategory, Plan } from "@/lib/types";
+import type { User, Issue, ProductionLine, Role, IssueCategory, Plan, IssueDocument, UserRef } from "@/lib/types";
 import { format, subDays, subHours } from "date-fns";
-import { getFirestore, getDocs, collection, query, where, doc, getDoc } from 'firebase/firestore';
+import { getFirestore, getDocs, collection, query, where, doc, getDoc, addDoc, updateDoc, deleteDoc, Timestamp, orderBy, writeBatch } from 'firebase/firestore';
 import { initializeFirebase } from "@/firebase";
 
-// --- MOCK DATA ---
-// This section contains mock data used for development and will be phased out.
-
-let mockProductionLines: ProductionLine[] = [
-    { id: 'line-1', name: 'Assembly Line 1', workstations: ['Station A', 'Station B', 'QA'] },
-    { id: 'line-2', name: 'Packaging Line Alpha', workstations: ['Wrapper', 'Boxer', 'Palletizer'] },
-];
-
-let mockUsers: User[] = []; // Users will now be fetched from Firestore
-
-let mockIssues: Issue[] = []; // This will be replaced by Firestore data soon.
-
-
-// --- Production Lines ---
+// --- Production Lines (Firestore Implementation) ---
 
 export async function getProductionLines(): Promise<ProductionLine[]> {
-    // This still uses mock data. Will be migrated later.
-    return Promise.resolve(mockProductionLines);
+    const { firestore } = initializeFirebase();
+    const linesCollection = collection(firestore, "productionLines");
+    const linesSnapshot = await getDocs(linesCollection);
+    const linesList = linesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as ProductionLine));
+    return linesList;
 }
 
-export async function addProductionLine(lineData: { name: string }) {
-    const newLine: ProductionLine = {
-        id: `line-${Date.now()}`,
-        name: lineData.name,
-        workstations: [],
-    };
-    mockProductionLines.push(newLine);
-    return Promise.resolve();
-}
-
-export async function updateProductionLine(lineId: string, updatedData: Partial<Omit<ProductionLine, 'id'>>) {
-    mockProductionLines = mockProductionLines.map(line => 
-        line.id === lineId ? { ...line, ...updatedData } as ProductionLine : line
-    );
-    return Promise.resolve();
-}
-
-export async function deleteProductionLine(lineId: string) {
-    mockProductionLines = mockProductionLines.filter(line => line.id !== lineId);
-    return Promise.resolve();
-}
-
+// addProductionLine, updateProductionLine, deleteProductionLine are handled by server actions
 
 // --- Users (Firestore Implementation) ---
 
@@ -79,66 +48,56 @@ export async function getUserById(uid: string): Promise<User | null> {
     return { id: userDoc.id, ...userDoc.data() } as User;
 }
 
-// These functions below are now delegating to server actions, but the core logic
-// of adding/updating/deleting is now in actions.ts. These mock functions can be removed later.
-export async function addUserToData(data: Omit<User, 'id'> & { uid: string }) {
-     // This function's logic is now in actions.ts to use server-side capabilities
-    return Promise.resolve();
+// --- Issues (Firestore Implementation) ---
+
+const issueDocToIssue = async (docSnap: DocumentData): Promise<Issue> => {
+    const docData = docSnap.data() as IssueDocument;
+    
+    // Convert Firestore Timestamps to JS Date objects
+    const reportedAt = (docData.reportedAt as unknown as Timestamp)?.toDate();
+    const resolvedAt = (docData.resolvedAt as unknown as Timestamp)?.toDate();
+
+    // Fetch full user objects from user references
+    const reportedBy = await getUserByEmail(docData.reportedBy.email);
+    let resolvedBy = null;
+    if (docData.resolvedBy) {
+        resolvedBy = await getUserByEmail(docData.resolvedBy.email);
+    }
+    
+    if (!reportedBy) {
+        throw new Error(`Could not find user with email ${docData.reportedBy.email}`);
+    }
+
+    return {
+        ...docData,
+        id: docSnap.id,
+        reportedAt,
+        resolvedAt,
+        reportedBy,
+        resolvedBy,
+    } as Issue;
 }
 
-export async function deleteUserData(userId: string) {
-     // This function's logic is now in actions.ts
-    return Promise.resolve();
-}
-
-export async function updateUserInDb(userId: string, data: any) {
-    // This function's logic is now in actions.ts
-    return Promise.resolve();
-}
-
-
-// --- Issues (Still Mocked) ---
 
 export async function getIssues(): Promise<Issue[]> {
-    // Sort by date descending, like the original query
-    const sortedIssues = [...mockIssues].sort((a, b) => b.reportedAt.getTime() - a.reportedAt.getTime());
-    return Promise.resolve(sortedIssues);
+    const { firestore } = initializeFirebase();
+    const issuesCollection = collection(firestore, "issues");
+    const q = query(issuesCollection, orderBy("reportedAt", "desc"));
+    const issuesSnapshot = await getDocs(q);
+
+    const issuesPromises = issuesSnapshot.docs.map(doc => issueDocToIssue(doc));
+    const issuesList = await Promise.all(issuesPromises);
+    
+    return issuesList;
 }
 
 
 export async function getIssueById(id: string): Promise<Issue | null> {
-    const issue = mockIssues.find(i => i.id === id);
-    return Promise.resolve(issue || null);
-}
-
-export async function addIssueToData(issueData: Omit<Issue, 'id' | 'reportedAt' | 'reportedBy' | 'status' | 'productionStopped'>, currentUser: User) {
-    if (!currentUser) {
-        throw new Error("Cannot report issue without a logged in user.");
+    const { firestore } = initializeFirebase();
+    const issueDocRef = doc(firestore, 'issues', id);
+    const issueDoc = await getDoc(issueDocRef);
+    if (!issueDoc.exists()) {
+        return null;
     }
-    
-    const newIssue: Issue = {
-        id: `issue-${Date.now()}`,
-        ...issueData,
-        reportedAt: new Date(),
-        status: 'reported',
-        category: issueData.category as IssueCategory,
-        reportedBy: currentUser,
-        subCategory: issueData.subCategory || "",
-        productionStopped: false,
-        itemNumber: issueData.itemNumber || "",
-        quantity: issueData.quantity || undefined,
-        resolutionNotes: "",
-        resolvedAt: undefined,
-        resolvedBy: undefined,
-    };
-
-    mockIssues.push(newIssue);
-    return Promise.resolve();
-}
-
-export async function updateIssueInData(issueId: string, data: Partial<Omit<Issue, 'id'>>) {
-    mockIssues = mockIssues.map(issue => 
-        issue.id === issueId ? { ...issue, ...data } as Issue : issue
-    );
-    return Promise.resolve();
+    return await issueDocToIssue(issueDoc);
 }

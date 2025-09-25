@@ -3,29 +3,41 @@
 
 import { revalidatePath } from 'next/cache';
 import { 
-    addIssue as addIssueToData, 
-    updateIssue as updateIssueInData,
-    addProductionLine as addProductionLineToData, 
-    updateProductionLine as updateProductionLineInData, 
-    deleteProductionLine as deleteLine, 
     getUserByEmail,
     getAllUsers as getAllUsersFromData,
 } from "@/lib/data";
-import type { Issue, Role, User } from "@/lib/types";
-import { getFirestore, doc, setDoc, deleteDoc, updateDoc } from 'firebase/firestore';
+import type { Issue, Role, User, IssueCategory, UserRef } from "@/lib/types";
+import { getFirestore, doc, setDoc, deleteDoc, updateDoc, addDoc, collection, Timestamp, writeBatch } from 'firebase/firestore';
 import { initializeFirebase } from '@/firebase';
 import { handleFirestoreError } from '@/lib/firestore-helpers';
 
-// Mock implementation as Firebase Admin is disabled.
-
-export async function reportIssue(issueData: Omit<Issue, 'id' | 'reportedAt' | 'reportedBy' | 'status' | 'productionStopped' | 'description'>, reportedByEmail: string) {
+export async function reportIssue(issueData: Omit<Issue, 'id' | 'reportedAt' | 'reportedBy' | 'status'>, reportedByEmail: string) {
     try {
         const reportedByUser = await getUserByEmail(reportedByEmail);
         if (!reportedByUser) {
             return { error: "Could not find current user."};
         }
 
-        await addIssueToData({ ...issueData }, reportedByUser);
+        const userRef: UserRef = {
+            email: reportedByUser.email,
+            name: reportedByUser.name,
+            avatarUrl: reportedByUser.avatarUrl || '',
+        };
+        
+        const newIssueDoc = {
+            ...issueData,
+            reportedAt: Timestamp.now(),
+            status: 'reported',
+            reportedBy: userRef,
+            productionStopped: false, // Default value
+            resolutionNotes: "",
+            resolvedAt: null,
+            resolvedBy: null,
+        }
+        
+        const { firestore } = initializeFirebase();
+        await addDoc(collection(firestore, "issues"), newIssueDoc);
+
         revalidatePath('/dashboard');
         revalidatePath('/issues');
         revalidatePath('/line-status');
@@ -37,36 +49,57 @@ export async function reportIssue(issueData: Omit<Issue, 'id' | 'reportedAt' | '
 }
 
 export async function createProductionLine(name: string) {
+    const { firestore } = initializeFirebase();
+    const newLine = { name, workstations: [] };
+    const linesCollection = collection(firestore, "productionLines");
+
     try {
-        await addProductionLineToData({ name });
+        await addDoc(linesCollection, newLine);
         revalidatePath('/lines');
         revalidatePath('/dashboard');
         return { success: true };
     } catch (e: any) {
-        console.error(e);
+        handleFirestoreError(e, {
+            operation: 'create',
+            path: linesCollection.path,
+            requestResourceData: newLine,
+        });
         return { error: e.message || "Failed to create production line." };
     }
 }
 
 export async function editProductionLine(lineId: string, data: { name: string, workstations: { value: string }[] }) {
+    const { firestore } = initializeFirebase();
+    const lineRef = doc(firestore, "productionLines", lineId);
+    
     try {
         const workstationNames = data.workstations.map(ws => ws.value);
-        await updateProductionLineInData(lineId, { name: data.name, workstations: workstationNames });
+        const updatedData = { name: data.name, workstations: workstationNames };
+        await updateDoc(lineRef, updatedData);
         revalidatePath('/lines');
         return { success: true };
     } catch (e: any) {
-        console.error(e);
+        handleFirestoreError(e, {
+            operation: 'update',
+            path: lineRef.path,
+            requestResourceData: data,
+        });
         return { error: e.message || "Failed to update production line." };
     }
 }
 
 export async function deleteProductionLine(lineId: string) {
+    const { firestore } = initializeFirebase();
+    const lineRef = doc(firestore, "productionLines", lineId);
     try {
-        await deleteLine(lineId);
+        await deleteDoc(lineRef);
         revalidatePath('/lines');
         return { success: true };
     } catch (e: any) {
-        console.error(e);
+        handleFirestoreError(e, {
+            operation: 'delete',
+            path: lineRef.path,
+        });
         return { error: e.message || "Failed to delete production line." };
     }
 }
@@ -148,20 +181,42 @@ export async function updateIssue(issueId: string, data: {
          if (!resolvedByUser) {
             return { error: "Could not find resolving user." };
         }
+        
+        const userRef: UserRef = {
+            email: resolvedByUser.email,
+            name: resolvedByUser.name,
+            avatarUrl: resolvedByUser.avatarUrl || '',
+        };
        
-        await updateIssueInData(issueId, { ...data, resolvedBy: resolvedByUser });
+        const { firestore } = initializeFirebase();
+        const issueRef = doc(firestore, "issues", issueId);
 
+        const updatedData: any = {
+            ...data,
+        };
+
+        if (data.status === 'resolved') {
+            updatedData.resolvedAt = Timestamp.now();
+            updatedData.resolvedBy = userRef;
+        }
+
+        await updateDoc(issueRef, updatedData);
 
         revalidatePath('/issues');
         revalidatePath('/dashboard');
         return { success: true };
     } catch (e: any) {
-        console.error(e);
+        handleFirestoreError(e, {
+            operation: 'update',
+            path: `issues/${issueId}`,
+            requestResourceData: data,
+        });
         return { error: e.message || "Failed to update issue." };
     }
 }
 
 export async function seedUsers() {
+    const { firestore } = initializeFirebase();
     const usersToSeed = [
         { id: 'c7TuJzUOWUVt1CALp1jGI1cAmZU2', name: 'Alex Johnson', email: 'alex.j@andon.io', role: 'admin' as Role, plan: 'standard' as const, avatarUrl: '' },
         { id: 'dQhiONEA3fTXfd3p6Sa7Z15tGQD3', name: 'Sam Miller', email: 'sam.m@andon.io', role: 'supervisor' as Role, plan: 'pro' as const, avatarUrl: '' },
@@ -172,6 +227,7 @@ export async function seedUsers() {
     let existingCount = 0;
 
     try {
+        const batch = writeBatch(firestore);
         const existingUsers = await getAllUsersFromData();
         const existingEmails = new Set(existingUsers.map(u => u.email));
 
@@ -180,12 +236,13 @@ export async function seedUsers() {
                 existingCount++;
             } else {
                  const { id, ...rest } = userData;
-                 const [firstName, ...lastNameParts] = rest.name.split(' ');
-                 const lastName = lastNameParts.join(' ');
-                 await addUser({ ...rest, firstName, lastName, uid: id });
+                 const userDocRef = doc(firestore, "users", id);
+                 batch.set(userDocRef, rest);
                  createdCount++;
             }
         }
+        
+        await batch.commit();
         revalidatePath('/users');
         return { success: true, message: `Seeding complete. Created: ${createdCount}, Existing: ${existingCount}.` };
     } catch (error: any) {

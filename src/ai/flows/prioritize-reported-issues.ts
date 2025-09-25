@@ -1,4 +1,3 @@
-// Prioritize reported issues based on description.
 
 'use server';
 

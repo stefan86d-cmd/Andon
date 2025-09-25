@@ -5,7 +5,8 @@ import React, { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { reportIssue, prioritizeIssue } from "@/app/actions";
+import { reportIssue } from "@/app/actions";
+import { prioritizeIssue } from "@/ai/flows/prioritize-reported-issues";
 import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
