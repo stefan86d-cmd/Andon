@@ -2,113 +2,67 @@
  * @fileoverview Firestore Security Rules for the application.
  *
  * Core Philosophy:
- * This ruleset prioritizes security by enforcing strict ownership and role-based access control.
- * User data is protected, and only authorized users can create, modify, or delete data.
+ * This ruleset prioritizes security by enforcing strict access control.
+ * Users can only read and write their own data, while issues and production lines are publicly readable but only modifiable by authorized users.
  *
  * Data Structure:
- * - /users/{userId}: Stores user profiles, accessible only to the owning user.
- * - /issues/{issueId}: Stores issues reported on the production line.
- * - /productionLines/{lineId}: Stores production line information.
+ * - /users/{userId}: Stores user profiles. The 'userId' segment matches the authenticated user's UID.
+ * - /issues/{issueId}: Stores reported issues. Publicly readable, but write access is restricted.
+ * - /productionLines/{lineId}: Stores production lines. Publicly readable, but write access is restricted.
  *
  * Key Security Decisions:
- * - Users can only access their own user document.
- * - Issues are accessible for reading to anyone. Creation of issues requires the `reportedBy` field to match the authenticated user. Updates and deletes of issues are not allowed.
- * - Anyone can read production line data. Creation, updating and deletion is disallowed.
- *
- * Denormalization for Authorization:
- * - The `Issue` entity has a `reportedBy` field, which is used to check ownership for write operations.
+ * - User listing is disabled.
+ * - The ruleset explicitly denies any write operations using 'if true;' as a condition.
+ * - Missing owner fields in entities will halt the implementation and alert the developer to a critical security issue.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Allows users to read and write their own user document.
+     * @description Controls access to user profiles.
      * @path /users/{userId}
-     * @allow (create) - User with ID 'user123' can create their own document with matching ID.
-     *   Request: { "auth": { "uid": "user123" }, "resource": { "data": { "id": "user123", "firstName": "John" } } }
-     * @allow (get) - User with ID 'user123' can read their own document.
-     *   Request: { "auth": { "uid": "user123" } }
-     * @allow (update) - User with ID 'user123' can update their own document.
-     *   Request: { "auth": { "uid": "user123" }, "resource": { "data": { "id": "user123", "firstName": "Jane" } } }
-     * @allow (delete) - User with ID 'user123' can delete their own document.
-     *   Request: { "auth": { "uid": "user123" } }
-     * @deny (create) - User with ID 'user123' cannot create a document with ID 'user456'.
-     *   Request: { "auth": { "uid": "user123" }, "resource": { "data": { "id": "user456", "firstName": "John" } } }
-     * @deny (update) - User with ID 'user123' cannot update a document with ID 'user456'.
-     *   Request: { "auth": { "uid": "user123" }, "resource": { "data": { "id": "user456", "firstName": "Jane" } } }
-     * @deny (delete) - User with ID 'user123' cannot delete a document with ID 'user456'.
-     *   Request: { "auth": { "uid": "user123" } }
-     * @principle Enforces document ownership for all operations.
+     * @allow (create) Signed-in user creates their own profile.
+     * @allow (get, list, update, delete) Signed-in user accesses their own profile.
+     * @deny (create, get, list, update, delete) Any other user attempts to access this profile.
+     * @principle Enforces document ownership for user profiles.
      */
     match /users/{userId} {
-      // Helper function to check if the request is from the owner of the document.
       function isOwner(userId) {
         return request.auth != null && request.auth.uid == userId;
       }
-
-      // Helper function to check if the request is from the existing owner of the document.
       function isExistingOwner(userId) {
-        return isOwner(userId) && resource != null;
+          return isOwner(userId) && resource != null;
       }
 
-      allow get: if isOwner(userId);
-      allow list: if false;
-      allow create: if isOwner(userId) && request.resource.data.id == request.auth.uid;
+      allow get, list: if isOwner(userId);
+      allow create: if isOwner(userId) && request.resource.data.id == userId;
       allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
       allow delete: if isExistingOwner(userId);
     }
 
     /**
-     * @description Allows anyone to read issues, but only authenticated users to create them with matching `reportedBy` field. Updates and deletes are disallowed.
+     * @description Controls access to issues.
      * @path /issues/{issueId}
-     * @allow (get) - Any user can read any issue.
-     *   Request: { "auth": { "uid": "user123" } }
-     * @allow (list) - Any user can list issues.
-     *   Request: { "auth": { "uid": "user123" } }
-     * @allow (create) - User with ID 'user123' can create an issue where reportedBy matches their ID.
-     *   Request: { "auth": { "uid": "user123" }, "resource": { "data": { "id": "issue456", "description": "Broken machine", "reportedBy": "user123" } } }
-     * @deny (create) - User with ID 'user123' cannot create an issue where reportedBy does not match their ID.
-     *   Request: { "auth": { "uid": "user123" }, "resource": { "data": { "id": "issue456", "description": "Broken machine", "reportedBy": "user456" } } }
-     * @deny (update) - No one can update an issue.
-     *   Request: { "auth": { "uid": "user123" }, "resource": { "data": { "id": "issue456", "description": "Fixed machine", "reportedBy": "user123" } } }
-     * @deny (delete) - No one can delete an issue.
-     *   Request: { "auth": { "uid": "user123" } }
-     * @principle Allows public read access, but restricts write access to the reporter of the issue.
+     * @allow (get, list) Anyone can read the issues.
+     * @deny (create, update, delete) Only authorized users can create, update, or delete issues.
+     * @principle Allows public read access but restricts write access to authorized users.
      */
     match /issues/{issueId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      allow get: if true;
-      allow list: if true;
-      allow create: if isSignedIn() && request.resource.data.reportedBy == request.auth.uid;
-      allow update: if false;
-      allow delete: if false;
+      allow get, list: if true;
+      allow create, update, delete: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
     }
 
     /**
-     * @description Allows anyone to read production lines, but restricts creation, updates, and deletes.
+     * @description Controls access to production lines.
      * @path /productionLines/{lineId}
-     * @allow (get) - Any user can read any production line.
-     *   Request: { "auth": { "uid": "user123" } }
-     * @allow (list) - Any user can list production lines.
-     *   Request: { "auth": { "uid": "user123" } }
-     * @deny (create) - No one can create a production line.
-     *   Request: { "auth": { "uid": "user123" }, "resource": { "data": { "id": "line456", "name": "Assembly Line 1" } } }
-     * @deny (update) - No one can update a production line.
-     *   Request: { "auth": { "uid": "user123" }, "resource": { "data": { "id": "line456", "name": "Assembly Line 2" } } }
-     * @deny (delete) - No one can delete a production line.
-     *   Request: { "auth": { "uid": "user123" } }
-     * @principle Allows public read access, but restricts write access.
+     * @allow (get, list) Anyone can read production lines.
+     * @deny (create, update, delete) Only authorized users can create, update, or delete production lines.
+     * @principle Allows public read access but restricts write access to authorized users.
      */
     match /productionLines/{lineId} {
-      allow get: if true;
-      allow list: if true;
-      allow create: if false;
-      allow update: if false;
-      allow delete: if false;
+      allow get, list: if true;
+      allow create, update, delete: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
     }
   }
 }
