@@ -144,10 +144,11 @@ function MicrosoftIcon() {
 function RegisterContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { currentUser, login } = useUser();
+  const { currentUser, login, signInWithGoogle } = useUser();
   const auth = useAuth();
 
   const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerFormSchema),
@@ -234,6 +235,26 @@ function RegisterContent() {
       setIsLoading(false);
     }
   };
+
+  const handleGoogleSignIn = async () => {
+    setIsGoogleLoading(true);
+    try {
+        await signInWithGoogle(selectedPlan as any);
+        toast({
+            title: "Registration Successful",
+            description: `Welcome! You're signed up with Google for the ${selectedTier.name} plan.`,
+        });
+        router.push('/dashboard');
+    } catch (error: any) {
+        toast({
+            variant: "destructive",
+            title: "Google Sign-Up Failed",
+            description: error.message || "An unexpected error occurred.",
+        });
+    } finally {
+        setIsGoogleLoading(false);
+    }
+  }
   
   const handlePayment = async (e: React.FormEvent) => {
      e.preventDefault();
@@ -265,8 +286,8 @@ function RegisterContent() {
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
-                    <Button variant="outline" disabled>
-                        <GoogleIcon />
+                    <Button variant="outline" onClick={handleGoogleSignIn} disabled={isLoading || isGoogleLoading}>
+                        {isGoogleLoading ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : <GoogleIcon />}
                         Sign up with Google
                     </Button>
                     <Button variant="outline" disabled>
@@ -306,7 +327,7 @@ function RegisterContent() {
                                     <FormItem>
                                     <FormLabel>Full Name</FormLabel>
                                     <FormControl>
-                                        <Input placeholder="John Doe" {...field} />
+                                        <Input placeholder="John Doe" {...field} disabled={isLoading || isGoogleLoading} />
                                     </FormControl>
                                     <FormMessage />
                                     </FormItem>
@@ -319,7 +340,7 @@ function RegisterContent() {
                                     <FormItem>
                                     <FormLabel>Email</FormLabel>
                                     <FormControl>
-                                        <Input type="email" placeholder="john.d@example.com" {...field} />
+                                        <Input type="email" placeholder="john.d@example.com" {...field} disabled={isLoading || isGoogleLoading} />
                                     </FormControl>
                                     <FormMessage />
                                     </FormItem>
@@ -332,7 +353,7 @@ function RegisterContent() {
                                     <FormItem>
                                     <FormLabel>Password</FormLabel>
                                     <FormControl>
-                                        <Input type="password" {...field} />
+                                        <Input type="password" {...field} disabled={isLoading || isGoogleLoading} />
                                     </FormControl>
                                     <FormMessage />
                                     </FormItem>
@@ -345,7 +366,7 @@ function RegisterContent() {
                                     <FormItem>
                                     <FormLabel>Repeat Password</FormLabel>
                                     <FormControl>
-                                        <Input type="password" {...field} />
+                                        <Input type="password" {...field} disabled={isLoading || isGoogleLoading} />
                                     </FormControl>
                                     <FormMessage />
                                     </FormItem>
@@ -368,7 +389,7 @@ function RegisterContent() {
                                 <div className="space-y-2">
                                     <Label htmlFor="cardNumber">Card Number</Label>
                                     <div className="relative">
-                                        <Input id="cardNumber" placeholder="0000 0000 0000 0000" required />
+                                        <Input id="cardNumber" placeholder="0000 0000 0000 0000" required disabled={isLoading || isGoogleLoading} />
                                         <CreditCard className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                                     </div>
                                 </div>
@@ -376,21 +397,21 @@ function RegisterContent() {
                                     <div className="space-y-2">
                                         <Label htmlFor="expiryDate">Expires</Label>
                                         <div className="relative">
-                                            <Input id="expiryDate" placeholder="MM / YY" required />
+                                            <Input id="expiryDate" placeholder="MM / YY" required disabled={isLoading || isGoogleLoading} />
                                             <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                                         </div>
                                     </div>
                                     <div className="space-y-2">
                                         <Label htmlFor="cvc">CVC</Label>
                                         <div className="relative">
-                                            <Input id="cvc" placeholder="123" required />
+                                            <Input id="cvc" placeholder="123" required disabled={isLoading || isGoogleLoading} />
                                             <Lock className="absolute right-3 top-1.2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                                         </div>
                                     </div>
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="cardName">Name on Card</Label>
-                                    <Input id="cardName" placeholder="John Doe" required />
+                                    <Input id="cardName" placeholder="John Doe" required disabled={isLoading || isGoogleLoading} />
                                 </div>
                             </CardContent>
                         </Card>
@@ -398,7 +419,7 @@ function RegisterContent() {
                      <p className="text-sm text-muted-foreground pt-2">
                         By clicking the button below, you agree to our <Link href="#" className="underline">Terms of Service</Link>.
                     </p>
-                    <Button type="submit" form={mainFormId} className="w-full" disabled={isLoading}>
+                    <Button type="submit" form={mainFormId} className="w-full" disabled={isLoading || isGoogleLoading}>
                         {isLoading && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
                         {isFreePlan ? "Create Account" : (currentUser ? "Confirm Payment" : "Create Account & Pay")}
                     </Button>

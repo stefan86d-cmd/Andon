@@ -3,15 +3,17 @@
 
 import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
-import { onAuthStateChanged, signInWithEmailAndPassword, signOut, type User as FirebaseUser } from "firebase/auth";
+import { onAuthStateChanged, signInWithEmailAndPassword, signOut, type User as FirebaseUser, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { useAuth, useFirestore } from '@/firebase';
-import type { User } from '@/lib/types';
-import { doc, getDoc } from 'firebase/firestore';
+import type { Plan, User } from '@/lib/types';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { addUser } from '@/app/actions';
 
 interface UserContextType {
   currentUser: User | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
+  signInWithGoogle: (plan?: Plan) => Promise<void>;
   logout: () => void;
   updateCurrentUser: (user: User) => void;
 }
@@ -35,10 +37,35 @@ export function UserProvider({ children }: { children: ReactNode }) {
         if (userDoc.exists()) {
           setCurrentUser({ id: userDoc.id, ...userDoc.data() } as User);
         } else {
-          // Handle case where user exists in Firebase Auth but not in our user data
-          console.warn(`User profile not found in Firestore for UID: "${firebaseUser.uid}". This can happen if the registration process was interrupted. Signing user out.`);
-          setCurrentUser(null);
-          await signOut(auth); // Sign out the user
+          // This can happen if a user signs in with Google for the first time
+          // The creation logic is handled in signInWithGoogle, but as a fallback:
+          console.warn(`User profile not found in Firestore for UID: "${firebaseUser.uid}". This can happen if the registration process was interrupted. Attempting to create it now.`);
+          
+          try {
+            const [firstName, ...lastNameParts] = (firebaseUser.displayName || 'New User').split(' ');
+            const lastName = lastNameParts.join(' ');
+            
+            await addUser({
+              uid: firebaseUser.uid,
+              firstName: firstName,
+              lastName: lastName,
+              email: firebaseUser.email!,
+              role: 'admin', // Default role for new sign-ups
+              plan: 'starter' // Default plan
+            });
+
+             const newUserDoc = await getDoc(userDocRef);
+              if (newUserDoc.exists()) {
+                  setCurrentUser({ id: newUserDoc.id, ...newUserDoc.data() } as User);
+              } else {
+                 throw new Error("Failed to create and retrieve user document.");
+              }
+
+          } catch (error) {
+              console.error("Failed to create user document on-the-fly:", error);
+              await signOut(auth); // Sign out if profile creation fails
+              setCurrentUser(null);
+          }
         }
       } else {
         // User is signed out
@@ -51,10 +78,36 @@ export function UserProvider({ children }: { children: ReactNode }) {
   }, [auth, firestore]);
 
   const login = async (email: string, password: string) => {
-    // This function now only handles the sign-in attempt.
-    // The onAuthStateChanged listener will handle the state update and profile fetching.
     await signInWithEmailAndPassword(auth, email, password);
   };
+  
+  const signInWithGoogle = async (plan: Plan = 'starter') => {
+    const provider = new GoogleAuthProvider();
+    const userCredential = await signInWithPopup(auth, provider);
+    const user = userCredential.user;
+
+    const userDocRef = doc(firestore, "users", user.uid);
+    const userDoc = await getDoc(userDocRef);
+
+    if (!userDoc.exists()) {
+      const [firstName, ...lastNameParts] = (user.displayName || 'New User').split(' ');
+      const lastName = lastNameParts.join(' ');
+      
+      const result = await addUser({
+        uid: user.uid,
+        firstName: firstName,
+        lastName: lastName,
+        email: user.email!,
+        role: 'admin',
+        plan: plan,
+      });
+
+      if (!result.success) {
+        throw new Error(result.error || "Could not save user details to database.");
+      }
+    }
+  }
+
 
   const logout = async () => {
     await signOut(auth);
@@ -67,7 +120,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <UserContext.Provider value={{ currentUser, loading, login, logout, updateCurrentUser }}>
+    <UserContext.Provider value={{ currentUser, loading, login, signInWithGoogle, logout, updateCurrentUser }}>
       {children}
     </UserContext.Provider>
   );

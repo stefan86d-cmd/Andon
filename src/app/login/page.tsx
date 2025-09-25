@@ -19,7 +19,6 @@ import { toast } from '@/hooks/use-toast';
 import { LoaderCircle, Database } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
-import { getAllUsers } from '@/lib/data';
 
 function GoogleIcon() {
   return (
@@ -55,19 +54,13 @@ function MicrosoftIcon() {
     )
 }
 
-const planLimits = {
-  starter: { users: 5 },
-  standard: { users: 50 },
-  pro: { users: 150 },
-  enterprise: { users: Infinity },
-};
-
 export default function LoginPage() {
   const [email, setEmail] = useState('maria.g@andon.io');
   const [password, setPassword] = useState('password');
   const [isLoggingIn, startLoginTransition] = useTransition();
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const router = useRouter();
-  const { currentUser, loading, login } = useUser();
+  const { currentUser, loading, login, signInWithGoogle } = useUser();
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -78,7 +71,7 @@ export default function LoginPage() {
           title: "Login Successful",
           description: `Welcome back! Redirecting...`,
         });
-        // Redirection is now handled by AppLayout
+        // Redirection is handled by AppLayout
       } catch (error: any) {
         console.error("Login Error:", error);
         let description = "An unexpected error occurred.";
@@ -108,6 +101,25 @@ export default function LoginPage() {
     });
   };
   
+  const handleGoogleSignIn = async () => {
+    setIsGoogleLoading(true);
+    try {
+        await signInWithGoogle();
+        toast({
+            title: "Login Successful",
+            description: "Welcome! You're signed in with Google.",
+        });
+    } catch (error: any) {
+        toast({
+            variant: "destructive",
+            title: "Google Sign-In Failed",
+            description: error.message || "An unexpected error occurred during Google sign-in.",
+        });
+    } finally {
+        setIsGoogleLoading(false);
+    }
+  }
+
   if (loading || (!loading && currentUser)) {
     return (
         <div className="flex h-screen items-center justify-center">
@@ -141,7 +153,7 @@ export default function LoginPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  disabled={isLoggingIn}
+                  disabled={isLoggingIn || isGoogleLoading}
                 />
               </div>
               <div className="grid gap-2">
@@ -153,10 +165,10 @@ export default function LoginPage() {
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    disabled={isLoggingIn}
+                    disabled={isLoggingIn || isGoogleLoading}
                 />
               </div>
-              <Button type="submit" className="w-full" disabled={isLoggingIn}>
+              <Button type="submit" className="w-full" disabled={isLoggingIn || isGoogleLoading}>
                   {isLoggingIn && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
                   Login
               </Button>
@@ -177,9 +189,9 @@ export default function LoginPage() {
           </div>
 
             <div className="grid grid-cols-1 gap-2">
-                <Button variant="outline" className="w-full" disabled={true}>
-                    <GoogleIcon />
-                    Sign in with Google (Disabled)
+                <Button variant="outline" className="w-full" onClick={handleGoogleSignIn} disabled={isLoggingIn || isGoogleLoading}>
+                    {isGoogleLoading ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : <GoogleIcon />}
+                    Sign in with Google
                 </Button>
                 <Button variant="outline" className="w-full" disabled={true}>
                     <MicrosoftIcon />
