@@ -1,113 +1,106 @@
 /**
- * @fileoverview Firestore Security Rules for the production line issue tracking application.
- *
- * Core Philosophy:
- * This ruleset employs a mixed security model. User profiles are strictly owned by the individual user.
- * Issues and ProductionLines are publicly readable to facilitate application functionality.
- * However, writes to Issues and ProductionLines are restricted to ensure data integrity and prevent unauthorized modifications.
+ * @file Firestore Security Rules
+ * @description This ruleset enforces a combination of ownership and role-based access control for a factory issue tracking application.
  *
  * Data Structure:
- * - /users/{userId}: Stores individual user profiles. Access is restricted to the owning user.
- * - /issues/{issueId}: Stores all reported issues. Publicly readable, but writes are controlled.
- * - /productionLines/{lineId}: Stores production line data. Publicly readable, but writes are controlled.
+ * - /users/{userId}: Stores user profiles. Access is restricted to the owner.
+ * - /issues/{issueId}: Stores reported issues. Public read, owner-only create/update/delete.
+ * - /productionLines/{lineId}: Stores production line information. Public read, owner-only create/update/delete.
  *
  * Key Security Decisions:
- * - User profiles are private and only accessible to the owning user.
- * - Listing of users is disallowed to prevent enumeration.
- * - Issues and ProductionLines are publicly readable to enable core application functionality such as displaying issues and production lines to all users.
- * - Writes to Issues and ProductionLines are only allowed if the reportedBy or assignedTo field matches the authenticated user's ID for Issues. For ProductionLines, writes are disabled until proper authorization can be implemented.
+ * - Users can only read and write their own profile data.
+ * - Issues and ProductionLines are publicly readable, but only authenticated users can create, update, or delete them.
+ * - Ownership of Issues and ProductionLines is based on the `reportedBy`/`id` (for Issue) or `id` (for ProductionLine) field matching the authenticated user's UID.
  *
  * Denormalization for Authorization:
- * - The `Issue` entity contains `reportedBy` and `assignedTo` fields that are used to enforce write access.
- *
- * Structural Segregation:
- * - No structural segregation is used in this version. All issues are stored in a single collection.
+ * - Issues: Enforce that `reportedBy` matches the user's UID on creation.
+ * - ProductionLines: Enforce that `id` matches the user's UID on creation.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Checks if the current user is signed in.
-     */
-    function isSignedIn() {
-      return request.auth != null;
-    }
-
-    /**
-     * @description Checks if the provided userId matches the authenticated user's ID.
-     */
-    function isOwner(userId) {
-      return isSignedIn() && request.auth.uid == userId;
-    }
-
-    /**
-     * @description Checks if the user is the owner and the document exists.
-     */
-    function isExistingOwner(userId) {
-        return isOwner(userId) && resource != null;
-    }
-
-    /***** User Rules *****/
-
-    /**
-     * @description Controls access to user profile documents.
+     * @description Allows users to manage their own profile data.
      * @path /users/{userId}
-     * @allow (create) User with ID 'user123' can create their own profile.
-     * @allow (get) User with ID 'user123' can read their own profile.
-     * @allow (update) User with ID 'user123' can update their own profile.
-     * @allow (delete) User with ID 'user123' can delete their own profile.
-     * @deny (create) User with ID 'user456' cannot create a profile for 'user123'.
-     * @deny (get) User with ID 'user456' cannot read the profile of 'user123'.
+     * @allow (create) User with ID 'user123' can create their profile.
+     * @allow (get) User with ID 'user123' can read their profile.
+     * @allow (update) User with ID 'user123' can update their profile.
+     * @allow (delete) User with ID 'user123' can delete their profile.
+     * @deny (create) User with ID 'user456' cannot create a profile with ID 'user123'.
+     * @deny (get) User with ID 'user456' cannot read the profile of user 'user123'.
+     * @deny (update) User with ID 'user456' cannot update the profile of user 'user123'.
+     * @deny (delete) User with ID 'user456' cannot delete the profile of user 'user123'.
      * @principle Enforces document ownership for all operations.
      */
     match /users/{userId} {
-      allow get: if isOwner(userId);
-      allow list: if false; // Disallow listing all users
+      function isOwner(userId) {
+        return request.auth != null && request.auth.uid == userId;
+      }
 
-      allow create: if isOwner(userId) && request.resource.data.id == userId;
-      allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
-      allow delete: if isExistingOwner(userId);
+      allow get: if isOwner(userId);
+      allow list: if false;
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId) && request.resource.data.id == resource.data.id;
+      allow delete: if isOwner(userId) && resource != null;
     }
 
-    /***** Issue Rules *****/
-
     /**
-     * @description Controls access to issue documents.
+     * @description Allows public reading of issues, but restricts creation, updating, and deletion to the issue reporter.
      * @path /issues/{issueId}
      * @allow (get) Any user can read any issue.
      * @allow (list) Any user can list issues.
-     * @allow (create) A user can create an issue if they are the reporter.
-     * @allow (update) A user can update an issue if they are the reporter or the assignee.
-     * @allow (delete) A user can delete an issue if they are the reporter.
-     * @deny (create) A user cannot create an issue if they are not the reporter.
-     * @deny (update) A user cannot update an issue if they are not the reporter or the assignee.
-     * @deny (delete) A user cannot delete an issue if they are not the reporter.
-     * @principle Allows public read access, but restricts write access to the reporter or assignee.
+     * @allow (create) User with ID 'user123' can create an issue with reportedBy 'user123'.
+     * @allow (update) User with ID 'user123' can update an issue where resource.data.reportedBy == 'user123'.
+     * @allow (delete) User with ID 'user123' can delete an issue where resource.data.reportedBy == 'user123'.
+     * @deny (create) User with ID 'user456' cannot create an issue with reportedBy 'user123'.
+     * @deny (update) User with ID 'user456' cannot update an issue where resource.data.reportedBy == 'user123'.
+     * @deny (delete) User with ID 'user456' cannot delete an issue where resource.data.reportedBy == 'user123'.
+     * @principle Allows public read access but enforces ownership for writes.
      */
     match /issues/{issueId} {
-      allow get, list: if true;
+      function isSignedIn() {
+        return request.auth != null;
+      }
 
+      function isOwner(reportedBy) {
+        return request.auth != null && request.auth.uid == reportedBy;
+      }
+
+      allow get: if true;
+      allow list: if true;
       allow create: if isSignedIn() && request.resource.data.reportedBy == request.auth.uid;
-      allow update: if isSignedIn() && (resource.data.reportedBy == request.auth.uid || resource.data.assignedTo == request.auth.uid) && resource != null;
-      allow delete: if isSignedIn() && resource.data.reportedBy == request.auth.uid  && resource != null;
+      allow update: if isSignedIn() && isOwner(resource.data.reportedBy) && resource != null;
+      allow delete: if isSignedIn() && isOwner(resource.data.reportedBy) && resource != null;
     }
 
-    /***** ProductionLine Rules *****/
-
     /**
-     * @description Controls access to production line documents.
+     * @description Allows public reading of production lines, but restricts creation, updating, and deletion to authenticated users.
      * @path /productionLines/{lineId}
      * @allow (get) Any user can read any production line.
      * @allow (list) Any user can list production lines.
-     * @deny (create) No one can create production lines.
-     * @deny (update) No one can update production lines.
-     * @deny (delete) No one can delete production lines.
-     * @principle Allows public read access, but restricts write access.
+     * @allow (create) User with ID 'user123' can create a production line with ID 'user123'.
+     * @allow (update) User with ID 'user123' can update a production line with ID 'user123'.
+     * @allow (delete) User with ID 'user123' can delete a production line with ID 'user123'.
+     * @deny (create) User with ID 'user456' cannot create a production line with ID 'user123'.
+     * @deny (update) User with ID 'user456' cannot update a production line with ID 'user123'.
+     * @deny (delete) User with ID 'user456' cannot delete a production line with ID 'user123'.
+     * @principle Allows public read access but enforces ownership for writes.
      */
     match /productionLines/{lineId} {
-      allow get, list: if true;
-      allow create, update, delete: if false;
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      function isOwner(lineId) {
+        return request.auth != null && request.auth.uid == lineId;
+      }
+      
+      allow get: if true;
+      allow list: if true;
+      allow create: if isSignedIn() && request.resource.data.id == request.auth.uid;
+      allow update: if isSignedIn() && isOwner(lineId) && resource != null;
+      allow delete: if isSignedIn() && isOwner(lineId) && resource != null;
     }
   }
 }
