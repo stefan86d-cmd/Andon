@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -60,9 +59,7 @@ export default function ReportsPage() {
   });
   const [selectedLines, setSelectedLines] = useState<string[]>([]);
   const [tempSelectedLines, setTempSelectedLines] = useState<string[]>([]);
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [tempSelectedCategories, setTempSelectedCategories] = useState<string[]>([]);
-
+  
   useEffect(() => {
     async function fetchData() {
       setLoading(true);
@@ -81,9 +78,6 @@ export default function ReportsPage() {
     setTempSelectedLines(selectedLines);
   }, [selectedLines]);
   
-  useEffect(() => {
-    setTempSelectedCategories(selectedCategories);
-  }, [selectedCategories]);
 
   const handleLineFilterChange = (lineId: string) => {
     setTempSelectedLines((prev) =>
@@ -93,25 +87,15 @@ export default function ReportsPage() {
     );
   };
   
-  const handleCategoryFilterChange = (categoryId: string) => {
-    setTempSelectedCategories((prev) =>
-      prev.includes(categoryId)
-        ? prev.filter((id) => id !== categoryId)
-        : [...prev, categoryId]
-    );
-  };
 
   const handleFilterConfirm = () => {
     setSelectedLines(tempSelectedLines);
-    setSelectedCategories(tempSelectedCategories);
     setAnalysisResult(null); // Reset analysis on filter change
   };
   
   const handleFilterReset = () => {
     setTempSelectedLines([]);
     setSelectedLines([]);
-    setTempSelectedCategories([]);
-    setSelectedCategories([]);
     setAnalysisResult(null);
   };
   
@@ -125,8 +109,7 @@ export default function ReportsPage() {
       const issueDate = issue.reportedAt;
       const isInDateRange = date?.from && date?.to && issueDate >= startOfDay(date.from) && issueDate <= date.to;
       const isLineSelected = selectedLines.length === 0 || selectedLines.includes(issue.productionLineId);
-      const isCategorySelected = selectedCategories.length === 0 || selectedCategories.includes(issue.category);
-      return isInDateRange && isLineSelected && isCategorySelected;
+      return isInDateRange && isLineSelected;
   });
 
   const handleGenerateAnalysis = async () => {
@@ -325,31 +308,6 @@ export default function ReportsPage() {
                         </DropdownMenuContent>
                     </DropdownMenu>
 
-                     <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="sm" className="gap-1">
-                            <ListFilter className="h-4 w-4" />
-                            <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                            Category
-                            </span>
-                        </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-56">
-                        <DropdownMenuLabel>Filter by category</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        {allCategories.map((category) => (
-                            <DropdownMenuCheckboxItem
-                            key={category.id}
-                            checked={tempSelectedCategories.includes(category.id)}
-                            onCheckedChange={() => handleCategoryFilterChange(category.id)}
-                            onSelect={(e) => e.preventDefault()}
-                            >
-                            {category.label}
-                            </DropdownMenuCheckboxItem>
-                        ))}
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                    
                     <div className="pl-2 border-l flex gap-2">
                         <Button variant="outline" size="sm" onClick={handleFilterReset}>Reset</Button>
                         <Button size="sm" onClick={handleFilterConfirm}>Apply</Button>
@@ -441,5 +399,3 @@ export default function ReportsPage() {
     </AppLayout>
   );
 }
-
-    
