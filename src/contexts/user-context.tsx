@@ -2,8 +2,8 @@
 "use client";
 
 import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
-import type { User } from '@/lib/types';
-import { getUserByEmail } from '@/lib/data';
+import type { User, Plan } from '@/lib/types';
+import { getAllUsers } from '@/lib/data';
 import { useRouter } from 'next/navigation';
 
 interface UserContextType {
@@ -15,6 +15,16 @@ interface UserContextType {
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
+
+// This is a simplified plan limit definition for client-side checks.
+// The source of truth for limits is in the page components like users/page.tsx.
+const planLimits: Record<Plan, { users: number }> = {
+  starter: { users: 5 },
+  standard: { users: 50 },
+  pro: { users: 150 },
+  enterprise: { users: Infinity },
+};
+
 
 // Mock user data for development
 const mockUsersByEmail: { [email: string]: User } = {
@@ -64,15 +74,29 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string) => {
     setLoading(true);
-    const user = mockUsersByEmail[email];
-    if (user) {
-      localStorage.setItem('currentUserEmail', email);
-      setCurrentUser(user);
+    
+    // In a real app, you'd get the admin/account owner's plan.
+    // For this mock, we'll assume the plan of the user logging in represents the account's plan.
+    const userToLogin = mockUsersByEmail[email];
+
+    if (!userToLogin) {
       setLoading(false);
-    } else {
-        setLoading(false);
-        throw new Error("Invalid credentials for mock user.");
+      throw new Error("Invalid credentials for mock user.");
     }
+    
+    const allUsers = await getAllUsers();
+    const totalUsers = allUsers.length;
+    const accountPlan = userToLogin.plan;
+    const userLimit = planLimits[accountPlan].users;
+    
+    if (totalUsers > userLimit && userToLogin.role !== 'admin') {
+        setLoading(false);
+        throw new Error(`The user limit for the '${accountPlan}' plan has been exceeded. Please contact an administrator.`);
+    }
+
+    localStorage.setItem('currentUserEmail', email);
+    setCurrentUser(userToLogin);
+    setLoading(false);
   };
 
   const logout = () => {
