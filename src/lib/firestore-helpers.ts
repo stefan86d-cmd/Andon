@@ -1,5 +1,7 @@
 
-import { errorEmitter, FirestorePermissionError, type SecurityRuleContext } from '@/firebase';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
+
 
 /**
  * A centralized error handler for Firestore write operations.
@@ -17,5 +19,3 @@ export function handleFirestoreError(serverError: any, context: SecurityRuleCont
   // This avoids using console.error and allows a centralized listener to handle it.
   errorEmitter.emit('permission-error', permissionError);
 }
-
-    
