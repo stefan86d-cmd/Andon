@@ -20,10 +20,10 @@ const tiers = [
   {
     name: "Starter",
     prices: {
-        '1': { usd: 0, eur: 0 },
-        '12': { usd: 0, eur: 0 },
-        '24': { usd: 0, eur: 0 },
-        '48': { usd: 0, eur: 0 },
+        '1': { usd: 0, eur: 0, gbp: 0 },
+        '12': { usd: 0, eur: 0, gbp: 0 },
+        '24': { usd: 0, eur: 0, gbp: 0 },
+        '48': { usd: 0, eur: 0, gbp: 0 },
     },
     pricePeriod: "",
     description: "For small teams getting started with issue tracking.",
@@ -39,10 +39,10 @@ const tiers = [
   {
     name: "Standard",
     prices: {
-        '1': { usd: 39.99, eur: 36.99 },
-        '12': { usd: 31.99, eur: 29.99 }, // ~20% off
-        '24': { usd: 27.99, eur: 25.99 }, // ~30% off
-        '48': { usd: 23.99, eur: 21.99 }, // ~40% off
+        '1': { usd: 39.99, eur: 36.99, gbp: 32.99 },
+        '12': { usd: 31.99, eur: 29.99, gbp: 26.99 },
+        '24': { usd: 27.99, eur: 25.99, gbp: 22.99 },
+        '48': { usd: 23.99, eur: 21.99, gbp: 19.99 },
     },
     pricePeriod: "/ month",
     description: "For growing factories that need more power and insights.",
@@ -61,10 +61,10 @@ const tiers = [
   {
     name: "Pro",
     prices: {
-        '1': { usd: 59.99, eur: 54.99 },
-        '12': { usd: 47.99, eur: 43.99 }, // ~20% off
-        '24': { usd: 41.99, eur: 38.99 }, // ~30% off
-        '48': { usd: 35.99, eur: 32.99 }, // ~40% off
+        '1': { usd: 59.99, eur: 54.99, gbp: 49.99 },
+        '12': { usd: 47.99, eur: 43.99, gbp: 39.99 },
+        '24': { usd: 41.99, eur: 38.99, gbp: 34.99 },
+        '48': { usd: 35.99, eur: 32.99, gbp: 29.99 },
     },
     pricePeriod: "/ month",
     description: "For scaling operations with expanded needs.",
@@ -85,10 +85,10 @@ const tiers = [
   {
     name: "Enterprise",
     prices: {
-        '1': { usd: 149.99, eur: 139.99 },
-        '12': { usd: 119.99, eur: 111.99 }, // ~20% off
-        '24': { usd: 104.99, eur: 97.99 },  // ~30% off
-        '48': { usd: 89.99, eur: 83.99 },   // ~40% off
+        '1': { usd: 149.99, eur: 139.99, gbp: 124.99 },
+        '12': { usd: 119.99, eur: 111.99, gbp: 99.99 },
+        '24': { usd: 104.99, eur: 97.99, gbp: 87.99 },
+        '48': { usd: 89.99, eur: 83.99, gbp: 74.99 },
     },
     pricePeriod: "/ month",
     description: "For large-scale operations with unlimited resources and dedicated support.",
@@ -141,22 +141,28 @@ const supportMenuItems = [
 ];
 
 type Duration = '1' | '12' | '24' | '48';
+type Currency = 'usd' | 'eur' | 'gbp';
 
 export default function PricingPage() {
     const [duration, setDuration] = useState<Duration>('12');
-    const [currency, setCurrency] = useState<'usd' | 'eur'>('usd');
+    const [currency, setCurrency] = useState<Currency>('usd');
     const { currentUser } = useUser();
     const currencySymbols = {
         usd: '$',
         eur: '€',
+        gbp: '£',
     }
 
     const servicesImage = PlaceHolderImages.find(img => img.id === 'mega-menu-services');
     const exploreImage = PlaceHolderImages.find(img => img.id === 'mega-menu-explore');
     const supportImage = PlaceHolderImages.find(img => img.id === 'mega-menu-support');
     
-    const formatPrice = (price: number, currency: 'usd' | 'eur') => {
-        const locale = currency === 'eur' ? 'de-DE' : 'en-US';
+    const formatPrice = (price: number, currency: Currency) => {
+        const locale = {
+            usd: 'en-US',
+            eur: 'de-DE',
+            gbp: 'en-GB'
+        }[currency];
         return price.toLocaleString(locale, {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2,
@@ -233,6 +239,7 @@ export default function PricingPage() {
                             <SelectContent>
                                 <SelectItem value="usd">USD ($)</SelectItem>
                                 <SelectItem value="eur">EUR (€)</SelectItem>
+                                <SelectItem value="gbp">GBP (£)</SelectItem>
                             </SelectContent>
                         </Select>
                         {duration === '12' && <Badge variant="secondary" className="text-sm">Save ~20%</Badge>}
