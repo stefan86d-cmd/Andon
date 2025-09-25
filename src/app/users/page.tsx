@@ -30,18 +30,18 @@ export default function UsersPage() {
 
   const { data: allUsers, isLoading } = useCollection<User>(usersQuery);
 
-  if (!currentUser || currentUser.role !== 'admin') {
-     return <AppLayout>
-      <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background">
-        <p>You do not have permission to view this page.</p>
+  if (isLoading || !currentUser) {
+    return <AppLayout>
+      <main className="flex flex-1 items-center justify-center">
+        <LoaderCircle className="h-8 w-8 animate-spin" />
       </main>
     </AppLayout>
   }
   
-  if (isLoading) {
-    return <AppLayout>
-      <main className="flex flex-1 items-center justify-center">
-        <LoaderCircle className="h-8 w-8 animate-spin" />
+  if (currentUser.role !== 'admin') {
+     return <AppLayout>
+      <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background">
+        <p>You do not have permission to view this page.</p>
       </main>
     </AppLayout>
   }
