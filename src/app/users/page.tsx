@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { AppLayout } from "@/components/layout/app-layout";
 import { AddUserDialog } from "@/components/users/add-user-dialog";
 import { UsersDataTable } from "@/components/users/users-data-table";
@@ -20,7 +20,7 @@ const planLimits = {
 }
 
 export default function UsersPage() {
-  const { currentUser } = useUser();
+  const { currentUser, loading: userLoading } = useUser();
   const firestore = useFirestore();
 
   const usersQuery = useMemoFirebase(() => {
@@ -28,9 +28,11 @@ export default function UsersPage() {
     return collection(firestore, "users");
   }, [firestore]);
 
-  const { data: allUsers, isLoading } = useCollection<User>(usersQuery);
+  const { data: allUsers, isLoading: usersLoading } = useCollection<User>(usersQuery);
 
-  if (isLoading || !currentUser) {
+  const isLoading = userLoading || usersLoading;
+
+  if (isLoading) {
     return <AppLayout>
       <main className="flex flex-1 items-center justify-center">
         <LoaderCircle className="h-8 w-8 animate-spin" />
@@ -38,7 +40,7 @@ export default function UsersPage() {
     </AppLayout>
   }
   
-  if (currentUser.role !== 'admin') {
+  if (currentUser?.role !== 'admin') {
      return <AppLayout>
       <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background">
         <p>You do not have permission to view this page.</p>
@@ -82,4 +84,3 @@ export default function UsersPage() {
     </AppLayout>
   );
 }
-
