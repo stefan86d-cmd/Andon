@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import {
@@ -19,6 +19,7 @@ import { toast } from '@/hooks/use-toast';
 import { LoaderCircle, Database } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
+import { getAllUsers } from '@/lib/data';
 
 function GoogleIcon() {
   return (
@@ -34,7 +35,7 @@ function GoogleIcon() {
       <path
         fill="#4CAF50"
         d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238A11.91 11.91 0 0 1 24 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z"
-      />
+ag/>
       <path
         fill="#1976D2"
         d="M43.611 20.083H42V20H24v8h11.303c-.792 2.237-2.231 4.166-4.087 5.571l6.19 5.238C42.021 35.816 44 30.138 44 24c0-1.341-.138-2.65-.389-3.917z"
@@ -54,10 +55,17 @@ function MicrosoftIcon() {
     )
 }
 
+const planLimits = {
+  starter: { users: 5 },
+  standard: { users: 50 },
+  pro: { users: 150 },
+  enterprise: { users: Infinity },
+};
+
 export default function LoginPage() {
   const [email, setEmail] = useState('maria.g@andon.io');
   const [password, setPassword] = useState('password');
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoggingIn, startLoginTransition] = useTransition();
   const router = useRouter();
   const { currentUser, loading, login } = useUser();
 
@@ -69,43 +77,45 @@ export default function LoginPage() {
   }, [currentUser, loading, router]);
 
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+    startLoginTransition(async () => {
+      try {
+        await login(email, password);
+        toast({
+          title: "Login Successful",
+          description: `Welcome back!`,
+        });
+        // The useEffect hook will handle redirection.
 
-    try {
-      await login(email, password);
-      
-      toast({
-        title: "Login Successful",
-        description: `Welcome back!`,
-      });
-
-    } catch (error: any) {
-      console.error("Login Error:", error);
-      let description = "An unexpected error occurred.";
-      if (error.code) {
-        switch (error.code) {
-            case "auth/user-not-found":
-            case "auth/wrong-password":
-            case "auth/invalid-credential":
-                description = "Invalid email or password.";
-                break;
-            case "auth/invalid-email":
-                description = "Please enter a valid email address.";
-                break;
-            default:
-                description = "Failed to log in. Please try again later.";
+      } catch (error: any) {
+        console.error("Login Error:", error);
+        let description = "An unexpected error occurred.";
+        
+        // This is where you can check for over-limit errors after other auth errors
+        if (error.message === 'ACCOUNT_OVER_LIMIT') {
+            description = "Account user limit reached. Please contact an administrator.";
+        } else if (error.code) {
+            switch (error.code) {
+                case "auth/user-not-found":
+                case "auth/wrong-password":
+                case "auth/invalid-credential":
+                    description = "Invalid email or password.";
+                    break;
+                case "auth/invalid-email":
+                    description = "Please enter a valid email address.";
+                    break;
+                default:
+                    description = "Failed to log in. Please try again later.";
+            }
         }
+        toast({
+          variant: "destructive",
+          title: "Login Failed",
+          description: description,
+        });
       }
-      toast({
-        variant: "destructive",
-        title: "Login Failed",
-        description: description,
-      });
-    } finally {
-        setIsLoading(false);
-    }
+    });
   };
   
   if (loading || (!loading && currentUser)) {
@@ -141,7 +151,7 @@ export default function LoginPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  disabled={isLoading}
+                  disabled={isLoggingIn}
                 />
               </div>
               <div className="grid gap-2">
@@ -153,11 +163,11 @@ export default function LoginPage() {
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    disabled={isLoading}
+                    disabled={isLoggingIn}
                 />
               </div>
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
+              <Button type="submit" className="w-full" disabled={isLoggingIn}>
+                  {isLoggingIn && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
                   Login
               </Button>
             </div>

@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { onAuthStateChanged, signInWithEmailAndPassword, signOut, type User as FirebaseUser } from "firebase/auth";
 import { useAuth, useFirestore } from '@/firebase';
 import type { User } from '@/lib/types';
-import { doc, getDoc, collection, getDocs, query, where } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore';
 
 interface UserContextType {
   currentUser: User | null;
@@ -51,18 +51,12 @@ export function UserProvider({ children }: { children: ReactNode }) {
   }, [auth, firestore]);
 
   const login = async (email: string, password: string) => {
-    setLoading(true);
-    try {
-      await signInWithEmailAndPassword(auth, email, password);
-      // Auth state change will be handled by onAuthStateChanged listener
-    } catch (error: any) {
-      setLoading(false);
-      throw error;
-    }
+    await signInWithEmailAndPassword(auth, email, password);
   };
 
   const logout = async () => {
     await signOut(auth);
+    setCurrentUser(null);
     router.push('/login');
   };
   
