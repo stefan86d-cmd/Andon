@@ -95,11 +95,14 @@ export function UserProvider({ children }: { children: ReactNode }) {
       const [firstName, ...lastNameParts] = (user.displayName || 'New User').split(' ');
       const lastName = lastNameParts.join(' ');
       
+      // Check for the specific test email to assign the 'pro' plan
+      const finalPlan = user.email === 'stefan86d@gmail.com' ? 'pro' : plan;
+
       const newUser: Omit<User, 'id'> = {
           name: `${firstName} ${lastName}`,
           email: user.email!,
           role: 'admin',
-          plan: plan,
+          plan: finalPlan,
           avatarUrl: user.photoURL || '',
       };
       await setDoc(userDocRef, newUser);
