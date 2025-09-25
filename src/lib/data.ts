@@ -7,8 +7,8 @@ import { format, subDays, subHours } from "date-fns";
 
 let mockUsers: User[] = [
     { id: '0P6TMG7LyyWKatYHFNVXpVoRQSC2', name: 'Alex Johnson', email: 'alex.j@andon.io', avatarUrl: '', role: 'admin', plan: 'pro' },
-    { id: 'mock-sam', name: 'Sam Miller', email: 'sam.m@andon.io', avatarUrl: '', role: 'supervisor', plan: 'pro' },
-    { id: 'mock-maria', name: 'Maria Garcia', email: 'maria.g@andon.io', avatarUrl: '', role: 'operator', plan: 'pro' },
+    { id: 'dQhiONEA3fTXfd3p6Sa7Z15tGQD3', name: 'Sam Miller', email: 'sam.m@andon.io', avatarUrl: '', role: 'supervisor', plan: 'pro' },
+    { id: 'BPBNYzsv2LZnAyqNjEonV7a07I33', name: 'Maria Garcia', email: 'maria.g@andon.io', avatarUrl: '', role: 'operator', plan: 'pro' },
 ];
 
 let mockProductionLines: ProductionLine[] = [
@@ -278,7 +278,7 @@ export async function deleteUser(userId: string) {
     return Promise.resolve();
 }
 
-export async function updateUser(userId: string, data: { firstName: string, lastName: string, email: string, role: Role }) {
+export async function updateUserInDb(userId: string, data: { firstName: string, lastName: string, email: string, role: Role }) {
      mockUsers = mockUsers.map(user => 
         user.id === userId ? {
             ...user,
@@ -305,7 +305,7 @@ export async function getIssueById(id: string): Promise<Issue | null> {
     return Promise.resolve(issue || null);
 }
 
-export async function addIssue(issueData: Omit<Issue, 'id' | 'reportedAt' | 'reportedBy' | 'status' | 'productionStopped'>, currentUser: User) {
+export async function addIssueToData(issueData: Omit<Issue, 'id' | 'reportedAt' | 'reportedBy' | 'status' | 'productionStopped'>, currentUser: User) {
     if (!currentUser) {
         throw new Error("Cannot report issue without a logged in user.");
     }
@@ -330,7 +330,7 @@ export async function addIssue(issueData: Omit<Issue, 'id' | 'reportedAt' | 'rep
     return Promise.resolve();
 }
 
-export async function updateIssue(issueId: string, data: Partial<Omit<Issue, 'id'>>) {
+export async function updateIssueInData(issueId: string, data: Partial<Omit<Issue, 'id'>>) {
     mockIssues = mockIssues.map(issue => 
         issue.id === issueId ? { ...issue, ...data } as Issue : issue
     );

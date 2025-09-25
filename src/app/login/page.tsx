@@ -62,7 +62,6 @@ export default function LoginPage() {
   const { currentUser, loading, login } = useUser();
 
   useEffect(() => {
-    // If user is already logged in, redirect them.
     if (!loading && currentUser) {
       const path = currentUser.role === 'operator' ? '/line-status' : '/dashboard';
       router.replace(path);
@@ -75,30 +74,41 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      await login(email);
+      await login(email, password);
       
       toast({
         title: "Login Successful",
         description: `Welcome back!`,
       });
 
-      // Redirect is now handled by the useEffect hook.
-      // The router.replace() call here is no longer needed as the component will re-render
-      // and the useEffect will trigger.
-
     } catch (error: any) {
       console.error("Login Error:", error);
+      let description = "An unexpected error occurred.";
+      if (error.code) {
+        switch (error.code) {
+            case "auth/user-not-found":
+            case "auth/wrong-password":
+            case "auth/invalid-credential":
+                description = "Invalid email or password.";
+                break;
+            case "auth/invalid-email":
+                description = "Please enter a valid email address.";
+                break;
+            default:
+                description = "Failed to log in. Please try again later.";
+        }
+      }
       toast({
         variant: "destructive",
         title: "Login Failed",
-        description: error.message,
+        description: description,
       });
-      setIsLoading(false);
+    } finally {
+        setIsLoading(false);
     }
   };
   
-  // If user is being checked or is already logged in, show a loading/redirecting state.
-  if (loading || currentUser) {
+  if (loading || (!loading && currentUser)) {
     return (
         <div className="flex h-screen items-center justify-center">
             <LoaderCircle className="h-8 w-8 animate-spin" />
@@ -116,7 +126,7 @@ export default function LoginPage() {
           </div>
           <CardTitle>Login to AndonPro</CardTitle>
           <CardDescription>
-            Enter mock credentials to proceed.
+            Enter your credentials to continue.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -148,7 +158,7 @@ export default function LoginPage() {
               </div>
               <Button type="submit" className="w-full" disabled={isLoading}>
                   {isLoading && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
-                  Login with Mock User
+                  Login
               </Button>
             </div>
           </form>

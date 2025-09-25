@@ -2,117 +2,68 @@
 "use client";
 
 import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
-import type { User, Plan } from '@/lib/types';
-import { getAllUsers } from '@/lib/data';
 import { useRouter } from 'next/navigation';
+import { onAuthStateChanged, signInWithEmailAndPassword, signOut, type User as FirebaseUser } from "firebase/auth";
+import { useAuth } from '@/firebase';
+import type { User } from '@/lib/types';
+import { getUserByEmail } from '@/lib/data';
 
 interface UserContextType {
   currentUser: User | null;
   loading: boolean;
-  login: (email: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
   logout: () => void;
   updateCurrentUser: (user: User) => void;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
-// This is a simplified plan limit definition for client-side checks.
-// The source of truth for limits is in the page components like users/page.tsx.
-const planLimits: Record<Plan, { users: number }> = {
-  starter: { users: 5 },
-  standard: { users: 50 },
-  pro: { users: 150 },
-  enterprise: { users: Infinity },
-};
-
-
-// Mock user data for development
-const mockUsersByEmail: { [email: string]: User } = {
-  'alex.j@andon.io': {
-    id: '0P6TMG7LyyWKatYHFNVXpVoRQSC2',
-    name: 'Alex Johnson',
-    email: 'alex.j@andon.io',
-    avatarUrl: '',
-    role: 'admin',
-    plan: 'pro',
-  },
-  'sam.m@andon.io': {
-    id: 'mock-sam',
-    name: 'Sam Miller',
-    email: 'sam.m@andon.io',
-    avatarUrl: '',
-    role: 'supervisor',
-    plan: 'pro',
-  },
-    'maria.g@andon.io': {
-    id: 'mock-maria',
-    name: 'Maria Garcia',
-    email: 'maria.g@andon.io',
-    avatarUrl: '',
-    role: 'operator',
-    plan: 'pro',
-  }
-};
-
-
 export function UserProvider({ children }: { children: ReactNode }) {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const auth = useAuth();
 
   useEffect(() => {
-    // Check if a user session exists in localStorage
-    const storedUserEmail = localStorage.getItem('currentUserEmail');
-    if (storedUserEmail) {
-      const user = mockUsersByEmail[storedUserEmail];
-      if (user) {
-        setCurrentUser(user);
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser: FirebaseUser | null) => {
+      if (firebaseUser && firebaseUser.email) {
+        // User is signed in, now get the profile from our mock data
+        const userProfile = await getUserByEmail(firebaseUser.email);
+        if (userProfile) {
+          setCurrentUser(userProfile);
+        } else {
+          // Handle case where user exists in Firebase Auth but not in our user data
+          setCurrentUser(null);
+        }
+      } else {
+        // User is signed out
+        setCurrentUser(null);
       }
-    }
-    setLoading(false);
-  }, []);
-
-  const login = async (email: string) => {
-    setLoading(true);
-    
-    // In a real app, you'd get the admin/account owner's plan.
-    // For this mock, we'll assume the plan of the user logging in represents the account's plan.
-    const userToLogin = mockUsersByEmail[email];
-
-    if (!userToLogin) {
       setLoading(false);
-      throw new Error("Invalid credentials for mock user.");
-    }
-    
-    const allUsers = await getAllUsers();
-    const totalUsers = allUsers.length;
-    const accountPlan = userToLogin.plan;
-    const userLimit = planLimits[accountPlan].users;
-    
-    if (totalUsers > userLimit && userToLogin.role !== 'admin') {
-        setLoading(false);
-        throw new Error(`The user limit for the '${accountPlan}' plan has been exceeded. Please contact an administrator.`);
-    }
+    });
 
-    localStorage.setItem('currentUserEmail', email);
-    setCurrentUser(userToLogin);
-    setLoading(false);
+    return () => unsubscribe();
+  }, [auth]);
+
+  const login = async (email: string, password: string) => {
+    setLoading(true);
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      // Auth state change will be handled by onAuthStateChanged listener
+    } catch (error: any) {
+      setLoading(false);
+      throw error;
+    }
   };
 
-  const logout = () => {
-    localStorage.removeItem('currentUserEmail');
-    setCurrentUser(null);
-    router.push('/');
+  const logout = async () => {
+    await signOut(auth);
+    router.push('/login');
   };
   
   const updateCurrentUser = (user: User) => {
     setCurrentUser(user);
-    // Also update the mock data so it persists across reloads for this session
-    if (user && user.email) {
-        mockUsersByEmail[user.email] = user;
-    }
   }
-
 
   return (
     <UserContext.Provider value={{ currentUser, loading, login, logout, updateCurrentUser }}>
