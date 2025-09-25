@@ -10,20 +10,28 @@ import { subHours, intervalToDuration, differenceInSeconds, min, max } from "dat
 import { useUser } from "@/contexts/user-context";
 import type { Issue } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
+import { collection, query, orderBy, limit } from "firebase/firestore";
 
 export default function Home() {
   const { currentUser } = useUser();
-  const [issues, setIssues] = useState<Issue[]>([]);
-  const [loading, setLoading] = useState(true);
+  const firestore = useFirestore();
 
-  useEffect(() => {
-    async function loadIssues() {
-      const issuesData = await getIssues();
-      setIssues(issuesData);
-      setLoading(false);
-    }
-    loadIssues();
-  }, []);
+  const issuesQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, "issues"), orderBy("reportedAt", "desc"));
+  }, [firestore]);
+
+  const { data: issues, isLoading: issuesLoading } = useCollection<Issue>(issuesQuery);
+
+  const recentIssuesQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, "issues"), orderBy("reportedAt", "desc"), limit(5));
+  }, [firestore]);
+
+  const { data: recentIssues, isLoading: recentIssuesLoading } = useCollection<Issue>(recentIssuesQuery);
+
+  const loading = issuesLoading || recentIssuesLoading;
   
   if (!currentUser || (currentUser.role !== 'admin' && currentUser.role !== 'supervisor')) {
     return (
@@ -37,9 +45,10 @@ export default function Home() {
   
   const now = new Date();
   const twentyFourHoursAgo = subHours(now, 24);
-  const userIssues = issues.slice(0, 5);
 
-  const stoppedIssuesInLast24h = issues.filter(
+  const allIssues = issues || [];
+
+  const stoppedIssuesInLast24h = allIssues.filter(
     issue => issue.productionStopped && issue.reportedAt > twentyFourHoursAgo
   );
 
@@ -104,7 +113,7 @@ export default function Home() {
   const productionStopTime = formatDuration(duration);
 
   // --- Calculate Average Resolution Time ---
-  const resolvedIssues = issues.filter(issue => issue.status === 'resolved' && issue.resolvedAt);
+  const resolvedIssues = allIssues.filter(issue => issue.status === 'resolved' && issue.resolvedAt);
 
   const totalResolutionSeconds = resolvedIssues.reduce((acc, issue) => {
     return acc + differenceInSeconds(issue.resolvedAt!, issue.reportedAt);
@@ -126,10 +135,10 @@ export default function Home() {
   // --- End Calculation ---
   
   const stats = {
-    openIssues: issues.filter(issue => issue.status === 'in_progress' || issue.status === 'reported').length,
+    openIssues: allIssues.filter(issue => issue.status === 'in_progress' || issue.status === 'reported').length,
     avgResolutionTime: avgResolutionTime,
     productionStopTime: productionStopTime,
-    criticalAlerts: issues.filter(issue => issue.priority === 'critical' && issue.reportedAt > twentyFourHoursAgo).length,
+    criticalAlerts: allIssues.filter(issue => issue.priority === 'critical' && issue.reportedAt > twentyFourHoursAgo).length,
   };
   
   return (
@@ -181,7 +190,7 @@ export default function Home() {
                       description: "in last 24 hours"
                   }
               ]} />
-              <IssuesDataTable issues={userIssues} title="Recent Issues" />
+              <IssuesDataTable issues={recentIssues || []} title="Recent Issues" />
             </>
           )}
       </main>

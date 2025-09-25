@@ -14,34 +14,42 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { getIssues, getProductionLines } from "@/lib/data";
 import { PlusCircle, LoaderCircle } from "lucide-react";
 import type { Issue, ProductionLine } from "@/lib/types";
 import { subHours } from "date-fns";
 import { useUser } from "@/contexts/user-context";
+import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
+import { collection, query, where, orderBy } from "firebase/firestore";
 
 export default function LineStatusPage() {
   const { currentUser } = useUser();
   const [selectedLineId, setSelectedLineId] = useState<string | undefined>(undefined);
   const [selectedWorkstation, setSelectedWorkstation] = useState<string | undefined>();
   const [selectionConfirmed, setSelectionConfirmed] = useState(false);
-  const [productionLines, setProductionLines] = useState<ProductionLine[]>([]);
-  const [issues, setIssues] = useState<Issue[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    async function fetchData() {
-        setLoading(true);
-        const [linesData, issuesData] = await Promise.all([
-            getProductionLines(),
-            getIssues()
-        ]);
-        setProductionLines(linesData);
-        setIssues(issuesData);
-        setLoading(false);
-    }
-    fetchData();
-  }, []);
+  const firestore = useFirestore();
+
+  const linesQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return collection(firestore, "productionLines");
+  }, [firestore]);
+  
+  const { data: productionLines, isLoading: linesLoading } = useCollection<ProductionLine>(linesQuery);
+  
+  const issuesQuery = useMemoFirebase(() => {
+    if (!firestore || !selectedLineId) return null;
+    const twentyFourHoursAgo = subHours(new Date(), 24);
+    return query(
+      collection(firestore, "issues"), 
+      where("productionLineId", "==", selectedLineId),
+      where("reportedAt", ">=", twentyFourHoursAgo),
+      orderBy("reportedAt", "desc")
+    );
+  }, [firestore, selectedLineId]);
+  
+  const { data: issues, isLoading: issuesLoading } = useCollection<Issue>(issuesQuery);
+
+  const loading = linesLoading;
 
   const handleLineChange = (lineId: string) => {
     setSelectedLineId(lineId);
@@ -60,17 +68,12 @@ export default function LineStatusPage() {
     setSelectedWorkstation(undefined);
   }
 
-  const selectedLine: ProductionLine | undefined = productionLines.find(
+  const allLines = productionLines || [];
+  const selectedLine: ProductionLine | undefined = allLines.find(
     (line) => line.id === selectedLineId
   );
   
-  const now = new Date();
-  const twentyFourHoursAgo = subHours(now, 24);
-  const userIssues = issues.filter((issue) => 
-      issue.productionLineId === selectedLineId && 
-      issue.reportedAt > twentyFourHoursAgo &&
-      (issue.status === 'reported' || issue.status === 'in_progress' || issue.status === 'resolved')
-    );
+  const userIssues = issues || [];
   
   if (!currentUser || loading) {
     return (
@@ -97,7 +100,7 @@ export default function LineStatusPage() {
                      <SelectValue placeholder="Select Production Line" />
                    </SelectTrigger>
                    <SelectContent>
-                     {productionLines.map((line) => (
+                     {allLines.map((line) => (
                        <SelectItem key={line.id} value={line.id}>
                          {line.name}
                        </SelectItem>
@@ -135,7 +138,7 @@ export default function LineStatusPage() {
                         <Button variant="outline" onClick={changeSelection}>Change Station</Button>
                         <ReportIssueDialog
                             key={`${selectedLineId}-${selectedWorkstation}`}
-                            productionLines={productionLines}
+                            productionLines={allLines}
                             selectedLineId={selectedLineId}
                             selectedWorkstation={selectedWorkstation}
                         >
@@ -148,7 +151,7 @@ export default function LineStatusPage() {
                 </div>
                 <IssuesDataTable 
                     issues={userIssues} 
-                    loading={loading}
+                    loading={issuesLoading}
                     title="Recent Issues at Your Station"
                     description="Issues reported on this line in the last 24 hours." 
                 />

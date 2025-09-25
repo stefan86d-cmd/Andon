@@ -18,49 +18,45 @@ import {
 import { Button } from "@/components/ui/button";
 import { subHours } from "date-fns";
 import { useUser } from "@/contexts/user-context";
-import { getIssues, getProductionLines } from "@/lib/data";
+import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
+import { collection, query, orderBy } from "firebase/firestore";
 import { allCategories } from "@/lib/constants";
 
 export default function IssuesPage() {
   const { currentUser } = useUser();
-  const [issues, setIssues] = useState<Issue[]>([]);
-  const [productionLines, setProductionLines] = useState<ProductionLine[]>([]);
+  const firestore = useFirestore();
+
+  const issuesQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, "issues"), orderBy("reportedAt", "desc"));
+  }, [firestore]);
+  
+  const linesQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return collection(firestore, "productionLines");
+  }, [firestore]);
+
+  const { data: issues, isLoading: issuesLoading } = useCollection<Issue>(issuesQuery);
+  const { data: productionLines, isLoading: linesLoading } = useCollection<ProductionLine>(linesQuery);
   
   const [selectedLines, setSelectedLines] = useState<string[]>([]);
   const [tempSelectedLines, setTempSelectedLines] = useState<string[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [tempSelectedCategories, setTempSelectedCategories] = useState<string[]>([]);
 
-  const [loading, setLoading] = useState(true);
+  const loading = issuesLoading || linesLoading;
 
   useEffect(() => {
-    async function fetchData() {
-      setLoading(true);
-      const [issuesData, linesData] = await Promise.all([
-        getIssues(),
-        getProductionLines(),
-      ]);
-      setIssues(issuesData);
-      setProductionLines(linesData);
-
-      if (issuesData.length > 0) {
-        const latestIssueTimestamp = new Date(issuesData[0].reportedAt).getTime();
+    if (!issuesLoading && issues && issues.length > 0) {
+      const latestIssueTimestamp = new Date(issues[0].reportedAt).getTime();
+      const lastSeen = localStorage.getItem('lastSeenIssueTimestamp');
+      if (!lastSeen || latestIssueTimestamp > parseInt(lastSeen, 10)) {
         localStorage.setItem('lastSeenIssueTimestamp', latestIssueTimestamp.toString());
         window.dispatchEvent(new StorageEvent('storage', { key: 'lastSeenIssueTimestamp' }));
       }
-      
-      setLoading(false);
     }
+  }, [issues, issuesLoading]);
 
-    fetchData();
-
-    const interval = setInterval(async () => {
-        const issuesData = await getIssues();
-        setIssues(issuesData);
-    }, 30000);
-
-    return () => clearInterval(interval);
-  }, []);
 
   useEffect(() => {
     setTempSelectedLines(selectedLines);
@@ -98,7 +94,9 @@ export default function IssuesPage() {
     setSelectedCategories([]);
   };
 
-  const filteredIssues = issues.filter(issue => {
+  const allIssues = issues || [];
+
+  const filteredIssues = allIssues.filter(issue => {
     const lineMatch = selectedLines.length === 0 || selectedLines.includes(issue.productionLineId);
     const categoryMatch = selectedCategories.length === 0 || selectedCategories.includes(issue.category);
     return lineMatch && categoryMatch;
@@ -140,7 +138,7 @@ export default function IssuesPage() {
                   <DropdownMenuContent align="end" className="w-56">
                     <DropdownMenuLabel>Filter by production line</DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    {productionLines.map((line) => (
+                    {(productionLines || []).map((line) => (
                       <DropdownMenuCheckboxItem
                         key={line.id}
                         checked={tempSelectedLines.includes(line.id)}

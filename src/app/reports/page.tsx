@@ -4,7 +4,6 @@
 import { useEffect, useState } from "react";
 import { AppLayout } from "@/components/layout/app-layout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { getIssues, getProductionLines } from "@/lib/data";
 import type { Issue, IssueCategory, ProductionLine } from "@/lib/types";
 import { IssuesTrendChart } from "@/components/reports/issues-trend-chart";
 import { format, subDays, eachDayOfInterval, startOfDay, differenceInSeconds } from "date-fns";
@@ -29,6 +28,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { allCategories } from "@/lib/constants";
 import { CSVLink } from "react-csv";
+import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
+import { collection, query } from "firebase/firestore";
 
 
 const ChartGradients = () => (
@@ -47,9 +48,21 @@ const ChartGradients = () => (
 
 export default function ReportsPage() {
   const { currentUser } = useUser();
-  const [issues, setIssues] = useState<Issue[]>([]);
-  const [productionLines, setProductionLines] = useState<ProductionLine[]>([]);
-  const [loading, setLoading] = useState(true);
+  const firestore = useFirestore();
+
+  const issuesQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, "issues"));
+  }, [firestore]);
+
+  const linesQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return collection(firestore, "productionLines");
+  }, [firestore]);
+
+  const { data: issues, isLoading: issuesLoading } = useCollection<Issue>(issuesQuery);
+  const { data: productionLines, isLoading: linesLoading } = useCollection<ProductionLine>(linesQuery);
+  const loading = issuesLoading || linesLoading;
 
   const [date, setDate] = useState<DateRange | undefined>({
     from: subDays(new Date(), 29),
@@ -58,20 +71,6 @@ export default function ReportsPage() {
   const [selectedLines, setSelectedLines] = useState<string[]>([]);
   const [tempSelectedLines, setTempSelectedLines] = useState<string[]>([]);
   
-  useEffect(() => {
-    async function fetchData() {
-      setLoading(true);
-      const [issuesData, linesData] = await Promise.all([
-        getIssues(),
-        getProductionLines(),
-      ]);
-      setIssues(issuesData);
-      setProductionLines(linesData);
-      setLoading(false);
-    }
-    fetchData();
-  }, []);
-
   useEffect(() => {
     setTempSelectedLines(selectedLines);
   }, [selectedLines]);
@@ -99,8 +98,11 @@ export default function ReportsPage() {
       setDate(newDate);
   }
 
+  const allIssues = issues || [];
+  const allLines = productionLines || [];
+
   // --- Filtered Data ---
-  const filteredIssues = issues.filter(issue => {
+  const filteredIssues = allIssues.filter(issue => {
       const issueDate = issue.reportedAt;
       const isInDateRange = date?.from && date?.to && issueDate >= startOfDay(date.from) && issueDate <= date.to;
       const isLineSelected = selectedLines.length === 0 || selectedLines.includes(issue.productionLineId);
@@ -128,7 +130,7 @@ export default function ReportsPage() {
 
   const csvData = filteredIssues.map(issue => ({
     ...issue,
-    lineName: productionLines.find(line => line.id === issue.productionLineId)?.name || issue.productionLineId,
+    lineName: allLines.find(line => line.id === issue.productionLineId)?.name || issue.productionLineId,
     reportedAt: format(issue.reportedAt, 'yyyy-MM-dd HH:mm:ss'),
     reportedBy: issue.reportedBy.name,
     resolvedAt: issue.resolvedAt ? format(issue.resolvedAt, 'yyyy-MM-dd HH:mm:ss') : 'N/A',
@@ -210,7 +212,7 @@ export default function ReportsPage() {
   }));
 
   // 3. Issues by Production Line (Bar Chart)
-  const issuesByLine = productionLines.map((line, index) => {
+  const issuesByLine = allLines.map((line, index) => {
     const category = allCategories[index % allCategories.length];
       return {
           name: line.name,
@@ -295,7 +297,7 @@ export default function ReportsPage() {
                         <DropdownMenuContent align="end" className="w-56">
                         <DropdownMenuLabel>Filter by production line</DropdownMenuLabel>
                         <DropdownMenuSeparator />
-                        {productionLines.map((line) => (
+                        {allLines.map((line) => (
                             <DropdownMenuCheckboxItem
                             key={line.id}
                             checked={tempSelectedLines.includes(line.id)}
