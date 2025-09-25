@@ -3,6 +3,9 @@
 
 import React, { Suspense, useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -12,6 +15,7 @@ import {
   CardTitle,
   CardFooter,
 } from "@/components/ui/card";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
@@ -27,6 +31,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+
+const registerFormSchema = z.object({
+  name: z.string().min(1, "Full name is required."),
+  email: z.string().email("Please enter a valid email address."),
+  password: z.string().min(6, "Password must be at least 6 characters."),
+  confirmPassword: z.string(),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords do not match.",
+  path: ["confirmPassword"],
+});
+
+type RegisterFormValues = z.infer<typeof registerFormSchema>;
 
 const tiers: any = {
   starter: { 
@@ -128,9 +144,16 @@ function RegisterContent() {
   const { currentUser, login } = useUser();
 
   const [isLoading, setIsLoading] = useState(false);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
+  
+  const form = useForm<RegisterFormValues>({
+    resolver: zodResolver(registerFormSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+    },
+  });
 
   const [selectedPlan, setSelectedPlan] = useState(searchParams.get('plan') || 'standard');
   const [selectedDuration, setSelectedDuration] = useState(searchParams.get('duration') || '12');
@@ -144,8 +167,7 @@ function RegisterContent() {
   const totalSaved = (originalPrice - price) * parseInt(selectedDuration);
   const currencySymbol = currencySymbols[selectedCurrency];
 
-  const handleRegistration = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleRegistration = (data: RegisterFormValues) => {
     setIsLoading(true);
     // In a real app, you would register the user.
     setTimeout(() => {
@@ -174,7 +196,7 @@ function RegisterContent() {
     }, 2000);
   }
   
-  const formAction = isFreePlan ? handleRegistration : (currentUser ? handlePayment : handleRegistration);
+  const formAction = isFreePlan ? form.handleSubmit(handleRegistration) : (currentUser ? handlePayment : form.handleSubmit(handleRegistration));
   const mainFormId = isFreePlan ? 'registration-form' : (currentUser ? 'payment-form' : 'registration-form');
 
 
@@ -209,6 +231,7 @@ function RegisterContent() {
                     <span className="absolute left-1/2 -translate-x-1/2 -top-2.5 bg-background px-2 text-xs text-muted-foreground">OR</span>
                 </div>
                 
+                <Form {...form}>
                 <form id={mainFormId} onSubmit={formAction} className="space-y-6">
                     {currentUser ? (
                          <div className="space-y-4 rounded-lg border bg-card-foreground/5 p-6">
@@ -227,18 +250,58 @@ function RegisterContent() {
                         </div>
                     ) : (
                         <div className="space-y-4">
-                            <div>
-                                <Label htmlFor="name">Full Name</Label>
-                                <Input id="name" type="text" placeholder="John Doe" required value={name} onChange={(e) => setName(e.target.value)} />
-                            </div>
-                            <div>
-                                <Label htmlFor="email">Email</Label>
-                                <Input id="email" type="email" placeholder="john.d@example.com" required value={email} onChange={(e) => setEmail(e.target.value)} />
-                            </div>
-                            <div>
-                                <Label htmlFor="password">Password</Label>
-                                <Input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
-                            </div>
+                            <FormField
+                                control={form.control}
+                                name="name"
+                                render={({ field }) => (
+                                    <FormItem>
+                                    <FormLabel>Full Name</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="John Doe" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="email"
+                                render={({ field }) => (
+                                    <FormItem>
+                                    <FormLabel>Email</FormLabel>
+                                    <FormControl>
+                                        <Input type="email" placeholder="john.d@example.com" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="password"
+                                render={({ field }) => (
+                                    <FormItem>
+                                    <FormLabel>Password</FormLabel>
+                                    <FormControl>
+                                        <Input type="password" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="confirmPassword"
+                                render={({ field }) => (
+                                    <FormItem>
+                                    <FormLabel>Repeat Password</FormLabel>
+                                    <FormControl>
+                                        <Input type="password" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
                         </div>
                     )}
 
@@ -291,6 +354,7 @@ function RegisterContent() {
                         {isFreePlan ? "Create Account" : (currentUser ? "Confirm Payment" : "Create Account & Pay")}
                     </Button>
                 </form>
+                </Form>
 
             </div>
 
@@ -404,3 +468,5 @@ export default function RegisterPage() {
         </Suspense>
     )
 }
+
+    
