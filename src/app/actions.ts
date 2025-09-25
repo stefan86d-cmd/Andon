@@ -158,7 +158,7 @@ export async function updateIssue(issueId: string, data: {
 
 export async function seedUsers() {
     const usersToSeed = [
-        { id: '0P6TMG7LyyWKatYHFNVXpVoRQSC2', name: 'Alex Johnson', email: 'alex.j@andon.io', role: 'admin' as Role, plan: 'pro' as const, avatarUrl: '' },
+        { id: 'c7TuJzUOWUVt1CALp1jGI1cAmZU2', name: 'Alex Johnson', email: 'alex.j@andon.io', role: 'admin' as Role, plan: 'pro' as const, avatarUrl: '' },
         { id: 'dQhiONEA3fTXfd3p6Sa7Z15tGQD3', name: 'Sam Miller', email: 'sam.m@andon.io', role: 'supervisor' as Role, plan: 'pro' as const, avatarUrl: '' },
         { id: 'BPBNYzsv2LZnAyqNjEonV7a07I33', name: 'Maria Garcia', email: 'maria.g@andon.io', role: 'operator' as Role, plan: 'pro' as const, avatarUrl: '' },
     ];
