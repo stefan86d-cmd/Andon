@@ -194,9 +194,9 @@ function RegisterContent() {
       if (result.success) {
         toast({
           title: "Registration Successful!",
-          description: `Welcome to the ${selectedTier.name} plan.`,
+          description: `Welcome to the ${selectedTier.name} plan. Logging you in...`,
         });
-        // Login the new user and redirect
+        // Step 3: Login the new user and redirect
         await login(data.email, data.password);
         router.push('/dashboard');
       } else {
@@ -517,5 +517,3 @@ export default function RegisterPage() {
         </Suspense>
     )
 }
-
-    
