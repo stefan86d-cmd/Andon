@@ -37,12 +37,8 @@ export function UserNav() {
     router.push('/');
   }
 
-  const getInitials = (name: string) => {
-    const parts = name.split(' ');
-    if (parts.length > 1) {
-        return `${parts[0][0]}${parts[parts.length - 1][0]}`;
-    }
-    return parts[0]?.[0] || '';
+  const getInitials = (firstName: string, lastName: string) => {
+    return `${firstName?.[0] || ''}${lastName?.[0] || ''}`;
   }
 
   return (
@@ -50,14 +46,14 @@ export function UserNav() {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar className="h-9 w-9 border-2 border-primary">
-            <AvatarFallback>{getInitials(currentUser.name)}</AvatarFallback>
+            <AvatarFallback>{getInitials(currentUser.firstName, currentUser.lastName)}</AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">{currentUser.name}</p>
+            <p className="text-sm font-medium leading-none">{`${currentUser.firstName} ${currentUser.lastName}`}</p>
             <p className="text-xs leading-none text-muted-foreground">
               {currentUser.email}
             </p>
@@ -97,3 +93,5 @@ export function UserNav() {
     </DropdownMenu>
   );
 }
+
+    

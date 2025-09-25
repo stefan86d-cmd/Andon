@@ -90,19 +90,14 @@ export default function SettingsPage() {
         });
     }
 
-    const [firstName, lastName] = currentUser.name.split(" ");
     const hasNotificationsTab = currentUser.role === 'admin' || currentUser.role === 'supervisor';
     const hasSubscriptionTab = currentUser.role === 'admin';
     const tabCount = 1 + (hasNotificationsTab ? 1 : 0) + (hasSubscriptionTab ? 1 : 0);
 
     const planName = currentUser.plan.charAt(0).toUpperCase() + currentUser.plan.slice(1);
     
-    const getInitials = (name: string) => {
-        const parts = name.split(' ');
-        if (parts.length > 1) {
-            return `${parts[0][0]}${parts[parts.length - 1][0]}`;
-        }
-        return parts[0]?.[0] || '';
+    const getInitials = (firstName: string, lastName: string) => {
+        return `${firstName?.[0] || ''}${lastName?.[0] || ''}`;
     }
 
     const handleProfileUpdate = (e: React.FormEvent<HTMLFormElement>) => {
@@ -114,7 +109,8 @@ export default function SettingsPage() {
         if (currentUser) {
             const updatedUser = {
                 ...currentUser,
-                name: `${newFirstName} ${newLastName}`,
+                firstName: newFirstName,
+                lastName: newLastName,
             };
             updateCurrentUser(updatedUser);
             toast({
@@ -160,17 +156,17 @@ export default function SettingsPage() {
                                         <CardContent className="space-y-6">
                                             <div className="flex items-center gap-4">
                                                 <Avatar className="h-20 w-20 text-3xl border-2 border-primary">
-                                                    <AvatarFallback>{getInitials(currentUser.name)}</AvatarFallback>
+                                                    <AvatarFallback>{getInitials(currentUser.firstName, currentUser.lastName)}</AvatarFallback>
                                                 </Avatar>
                                             </div>
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                 <div className="space-y-2">
                                                     <Label htmlFor="firstName">First Name</Label>
-                                                    <Input name="firstName" id="firstName" defaultValue={firstName} />
+                                                    <Input name="firstName" id="firstName" defaultValue={currentUser.firstName} />
                                                 </div>
                                                 <div className="space-y-2">
                                                     <Label htmlFor="lastName">Last Name</Label>
-                                                    <Input name="lastName" id="lastName" defaultValue={lastName} />
+                                                    <Input name="lastName" id="lastName" defaultValue={currentUser.lastName} />
                                                 </div>
                                             </div>
                                             <div className="space-y-2">
@@ -317,3 +313,5 @@ export default function SettingsPage() {
         </AppLayout>
     );
 }
+
+    

@@ -34,7 +34,7 @@ export function DeleteUserDialog({ user }: DeleteUserDialogProps) {
       if (result.success) {
         toast({
           title: "User Deleted",
-          description: `The user "${user.name}" has been deleted.`,
+          description: `The user "${user.firstName} ${user.lastName}" has been deleted.`,
         });
         setOpen(false);
       } else {
@@ -63,7 +63,7 @@ export function DeleteUserDialog({ user }: DeleteUserDialogProps) {
           <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
           <AlertDialogDescription>
             This action cannot be undone. This will permanently delete the user account for
-            <span className="font-semibold"> {user.name} </span> from Firestore. It will NOT delete the user from Firebase Authentication.
+            <span className="font-semibold"> {`${user.firstName} ${user.lastName}`} </span> from Firestore. It will NOT delete the user from Firebase Authentication.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

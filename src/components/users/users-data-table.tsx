@@ -47,12 +47,8 @@ const RoleDisplay = ({ role }: { role: Role }) => {
     );
 };
 
-const getInitials = (name: string) => {
-    const parts = name.split(' ');
-    if (parts.length > 1) {
-        return `${parts[0][0]}${parts[parts.length - 1][0]}`;
-    }
-    return parts[0]?.[0] || '';
+const getInitials = (firstName: string, lastName: string) => {
+    return `${firstName?.[0] || ''}${lastName?.[0] || ''}`;
 }
 
 
@@ -79,15 +75,16 @@ export function UsersDataTable({ users }: { users: User[] }) {
           </TableHeader>
           <TableBody>
             {users.map((user) => {
+                const name = `${user.firstName || ''} ${user.lastName || ''}`.trim();
                 return (
                     <TableRow key={user.email}>
                         <TableCell>
                             <div className="flex items-center gap-3">
                                 <Avatar className="h-9 w-9 border-2 border-primary">
-                                    <AvatarImage src={user.avatarUrl} alt={user.name} />
-                                    <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
+                                    <AvatarImage src={user.avatarUrl} alt={name} />
+                                    <AvatarFallback>{getInitials(user.firstName, user.lastName)}</AvatarFallback>
                                 </Avatar>
-                                <div className="font-medium">{user.name}</div>
+                                <div className="font-medium">{name}</div>
                             </div>
                         </TableCell>
                         <TableCell>{user.email}</TableCell>
@@ -122,3 +119,5 @@ export function UsersDataTable({ users }: { users: User[] }) {
     </Card>
   );
 }
+
+    

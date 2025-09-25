@@ -70,9 +70,13 @@
           "type": "string",
           "description": "Unique identifier for the user."
         },
-        "username": {
+        "firstName": {
           "type": "string",
-          "description": "Username of the user."
+          "description": "First name of the user."
+        },
+        "lastName": {
+          "type": "string",
+          "description": "Last name of the user."
         },
         "email": {
           "type": "string",
@@ -82,13 +86,28 @@
         "role": {
           "type": "string",
           "description": "Role of the user (e.g., operator, supervisor, admin)."
+        },
+        "address": {
+          "type": "string",
+          "description": "Home address of the user."
+        },
+        "country": {
+          "type": "string",
+          "description": "Country of the user."
+        },
+        "phone": {
+          "type": "string",
+          "description": "Phone number of the user."
         }
       },
       "required": [
         "id",
-        "username",
+        "firstName",
+        "lastName",
         "email",
-        "role"
+        "role",
+        "address",
+        "country"
       ]
     },
     "FacilityKeyword": {
@@ -202,3 +221,5 @@
     "reasoning": "The Firestore structure uses top-level collections for Users, Issues, and ProductionLines. This flat structure simplifies queries, as all data for a given type is in one place. Security rules will be used to control access. For example, while all issues are in one collection, rules will ensure that only authorized users (like admins or supervisors) can view all issues, while operators might only see issues they reported."
   }
 }
+
+    

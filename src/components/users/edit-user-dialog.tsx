@@ -55,14 +55,11 @@ export function EditUserDialog({ user }: EditUserDialogProps) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, startSubmittingTransition] = useTransition();
 
-  const [firstName, ...lastNameParts] = user.name.split(" ");
-  const lastName = lastNameParts.join(" ");
-
   const form = useForm<UserFormValues>({
     resolver: zodResolver(userFormSchema),
     defaultValues: {
-      firstName: firstName || "",
-      lastName: lastName || "",
+      firstName: user.firstName || "",
+      lastName: user.lastName || "",
       email: user.email,
       role: user.role,
     },
@@ -91,8 +88,8 @@ export function EditUserDialog({ user }: EditUserDialogProps) {
   const handleOpenChange = (isOpen: boolean) => {
     if (!isOpen) {
       form.reset({
-        firstName: firstName,
-        lastName: lastName,
+        firstName: user.firstName,
+        lastName: user.lastName,
         email: user.email,
         role: user.role,
       });
@@ -110,7 +107,7 @@ export function EditUserDialog({ user }: EditUserDialogProps) {
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Edit User: {user.name}</DialogTitle>
+          <DialogTitle>Edit User: {`${user.firstName} ${user.lastName}`}</DialogTitle>
           <DialogDescription>
             Modify the user's details below.
           </DialogDescription>

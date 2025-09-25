@@ -5,11 +5,15 @@ export type Plan = "starter" | "standard" | "pro" | "enterprise";
 
 export type User = {
   id: string; // This is the Firebase Auth UID
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
   avatarUrl: string;
   role: Role;
   plan: Plan;
+  address: string;
+  country: string;
+  phone?: string;
   productionLineId?: string;
 };
 
@@ -87,3 +91,5 @@ export type IssueByDay = {
   date: string;
   issues: number;
 }
+
+    

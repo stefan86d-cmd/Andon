@@ -27,7 +27,7 @@ export async function reportIssue(issueData: Omit<Issue, 'id' | 'reportedAt' | '
 
         const userRef: UserRef = {
             email: reportedByUser.email,
-            name: reportedByUser.name,
+            name: `${reportedByUser.firstName} ${reportedByUser.lastName}`,
             avatarUrl: reportedByUser.avatarUrl || '',
         };
         
@@ -110,13 +110,17 @@ export async function deleteProductionLine(lineId: string) {
     }
 }
 
-export async function addUser(data: { uid: string, firstName: string, lastName: string, email: string, role: Role, plan: User['plan'] }) {
+export async function addUser(data: { uid: string, firstName: string, lastName: string, email: string, role: Role, plan: User['plan'], address?: string, country?: string, phone?: string }) {
     const { firestore } = initializeFirebase();
     const newUser: Omit<User, 'id'> = {
-        name: `${data.firstName} ${data.lastName}`,
+        firstName: data.firstName,
+        lastName: data.lastName,
         email: data.email,
         role: data.role,
         plan: data.plan,
+        address: data.address || '',
+        country: data.country || '',
+        phone: data.phone || '',
         avatarUrl: ''
     };
     const userDocRef = doc(firestore, "users", data.uid);
@@ -158,7 +162,8 @@ export async function editUser(uid: string, data: { firstName: string, lastName:
     const userRef = doc(firestore, "users", uid);
 
     const updatedData = {
-        name: `${data.firstName} ${data.lastName}`,
+        firstName: data.firstName,
+        lastName: data.lastName,
         email: data.email,
         role: data.role,
     };
@@ -196,7 +201,7 @@ export async function updateIssue(issueId: string, data: {
         
         const userRef: UserRef = {
             email: resolvedByUser.email,
-            name: resolvedByUser.name,
+            name: `${resolvedByUser.firstName} ${resolvedByUser.lastName}`,
             avatarUrl: resolvedByUser.avatarUrl || '',
         };
        
@@ -229,9 +234,9 @@ export async function updateIssue(issueId: string, data: {
 export async function seedUsers() {
     const { firestore } = initializeFirebase();
     const usersToSeed = [
-        { id: 'c7TuJzUOWUVt1CALp1jGI1cAmZU2', name: 'Alex Johnson', email: 'alex.j@andon.io', role: 'admin' as Role, plan: 'pro' as const, avatarUrl: '' },
-        { id: 'dQhiONEA3fTXfd3p6Sa7Z15tGQD3', name: 'Sam Miller', email: 'sam.m@andon.io', role: 'supervisor' as Role, plan: 'pro' as const, avatarUrl: '' },
-        { id: 'BPBNYzsv2LZnAyqNjEonV7a07I33', name: 'Maria Garcia', email: 'maria.g@andon.io', role: 'operator' as Role, plan: 'pro' as const, avatarUrl: '' },
+        { id: 'c7TuJzUOWUVt1CALp1jGI1cAmZU2', firstName: 'Alex', lastName: 'Johnson', email: 'alex.j@andon.io', role: 'admin' as Role, plan: 'pro' as const, avatarUrl: '' },
+        { id: 'dQhiONEA3fTXfd3p6Sa7Z15tGQD3', firstName: 'Sam', lastName: 'Miller', email: 'sam.m@andon.io', role: 'supervisor' as Role, plan: 'pro' as const, avatarUrl: '' },
+        { id: 'BPBNYzsv2LZnAyqNjEonV7a07I33', firstName: 'Maria', lastName: 'Garcia', email: 'maria.g@andon.io', role: 'operator' as Role, plan: 'pro' as const, avatarUrl: '' },
     ];
 
     let createdCount = 0;
@@ -307,3 +312,5 @@ export async function resetPassword(token: string, newPassword: string) {
         return { success: false, error: 'Failed to reset password.' };
     }
 }
+
+    

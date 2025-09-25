@@ -34,12 +34,17 @@ import {
 import { useAuth } from '@/firebase';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { addUser } from '@/app/actions';
+import { countries } from '@/lib/countries';
 
 const registerFormSchema = z.object({
-  name: z.string().min(1, "Full name is required."),
+  firstName: z.string().min(1, "First name is required."),
+  lastName: z.string().min(1, "Last name is required."),
   email: z.string().email("Please enter a valid email address."),
   password: z.string().min(6, "Password must be at least 6 characters."),
   confirmPassword: z.string(),
+  address: z.string().min(1, "Home address is required."),
+  country: z.string().min(1, "Country is required."),
+  phone: z.string().optional(),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords do not match.",
   path: ["confirmPassword"],
@@ -154,10 +159,14 @@ function RegisterContent() {
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerFormSchema),
     defaultValues: {
-      name: "",
+      firstName: "",
+      lastName: "",
       email: "",
       password: "",
       confirmPassword: "",
+      address: "",
+      country: "",
+      phone: "",
     },
   });
 
@@ -180,17 +189,17 @@ function RegisterContent() {
       const userCredential = await createUserWithEmailAndPassword(auth, data.email, data.password);
       const user = userCredential.user;
 
-      const [firstName, ...lastNameParts] = data.name.split(' ');
-      const lastName = lastNameParts.join(' ');
-
       // Step 2: Add user to Firestore via server action
       const result = await addUser({
         uid: user.uid,
-        firstName: firstName,
-        lastName: lastName,
+        firstName: data.firstName,
+        lastName: data.lastName,
         email: data.email,
         role: 'admin', // The first user to register is an admin
         plan: selectedPlan as any,
+        address: data.address,
+        country: data.country,
+        phone: data.phone,
       });
 
       if (result.success) {
@@ -329,7 +338,7 @@ function RegisterContent() {
                             <h3 className="font-semibold">Logged in as:</h3>
                             <div className="flex justify-between items-center">
                                 <span className="text-muted-foreground">Name</span>
-                                <span className="font-medium">{currentUser.name}</span>
+                                <span className="font-medium">{`${currentUser.firstName} ${currentUser.lastName}`}</span>
                             </div>
                             <div className="flex justify-between items-center">
                                 <span className="text-muted-foreground">Email</span>
@@ -341,19 +350,84 @@ function RegisterContent() {
                         </div>
                     ) : (
                         <div className="space-y-4">
-                            <FormField
+                            <div className="grid grid-cols-2 gap-4">
+                                <FormField
+                                    control={form.control}
+                                    name="firstName"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                        <FormLabel>First Name</FormLabel>
+                                        <FormControl>
+                                            <Input placeholder="John" {...field} disabled={isLoading || isGoogleLoading || isMicrosoftLoading} />
+                                        </FormControl>
+                                        <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="lastName"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                        <FormLabel>Last Name</FormLabel>
+                                        <FormControl>
+                                            <Input placeholder="Doe" {...field} disabled={isLoading || isGoogleLoading || isMicrosoftLoading} />
+                                        </FormControl>
+                                        <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+                             <FormField
                                 control={form.control}
-                                name="name"
+                                name="address"
                                 render={({ field }) => (
                                     <FormItem>
-                                    <FormLabel>Full Name</FormLabel>
+                                    <FormLabel>Home Address</FormLabel>
                                     <FormControl>
-                                        <Input placeholder="John Doe" {...field} disabled={isLoading || isGoogleLoading || isMicrosoftLoading} />
+                                        <Input placeholder="123 Main St" {...field} disabled={isLoading || isGoogleLoading || isMicrosoftLoading} />
                                     </FormControl>
                                     <FormMessage />
                                     </FormItem>
                                 )}
                             />
+                            <div className="grid grid-cols-2 gap-4">
+                                <FormField
+                                    control={form.control}
+                                    name="country"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                        <FormLabel>Country</FormLabel>
+                                        <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                                            <FormControl>
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Select a country" />
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                                {countries.map(country => (
+                                                    <SelectItem key={country.code} value={country.code}>{country.name}</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                        <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="phone"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                        <FormLabel>Phone Number (Optional)</FormLabel>
+                                        <FormControl>
+                                            <Input type="tel" {...field} disabled={isLoading || isGoogleLoading || isMicrosoftLoading} />
+                                        </FormControl>
+                                        <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
                             <FormField
                                 control={form.control}
                                 name="email"
@@ -559,3 +633,5 @@ export default function RegisterPage() {
         </Suspense>
     )
 }
+
+    

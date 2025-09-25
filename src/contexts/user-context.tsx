@@ -47,11 +47,15 @@ export function UserProvider({ children }: { children: ReactNode }) {
             const lastName = lastNameParts.join(' ');
             
             const newUser: Omit<User, 'id'> = {
-                name: `${firstName} ${lastName}`,
+                firstName,
+                lastName,
                 email: firebaseUser.email!,
                 role: 'admin',
                 plan: 'starter',
                 avatarUrl: firebaseUser.photoURL || '',
+                address: '',
+                country: '',
+                phone: '',
             };
 
             await setDoc(doc(firestore, "users", firebaseUser.uid), newUser);
@@ -99,11 +103,15 @@ export function UserProvider({ children }: { children: ReactNode }) {
       const finalPlan = user.email === 'stefan86d@gmail.com' ? 'pro' : plan;
 
       const newUser: Omit<User, 'id'> = {
-          name: `${firstName} ${lastName}`,
+          firstName,
+          lastName,
           email: user.email!,
           role: 'admin',
           plan: finalPlan,
           avatarUrl: user.photoURL || '',
+          address: '',
+          country: '',
+          phone: '',
       };
       await setDoc(userDocRef, newUser);
     }
@@ -122,11 +130,15 @@ export function UserProvider({ children }: { children: ReactNode }) {
       const lastName = lastNameParts.join(' ');
       
       const newUser: Omit<User, 'id'> = {
-          name: `${firstName} ${lastName}`,
+          firstName,
+          lastName,
           email: user.email!,
           role: 'admin',
           plan: plan,
           avatarUrl: user.photoURL || '',
+          address: '',
+          country: '',
+          phone: '',
       };
       await setDoc(userDocRef, newUser);
     }
@@ -156,3 +168,5 @@ export function useUser() {
   }
   return context;
 }
+
+    
