@@ -36,7 +36,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
           setCurrentUser({ id: userDoc.id, ...userDoc.data() } as User);
         } else {
           // Handle case where user exists in Firebase Auth but not in our user data
-          console.error("User profile not found in Firestore for UID:", firebaseUser.uid);
+          console.warn(`User profile not found in Firestore for UID: "${firebaseUser.uid}". This can happen if the registration process was interrupted. Signing user out.`);
           setCurrentUser(null);
           await signOut(auth); // Sign out the user
         }
