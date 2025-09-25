@@ -176,11 +176,6 @@ function RegisterContent() {
   
   const selectedTier = tiers[selectedPlan];
   const isFreePlan = selectedPlan === 'starter';
-  const price = selectedTier.prices[selectedDuration][selectedCurrency];
-  const originalPrice = selectedTier.prices['1'][selectedCurrency];
-  const discountPercent = selectedDuration !== '1' && originalPrice > 0 ? Math.round(((originalPrice - price) / originalPrice) * 100) : 0;
-  const totalSaved = (originalPrice - price) * parseInt(selectedDuration);
-  const currencySymbol = currencySymbols[selectedCurrency];
 
   const handleRegistration = async (data: RegisterFormValues) => {
     setIsLoading(true);
@@ -481,73 +476,19 @@ function RegisterContent() {
                                     </SelectContent>
                                 </Select>
                             </div>
-                            <div className="flex justify-between items-center">
-                                <Label>Billing Duration</Label>
-                                <Select value={selectedDuration} onValueChange={setSelectedDuration} disabled={isFreePlan}>
-                                    <SelectTrigger className="w-[180px]">
-                                        <SelectValue placeholder="Select duration" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="1">1 Month</SelectItem>
-                                        <SelectItem value="12">12 Months</SelectItem>
-                                        <SelectItem value="24">24 Months</SelectItem>
-                                        <SelectItem value="48">48 Months</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                             <div className="flex justify-between items-center">
-                                <Label>Currency</Label>
-                                <Select value={selectedCurrency} onValueChange={(v) => setSelectedCurrency(v as any)} disabled={isFreePlan}>
-                                    <SelectTrigger className="w-[180px]">
-                                         <div className="flex items-center gap-2">
-                                            <Globe className="h-4 w-4 text-muted-foreground" />
-                                            <SelectValue placeholder="Select currency" />
-                                        </div>
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                       <SelectItem value="usd">USD ($)</SelectItem>
-                                       <SelectItem value="eur">EUR (€)</SelectItem>
-                                       <SelectItem value="gbp">GBP (£)</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
                         </div>
                         <Separator/>
-                        {isFreePlan ? (
-                            <div className="flex justify-between items-center font-bold text-lg">
-                                <span>Total due today</span>
-                                <span>{currencySymbol}0.00</span>
-                            </div>
-                        ): (
-                            <div className="space-y-2">
-                                <div className="flex justify-between items-center">
-                                    <span className="text-muted-foreground">{selectedTier.name} Plan</span>
-                                    <span className="font-semibold text-lg">
-                                        {currencySymbol}{formatPrice(price, selectedCurrency)}
-                                        <span className="text-sm font-normal text-muted-foreground">/mo</span>
-                                    </span>
-                                </div>
-                                {discountPercent > 0 && (
-                                    <div className="flex justify-between items-center text-sm">
-                                    <span className="text-muted-foreground">Original price</span>
-                                    <span className="text-muted-foreground line-through">{currencySymbol}{formatPrice(originalPrice, selectedCurrency)}/mo</span>
-                                    </div>
-                                )}
-                                {totalSaved > 0 && (
-                                    <div className="flex justify-between items-center text-sm p-2 rounded-md bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300">
-                                        <span className="font-medium">Save {discountPercent}%</span>
-                                        <span className="font-bold">-{currencySymbol}{formatPrice(totalSaved, selectedCurrency)}</span>
-                                    </div>
-                                )}
-                                <Separator />
-                                <div className="flex justify-between items-center font-bold text-lg">
-                                    <span>Total due today</span>
-                                    <span>{currencySymbol}{(formatPrice(price * parseInt(selectedDuration), selectedCurrency))}</span>
-                                </div>
-                            </div>
-                        )}
-                        
+                        <div className="flex justify-between items-center font-bold text-lg">
+                            <span>Total due today</span>
+                            <span>{isFreePlan ? `${currencySymbols[selectedCurrency]}0.00` : 'See plans'}</span>
+                        </div>
                     </CardContent>
+                    <CardFooter>
+                         <Button type="submit" form="registration-form" className="w-full" disabled={isLoading || isGoogleLoading || isMicrosoftLoading}>
+                            {isLoading && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
+                            Create Account
+                        </Button>
+                    </CardFooter>
                 </Card>
             </div>
         </div>
