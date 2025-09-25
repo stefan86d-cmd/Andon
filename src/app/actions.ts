@@ -19,7 +19,7 @@ import type { Issue, Role, User } from "@/lib/types";
 
 // Mock implementation as Firebase Admin is disabled.
 
-export async function reportIssue(issueData: Omit<Issue, 'id' | 'reportedAt' | 'reportedBy' | 'status' | 'productionStopped'>, reportedByEmail: string) {
+export async function reportIssue(issueData: Omit<Issue, 'id' | 'reportedAt' | 'reportedBy' | 'status' | 'productionStopped' | 'description'>, reportedByEmail: string) {
     try {
         const reportedByUser = await getUserByEmail(reportedByEmail);
         if (!reportedByUser) {

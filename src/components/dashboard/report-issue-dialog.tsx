@@ -45,7 +45,7 @@ import { useUser } from "@/contexts/user-context";
 const issueFormSchema = z.object({
   category: z.string().min(1, "Category is required."),
   subCategory: z.string(),
-  description: z.string().min(1, "Description is required."),
+  description: z.string(),
   location: z.string(),
   priority: z.enum(["low", "medium", "high", "critical"]),
   itemNumber: z.string().optional(),
@@ -193,8 +193,13 @@ export function ReportIssueDialog({
       return;
     }
     startSubmittingTransition(async () => {
+        const category = categories.find(c => c.id === data.category);
+        const subCategory = category?.subCategories.find(sc => sc.id === data.subCategory);
+
+        const title = data.description || subCategory?.label || category?.label || "Untitled Issue";
+
         const issueData = {
-            title: data.description,
+            title: title,
             location: data.location,
             productionLineId: selectedLineId || currentUser.productionLineId || "",
             priority: data.priority,
@@ -400,7 +405,7 @@ export function ReportIssueDialog({
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Description</FormLabel>
+                  <FormLabel>Description (Optional)</FormLabel>
                   <FormControl>
                     <Textarea
                       {...field}
