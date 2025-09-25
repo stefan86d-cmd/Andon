@@ -7,16 +7,13 @@ import {
     addProductionLine as addProductionLineToData, 
     updateProductionLine as updateProductionLineInData, 
     deleteProductionLine as deleteLine, 
-    deleteUser as deleteUserData, 
-    updateUser as updateUserInDb,
     getUserByEmail,
-    addUser as addUserToData,
     getAllUsers as getAllUsersFromData,
 } from "@/lib/data";
-import { prioritizeIssue } from '@/ai/flows/prioritize-reported-issues';
 import type { Issue, Role, User } from "@/lib/types";
-import { getFirestore, doc, setDoc, getDocs, collection, query, where, deleteDoc, updateDoc } from 'firebase/firestore';
+import { getFirestore, doc, setDoc, deleteDoc, updateDoc } from 'firebase/firestore';
 import { initializeFirebase } from '@/firebase';
+import { handleFirestoreError } from '@/lib/firestore-helpers';
 
 // Mock implementation as Firebase Admin is disabled.
 
@@ -74,62 +71,58 @@ export async function deleteProductionLine(lineId: string) {
 }
 
 export async function addUser(data: { uid: string, firstName: string, lastName: string, email: string, role: Role, plan: User['plan'] }) {
-    try {
-        // This is a server action, but we are using client SDKs for mutations for this demo.
-        // A real production app should use the Firebase Admin SDK here to securely create users.
-        const { firestore } = initializeFirebase();
-        
-        const newUser: Omit<User, 'id'> = {
-            name: `${data.firstName} ${data.lastName}`,
-            email: data.email,
-            role: data.role,
-            plan: data.plan,
-            avatarUrl: ''
-        };
-
-        // Use the UID from Auth as the document ID in Firestore
-        await setDoc(doc(firestore, "users", data.uid), newUser);
-
-        revalidatePath('/users');
-        return { success: true, message: `User ${data.email} created successfully.` };
-    } catch (e: any) {
-        console.error("Error in addUser action:", e);
-        return { error: e.message || "Failed to create user in database." };
-    }
+    const { firestore } = initializeFirebase();
+    const newUser: Omit<User, 'id'> = {
+        name: `${data.firstName} ${data.lastName}`,
+        email: data.email,
+        role: data.role,
+        plan: data.plan,
+        avatarUrl: ''
+    };
+    const userDocRef = doc(firestore, "users", data.uid);
+    
+    setDoc(userDocRef, newUser).catch(error => handleFirestoreError(error, {
+        operation: 'create',
+        path: userDocRef.path,
+        requestResourceData: newUser,
+    }));
+    
+    revalidatePath('/users');
+    return { success: true, message: `User ${data.email} created successfully.` };
 }
 
 
 export async function deleteUser(uid: string) {
-    try {
-        const { firestore } = initializeFirebase();
-        // NOTE: This only deletes the Firestore document, not the Firebase Auth user.
-        // Deleting the auth user requires the Admin SDK, which is not used here.
-        await deleteDoc(doc(firestore, "users", uid));
-        revalidatePath('/users');
-        return { success: true };
-    } catch (e: any) {
-        console.error(e);
-        return { error: e.message || "Failed to delete user." };
-    }
+    const { firestore } = initializeFirebase();
+    const userDocRef = doc(firestore, "users", uid);
+    
+    deleteDoc(userDocRef).catch(error => handleFirestoreError(error, {
+        operation: 'delete',
+        path: userDocRef.path,
+    }));
+    
+    revalidatePath('/users');
+    return { success: true };
 }
 
 export async function editUser(uid: string, data: { firstName: string, lastName: string, email: string, role: Role }) {
-    try {
-        const { firestore } = initializeFirebase();
-        const userRef = doc(firestore, "users", uid);
+    const { firestore } = initializeFirebase();
+    const userRef = doc(firestore, "users", uid);
 
-        await updateDoc(userRef, {
-            name: `${data.firstName} ${data.lastName}`,
-            email: data.email,
-            role: data.role,
-        });
+    const updatedData = {
+        name: `${data.firstName} ${data.lastName}`,
+        email: data.email,
+        role: data.role,
+    };
 
-        revalidatePath('/users');
-        return { success: true };
-    } catch (e: any) {
-        console.error(e);
-        return { error: e.message || "Failed to update user." };
-    }
+    updateDoc(userRef, updatedData).catch(error => handleFirestoreError(error, {
+        operation: 'update',
+        path: userRef.path,
+        requestResourceData: updatedData,
+    }));
+
+    revalidatePath('/users');
+    return { success: true };
 }
 
 export async function updateIssue(issueId: string, data: {
@@ -174,14 +167,17 @@ export async function seedUsers() {
                 existingCount++;
             } else {
                  const { id, ...rest } = userData;
-                await addUserToData({ ...rest, uid: id });
+                 // Note: this now calls the non-blocking addUser.
+                 await addUser({ ...rest, uid: id });
+                 createdCount++;
             }
         }
         revalidatePath('/users');
         return { success: true, message: `Seeding complete. Created: ${createdCount}, Existing: ${existingCount}.` };
     } catch (error: any) {
-        console.error('Error seeding users:', error);
-        return { error: "Firebase Admin SDK is disabled. Seeding is not possible. Using hardcoded mock users." };
+        // This catch block might not be effective for permission errors now,
+        // as they are handled in the .catch() of the firestore operations.
+        return { error: "Firebase Admin SDK is disabled or another error occurred during seeding. " + error.message };
     }
 }
 
@@ -229,5 +225,3 @@ export async function resetPassword(token: string, newPassword: string) {
         return { success: false, error: 'Failed to reset password.' };
     }
 }
-
-    
