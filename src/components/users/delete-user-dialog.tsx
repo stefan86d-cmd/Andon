@@ -29,7 +29,7 @@ export function DeleteUserDialog({ user }: DeleteUserDialogProps) {
 
   const handleDelete = () => {
     startSubmittingTransition(async () => {
-      const result = await deleteUser(user.email);
+      const result = await deleteUser(user.id);
 
       if (result.success) {
         toast({
@@ -63,7 +63,7 @@ export function DeleteUserDialog({ user }: DeleteUserDialogProps) {
           <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
           <AlertDialogDescription>
             This action cannot be undone. This will permanently delete the user account for
-            <span className="font-semibold"> {user.name} </span>.
+            <span className="font-semibold"> {user.name} </span> from Firestore. It will NOT delete the user from Firebase Authentication.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
@@ -77,3 +77,5 @@ export function DeleteUserDialog({ user }: DeleteUserDialogProps) {
     </AlertDialog>
   );
 }
+
+    

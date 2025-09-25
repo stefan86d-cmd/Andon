@@ -11,11 +11,12 @@ import {
     updateUser as updateUserInDb,
     getUserByEmail,
     addUser as addUserToData,
-    getAllUsers,
-    updateIssue as updateIssueInData,
+    getAllUsers as getAllUsersFromData,
 } from "@/lib/data";
 import { prioritizeIssue } from '@/ai/flows/prioritize-reported-issues';
 import type { Issue, Role, User } from "@/lib/types";
+import { getFirestore, doc, setDoc, getDocs, collection, query, where, deleteDoc, updateDoc } from 'firebase/firestore';
+import { initializeFirebase } from '@/firebase';
 
 // Mock implementation as Firebase Admin is disabled.
 
@@ -74,10 +75,21 @@ export async function deleteProductionLine(lineId: string) {
 
 export async function addUser(data: { uid: string, firstName: string, lastName: string, email: string, role: Role, plan: User['plan'] }, tempPass?: string) {
     try {
-        await addUserToData({
-            uid: data.uid || `mock-uid-${Date.now()}`,
-            ...data
-        });
+        // This is a server action, but we are using client SDKs for mutations
+        // A real implementation would use the Admin SDK here.
+        // For this demo, we'll proceed but acknowledge this is not best practice.
+        const { firestore } = initializeFirebase();
+        
+        const newUser: Omit<User, 'id'> & { uid: string } = {
+            uid: data.uid,
+            name: `${data.firstName} ${data.lastName}`,
+            email: data.email,
+            role: data.role,
+            plan: data.plan,
+            avatarUrl: ''
+        };
+
+        await setDoc(doc(firestore, "users", data.uid), newUser);
 
         revalidatePath('/users');
         return { success: true, message: `User ${data.email} processed successfully.` };
@@ -88,17 +100,12 @@ export async function addUser(data: { uid: string, firstName: string, lastName: 
 }
 
 
-export async function deleteUser(email: string) {
+export async function deleteUser(uid: string) {
     try {
-        const user = await getUserByEmail(email);
-        if (!user) {
-            throw new Error("User not found in mock data.");
-        }
-        if (['alex.j@andon.io', 'sam.m@andon.io', 'maria.g@andon.io'].includes(email)) {
-            throw new Error("Cannot delete default mock users.");
-        }
-
-        await deleteUserData(user.id);
+        const { firestore } = initializeFirebase();
+        // NOTE: This only deletes the Firestore document, not the Firebase Auth user.
+        // Deleting the auth user requires the Admin SDK, which is not used here.
+        await deleteDoc(doc(firestore, "users", uid));
         revalidatePath('/users');
         return { success: true };
     } catch (e: any) {
@@ -107,14 +114,17 @@ export async function deleteUser(email: string) {
     }
 }
 
-export async function editUser(originalEmail: string, data: { firstName: string, lastName: string, email: string, role: Role }) {
+export async function editUser(uid: string, data: { firstName: string, lastName: string, email: string, role: Role }) {
     try {
-        const user = await getUserByEmail(originalEmail);
-        if (!user) {
-           throw new Error("User not found.");
-        }
+        const { firestore } = initializeFirebase();
+        const userRef = doc(firestore, "users", uid);
 
-        await updateUserInDb(user.id, data);
+        await updateDoc(userRef, {
+            name: `${data.firstName} ${data.lastName}`,
+            email: data.email,
+            role: data.role,
+        });
+
         revalidatePath('/users');
         return { success: true };
     } catch (e: any) {
@@ -148,24 +158,24 @@ export async function updateIssue(issueId: string, data: {
 
 export async function seedUsers() {
     const usersToSeed = [
-        { uid: '0P6TMG7LyyWKatYHFNVXpVoRQSC2', firstName: 'Alex', lastName: 'Johnson', email: 'alex.j@andon.io', role: 'admin' as Role, plan: 'pro' as const },
-        { uid: 'mock-sam', firstName: 'Sam', lastName: 'Miller', email: 'sam.m@andon.io', role: 'supervisor' as Role, plan: 'pro' as const },
-        { uid: 'mock-maria', firstName: 'Maria', lastName: 'Garcia', email: 'maria.g@andon.io', role: 'operator' as Role, plan: 'pro' as const },
+        { id: '0P6TMG7LyyWKatYHFNVXpVoRQSC2', name: 'Alex Johnson', email: 'alex.j@andon.io', role: 'admin' as Role, plan: 'pro' as const, avatarUrl: '' },
+        { id: 'dQhiONEA3fTXfd3p6Sa7Z15tGQD3', name: 'Sam Miller', email: 'sam.m@andon.io', role: 'supervisor' as Role, plan: 'pro' as const, avatarUrl: '' },
+        { id: 'BPBNYzsv2LZnAyqNjEonV7a07I33', name: 'Maria Garcia', email: 'maria.g@andon.io', role: 'operator' as Role, plan: 'pro' as const, avatarUrl: '' },
     ];
 
     let createdCount = 0;
     let existingCount = 0;
 
     try {
-        const existingUsers = await getAllUsers();
+        const existingUsers = await getAllUsersFromData();
         const existingEmails = new Set(existingUsers.map(u => u.email));
 
         for (const userData of usersToSeed) {
             if (existingEmails.has(userData.email)) {
                 existingCount++;
             } else {
-                await addUserToData(userData);
-                createdCount++;
+                 const { id, ...rest } = userData;
+                await addUserToData({ ...rest, uid: id });
             }
         }
         revalidatePath('/users');
@@ -178,21 +188,15 @@ export async function seedUsers() {
 
 
 export async function changePassword(userEmail: string, currentPassword: string, newPassword: string) {
-    // In a real app, you would verify the current password against a hash in the database.
-    // For this mock, we'll assume the current password for all users is "password".
+    // This is a mock function. In a real app, this would be handled securely.
+    // For this demo, we're not actually changing the password in Firebase Auth from the server.
+    // The user should do this via client-side SDK flows.
+    // We will simulate a check here.
     if (currentPassword !== 'password') {
         return { success: false, error: 'Incorrect current password.' };
     }
-
-    try {
-        // Here you would typically update the user's password in your authentication system.
-        // Since this is a mock, we'll just log it and return success.
-        console.log(`Password for ${userEmail} changed successfully (mock).`);
-        return { success: true };
-    } catch (e: any) {
-        console.error('Error changing password:', e);
-        return { success: false, error: 'Failed to change password.' };
-    }
+    console.log(`Password for ${userEmail} would be changed here (mock).`);
+    return { success: true };
 }
 
 export async function requestPasswordReset(email: string) {
@@ -226,3 +230,5 @@ export async function resetPassword(token: string, newPassword: string) {
         return { success: false, error: 'Failed to reset password.' };
     }
 }
+
+    

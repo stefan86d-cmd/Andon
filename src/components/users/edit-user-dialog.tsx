@@ -70,7 +70,7 @@ export function EditUserDialog({ user }: EditUserDialogProps) {
 
   function onSubmit(data: UserFormValues) {
     startSubmittingTransition(async () => {
-      const result = await editUser(user.email, data);
+      const result = await editUser(user.id, data);
 
       if (result.success) {
         toast({
@@ -195,3 +195,5 @@ export function EditUserDialog({ user }: EditUserDialogProps) {
     </Dialog>
   );
 }
+
+    

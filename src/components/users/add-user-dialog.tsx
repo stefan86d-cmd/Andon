@@ -5,6 +5,8 @@ import React, { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { useAuth } from "@/firebase";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -35,6 +37,7 @@ import {
 import { toast } from "@/hooks/use-toast";
 import { addUser } from "@/app/actions";
 import { Eye, EyeOff, LoaderCircle } from "lucide-react";
+import { useUser } from "@/contexts/user-context";
 
 const userFormSchema = z.object({
   firstName: z.string().min(1, {
@@ -58,6 +61,8 @@ export function AddUserDialog({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, startTransition] = useTransition();
   const [showPassword, setShowPassword] = useState(false);
+  const auth = useAuth();
+  const { currentUser } = useUser();
 
   const form = useForm<UserFormValues>({
     resolver: zodResolver(userFormSchema),
@@ -70,23 +75,65 @@ export function AddUserDialog({ children }: { children: React.ReactNode }) {
     },
   });
 
-  function onSubmit(data: UserFormValues) {
+  async function onSubmit(data: UserFormValues) {
+    if (!currentUser) {
+        toast({ title: "Not authorized", description: "You must be logged in to add users.", variant: "destructive" });
+        return;
+    }
+    
     startTransition(async () => {
-      const { password, ...userData } = data;
-      const result = await addUser(userData, password);
+      try {
+        // Step 1: Create user in Firebase Auth
+        const userCredential = await createUserWithEmailAndPassword(auth, data.email, data.password);
+        const user = userCredential.user;
 
-      if (result.success) {
-        toast({
-          title: "User Created",
-          description: `An account for ${data.firstName} ${data.lastName} has been created.`,
+        // Step 2: Add user to Firestore via server action
+        const result = await addUser({
+            uid: user.uid,
+            firstName: data.firstName,
+            lastName: data.lastName,
+            email: data.email,
+            role: data.role as "admin" | "supervisor" | "operator",
+            plan: currentUser.plan, // Use the current admin's plan for the new user
         });
-        form.reset();
-        setOpen(false);
-      } else {
+
+        if (result.success) {
+            toast({
+              title: "User Created",
+              description: `An account for ${data.firstName} ${data.lastName} has been created.`,
+            });
+            form.reset();
+            setOpen(false);
+        } else {
+            // TODO: Handle case where Firestore user creation fails
+            // (e.g., delete the auth user or notify admin)
+            toast({
+              variant: "destructive",
+              title: "Failed to create user in database",
+              description: result.error,
+            });
+        }
+      } catch (error: any) {
+         let description = "An unexpected error occurred.";
+         if (error.code) {
+            switch(error.code) {
+                case 'auth/email-already-in-use':
+                    description = 'This email address is already in use.';
+                    break;
+                case 'auth/invalid-email':
+                    description = 'Please enter a valid email address.';
+                    break;
+                 case 'auth/weak-password':
+                    description = 'The password is too weak. Please choose a stronger password.';
+                    break;
+                default:
+                    description = error.message;
+            }
+         }
         toast({
           variant: "destructive",
           title: "Failed to create user",
-          description: result.error,
+          description: description,
         });
       }
     });
@@ -106,7 +153,7 @@ export function AddUserDialog({ children }: { children: React.ReactNode }) {
         <DialogHeader>
           <DialogTitle>Add New User</DialogTitle>
           <DialogDescription>
-            Fill in the details below to add a new user to the system.
+            Fill in the details below to add a new user to the system. They will be created in Firebase Authentication.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -160,7 +207,7 @@ export function AddUserDialog({ children }: { children: React.ReactNode }) {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Temporary Password</FormLabel>
+                  <FormLabel>Password</FormLabel>
                   <div className="relative">
                     <FormControl>
                       <Input
@@ -228,3 +275,5 @@ export function AddUserDialog({ children }: { children: React.ReactNode }) {
     </Dialog>
   );
 }
+
+    

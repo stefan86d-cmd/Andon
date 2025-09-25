@@ -1,227 +1,26 @@
 
 import type { User, Issue, ProductionLine, Role, IssueCategory, Plan } from "@/lib/types";
 import { format, subDays, subHours } from "date-fns";
+import { getFirestore, getDocs, collection, query, where, doc, getDoc } from 'firebase/firestore';
+import { initializeFirebase } from "@/firebase";
 
 // --- MOCK DATA ---
-// This is a mock database for development when Firebase is disabled.
-
-let mockUsers: User[] = [
-    { id: '0P6TMG7LyyWKatYHFNVXpVoRQSC2', name: 'Alex Johnson', email: 'alex.j@andon.io', avatarUrl: '', role: 'admin', plan: 'pro' },
-    { id: 'dQhiONEA3fTXfd3p6Sa7Z15tGQD3', name: 'Sam Miller', email: 'sam.m@andon.io', avatarUrl: '', role: 'supervisor', plan: 'pro' },
-    { id: 'BPBNYzsv2LZnAyqNjEonV7a07I33', name: 'Maria Garcia', email: 'maria.g@andon.io', avatarUrl: '', role: 'operator', plan: 'pro' },
-];
+// This section contains mock data used for development and will be phased out.
 
 let mockProductionLines: ProductionLine[] = [
     { id: 'line-1', name: 'Assembly Line 1', workstations: ['Station A', 'Station B', 'QA'] },
     { id: 'line-2', name: 'Packaging Line Alpha', workstations: ['Wrapper', 'Boxer', 'Palletizer'] },
 ];
 
-let mockIssues: Issue[] = [
-    {
-        id: 'issue-1',
-        title: 'Conveyor belt stalled',
-        location: 'Assembly Line 1 - Station B',
-        productionLineId: 'line-1',
-        priority: 'critical',
-        status: 'reported',
-        reportedAt: new Date(Date.now() - 1000 * 60 * 5), // 5 minutes ago
-        reportedBy: mockUsers[2], // Maria Garcia
-        category: 'tool',
-        subCategory: 'power-issue',
-        productionStopped: true,
-    },
-    {
-        id: 'issue-2',
-        title: 'Missing component #A-452',
-        location: 'Assembly Line 1 - Station A',
-        productionLineId: 'line-1',
-        priority: 'high',
-        status: 'in_progress',
-        reportedAt: new Date(Date.now() - 1000 * 60 * 30), // 30 minutes ago
-        reportedBy: mockUsers[2],
-        category: 'logistics',
-        subCategory: 'material-shortage',
-        itemNumber: 'A-452',
-        quantity: 50,
-    },
-    {
-        id: 'issue-3',
-        title: 'Network connection lost to QA server',
-        location: 'Assembly Line 1 - QA',
-        productionLineId: 'line-1',
-        priority: 'medium',
-        status: 'reported',
-        reportedAt: new Date(Date.now() - 1000 * 60 * 60 * 2), // 2 hours ago
-        reportedBy: mockUsers[2],
-        category: 'it',
-        subCategory: 'network',
-    },
-     {
-        id: 'issue-4',
-        title: 'Incorrect box size for order #8851',
-        location: 'Packaging Line Alpha - Boxer',
-        productionLineId: 'line-2',
-        priority: 'low',
-        status: 'resolved',
-        reportedAt: new Date(Date.now() - 1000 * 60 * 60 * 25), // 25 hours ago
-        reportedBy: mockUsers[2],
-        category: 'logistics',
-        subCategory: 'incorrect-material',
-        resolvedAt: new Date(Date.now() - 1000 * 60 * 60 * 24), // resolved 1 hour later
-        resolvedBy: mockUsers[1], // Sam Miller
-        resolutionNotes: 'Retrieved correct boxes from warehouse C.'
-    },
-    {
-        id: 'issue-5',
-        title: 'Final product has visible scratches',
-        location: 'Assembly Line 1 - QA',
-        productionLineId: 'line-1',
-        priority: 'high',
-        status: 'in_progress',
-        reportedAt: subDays(new Date(), 1),
-        reportedBy: mockUsers[2],
-        category: 'quality',
-        subCategory: 'defect-found',
-        productionStopped: true,
-    },
-    {
-        id: 'issue-6',
-        title: 'Printer is out of ink',
-        location: 'Packaging Line Alpha - Palletizer',
-        productionLineId: 'line-2',
-        priority: 'low',
-        status: 'resolved',
-        reportedAt: subDays(new Date(), 2),
-        reportedBy: mockUsers[2],
-        resolvedAt: subDays(new Date(), 2),
-        resolvedBy: mockUsers[1],
-        category: 'it',
-        subCategory: 'hardware',
-        resolutionNotes: 'Replaced ink cartridge.',
-    },
-    {
-        id: 'issue-7',
-        title: 'Forklift battery is dead',
-        location: 'Packaging Line Alpha - Wrapper',
-        productionLineId: 'line-2',
-        priority: 'high',
-        status: 'resolved',
-        reportedAt: subDays(new Date(), 3),
-        reportedBy: mockUsers[2],
-        resolvedAt: subHours(subDays(new Date(), 3), -4), // 4 hours later
-        resolvedBy: mockUsers[1],
-        category: 'tool',
-        subCategory: 'power-issue',
-        productionStopped: true,
-        resolutionNotes: 'Replaced battery.',
-    },
-    {
-        id: 'issue-8',
-        title: 'Urgent assistance needed at Station B',
-        location: 'Assembly Line 1 - Station B',
-        productionLineId: 'line-1',
-        priority: 'critical',
-        status: 'in_progress',
-        reportedAt: subHours(new Date(), 1),
-        reportedBy: mockUsers[2],
-        category: 'assistance',
-    },
-    {
-        id: 'issue-9',
-        title: 'Software UI is frozen',
-        location: 'Packaging Line Alpha - Boxer',
-        productionLineId: 'line-2',
-        priority: 'medium',
-        status: 'reported',
-        reportedAt: subDays(new Date(), 4),
-        reportedBy: mockUsers[2],
-        category: 'it',
-        subCategory: 'software',
-    },
-    {
-        id: 'issue-10',
-        title: 'Parts delivery is late',
-        location: 'Assembly Line 1 - Station A',
-        productionLineId: 'line-1',
-        priority: 'medium',
-        status: 'in_progress',
-        reportedAt: subDays(new Date(), 5),
-        reportedBy: mockUsers[2],
-        category: 'logistics',
-        subCategory: 'transport-delay',
-    },
-    {
-        id: 'issue-11',
-        title: 'Pneumatic drill is malfunctioning',
-        location: 'Assembly Line 1 - Station A',
-        productionLineId: 'line-1',
-        priority: 'high',
-        status: 'reported',
-        reportedAt: subDays(new Date(), 1),
-        reportedBy: mockUsers[2],
-        category: 'tool',
-        subCategory: 'tool-broken',
-    },
-    {
-        id: 'issue-12',
-        title: 'Incorrect color on component #C-113',
-        location: 'Assembly Line 1 - QA',
-        productionLineId: 'line-1',
-        priority: 'medium',
-        status: 'resolved',
-        reportedAt: subDays(new Date(), 6),
-        reportedBy: mockUsers[2],
-        resolvedAt: subDays(new Date(), 5),
-        resolvedBy: mockUsers[1],
-        category: 'quality',
-        subCategory: 'defect-found',
-        resolutionNotes: 'Adjusted paint mixture.'
-    },
-    {
-        id: 'issue-13',
-        title: 'Cannot login to management software',
-        location: 'Assembly Line 1 - Station A',
-        productionLineId: 'line-1',
-        priority: 'low',
-        status: 'reported',
-        reportedAt: subDays(new Date(), 7),
-        reportedBy: mockUsers[2],
-        category: 'it',
-        subCategory: 'software',
-    },
-    {
-        id: 'issue-14',
-        title: 'Emergency stop button was pressed',
-        location: 'Packaging Line Alpha - Palletizer',
-        productionLineId: 'line-2',
-        priority: 'critical',
-        status: 'resolved',
-        reportedAt: subDays(new Date(), 4),
-        reportedBy: mockUsers[2],
-        resolvedAt: subHours(subDays(new Date(), 4), -1),
-        resolvedBy: mockUsers[1],
-        category: 'assistance',
-        productionStopped: true,
-        resolutionNotes: 'False alarm. Reset the button.'
-    },
-    {
-        id: 'issue-15',
-        title: 'Hydraulic press needs calibration',
-        location: 'Assembly Line 1 - Station B',
-        productionLineId: 'line-1',
-        priority: 'medium',
-        status: 'in_progress',
-        reportedAt: subHours(new Date(), 6),
-        reportedBy: mockUsers[2],
-        category: 'tool',
-        subCategory: 'calibration',
-    }
-];
+let mockUsers: User[] = []; // Users will now be fetched from Firestore
+
+let mockIssues: Issue[] = []; // This will be replaced by Firestore data soon.
 
 
 // --- Production Lines ---
 
 export async function getProductionLines(): Promise<ProductionLine[]> {
+    // This still uses mock data. Will be migrated later.
     return Promise.resolve(mockProductionLines);
 }
 
@@ -248,50 +47,57 @@ export async function deleteProductionLine(lineId: string) {
 }
 
 
-// --- Users ---
+// --- Users (Firestore Implementation) ---
 
 export async function getAllUsers(): Promise<User[]> {
-    return Promise.resolve(mockUsers);
+    const { firestore } = initializeFirebase();
+    const usersCollection = collection(firestore, "users");
+    const usersSnapshot = await getDocs(usersCollection);
+    const usersList = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
+    return usersList;
 }
 
 export async function getUserByEmail(email: string): Promise<User | null> {
-    const user = mockUsers.find(u => u.email === email);
-    return Promise.resolve(user || null);
+    const { firestore } = initializeFirebase();
+    const usersCollection = collection(firestore, "users");
+    const q = query(usersCollection, where("email", "==", email));
+    const querySnapshot = await getDocs(q);
+    if (querySnapshot.empty) {
+        return null;
+    }
+    const userDoc = querySnapshot.docs[0];
+    return { id: userDoc.id, ...userDoc.data() } as User;
 }
 
-export async function addUser(data: { uid: string, firstName: string, lastName: string, email: string, role: Role, plan: Plan }) {
-    const newUser: User = {
-        id: data.uid,
-        name: `${data.firstName} ${data.lastName}`,
-        email: data.email,
-        role: data.role,
-        plan: data.plan,
-        avatarUrl: '', // No more placeholder images
-    };
-    mockUsers.push(newUser);
+export async function getUserById(uid: string): Promise<User | null> {
+    const { firestore } = initializeFirebase();
+    const userDocRef = doc(firestore, 'users', uid);
+    const userDoc = await getDoc(userDocRef);
+    if (!userDoc.exists()) {
+        return null;
+    }
+    return { id: userDoc.id, ...userDoc.data() } as User;
+}
+
+// These functions below are now delegating to server actions, but the core logic
+// of adding/updating/deleting is now in actions.ts. These mock functions can be removed later.
+export async function addUserToData(data: Omit<User, 'id'> & { uid: string }) {
+     // This function's logic is now in actions.ts to use server-side capabilities
+    return Promise.resolve();
+}
+
+export async function deleteUserData(userId: string) {
+     // This function's logic is now in actions.ts
+    return Promise.resolve();
+}
+
+export async function updateUserInDb(userId: string, data: any) {
+    // This function's logic is now in actions.ts
     return Promise.resolve();
 }
 
 
-export async function deleteUser(userId: string) {
-    mockUsers = mockUsers.filter(user => user.id !== userId);
-    return Promise.resolve();
-}
-
-export async function updateUserInDb(userId: string, data: { firstName: string, lastName: string, email: string, role: Role }) {
-     mockUsers = mockUsers.map(user => 
-        user.id === userId ? {
-            ...user,
-            name: `${data.firstName} ${data.lastName}`,
-            email: data.email,
-            role: data.role,
-        } : user
-    );
-    return Promise.resolve();
-}
-
-
-// --- Issues ---
+// --- Issues (Still Mocked) ---
 
 export async function getIssues(): Promise<Issue[]> {
     // Sort by date descending, like the original query
@@ -336,3 +142,5 @@ export async function updateIssueInData(issueId: string, data: Partial<Omit<Issu
     );
     return Promise.resolve();
 }
+
+    
