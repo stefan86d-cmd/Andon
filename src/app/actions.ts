@@ -4,6 +4,7 @@
 import { revalidatePath } from 'next/cache';
 import { 
     addIssue as addIssueToData, 
+    updateIssue as updateIssueInData,
     addProductionLine as addProductionLineToData, 
     updateProductionLine as updateProductionLineInData, 
     deleteProductionLine as deleteLine, 
@@ -81,14 +82,18 @@ export async function addUser(data: { uid: string, firstName: string, lastName: 
     };
     const userDocRef = doc(firestore, "users", data.uid);
     
-    setDoc(userDocRef, newUser).catch(error => handleFirestoreError(error, {
-        operation: 'create',
-        path: userDocRef.path,
-        requestResourceData: newUser,
-    }));
-    
-    revalidatePath('/users');
-    return { success: true, message: `User ${data.email} created successfully.` };
+    try {
+        await setDoc(userDocRef, newUser);
+        revalidatePath('/users');
+        return { success: true, message: `User ${data.email} created successfully.` };
+    } catch (error) {
+        handleFirestoreError(error, {
+            operation: 'create',
+            path: userDocRef.path,
+            requestResourceData: newUser,
+        });
+        return { success: false, error: 'Failed to save user data.' };
+    }
 }
 
 
@@ -96,13 +101,17 @@ export async function deleteUser(uid: string) {
     const { firestore } = initializeFirebase();
     const userDocRef = doc(firestore, "users", uid);
     
-    deleteDoc(userDocRef).catch(error => handleFirestoreError(error, {
-        operation: 'delete',
-        path: userDocRef.path,
-    }));
-    
-    revalidatePath('/users');
-    return { success: true };
+    try {
+        await deleteDoc(userDocRef);
+        revalidatePath('/users');
+        return { success: true };
+    } catch (error) {
+        handleFirestoreError(error, {
+            operation: 'delete',
+            path: userDocRef.path,
+        });
+        return { success: false, error: 'Failed to delete user data.' };
+    }
 }
 
 export async function editUser(uid: string, data: { firstName: string, lastName: string, email: string, role: Role }) {
@@ -115,14 +124,18 @@ export async function editUser(uid: string, data: { firstName: string, lastName:
         role: data.role,
     };
 
-    updateDoc(userRef, updatedData).catch(error => handleFirestoreError(error, {
-        operation: 'update',
-        path: userRef.path,
-        requestResourceData: updatedData,
-    }));
-
-    revalidatePath('/users');
-    return { success: true };
+    try {
+        await updateDoc(userRef, updatedData);
+        revalidatePath('/users');
+        return { success: true };
+    } catch (error) {
+        handleFirestoreError(error, {
+            operation: 'update',
+            path: userRef.path,
+            requestResourceData: updatedData,
+        });
+        return { success: false, error: 'Failed to update user data.' };
+    }
 }
 
 export async function updateIssue(issueId: string, data: {
@@ -167,17 +180,16 @@ export async function seedUsers() {
                 existingCount++;
             } else {
                  const { id, ...rest } = userData;
-                 // Note: this now calls the non-blocking addUser.
-                 await addUser({ ...rest, uid: id });
+                 const [firstName, ...lastNameParts] = rest.name.split(' ');
+                 const lastName = lastNameParts.join(' ');
+                 await addUser({ ...rest, firstName, lastName, uid: id });
                  createdCount++;
             }
         }
         revalidatePath('/users');
         return { success: true, message: `Seeding complete. Created: ${createdCount}, Existing: ${existingCount}.` };
     } catch (error: any) {
-        // This catch block might not be effective for permission errors now,
-        // as they are handled in the .catch() of the firestore operations.
-        return { error: "Firebase Admin SDK is disabled or another error occurred during seeding. " + error.message };
+        return { error: "An error occurred during seeding. " + error.message };
     }
 }
 
