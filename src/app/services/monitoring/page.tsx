@@ -79,8 +79,8 @@ export default function ProductionMonitoringPage() {
 
         <section className="container text-center pb-20">
           <Image
-            src="/Production_monitoring.png"
-            alt="Production Monitoring Screenshot"
+            src="/Dashboard.png"
+            alt="AndonPro Dashboard Screenshot"
             width={1200}
             height={675}
             className="rounded-lg shadow-xl mx-auto"
