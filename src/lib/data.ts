@@ -142,5 +142,3 @@ export async function updateIssueInData(issueId: string, data: Partial<Omit<Issu
     );
     return Promise.resolve();
 }
-
-    

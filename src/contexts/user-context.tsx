@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { onAuthStateChanged, signInWithEmailAndPassword, signOut, type User as FirebaseUser } from "firebase/auth";
 import { useAuth, useFirestore } from '@/firebase';
 import type { User } from '@/lib/types';
-import { doc, getDoc, collection, getDocs } from 'firebase/firestore';
+import { doc, getDoc, collection, getDocs, query, where } from 'firebase/firestore';
 
 interface UserContextType {
   currentUser: User | null;
@@ -53,26 +53,6 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const login = async (email: string, password: string) => {
     setLoading(true);
     try {
-      // Check user count against plan limit before allowing login
-      const userToLogin = await getDoc(doc(firestore, "users", `email:${email}`)); // This is a simplification. A query is needed.
-      if (userToLogin.exists()) {
-          const userPlan = userToLogin.data().plan;
-          const role = userToLogin.data().role;
-          const planLimits = {
-            starter: { users: 5 },
-            standard: { users: 50 },
-            pro: { users: 150 },
-            enterprise: { users: Infinity },
-          };
-          
-          const usersSnapshot = await getDocs(collection(firestore, "users"));
-          const totalUsers = usersSnapshot.size;
-          
-          if (totalUsers > planLimits[userPlan].users && role !== 'admin') {
-              throw new Error("Account user limit exceeded. Please contact your administrator.");
-          }
-      }
-
       await signInWithEmailAndPassword(auth, email, password);
       // Auth state change will be handled by onAuthStateChanged listener
     } catch (error: any) {
@@ -104,5 +84,3 @@ export function useUser() {
   }
   return context;
 }
-
-    
