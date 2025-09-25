@@ -110,6 +110,34 @@
         "id",
         "keyword"
       ]
+    },
+    "ProductionLine": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "ProductionLine",
+      "type": "object",
+      "description": "Represents a production line in the factory.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the production line."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the production line."
+        },
+        "workstations": {
+          "type": "array",
+          "description": "A list of workstation names on this line.",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "workstations"
+      ]
     }
   },
   "auth": {
@@ -139,18 +167,14 @@
         }
       },
       {
-        "path": "/users/{userId}/issues/{issueId}",
+        "path": "/issues/{issueId}",
         "definition": {
           "entityName": "Issue",
           "schema": {
             "$ref": "#/backend/entities/Issue"
           },
-          "description": "Stores issues reported or assigned to a specific user. Path-based ownership ensures that only the user who reported the issue, or the user assigned to it, along with authorized personnel, can access the issue document.",
+          "description": "Stores all reported issues in a single collection for easy querying and analysis.",
           "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier for the user."
-            },
             {
               "name": "issueId",
               "description": "The unique identifier for the issue."
@@ -159,22 +183,22 @@
         }
       },
       {
-        "path": "/facilityKeywords/{facilityKeywordId}",
+        "path": "/productionLines/{lineId}",
         "definition": {
-          "entityName": "FacilityKeyword",
+          "entityName": "ProductionLine",
           "schema": {
-            "$ref": "#/backend/entities/FacilityKeyword"
+            "$ref": "#/backend/entities/ProductionLine"
           },
-          "description": "Stores keywords relevant to different facilities. This is a global collection, allowing easy management and retrieval of facility keywords.",
+          "description": "Stores all production lines in a single collection.",
           "params": [
             {
-              "name": "facilityKeywordId",
-              "description": "The unique identifier for the facility keyword."
+              "name": "lineId",
+              "description": "The unique identifier for the production line."
             }
           ]
         }
       }
     ],
-    "reasoning": "The Firestore structure is designed to support the Andon Assistant application, focusing on issue reporting, resolution tracking, and user roles within a production line factory setting. The primary goal is to enable efficient querying, secure data access, and real-time updates. The design leverages path-based ownership for user-specific data and a global collection for facility keywords, promoting clarity and scalability.\n\n**Authorization Independence:** The structure utilizes path-based ownership (`/users/{userId}/issues/{issueId}`) to ensure that access control for issues is directly tied to the user who reported them or is assigned to resolve them.  This eliminates the need for `get()` calls to parent documents for authorization, allowing atomic operations.\n\n**QAPs (Rules are not Filters):**  The segregation of data into user-owned subcollections (`/users/{userId}/issues/{issueId}`) enables secure list operations. Rules can easily filter issues based on the requesting user's ID without needing to filter data within the rules themselves. The separate `/facilityKeywords` collection allows for unrestricted listing of available facility keywords.\n\n**Data Structure Details:**\n\n*   `/users/{userId}`: Stores user profiles. User IDs are used for authentication. Each user has a subcollection of issues.\n*   `/users/{userId}/issues/{issueId}`: Stores issues reported or assigned to a specific user. This path-based ownership ensures that only the user who reported the issue, or the user assigned to it, along with authorized personnel, can access the issue document.\n*   `/facilityKeywords/{facilityKeywordId}`: Stores keywords relevant to different facilities. This is a global collection, allowing easy management and retrieval of facility keywords. The AI-powered tool uses these keywords to assess issue priority.\n\nThis structure supports the core features of the Andon Assistant application, including issue reporting, real-time notifications, issue prioritization, issue resolution tracking, reporting dashboards, and user roles with varying levels of access."
+    "reasoning": "The Firestore structure uses top-level collections for Users, Issues, and ProductionLines. This flat structure simplifies queries, as all data for a given type is in one place. Security rules will be used to control access. For example, while all issues are in one collection, rules will ensure that only authorized users (like admins or supervisors) can view all issues, while operators might only see issues they reported."
   }
 }
