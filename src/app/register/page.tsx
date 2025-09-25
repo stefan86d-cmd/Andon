@@ -281,6 +281,23 @@ function RegisterContent() {
     }
   };
   
+  if (currentUser) {
+    // If the user is already logged in, this page becomes a plan upgrade page.
+    return (
+      <div className="container mx-auto flex min-h-screen items-center justify-center py-12">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle>Change Your Plan</CardTitle>
+            <CardDescription>You are currently on the {currentUser.plan} plan.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p>This is where the plan upgrade UI would go. For now, please log out to register a new account.</p>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
   return (
     <div className="container mx-auto flex min-h-screen items-center justify-center py-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 w-full max-w-6xl">
