@@ -10,8 +10,8 @@ import Link from "next/link";
 
 const planLimits = {
   starter: { users: 5 },
-  standard: { users: 20 },
-  pro: { users: 50 },
+  standard: { users: 50 },
+  pro: { users: 150 },
   enterprise: { users: Infinity },
 }
 

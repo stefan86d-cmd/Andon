@@ -34,8 +34,8 @@ import { useUser } from "@/contexts/user-context";
 
 const planLimits = {
   starter: { workstations: 5 },
-  standard: { workstations: 20 },
-  pro: { workstations: 40 },
+  standard: { workstations: 10 },
+  pro: { workstations: 15 },
   enterprise: { workstations: Infinity },
 };
 

@@ -47,9 +47,9 @@ const tiers = [
     pricePeriod: "/ month",
     description: "For growing factories that need more power and insights.",
     features: [
-      { text: "Up to 20 users" },
+      { text: "Up to 50 users" },
       { text: "Up to 5 Production Lines" },
-      { text: "Up to 20 workstations per line" },
+      { text: "Up to 10 workstations per line" },
       { text: "Advanced Reporting & Analytics" },
       { text: "AI-Powered Issue Prioritization" },
       { text: "User Role Management" },
@@ -69,9 +69,9 @@ const tiers = [
     pricePeriod: "/ month",
     description: "For scaling operations with expanded needs.",
     features: [
-        { text: "Up to 50 users" },
+        { text: "Up to 150 users" },
         { text: "Up to 10 Production Lines" },
-        { text: "Up to 40 workstations per line" },
+        { text: "Up to 15 workstations per line" },
         { text: "Advanced Reporting & Analytics" },
         { text: "AI-Powered Issue Prioritization" },
         { text: "User Role Management" },
