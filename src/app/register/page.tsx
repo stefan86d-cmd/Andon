@@ -286,24 +286,10 @@ function RegisterContent() {
     }
   };
   
-  const handlePayment = async (e: React.FormEvent) => {
-     e.preventDefault();
-     setIsLoading(true);
-     // This is a mock payment flow.
-     // In a real app, you would handle payment here and then call handleRegistration on success.
-     setTimeout(() => {
-      form.handleSubmit(handleRegistration)();
-    }, 2000);
-  }
-  
-  const formAction = isFreePlan ? form.handleSubmit(handleRegistration) : (currentUser ? handlePayment : form.handleSubmit(handleRegistration));
-  const mainFormId = isFreePlan ? 'registration-form' : (currentUser ? 'payment-form' : 'registration-form');
-
-
   return (
     <div className="container mx-auto flex min-h-screen items-center justify-center py-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 w-full max-w-6xl">
-            {/* Left Side: Registration / Payment */}
+            {/* Left Side: Registration */}
             <div className="flex flex-col gap-8">
                 <div className="flex justify-start">
                     <Link href="/">
@@ -312,7 +298,13 @@ function RegisterContent() {
                 </div>
                 
                  <div>
-                  <h2 className="text-2xl font-bold mt-2">Your Details</h2>
+                  <h2 className="text-2xl font-bold mt-2">Create your account</h2>
+                   <p className="text-muted-foreground">
+                    Already have an account?{" "}
+                    <Link href="/login" className="text-primary hover:underline">
+                        Log in
+                    </Link>
+                </p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
@@ -332,110 +324,17 @@ function RegisterContent() {
                 </div>
                 
                 <Form {...form}>
-                <form id={mainFormId} onSubmit={formAction} className="space-y-6">
-                    {currentUser ? (
-                         <div className="space-y-4 rounded-lg border bg-card-foreground/5 p-6">
-                            <h3 className="font-semibold">Logged in as:</h3>
-                            <div className="flex justify-between items-center">
-                                <span className="text-muted-foreground">Name</span>
-                                <span className="font-medium">{`${currentUser.firstName} ${currentUser.lastName}`}</span>
-                            </div>
-                            <div className="flex justify-between items-center">
-                                <span className="text-muted-foreground">Email</span>
-                                <span className="font-medium">{currentUser.email}</span>
-                            </div>
-                                <div className="text-center pt-2">
-                                <p className="text-sm text-muted-foreground">Not you? <button onClick={() => { localStorage.removeItem('currentUserEmail'); window.location.reload(); }} className="text-primary hover:underline">Log out</button></p>
-                            </div>
-                        </div>
-                    ) : (
-                        <div className="space-y-4">
-                            <div className="grid grid-cols-2 gap-4">
-                                <FormField
-                                    control={form.control}
-                                    name="firstName"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                        <FormLabel>First Name</FormLabel>
-                                        <FormControl>
-                                            <Input placeholder="John" {...field} disabled={isLoading || isGoogleLoading || isMicrosoftLoading} />
-                                        </FormControl>
-                                        <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name="lastName"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                        <FormLabel>Last Name</FormLabel>
-                                        <FormControl>
-                                            <Input placeholder="Doe" {...field} disabled={isLoading || isGoogleLoading || isMicrosoftLoading} />
-                                        </FormControl>
-                                        <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                            </div>
-                             <FormField
-                                control={form.control}
-                                name="address"
-                                render={({ field }) => (
-                                    <FormItem>
-                                    <FormLabel>Home Address</FormLabel>
-                                    <FormControl>
-                                        <Input placeholder="123 Main St" {...field} disabled={isLoading || isGoogleLoading || isMicrosoftLoading} />
-                                    </FormControl>
-                                    <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <div className="grid grid-cols-2 gap-4">
-                                <FormField
-                                    control={form.control}
-                                    name="country"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                        <FormLabel>Country</FormLabel>
-                                        <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
-                                            <FormControl>
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Select a country" />
-                                                </SelectTrigger>
-                                            </FormControl>
-                                            <SelectContent>
-                                                {countries.map(country => (
-                                                    <SelectItem key={country.code} value={country.code}>{country.name}</SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                        <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name="phone"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                        <FormLabel>Phone Number (Optional)</FormLabel>
-                                        <FormControl>
-                                            <Input type="tel" {...field} disabled={isLoading || isGoogleLoading || isMicrosoftLoading} />
-                                        </FormControl>
-                                        <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                            </div>
+                <form id="registration-form" onSubmit={form.handleSubmit(handleRegistration)} className="space-y-6">
+                    <div className="space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
                             <FormField
                                 control={form.control}
-                                name="email"
+                                name="firstName"
                                 render={({ field }) => (
                                     <FormItem>
-                                    <FormLabel>Email</FormLabel>
+                                    <FormLabel>First Name</FormLabel>
                                     <FormControl>
-                                        <Input type="email" placeholder="john.d@example.com" {...field} disabled={isLoading || isGoogleLoading || isMicrosoftLoading} />
+                                        <Input placeholder="John" {...field} disabled={isLoading || isGoogleLoading || isMicrosoftLoading} />
                                     </FormControl>
                                     <FormMessage />
                                     </FormItem>
@@ -443,80 +342,115 @@ function RegisterContent() {
                             />
                             <FormField
                                 control={form.control}
-                                name="password"
+                                name="lastName"
                                 render={({ field }) => (
                                     <FormItem>
-                                    <FormLabel>Password</FormLabel>
+                                    <FormLabel>Last Name</FormLabel>
                                     <FormControl>
-                                        <Input type="password" {...field} disabled={isLoading || isGoogleLoading || isMicrosoftLoading} />
-                                    </FormControl>
-                                    <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="confirmPassword"
-                                render={({ field }) => (
-                                    <FormItem>
-                                    <FormLabel>Repeat Password</FormLabel>
-                                    <FormControl>
-                                        <Input type="password" {...field} disabled={isLoading || isGoogleLoading || isMicrosoftLoading} />
+                                        <Input placeholder="Doe" {...field} disabled={isLoading || isGoogleLoading || isMicrosoftLoading} />
                                     </FormControl>
                                     <FormMessage />
                                     </FormItem>
                                 )}
                             />
                         </div>
-                    )}
-
-                    {!isFreePlan && (
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Payment Information</CardTitle>
-                                {currentUser && (
-                                     <CardDescription>
-                                        The remaining value of your current plan will be credited towards this upgrade.
-                                    </CardDescription>
+                         <FormField
+                            control={form.control}
+                            name="address"
+                            render={({ field }) => (
+                                <FormItem>
+                                <FormLabel>Home Address</FormLabel>
+                                <FormControl>
+                                    <Input placeholder="123 Main St" {...field} disabled={isLoading || isGoogleLoading || isMicrosoftLoading} />
+                                </FormControl>
+                                <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <div className="grid grid-cols-2 gap-4">
+                            <FormField
+                                control={form.control}
+                                name="country"
+                                render={({ field }) => (
+                                    <FormItem>
+                                    <FormLabel>Country</FormLabel>
+                                    <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                                        <FormControl>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Select a country" />
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            {countries.map(country => (
+                                                <SelectItem key={country.code} value={country.code}>{country.name}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                    </FormItem>
                                 )}
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="cardNumber">Card Number</Label>
-                                    <div className="relative">
-                                        <Input id="cardNumber" placeholder="0000 0000 0000 0000" required disabled={isLoading || isGoogleLoading || isMicrosoftLoading} />
-                                        <CreditCard className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                                    </div>
-                                </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <Label htmlFor="expiryDate">Expires</Label>
-                                        <div className="relative">
-                                            <Input id="expiryDate" placeholder="MM / YY" required disabled={isLoading || isGoogleLoading || isMicrosoftLoading} />
-                                            <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                                        </div>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="cvc">CVC</Label>
-                                        <div className="relative">
-                                            <Input id="cvc" placeholder="123" required disabled={isLoading || isGoogleLoading || isMicrosoftLoading} />
-                                            <Lock className="absolute right-3 top-1.2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="cardName">Name on Card</Label>
-                                    <Input id="cardName" placeholder="John Doe" required disabled={isLoading || isGoogleLoading || isMicrosoftLoading} />
-                                </div>
-                            </CardContent>
-                        </Card>
-                    )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="phone"
+                                render={({ field }) => (
+                                    <FormItem>
+                                    <FormLabel>Phone Number (Optional)</FormLabel>
+                                    <FormControl>
+                                        <Input type="tel" {...field} disabled={isLoading || isGoogleLoading || isMicrosoftLoading} />
+                                    </FormControl>
+                                    <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+                        <FormField
+                            control={form.control}
+                            name="email"
+                            render={({ field }) => (
+                                <FormItem>
+                                <FormLabel>Email</FormLabel>
+                                <FormControl>
+                                    <Input type="email" placeholder="john.d@example.com" {...field} disabled={isLoading || isGoogleLoading || isMicrosoftLoading} />
+                                </FormControl>
+                                <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="password"
+                            render={({ field }) => (
+                                <FormItem>
+                                <FormLabel>Password</FormLabel>
+                                <FormControl>
+                                    <Input type="password" {...field} disabled={isLoading || isGoogleLoading || isMicrosoftLoading} />
+                                </FormControl>
+                                <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="confirmPassword"
+                            render={({ field }) => (
+                                <FormItem>
+                                <FormLabel>Repeat Password</FormLabel>
+                                <FormControl>
+                                    <Input type="password" {...field} disabled={isLoading || isGoogleLoading || isMicrosoftLoading} />
+                                </FormControl>
+                                <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </div>
+                    
                      <p className="text-sm text-muted-foreground pt-2">
                         By clicking the button below, you agree to our <Link href="#" className="underline">Terms of Service</Link>.
                     </p>
-                    <Button type="submit" form={mainFormId} className="w-full" disabled={isLoading || isGoogleLoading || isMicrosoftLoading}>
+                    <Button type="submit" form="registration-form" className="w-full" disabled={isLoading || isGoogleLoading || isMicrosoftLoading}>
                         {isLoading && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
-                        {isFreePlan ? "Create Account" : (currentUser ? "Confirm Payment" : "Create Account & Pay")}
+                        Create Account
                     </Button>
                 </form>
                 </Form>
@@ -529,7 +463,7 @@ function RegisterContent() {
                     <CardHeader className="flex flex-row justify-between items-center">
                         <CardTitle>Order Summary</CardTitle>
                          <Link href="/pricing" className="text-sm font-medium text-primary hover:underline">
-                            Explore plans
+                            Change plan
                         </Link>
                     </CardHeader>
                     <CardContent className="space-y-4">
@@ -633,5 +567,3 @@ export default function RegisterPage() {
         </Suspense>
     )
 }
-
-    
