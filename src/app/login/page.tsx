@@ -59,8 +59,9 @@ export default function LoginPage() {
   const [password, setPassword] = useState('password');
   const [isLoggingIn, startLoginTransition] = useTransition();
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [isMicrosoftLoading, setIsMicrosoftLoading] = useState(false);
   const router = useRouter();
-  const { currentUser, loading, login, signInWithGoogle } = useUser();
+  const { currentUser, loading, login, signInWithGoogle, signInWithMicrosoft } = useUser();
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -120,6 +121,25 @@ export default function LoginPage() {
     }
   }
 
+  const handleMicrosoftSignIn = async () => {
+    setIsMicrosoftLoading(true);
+    try {
+        await signInWithMicrosoft();
+        toast({
+            title: "Login Successful",
+            description: "Welcome! You're signed in with Microsoft.",
+        });
+    } catch (error: any) {
+        toast({
+            variant: "destructive",
+            title: "Microsoft Sign-In Failed",
+            description: error.message || "An unexpected error occurred during Microsoft sign-in.",
+        });
+    } finally {
+        setIsMicrosoftLoading(false);
+    }
+  };
+
   if (loading || (!loading && currentUser)) {
     return (
         <div className="flex h-screen items-center justify-center">
@@ -153,7 +173,7 @@ export default function LoginPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  disabled={isLoggingIn || isGoogleLoading}
+                  disabled={isLoggingIn || isGoogleLoading || isMicrosoftLoading}
                 />
               </div>
               <div className="grid gap-2">
@@ -165,10 +185,10 @@ export default function LoginPage() {
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    disabled={isLoggingIn || isGoogleLoading}
+                    disabled={isLoggingIn || isGoogleLoading || isMicrosoftLoading}
                 />
               </div>
-              <Button type="submit" className="w-full" disabled={isLoggingIn || isGoogleLoading}>
+              <Button type="submit" className="w-full" disabled={isLoggingIn || isGoogleLoading || isMicrosoftLoading}>
                   {isLoggingIn && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
                   Login
               </Button>
@@ -189,13 +209,13 @@ export default function LoginPage() {
           </div>
 
             <div className="grid grid-cols-1 gap-2">
-                <Button variant="outline" className="w-full" onClick={handleGoogleSignIn} disabled={isLoggingIn || isGoogleLoading}>
+                <Button variant="outline" className="w-full" onClick={handleGoogleSignIn} disabled={isLoggingIn || isGoogleLoading || isMicrosoftLoading}>
                     {isGoogleLoading ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : <GoogleIcon />}
                     Sign in with Google
                 </Button>
-                <Button variant="outline" className="w-full" disabled={true}>
-                    <MicrosoftIcon />
-                    Sign in with Microsoft (Disabled)
+                <Button variant="outline" className="w-full" onClick={handleMicrosoftSignIn} disabled={isLoggingIn || isGoogleLoading || isMicrosoftLoading}>
+                    {isMicrosoftLoading ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : <MicrosoftIcon />}
+                    Sign in with Microsoft
                 </Button>
             </div>
             

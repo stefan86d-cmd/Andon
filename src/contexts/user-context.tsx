@@ -3,7 +3,7 @@
 
 import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
-import { onAuthStateChanged, signInWithEmailAndPassword, signOut, type User as FirebaseUser, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { onAuthStateChanged, signInWithEmailAndPassword, signOut, type User as FirebaseUser, GoogleAuthProvider, OAuthProvider, signInWithPopup } from "firebase/auth";
 import { useAuth, useFirestore } from '@/firebase';
 import type { Plan, User } from '@/lib/types';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
@@ -14,6 +14,7 @@ interface UserContextType {
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   signInWithGoogle: (plan?: Plan) => Promise<void>;
+  signInWithMicrosoft: (plan?: Plan) => Promise<void>;
   logout: () => void;
   updateCurrentUser: (user: User) => void;
 }
@@ -108,6 +109,33 @@ export function UserProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  const signInWithMicrosoft = async (plan: Plan = 'starter') => {
+    const provider = new OAuthProvider('microsoft.com');
+    const userCredential = await signInWithPopup(auth, provider);
+    const user = userCredential.user;
+
+    const userDocRef = doc(firestore, "users", user.uid);
+    const userDoc = await getDoc(userDocRef);
+
+    if (!userDoc.exists()) {
+      const [firstName, ...lastNameParts] = (user.displayName || 'New User').split(' ');
+      const lastName = lastNameParts.join(' ');
+      
+      const result = await addUser({
+        uid: user.uid,
+        firstName: firstName,
+        lastName: lastName,
+        email: user.email!,
+        role: 'admin',
+        plan: plan,
+      });
+
+      if (!result.success) {
+        throw new Error(result.error || "Could not save user details to database.");
+      }
+    }
+  };
+
 
   const logout = async () => {
     await signOut(auth);
@@ -120,7 +148,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <UserContext.Provider value={{ currentUser, loading, login, signInWithGoogle, logout, updateCurrentUser }}>
+    <UserContext.Provider value={{ currentUser, loading, login, signInWithGoogle, signInWithMicrosoft, logout, updateCurrentUser }}>
       {children}
     </UserContext.Provider>
   );
