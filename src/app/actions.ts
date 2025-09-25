@@ -6,7 +6,7 @@ import {
     getAllUsers as getAllUsersFromData,
 } from "@/lib/data";
 import type { Role, User, UserRef } from "@/lib/types";
-import { getFirestore, doc, setDoc, deleteDoc, updateDoc, addDoc, collection, Timestamp, writeBatch } from 'firebase/firestore';
+import { getFirestore, doc, setDoc, deleteDoc, updateDoc, addDoc, collection, Timestamp, writeBatch, query, where, getDocs } from 'firebase/firestore';
 import { initializeFirebase } from '@/firebase/server-init';
 import { handleFirestoreError } from '@/lib/firestore-helpers';
 import type { Issue } from '@/lib/types';
@@ -307,5 +307,3 @@ export async function resetPassword(token: string, newPassword: string) {
         return { success: false, error: 'Failed to reset password.' };
     }
 }
-
-    

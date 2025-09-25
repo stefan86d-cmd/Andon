@@ -2,7 +2,7 @@
 import type { User, Issue, ProductionLine, Role, IssueCategory, Plan, IssueDocument, UserRef } from "@/lib/types";
 import { format, subDays, subHours } from "date-fns";
 import { getFirestore, getDocs, collection, query, where, doc, getDoc, addDoc, updateDoc, deleteDoc, Timestamp, orderBy, writeBatch } from 'firebase/firestore';
-import { initializeFirebase } from "@/firebase";
+import { initializeFirebase } from "@/firebase/server-init";
 
 // --- Production Lines (Firestore Implementation) ---
 
@@ -50,21 +50,23 @@ export async function getUserById(uid: string): Promise<User | null> {
 
 // --- Issues (Firestore Implementation) ---
 
-const issueDocToIssue = async (docSnap: DocumentData): Promise<Issue> => {
+const issueDocToIssue = async (docSnap: any): Promise<Issue> => {
     const docData = docSnap.data() as IssueDocument;
     
     // Convert Firestore Timestamps to JS Date objects
     const reportedAt = (docData.reportedAt as unknown as Timestamp)?.toDate();
-    const resolvedAt = (docData.resolvedAt as unknown as Timestamp)?.toDate();
+    const resolvedAt = docData.resolvedAt ? (docData.resolvedAt as unknown as Timestamp)?.toDate() : undefined;
 
     // Fetch full user objects from user references
-    const reportedBy = await getUserByEmail(docData.reportedBy.email);
+    const reportedByUser = await getUserByEmail(docData.reportedBy.email);
     let resolvedBy = null;
     if (docData.resolvedBy) {
         resolvedBy = await getUserByEmail(docData.resolvedBy.email);
     }
     
-    if (!reportedBy) {
+    if (!reportedByUser) {
+        // This case should be handled gracefully. Maybe return a placeholder user.
+        // For now, we'll throw, but in a real app you might not want to.
         throw new Error(`Could not find user with email ${docData.reportedBy.email}`);
     }
 
@@ -73,7 +75,7 @@ const issueDocToIssue = async (docSnap: DocumentData): Promise<Issue> => {
         id: docSnap.id,
         reportedAt,
         resolvedAt,
-        reportedBy,
+        reportedBy: reportedByUser,
         resolvedBy,
     } as Issue;
 }
