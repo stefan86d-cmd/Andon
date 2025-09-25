@@ -60,6 +60,8 @@ export default function ReportsPage() {
   });
   const [selectedLines, setSelectedLines] = useState<string[]>([]);
   const [tempSelectedLines, setTempSelectedLines] = useState<string[]>([]);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [tempSelectedCategories, setTempSelectedCategories] = useState<string[]>([]);
 
   useEffect(() => {
     async function fetchData() {
@@ -79,6 +81,10 @@ export default function ReportsPage() {
     setTempSelectedLines(selectedLines);
   }, [selectedLines]);
   
+  useEffect(() => {
+    setTempSelectedCategories(selectedCategories);
+  }, [selectedCategories]);
+
   const handleLineFilterChange = (lineId: string) => {
     setTempSelectedLines((prev) =>
       prev.includes(lineId)
@@ -86,15 +92,26 @@ export default function ReportsPage() {
         : [...prev, lineId]
     );
   };
+  
+  const handleCategoryFilterChange = (categoryId: string) => {
+    setTempSelectedCategories((prev) =>
+      prev.includes(categoryId)
+        ? prev.filter((id) => id !== categoryId)
+        : [...prev, categoryId]
+    );
+  };
 
   const handleFilterConfirm = () => {
     setSelectedLines(tempSelectedLines);
+    setSelectedCategories(tempSelectedCategories);
     setAnalysisResult(null); // Reset analysis on filter change
   };
   
   const handleFilterReset = () => {
     setTempSelectedLines([]);
     setSelectedLines([]);
+    setTempSelectedCategories([]);
+    setSelectedCategories([]);
     setAnalysisResult(null);
   };
   
@@ -108,7 +125,8 @@ export default function ReportsPage() {
       const issueDate = issue.reportedAt;
       const isInDateRange = date?.from && date?.to && issueDate >= startOfDay(date.from) && issueDate <= date.to;
       const isLineSelected = selectedLines.length === 0 || selectedLines.includes(issue.productionLineId);
-      return isInDateRange && isLineSelected;
+      const isCategorySelected = selectedCategories.length === 0 || selectedCategories.includes(issue.category);
+      return isInDateRange && isLineSelected && isCategorySelected;
   });
 
   const handleGenerateAnalysis = async () => {
@@ -241,7 +259,10 @@ export default function ReportsPage() {
         
         <Card>
             <CardHeader className="flex-row items-center justify-between">
-                <CardTitle>Filters & Analysis</CardTitle>
+                <div>
+                    <CardTitle>Filters & Analysis</CardTitle>
+                    <CardDescription>Select filters to refine the reports and generate a targeted AI analysis.</CardDescription>
+                </div>
                  <div className="flex items-center gap-2">
                     <Popover>
                         <PopoverTrigger asChild>
@@ -301,15 +322,39 @@ export default function ReportsPage() {
                             {line.name}
                             </DropdownMenuCheckboxItem>
                         ))}
-                        <DropdownMenuSeparator />
-                        <div className="p-2 flex justify-end gap-2">
-                            <Button variant="outline" size="sm" onClick={handleFilterReset}>Reset</Button>
-                            <DropdownMenuCheckboxItem onSelect={handleFilterConfirm} className="p-0">
-                                <Button size="sm" className="w-full">Confirm</Button>
-                            </DropdownMenuCheckboxItem>
-                        </div>
                         </DropdownMenuContent>
                     </DropdownMenu>
+
+                     <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="sm" className="gap-1">
+                            <ListFilter className="h-4 w-4" />
+                            <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                            Category
+                            </span>
+                        </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-56">
+                        <DropdownMenuLabel>Filter by category</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        {allCategories.map((category) => (
+                            <DropdownMenuCheckboxItem
+                            key={category.id}
+                            checked={tempSelectedCategories.includes(category.id)}
+                            onCheckedChange={() => handleCategoryFilterChange(category.id)}
+                            onSelect={(e) => e.preventDefault()}
+                            >
+                            {category.label}
+                            </DropdownMenuCheckboxItem>
+                        ))}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                    
+                    <div className="pl-2 border-l flex gap-2">
+                        <Button variant="outline" size="sm" onClick={handleFilterReset}>Reset</Button>
+                        <Button size="sm" onClick={handleFilterConfirm}>Apply</Button>
+                    </div>
+
                      <Button onClick={handleGenerateAnalysis} disabled={isGenerating}>
                         {isGenerating ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : <Zap className="mr-2 h-4 w-4 text-yellow-300" />}
                         Generate Analysis
@@ -396,7 +441,5 @@ export default function ReportsPage() {
     </AppLayout>
   );
 }
-
-    
 
     
