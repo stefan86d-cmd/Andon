@@ -3,20 +3,27 @@
 
 import { revalidatePath } from 'next/cache';
 import { 
-    getUserByEmail,
     getAllUsers as getAllUsersFromData,
 } from "@/lib/data";
-import type { Issue, Role, User, IssueCategory, UserRef } from "@/lib/types";
+import type { Role, User, UserRef } from "@/lib/types";
 import { getFirestore, doc, setDoc, deleteDoc, updateDoc, addDoc, collection, Timestamp, writeBatch } from 'firebase/firestore';
-import { initializeFirebase } from '@/firebase';
+import { initializeFirebase } from '@/firebase/server-init';
 import { handleFirestoreError } from '@/lib/firestore-helpers';
+import type { Issue } from '@/lib/types';
 
-export async function reportIssue(issueData: Omit<Issue, 'id' | 'reportedAt' | 'reportedBy' | 'status'>, reportedByEmail: string) {
+
+export async function reportIssue(issueData: Omit<Issue, 'id' | 'reportedAt' | 'reportedBy' | 'status' | 'reportedBy' | 'resolvedBy'>, reportedByEmail: string) {
     try {
-        const reportedByUser = await getUserByEmail(reportedByEmail);
-        if (!reportedByUser) {
+        const { firestore } = initializeFirebase();
+        const usersCollection = collection(firestore, "users");
+        const userQuery = query(usersCollection, where("email", "==", reportedByEmail));
+        const userSnapshot = await getDocs(userQuery);
+
+        if (userSnapshot.empty) {
             return { error: "Could not find current user."};
         }
+        const userDoc = userSnapshot.docs[0];
+        const reportedByUser = { id: userDoc.id, ...userDoc.data() } as User;
 
         const userRef: UserRef = {
             email: reportedByUser.email,
@@ -35,7 +42,6 @@ export async function reportIssue(issueData: Omit<Issue, 'id' | 'reportedAt' | '
             resolvedBy: null,
         }
         
-        const { firestore } = initializeFirebase();
         await addDoc(collection(firestore, "issues"), newIssueDoc);
 
         revalidatePath('/dashboard');
@@ -177,10 +183,16 @@ export async function updateIssue(issueId: string, data: {
     productionStopped: boolean,
 }, resolvedByEmail: string) {
     try {
-        const resolvedByUser = await getUserByEmail(resolvedByEmail);
-         if (!resolvedByUser) {
-            return { error: "Could not find resolving user." };
+        const { firestore } = initializeFirebase();
+        const usersCollection = collection(firestore, "users");
+        const userQuery = query(usersCollection, where("email", "==", resolvedByEmail));
+        const userSnapshot = await getDocs(userQuery);
+
+        if (userSnapshot.empty) {
+            return { error: "Could not find resolving user."};
         }
+        const userDoc = userSnapshot.docs[0];
+        const resolvedByUser = { id: userDoc.id, ...userDoc.data() } as User;
         
         const userRef: UserRef = {
             email: resolvedByUser.email,
@@ -188,7 +200,6 @@ export async function updateIssue(issueId: string, data: {
             avatarUrl: resolvedByUser.avatarUrl || '',
         };
        
-        const { firestore } = initializeFirebase();
         const issueRef = doc(firestore, "issues", issueId);
 
         const updatedData: any = {
@@ -265,10 +276,12 @@ export async function changePassword(userEmail: string, currentPassword: string,
 
 export async function requestPasswordReset(email: string) {
     try {
-        // In a real app, you'd check if the user exists and send an email.
-        // For this mock, we'll check if the user exists in our mock data.
-        const user = await getUserByEmail(email);
-        if (!user) {
+        const { firestore } = initializeFirebase();
+        const usersCollection = collection(firestore, "users");
+        const userQuery = query(usersCollection, where("email", "==", email));
+        const userSnapshot = await getDocs(userQuery);
+
+        if (userSnapshot.empty) {
             // It's good practice not to reveal if an email exists in the system.
             console.log(`Password reset requested for non-existent email: ${email} (mock).`);
             return { success: true, message: 'If an account with this email exists, a password reset link has been sent.' };
@@ -294,3 +307,5 @@ export async function resetPassword(token: string, newPassword: string) {
         return { success: false, error: 'Failed to reset password.' };
     }
 }
+
+    
