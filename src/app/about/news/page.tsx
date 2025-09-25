@@ -75,7 +75,7 @@ export default function NewsPage() {
         <section className="bg-background">
             <div className="container py-20 text-center">
               <h1 className="text-4xl font-bold mb-4">Latest News</h1>
-              <p className="text-muted-foreground max-w-2xl mx-auto">Read my latest product announcements and company news.</p>
+              <p className="text-muted-foreground max-w-2xl mx-auto">Read the latest product announcements and company news.</p>
             </div>
         </section>
         <section className="bg-muted">
