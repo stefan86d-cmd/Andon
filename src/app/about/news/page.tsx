@@ -75,7 +75,7 @@ export default function NewsPage() {
         <section className="bg-background">
             <div className="container py-20 text-center">
               <h1 className="text-4xl font-bold mb-4">Latest News</h1>
-              <p className="text-muted-foreground max-w-2xl mx-auto">Read our latest product announcements and company news.</p>
+              <p className="text-muted-foreground max-w-2xl mx-auto">Read my latest product announcements and company news.</p>
             </div>
         </section>
         <section className="bg-muted">
@@ -96,10 +96,10 @@ export default function NewsPage() {
               </div>
               <div className="prose prose-lg dark:prose-invert mx-auto">
                 <p>
-                  After months of hard work, our dedicated team has made it possible. We are thrilled to announce that the AndonPro app has officially launched and is ready for our customers! This marks a significant milestone in our journey to revolutionize production line management and make powerful, intuitive tools accessible to everyone.
+                  After months of hard work, it's finally here! I am thrilled to announce that the AndonPro app has officially launched and is ready for customers. This marks a significant milestone in my journey to revolutionize production line management and make powerful, intuitive tools accessible to everyone.
                 </p>
                 <p>
-                  We can't wait for you to experience the difference AndonPro can make.
+                  I can't wait for you to experience the difference AndonPro can make.
                 </p>
                  <div className="not-prose text-center mt-12">
                     <Link href="/login" className={cn(buttonVariants({ size: "lg" }))}>
