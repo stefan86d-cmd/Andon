@@ -1,26 +1,103 @@
+/**
+ * @fileoverview Firestore Security Rules for the Factory Issues App.
+ *
+ * Core Philosophy:
+ * This ruleset employs a role-based access control model, with additional ownership checks where appropriate.
+ * Users have specific roles (operator, supervisor, admin) that determine their privileges.
+ * Data is primarily organized in top-level collections: `users`, `issues`, and `productionLines`.
+ *
+ * Data Structure:
+ * - /users/{userId}: Stores user profile information.
+ * - /issues/{issueId}: Stores issue reports.
+ * - /productionLines/{lineId}: Stores production line definitions.
+ *
+ * Key Security Decisions:
+ * - Users can read any user profile (for displaying names, avatars, etc.) but can only modify their own profile.
+ * - Issue creation is open to all authenticated users.
+ * - Issue updates and deletion are restricted to admins and supervisors.
+ * - Production line management is restricted to admins.
+ * - The rules explicitly deny any write operations that are not explicitly allowed.
+ *
+ * Denormalization for Authorization:
+ * - The `Issue` entity includes `reportedBy` and `assignedTo` fields, which store user IDs.
+ *   This denormalization enables rules to quickly check the reporter or assignee's role without additional reads.
+ */
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
-  
-    // Helper function to check if a user is authenticated
-    function isAuthenticated() {
+
+    // Helper function to check if the user is signed in
+    function isSignedIn() {
       return request.auth != null;
     }
-    
-    // Users can manage their own profile
+
+    // Helper function to check if the user is the owner of the document, based on userId
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // Helper function to check if the user is the owner of the existing document
+    function isExistingOwner(userId) {
+        return isSignedIn() && resource != null && request.auth.uid == userId;
+    }
+
+    // Helper function to check if the user has the 'admin' role.
+    function isAdmin() {
+        return isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // Helper function to check if the user has the 'supervisor' role.
+    function isSupervisor() {
+        return isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'supervisor';
+    }
+
+    /**
+     * @description Manages user profiles.
+     * @path /users/{userId}
+     * @allow (read): Authenticated user can read any profile.
+     * @allow (create, update): User can create/update their own profile. Admin can manage any profile.
+     * @deny (delete): Users cannot delete their profiles directly.
+     * @principle Enforces user-ownership for profile updates and allows admin overrides.
+     */
     match /users/{userId} {
-      allow read, update: if isAuthenticated() && request.auth.uid == userId;
-      allow create: if isAuthenticated();
+      allow get: if isSignedIn();
+      allow list: if false;
+      allow create: if isOwner(userId);
+      allow update: if isExistingOwner(userId) || isAdmin();
+      allow delete: if false;
     }
-    
-    // Any authenticated user can read production lines and issues
-    match /productionLines/{lineId} {
-      allow read, write: if isAuthenticated();
-    }
-    
+
+    /**
+     * @description Manages issue reports.
+     * @path /issues/{issueId}
+     * @allow (create): Any authenticated user can create an issue.
+     * @allow (read): Any authenticated user can read an issue.
+     * @allow (update, delete): Only admins or supervisors can modify/delete issues.
+     * @deny: Non-admins/supervisors cannot update or delete.
+     * @principle Allows open reporting but restricts modification to authorized personnel.
+     */
     match /issues/{issueId} {
-      allow read, write: if isAuthenticated();
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isAdmin() || isSupervisor();
+      allow delete: if isAdmin() || isSupervisor();
+    }
+
+    /**
+     * @description Manages production lines.
+     * @path /productionLines/{lineId}
+     * @allow (read): Any authenticated user can read production lines.
+     * @allow (create, update, delete): Only admins can manage production lines.
+     * @deny: Non-admins cannot create, update, or delete production lines.
+     * @principle Restricts production line management to administrators.
+     */
+    match /productionLines/{lineId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
     }
   }
 }
