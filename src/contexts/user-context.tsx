@@ -38,29 +38,30 @@ export function UserProvider({ children }: { children: ReactNode }) {
         if (userDoc.exists()) {
           setCurrentUser({ id: userDoc.id, ...userDoc.data() } as User);
         } else {
-          // This can happen if a user signs in with Google for the first time
-          // The creation logic is handled in signInWithGoogle, but as a fallback:
+          // This can happen if a user signs in with a social provider for the first time
+          // and the registration process was interrupted. We will attempt to create the user doc here.
           console.warn(`User profile not found in Firestore for UID: "${firebaseUser.uid}". This can happen if the registration process was interrupted. Attempting to create it now.`);
           
           try {
             const [firstName, ...lastNameParts] = (firebaseUser.displayName || 'New User').split(' ');
             const lastName = lastNameParts.join(' ');
             
-            await addUser({
-              uid: firebaseUser.uid,
-              firstName: firstName,
-              lastName: lastName,
-              email: firebaseUser.email!,
-              role: 'admin', // Default role for new sign-ups
-              plan: 'starter' // Default plan
-            });
+            const newUser: Omit<User, 'id'> = {
+                name: `${firstName} ${lastName}`,
+                email: firebaseUser.email!,
+                role: 'admin',
+                plan: 'starter',
+                avatarUrl: firebaseUser.photoURL || '',
+            };
 
-             const newUserDoc = await getDoc(userDocRef);
-              if (newUserDoc.exists()) {
-                  setCurrentUser({ id: newUserDoc.id, ...newUserDoc.data() } as User);
-              } else {
-                 throw new Error("Failed to create and retrieve user document.");
-              }
+            await setDoc(doc(firestore, "users", firebaseUser.uid), newUser);
+            
+            const newUserDoc = await getDoc(userDocRef);
+            if (newUserDoc.exists()) {
+                setCurrentUser({ id: newUserDoc.id, ...newUserDoc.data() } as User);
+            } else {
+                throw new Error("Failed to create and retrieve user document.");
+            }
 
           } catch (error) {
               console.error("Failed to create user document on-the-fly:", error);
@@ -94,18 +95,14 @@ export function UserProvider({ children }: { children: ReactNode }) {
       const [firstName, ...lastNameParts] = (user.displayName || 'New User').split(' ');
       const lastName = lastNameParts.join(' ');
       
-      const result = await addUser({
-        uid: user.uid,
-        firstName: firstName,
-        lastName: lastName,
-        email: user.email!,
-        role: 'admin',
-        plan: plan,
-      });
-
-      if (!result.success) {
-        throw new Error(result.error || "Could not save user details to database.");
-      }
+      const newUser: Omit<User, 'id'> = {
+          name: `${firstName} ${lastName}`,
+          email: user.email!,
+          role: 'admin',
+          plan: plan,
+          avatarUrl: user.photoURL || '',
+      };
+      await setDoc(userDocRef, newUser);
     }
   }
 
@@ -121,21 +118,16 @@ export function UserProvider({ children }: { children: ReactNode }) {
       const [firstName, ...lastNameParts] = (user.displayName || 'New User').split(' ');
       const lastName = lastNameParts.join(' ');
       
-      const result = await addUser({
-        uid: user.uid,
-        firstName: firstName,
-        lastName: lastName,
-        email: user.email!,
-        role: 'admin',
-        plan: plan,
-      });
-
-      if (!result.success) {
-        throw new Error(result.error || "Could not save user details to database.");
-      }
+      const newUser: Omit<User, 'id'> = {
+          name: `${firstName} ${lastName}`,
+          email: user.email!,
+          role: 'admin',
+          plan: plan,
+          avatarUrl: user.photoURL || '',
+      };
+      await setDoc(userDocRef, newUser);
     }
   };
-
 
   const logout = async () => {
     await signOut(auth);

@@ -73,15 +73,13 @@ export async function deleteProductionLine(lineId: string) {
     }
 }
 
-export async function addUser(data: { uid: string, firstName: string, lastName: string, email: string, role: Role, plan: User['plan'] }, tempPass?: string) {
+export async function addUser(data: { uid: string, firstName: string, lastName: string, email: string, role: Role, plan: User['plan'] }) {
     try {
-        // This is a server action, but we are using client SDKs for mutations
-        // A real implementation would use the Admin SDK here.
-        // For this demo, we'll proceed but acknowledge this is not best practice.
+        // This is a server action, but we are using client SDKs for mutations for this demo.
+        // A real production app should use the Firebase Admin SDK here to securely create users.
         const { firestore } = initializeFirebase();
         
-        const newUser: Omit<User, 'id'> & { uid: string } = {
-            uid: data.uid,
+        const newUser: Omit<User, 'id'> = {
             name: `${data.firstName} ${data.lastName}`,
             email: data.email,
             role: data.role,
@@ -89,13 +87,14 @@ export async function addUser(data: { uid: string, firstName: string, lastName: 
             avatarUrl: ''
         };
 
+        // Use the UID from Auth as the document ID in Firestore
         await setDoc(doc(firestore, "users", data.uid), newUser);
 
         revalidatePath('/users');
-        return { success: true, message: `User ${data.email} processed successfully.` };
+        return { success: true, message: `User ${data.email} created successfully.` };
     } catch (e: any) {
         console.error("Error in addUser action:", e);
-        return { error: e.message || "Failed to create or update user." };
+        return { error: e.message || "Failed to create user in database." };
     }
 }
 
