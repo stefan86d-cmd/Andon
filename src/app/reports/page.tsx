@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -7,7 +8,7 @@ import { getIssues, getProductionLines } from "@/lib/data";
 import type { Issue, IssueCategory, ProductionLine } from "@/lib/types";
 import { IssuesTrendChart } from "@/components/reports/issues-trend-chart";
 import { format, subDays, eachDayOfInterval, startOfDay, differenceInSeconds } from "date-fns";
-import { Calendar as CalendarIcon, LoaderCircle, ListFilter, Lock, Zap } from "lucide-react";
+import { Calendar as CalendarIcon, LoaderCircle, ListFilter, Lock, Download } from "lucide-react";
 import { PieChartWithPercentages } from "@/components/reports/pie-chart-with-percentages";
 import { FilteredBarChart } from "@/components/reports/filtered-bar-chart";
 import { useUser } from "@/contexts/user-context";
@@ -26,9 +27,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
-import { analyzeIssues } from "@/ai/flows/analyze-issues-flow";
-import { Skeleton } from "@/components/ui/skeleton";
 import { allCategories } from "@/lib/constants";
+import { CSVLink } from "react-csv";
 
 
 const ChartGradients = () => (
@@ -50,8 +50,6 @@ export default function ReportsPage() {
   const [issues, setIssues] = useState<Issue[]>([]);
   const [productionLines, setProductionLines] = useState<ProductionLine[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [analysisResult, setAnalysisResult] = useState<string | null>(null);
 
   const [date, setDate] = useState<DateRange | undefined>({
     from: subDays(new Date(), 29),
@@ -90,18 +88,15 @@ export default function ReportsPage() {
 
   const handleFilterConfirm = () => {
     setSelectedLines(tempSelectedLines);
-    setAnalysisResult(null); // Reset analysis on filter change
   };
   
   const handleFilterReset = () => {
     setTempSelectedLines([]);
     setSelectedLines([]);
-    setAnalysisResult(null);
   };
   
   const handleDateChange = (newDate: DateRange | undefined) => {
       setDate(newDate);
-      setAnalysisResult(null);
   }
 
   // --- Filtered Data ---
@@ -112,28 +107,33 @@ export default function ReportsPage() {
       return isInDateRange && isLineSelected;
   });
 
-  const handleGenerateAnalysis = async () => {
-    setIsGenerating(true);
-    setAnalysisResult(null);
-    try {
-        const issuesForAnalysis = filteredIssues.map(i => ({
-            title: i.title,
-            category: i.category,
-            priority: i.priority,
-            productionStopped: i.productionStopped || false,
-            reportedAt: i.reportedAt.toISOString(),
-            resolvedAt: i.resolvedAt?.toISOString(),
-        }));
+  const csvHeaders = [
+    { label: "Issue ID", key: "id" },
+    { label: "Title", key: "title" },
+    { label: "Location", key: "location" },
+    { label: "Production Line", key: "lineName" },
+    { label: "Priority", key: "priority" },
+    { label: "Status", key: "status" },
+    { label: "Category", key: "category" },
+    { label: "Sub-Category", key: "subCategory" },
+    { label: "Reported At", key: "reportedAt" },
+    { label: "Reported By", key: "reportedBy" },
+    { label: "Resolved At", key: "resolvedAt" },
+    { label: "Resolved By", key: "resolvedBy" },
+    { label: "Resolution Notes", key: "resolutionNotes" },
+    { label: "Production Stopped", key: "productionStopped" },
+    { label: "Item Number", key: "itemNumber" },
+    { label: "Quantity", key: "quantity" },
+  ];
 
-        const result = await analyzeIssues({ issues: issuesForAnalysis });
-        setAnalysisResult(result.analysis);
-    } catch (error) {
-        console.error("Failed to generate analysis", error);
-        setAnalysisResult("Sorry, there was an error generating the analysis. Please try again.");
-    } finally {
-        setIsGenerating(false);
-    }
-  }
+  const csvData = filteredIssues.map(issue => ({
+    ...issue,
+    lineName: productionLines.find(line => line.id === issue.productionLineId)?.name || issue.productionLineId,
+    reportedAt: format(issue.reportedAt, 'yyyy-MM-dd HH:mm:ss'),
+    reportedBy: issue.reportedBy.name,
+    resolvedAt: issue.resolvedAt ? format(issue.resolvedAt, 'yyyy-MM-dd HH:mm:ss') : 'N/A',
+    resolvedBy: issue.resolvedBy ? issue.resolvedBy.name : 'N/A',
+  }));
 
   if (!currentUser || (currentUser.role !== 'admin' && currentUser.role !== 'supervisor')) {
     return (
@@ -243,8 +243,8 @@ export default function ReportsPage() {
         <Card>
             <CardHeader className="flex-row items-center justify-between">
                 <div>
-                    <CardTitle>Filters & Analysis</CardTitle>
-                    <CardDescription>Select filters to refine the reports and generate a targeted AI analysis.</CardDescription>
+                    <CardTitle>Filters & Export</CardTitle>
+                    <CardDescription>Select filters to refine the reports and export the data.</CardDescription>
                 </div>
                  <div className="flex items-center gap-2">
                     <Popover>
@@ -313,32 +313,20 @@ export default function ReportsPage() {
                         <Button size="sm" onClick={handleFilterConfirm}>Apply</Button>
                     </div>
 
-                     <Button onClick={handleGenerateAnalysis} disabled={isGenerating}>
-                        {isGenerating ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : <Zap className="mr-2 h-4 w-4 text-yellow-300" />}
-                        Generate Analysis
+                     <Button asChild>
+                        <CSVLink
+                          data={csvData}
+                          headers={csvHeaders}
+                          filename={`andonpro_issues_export_${format(new Date(), 'yyyy-MM-dd')}.csv`}
+                          className="flex items-center gap-2"
+                        >
+                            <Download className="h-4 w-4" />
+                            Export Data as CSV
+                        </CSVLink>
                     </Button>
                  </div>
             </CardHeader>
         </Card>
-
-        {(isGenerating || analysisResult) && (
-            <Card>
-                <CardHeader>
-                    <CardTitle>AI-Driven Analysis</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    {isGenerating ? (
-                        <div className="space-y-2">
-                           <Skeleton className="h-4 w-3/4" />
-                           <Skeleton className="h-4 w-full" />
-                           <Skeleton className="h-4 w-5/6" />
-                        </div>
-                    ) : (
-                         <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: analysisResult || "" }} />
-                    )}
-                </CardContent>
-            </Card>
-        )}
 
         <Tabs defaultValue="issues-by-category">
             <div className="flex justify-center">
