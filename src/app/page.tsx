@@ -115,7 +115,7 @@ export default function HomePage() {
               Empower Your Production Line
             </h1>
             <p className="max-w-2xl mx-auto text-lg text-gray-200 mb-8">
-              AndonPro is the modern solution to monitor workflow, report issues instantly, and minimize downtime with AI-powered insights.
+              AndonPro is the modern solution to monitor workflow, report issues instantly, and minimize downtime with powerful data exports and AI-assisted prioritization.
             </p>
             <Link href="/pricing" className={cn(buttonVariants({ size: "lg" }))}>
               Get Started Free <ArrowRight className="ml-2 h-5 w-5" />
