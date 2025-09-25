@@ -19,6 +19,7 @@ import { toast } from '@/hooks/use-toast';
 import { LoaderCircle, Database } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
+import { AppLayout } from '@/components/layout/app-layout';
 
 function GoogleIcon() {
   return (
@@ -61,7 +62,7 @@ export default function LoginPage() {
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [isMicrosoftLoading, setIsMicrosoftLoading] = useState(false);
   const router = useRouter();
-  const { currentUser, loading, login, signInWithGoogle, signInWithMicrosoft } = useUser();
+  const { loading, login, signInWithGoogle, signInWithMicrosoft } = useUser();
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -140,96 +141,89 @@ export default function LoginPage() {
     }
   };
 
-  if (loading || (!loading && currentUser)) {
-    return (
-        <div className="flex h-screen items-center justify-center">
-            <LoaderCircle className="h-8 w-8 animate-spin" />
-            <p className="ml-2">Loading...</p>
-        </div>
-    );
-  }
-  
   return (
-    <div className="flex items-center justify-center min-h-screen bg-background">
-      <Card className="mx-auto max-w-sm w-full">
-      <CardHeader className="space-y-1">
-          <div className="flex justify-center p-6">
-            <Logo />
-          </div>
-          <CardTitle>Login to AndonPro</CardTitle>
-          <CardDescription>
-            Enter your credentials to continue.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleLogin}>
-            <div className="grid gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="alex.j@andon.io"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  disabled={isLoggingIn || isGoogleLoading || isMicrosoftLoading}
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="password">Password</Label>
-                <Input 
-                    id="password" 
-                    type="password"
-                    placeholder="password"
+    <AppLayout>
+        <div className="flex items-center justify-center min-h-screen bg-background">
+        <Card className="mx-auto max-w-sm w-full">
+        <CardHeader className="space-y-1">
+            <div className="flex justify-center p-6">
+                <Logo />
+            </div>
+            <CardTitle>Login to AndonPro</CardTitle>
+            <CardDescription>
+                Enter your credentials to continue.
+            </CardDescription>
+            </CardHeader>
+            <CardContent>
+            <form onSubmit={handleLogin}>
+                <div className="grid gap-4">
+                <div className="grid gap-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                    id="email"
+                    type="email"
+                    placeholder="alex.j@andon.io"
                     required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     disabled={isLoggingIn || isGoogleLoading || isMicrosoftLoading}
-                />
-              </div>
-              <Button type="submit" className="w-full" disabled={isLoggingIn || isGoogleLoading || isMicrosoftLoading}>
-                  {isLoggingIn && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
-                  Login
-              </Button>
-            </div>
-          </form>
-          
-          <div className="mt-4 text-center text-sm">
-            <Link href="/forgot-password" passHref>
-              <span className="underline cursor-pointer">
-                Forgot password?
-              </span>
-            </Link>
-          </div>
-
-          <div className="relative my-4">
-            <Separator />
-            <span className="absolute left-1/2 -translate-x-1/2 -top-2.5 bg-background px-2 text-xs text-muted-foreground">OR</span>
-          </div>
-
-            <div className="grid grid-cols-1 gap-2">
-                <Button variant="outline" className="w-full" onClick={handleGoogleSignIn} disabled={isLoggingIn || isGoogleLoading || isMicrosoftLoading}>
-                    {isGoogleLoading ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : <GoogleIcon />}
-                    Sign in with Google
+                    />
+                </div>
+                <div className="grid gap-2">
+                    <Label htmlFor="password">Password</Label>
+                    <Input 
+                        id="password" 
+                        type="password"
+                        placeholder="password"
+                        required
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        disabled={isLoggingIn || isGoogleLoading || isMicrosoftLoading}
+                    />
+                </div>
+                <Button type="submit" className="w-full" disabled={isLoggingIn || isGoogleLoading || isMicrosoftLoading}>
+                    {isLoggingIn && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
+                    Login
                 </Button>
-                <Button variant="outline" className="w-full" onClick={handleMicrosoftSignIn} disabled={isLoggingIn || isGoogleLoading || isMicrosoftLoading}>
-                    {isMicrosoftLoading ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : <MicrosoftIcon />}
-                    Sign in with Microsoft
-                </Button>
-            </div>
+                </div>
+            </form>
             
-          <div className="mt-4 text-center text-sm">
-            Don't have an account?{' '}
-            <Link href="/pricing" passHref>
+            <div className="mt-4 text-center text-sm">
+                <Link href="/forgot-password" passHref>
                 <span className="underline cursor-pointer">
-                    Sign up
+                    Forgot password?
                 </span>
-            </Link>
-          </div>
+                </Link>
+            </div>
 
-        </CardContent>
-      </Card>
-    </div>
+            <div className="relative my-4">
+                <Separator />
+                <span className="absolute left-1/2 -translate-x-1/2 -top-2.5 bg-background px-2 text-xs text-muted-foreground">OR</span>
+            </div>
+
+                <div className="grid grid-cols-1 gap-2">
+                    <Button variant="outline" className="w-full" onClick={handleGoogleSignIn} disabled={isLoggingIn || isGoogleLoading || isMicrosoftLoading}>
+                        {isGoogleLoading ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : <GoogleIcon />}
+                        Sign in with Google
+                    </Button>
+                    <Button variant="outline" className="w-full" onClick={handleMicrosoftSignIn} disabled={isLoggingIn || isGoogleLoading || isMicrosoftLoading}>
+                        {isMicrosoftLoading ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : <MicrosoftIcon />}
+                        Sign in with Microsoft
+                    </Button>
+                </div>
+                
+            <div className="mt-4 text-center text-sm">
+                Don't have an account?{' '}
+                <Link href="/pricing" passHref>
+                    <span className="underline cursor-pointer">
+                        Sign up
+                    </span>
+                </Link>
+            </div>
+
+            </CardContent>
+        </Card>
+        </div>
+    </AppLayout>
   );
 }
