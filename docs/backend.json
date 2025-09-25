@@ -1,0 +1,177 @@
+{
+  "entities": {
+    "Issue": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Issue",
+      "type": "object",
+      "description": "Represents an issue reported on the production line.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the issue."
+        },
+        "description": {
+          "type": "string",
+          "description": "Detailed description of the issue."
+        },
+        "location": {
+          "type": "string",
+          "description": "Location of the issue on the production line."
+        },
+        "severity": {
+          "type": "string",
+          "description": "Severity level of the issue (e.g., low, medium, high)."
+        },
+        "priority": {
+          "type": "string",
+          "description": "Priority level of the issue as determined by AI."
+        },
+        "status": {
+          "type": "string",
+          "description": "Current status of the issue (e.g., reported, in progress, resolved)."
+        },
+        "reportedBy": {
+          "type": "string",
+          "description": "Reference to User who reported the issue. (Relationship: User 1:N Issue)"
+        },
+        "assignedTo": {
+          "type": "string",
+          "description": "Reference to User assigned to resolve the issue. (Relationship: User 1:N Issue)"
+        },
+        "facilityKeyword": {
+          "type": "string",
+          "description": "Reference to FacilityKeyword. (Relationship: FacilityKeyword 1:N Issue)"
+        },
+        "reportedDate": {
+          "type": "string",
+          "description": "The date and time the issue was reported.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "description",
+        "location",
+        "severity",
+        "status",
+        "reportedBy",
+        "facilityKeyword",
+        "reportedDate"
+      ]
+    },
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user of the application.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the user."
+        },
+        "username": {
+          "type": "string",
+          "description": "Username of the user."
+        },
+        "email": {
+          "type": "string",
+          "description": "Email address of the user.",
+          "format": "email"
+        },
+        "role": {
+          "type": "string",
+          "description": "Role of the user (e.g., operator, supervisor, admin)."
+        }
+      },
+      "required": [
+        "id",
+        "username",
+        "email",
+        "role"
+      ]
+    },
+    "FacilityKeyword": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "FacilityKeyword",
+      "type": "object",
+      "description": "Represents a keyword relevant to a specific facility.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the facility keyword."
+        },
+        "keyword": {
+          "type": "string",
+          "description": "The facility-relevant keyword."
+        }
+      },
+      "required": [
+        "id",
+        "keyword"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores user profiles. User ID is used for authentication.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/issues/{issueId}",
+        "definition": {
+          "entityName": "Issue",
+          "schema": {
+            "$ref": "#/backend/entities/Issue"
+          },
+          "description": "Stores issues reported or assigned to a specific user. Path-based ownership ensures that only the user who reported the issue, or the user assigned to it, along with authorized personnel, can access the issue document.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            },
+            {
+              "name": "issueId",
+              "description": "The unique identifier for the issue."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/facilityKeywords/{facilityKeywordId}",
+        "definition": {
+          "entityName": "FacilityKeyword",
+          "schema": {
+            "$ref": "#/backend/entities/FacilityKeyword"
+          },
+          "description": "Stores keywords relevant to different facilities. This is a global collection, allowing easy management and retrieval of facility keywords.",
+          "params": [
+            {
+              "name": "facilityKeywordId",
+              "description": "The unique identifier for the facility keyword."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore structure is designed to support the Andon Assistant application, focusing on issue reporting, resolution tracking, and user roles within a production line factory setting. The primary goal is to enable efficient querying, secure data access, and real-time updates. The design leverages path-based ownership for user-specific data and a global collection for facility keywords, promoting clarity and scalability.\n\n**Authorization Independence:** The structure utilizes path-based ownership (`/users/{userId}/issues/{issueId}`) to ensure that access control for issues is directly tied to the user who reported them or is assigned to resolve them.  This eliminates the need for `get()` calls to parent documents for authorization, allowing atomic operations.\n\n**QAPs (Rules are not Filters):**  The segregation of data into user-owned subcollections (`/users/{userId}/issues/{issueId}`) enables secure list operations. Rules can easily filter issues based on the requesting user's ID without needing to filter data within the rules themselves. The separate `/facilityKeywords` collection allows for unrestricted listing of available facility keywords.\n\n**Data Structure Details:**\n\n*   `/users/{userId}`: Stores user profiles. User IDs are used for authentication. Each user has a subcollection of issues.\n*   `/users/{userId}/issues/{issueId}`: Stores issues reported or assigned to a specific user. This path-based ownership ensures that only the user who reported the issue, or the user assigned to it, along with authorized personnel, can access the issue document.\n*   `/facilityKeywords/{facilityKeywordId}`: Stores keywords relevant to different facilities. This is a global collection, allowing easy management and retrieval of facility keywords. The AI-powered tool uses these keywords to assess issue priority.\n\nThis structure supports the core features of the Andon Assistant application, including issue reporting, real-time notifications, issue prioritization, issue resolution tracking, reporting dashboards, and user roles with varying levels of access."
+  }
+}
