@@ -31,6 +31,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useAuth } from '@/firebase';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { addUser } from '@/app/actions';
 
 const registerFormSchema = z.object({
   name: z.string().min(1, "Full name is required."),
@@ -142,6 +145,7 @@ function RegisterContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { currentUser, login } = useUser();
+  const auth = useAuth();
 
   const [isLoading, setIsLoading] = useState(false);
   
@@ -167,32 +171,77 @@ function RegisterContent() {
   const totalSaved = (originalPrice - price) * parseInt(selectedDuration);
   const currencySymbol = currencySymbols[selectedCurrency];
 
-  const handleRegistration = (data: RegisterFormValues) => {
+  const handleRegistration = async (data: RegisterFormValues) => {
     setIsLoading(true);
-    // In a real app, you would register the user.
-    setTimeout(() => {
-      toast({
-        title: "Registration Successful!",
-        description: `Welcome to the ${selectedTier.name} plan.`,
+    try {
+      // Step 1: Create user in Firebase Auth
+      const userCredential = await createUserWithEmailAndPassword(auth, data.email, data.password);
+      const user = userCredential.user;
+
+      const [firstName, ...lastNameParts] = data.name.split(' ');
+      const lastName = lastNameParts.join(' ');
+
+      // Step 2: Add user to Firestore via server action
+      const result = await addUser({
+        uid: user.uid,
+        firstName: firstName,
+        lastName: lastName,
+        email: data.email,
+        role: 'admin', // The first user to register is an admin
+        plan: selectedPlan as any,
       });
-      // For this mock, we'll just log the user in with a mock account and redirect
-      login('alex.j@andon.io').then(() => {
+
+      if (result.success) {
+        toast({
+          title: "Registration Successful!",
+          description: `Welcome to the ${selectedTier.name} plan.`,
+        });
+        // Login the new user and redirect
+        await login(data.email, data.password);
         router.push('/dashboard');
+      } else {
+        // TODO: Handle Firestore user creation failure (e.g., delete auth user)
+        toast({
+          variant: "destructive",
+          title: "Registration Failed",
+          description: result.error || "Could not save user details to database.",
+        });
+        setIsLoading(false);
+      }
+    } catch (error: any) {
+      // Handle Firebase Auth errors
+      let description = "An unexpected error occurred.";
+      if (error.code) {
+        switch(error.code) {
+            case 'auth/email-already-in-use':
+                description = 'This email address is already in use.';
+                break;
+            case 'auth/invalid-email':
+                description = 'Please enter a valid email address.';
+                break;
+             case 'auth/weak-password':
+                description = 'The password is too weak. Please choose a stronger password.';
+                break;
+            default:
+                description = error.message;
+        }
+     }
+      toast({
+        variant: "destructive",
+        title: "Registration Failed",
+        description: description,
       });
-    }, 2000);
+      setIsLoading(false);
+    }
   };
   
   const handlePayment = async (e: React.FormEvent) => {
      e.preventDefault();
      setIsLoading(true);
+     // This is a mock payment flow.
+     // In a real app, you would handle payment here and then call handleRegistration on success.
      setTimeout(() => {
-      toast({
-        title: "Payment Successful!",
-        description: `Your subscription to the ${selectedTier.name} plan has been confirmed.`,
-      });
-       login('alex.j@andon.io').then(() => {
-        router.push('/dashboard');
-      });
+      form.handleSubmit(handleRegistration)();
     }, 2000);
   }
   
