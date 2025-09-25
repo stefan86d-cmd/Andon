@@ -85,13 +85,13 @@ export default function OurStoryPage() {
                 <div className="space-y-4">
                     <h2 className="text-3xl font-semibold">Born from Experience</h2>
                     <p className="text-muted-foreground leading-relaxed">
-                        From the heart of Helsinki, Finland, AndonPro was born out of decades of hands-on experience on the factory floor. We're a small, passionate team that has lived and breathed the production environment, witnessing firsthand the communication breakdowns, the costly downtimes, and the daily frustrations that chip away at efficiency.
+                        From the heart of Helsinki, Finland, AndonPro was born out of decades of hands-on experience on the factory floor. What started as a passion project by a single developer quickly grew into a mission to solve the real-world problems I faced every day—the communication breakdowns, the costly downtimes, and the daily frustrations that chip away at efficiency.
                     </p>
                     <p className="text-muted-foreground leading-relaxed">
-                        We saw a gap. Existing solutions were often overly complex, rigid, and priced out of reach for smaller businesses. We knew there had to be a better way—a tool that was both powerful and accessible. That's why we decided to build AndonPro: an intuitive, affordable platform designed to solve the very issues we faced.
+                        I saw a gap. Existing solutions were often overly complex, rigid, and priced out of reach for smaller businesses. I knew there had to be a better way—a tool that was both powerful and accessible. That's why I decided to build AndonPro: an intuitive, affordable platform designed to solve the very issues I witnessed firsthand.
                     </p>
                     <p className="text-muted-foreground leading-relaxed">
-                        Our core philosophy is simple: empower the user. We believe that the people on the line are the experts, which is why our app is built for ease of use and complete customization. Whether you're a small workshop or a large-scale operation, AndonPro adapts to your unique workflow, not the other way around.
+                        The core philosophy is simple: empower the user. The people on the line are the experts, which is why AndonPro is built for ease of use and complete customization. Whether you're a small workshop or a large-scale operation, the app adapts to your unique workflow, not the other way around.
                     </p>
                 </div>
                 <div>
