@@ -1,68 +1,113 @@
 /**
- * @fileoverview Firestore Security Rules for the application.
+ * @fileoverview Firestore Security Rules for the production line issue tracking application.
  *
  * Core Philosophy:
- * This ruleset prioritizes security by enforcing strict access control.
- * Users can only read and write their own data, while issues and production lines are publicly readable but only modifiable by authorized users.
+ * This ruleset employs a mixed security model. User profiles are strictly owned by the individual user.
+ * Issues and ProductionLines are publicly readable to facilitate application functionality.
+ * However, writes to Issues and ProductionLines are restricted to ensure data integrity and prevent unauthorized modifications.
  *
  * Data Structure:
- * - /users/{userId}: Stores user profiles. The 'userId' segment matches the authenticated user's UID.
- * - /issues/{issueId}: Stores reported issues. Publicly readable, but write access is restricted.
- * - /productionLines/{lineId}: Stores production lines. Publicly readable, but write access is restricted.
+ * - /users/{userId}: Stores individual user profiles. Access is restricted to the owning user.
+ * - /issues/{issueId}: Stores all reported issues. Publicly readable, but writes are controlled.
+ * - /productionLines/{lineId}: Stores production line data. Publicly readable, but writes are controlled.
  *
  * Key Security Decisions:
- * - User listing is disabled.
- * - The ruleset explicitly denies any write operations using 'if true;' as a condition.
- * - Missing owner fields in entities will halt the implementation and alert the developer to a critical security issue.
+ * - User profiles are private and only accessible to the owning user.
+ * - Listing of users is disallowed to prevent enumeration.
+ * - Issues and ProductionLines are publicly readable to enable core application functionality such as displaying issues and production lines to all users.
+ * - Writes to Issues and ProductionLines are only allowed if the reportedBy or assignedTo field matches the authenticated user's ID for Issues. For ProductionLines, writes are disabled until proper authorization can be implemented.
+ *
+ * Denormalization for Authorization:
+ * - The `Issue` entity contains `reportedBy` and `assignedTo` fields that are used to enforce write access.
+ *
+ * Structural Segregation:
+ * - No structural segregation is used in this version. All issues are stored in a single collection.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Controls access to user profiles.
+     * @description Checks if the current user is signed in.
+     */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /**
+     * @description Checks if the provided userId matches the authenticated user's ID.
+     */
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    /**
+     * @description Checks if the user is the owner and the document exists.
+     */
+    function isExistingOwner(userId) {
+        return isOwner(userId) && resource != null;
+    }
+
+    /***** User Rules *****/
+
+    /**
+     * @description Controls access to user profile documents.
      * @path /users/{userId}
-     * @allow (create) Signed-in user creates their own profile.
-     * @allow (get, list, update, delete) Signed-in user accesses their own profile.
-     * @deny (create, get, list, update, delete) Any other user attempts to access this profile.
-     * @principle Enforces document ownership for user profiles.
+     * @allow (create) User with ID 'user123' can create their own profile.
+     * @allow (get) User with ID 'user123' can read their own profile.
+     * @allow (update) User with ID 'user123' can update their own profile.
+     * @allow (delete) User with ID 'user123' can delete their own profile.
+     * @deny (create) User with ID 'user456' cannot create a profile for 'user123'.
+     * @deny (get) User with ID 'user456' cannot read the profile of 'user123'.
+     * @principle Enforces document ownership for all operations.
      */
     match /users/{userId} {
-      function isOwner(userId) {
-        return request.auth != null && request.auth.uid == userId;
-      }
-      function isExistingOwner(userId) {
-          return isOwner(userId) && resource != null;
-      }
+      allow get: if isOwner(userId);
+      allow list: if false; // Disallow listing all users
 
-      allow get, list: if isOwner(userId);
       allow create: if isOwner(userId) && request.resource.data.id == userId;
       allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
       allow delete: if isExistingOwner(userId);
     }
 
+    /***** Issue Rules *****/
+
     /**
-     * @description Controls access to issues.
+     * @description Controls access to issue documents.
      * @path /issues/{issueId}
-     * @allow (get, list) Anyone can read the issues.
-     * @deny (create, update, delete) Only authorized users can create, update, or delete issues.
-     * @principle Allows public read access but restricts write access to authorized users.
+     * @allow (get) Any user can read any issue.
+     * @allow (list) Any user can list issues.
+     * @allow (create) A user can create an issue if they are the reporter.
+     * @allow (update) A user can update an issue if they are the reporter or the assignee.
+     * @allow (delete) A user can delete an issue if they are the reporter.
+     * @deny (create) A user cannot create an issue if they are not the reporter.
+     * @deny (update) A user cannot update an issue if they are not the reporter or the assignee.
+     * @deny (delete) A user cannot delete an issue if they are not the reporter.
+     * @principle Allows public read access, but restricts write access to the reporter or assignee.
      */
     match /issues/{issueId} {
       allow get, list: if true;
-      allow create, update, delete: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
+
+      allow create: if isSignedIn() && request.resource.data.reportedBy == request.auth.uid;
+      allow update: if isSignedIn() && (resource.data.reportedBy == request.auth.uid || resource.data.assignedTo == request.auth.uid) && resource != null;
+      allow delete: if isSignedIn() && resource.data.reportedBy == request.auth.uid  && resource != null;
     }
 
+    /***** ProductionLine Rules *****/
+
     /**
-     * @description Controls access to production lines.
+     * @description Controls access to production line documents.
      * @path /productionLines/{lineId}
-     * @allow (get, list) Anyone can read production lines.
-     * @deny (create, update, delete) Only authorized users can create, update, or delete production lines.
-     * @principle Allows public read access but restricts write access to authorized users.
+     * @allow (get) Any user can read any production line.
+     * @allow (list) Any user can list production lines.
+     * @deny (create) No one can create production lines.
+     * @deny (update) No one can update production lines.
+     * @deny (delete) No one can delete production lines.
+     * @principle Allows public read access, but restricts write access.
      */
     match /productionLines/{lineId} {
       allow get, list: if true;
-      allow create, update, delete: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
+      allow create, update, delete: if false;
     }
   }
 }
