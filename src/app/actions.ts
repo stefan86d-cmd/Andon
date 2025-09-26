@@ -10,7 +10,20 @@ import { getFirestore, doc, setDoc, deleteDoc, updateDoc, addDoc, collection, Ti
 import { initializeFirebase } from '@/firebase/server-init';
 import { handleFirestoreError } from '@/lib/firestore-helpers';
 import type { Issue } from '@/lib/types';
+import { getAuth } from 'firebase-admin/auth';
 
+
+export async function setCustomUserClaims(uid: string, claims: { [key: string]: any }) {
+    const { auth } = initializeFirebase();
+    const adminAuth = getAuth(auth.app);
+    try {
+        await adminAuth.setCustomUserClaims(uid, claims);
+        return { success: true };
+    } catch (error: any) {
+        console.error("Error setting custom claims:", error);
+        return { success: false, error: error.message };
+    }
+}
 
 export async function reportIssue(issueData: Omit<Issue, 'id' | 'reportedAt' | 'reportedBy' | 'status' | 'reportedBy' | 'resolvedBy'>, reportedByEmail: string) {
     try {
@@ -127,6 +140,7 @@ export async function addUser(data: { uid: string, firstName: string, lastName: 
     
     try {
         await setDoc(userDocRef, newUser);
+        await setCustomUserClaims(data.uid, { role: data.role });
         revalidatePath('/users');
         return { success: true, message: `User ${data.email} created successfully.` };
     } catch (error) {
@@ -170,6 +184,7 @@ export async function editUser(uid: string, data: { firstName: string, lastName:
 
     try {
         await updateDoc(userRef, updatedData);
+        await setCustomUserClaims(uid, { role: data.role });
         revalidatePath('/users');
         return { success: true };
     } catch (error) {
@@ -297,5 +312,3 @@ export async function resetPassword(token: string, newPassword: string) {
         return { success: false, error: 'Failed to reset password.' };
     }
 }
-
-    
