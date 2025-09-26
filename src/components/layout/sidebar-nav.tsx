@@ -22,6 +22,7 @@ const allNavItems = [
     { href: "/lines", icon: Factory, label: "Production Lines", roles: ['admin'] },
     { href: "/users", icon: Users, label: "User Management", roles: ['admin'] },
     { href: "/reports", icon: BarChart3, label: "Reports", roles: ['admin', 'supervisor'] },
+    { href: "/settings", icon: Settings, label: "Settings", roles: ['admin', 'supervisor', 'operator'] },
 ]
 
 interface SidebarNavProps {
@@ -39,7 +40,8 @@ export function SidebarNav({ userRole }: SidebarNavProps) {
                     <DropdownMenuItem
                         className={cn(
                             "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary",
-                            pathname === href && "font-semibold text-foreground"
+                            pathname.startsWith(href) && href !== "/" && "font-semibold text-foreground",
+                            pathname === "/" && href === "/" && "font-semibold text-foreground"
                         )}
                     >
                         <Icon className="h-4 w-4" />

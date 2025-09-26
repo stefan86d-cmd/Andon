@@ -62,7 +62,7 @@ export default function UsersPage() {
               User Management
             </h1>
              <p className="text-sm text-muted-foreground">
-              You are using {allUsers?.length || 0} of {userLimit} available user seats on the {currentUser.plan} plan.
+              You are using {allUsers?.length || 0} of {userLimit === Infinity ? 'unlimited' : userLimit} available user seats on the {currentUser.plan} plan.
             </p>
           </div>
           {canAddUser ? (
@@ -74,7 +74,7 @@ export default function UsersPage() {
             </AddUserDialog>
           ) : (
             <Button size="sm" asChild className="gap-1">
-              <Link href="/settings">
+              <Link href="/settings/account">
                 <Lock className="h-4 w-4" />
                 Upgrade to Add More
               </Link>

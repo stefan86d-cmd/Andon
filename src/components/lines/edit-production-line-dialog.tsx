@@ -132,7 +132,7 @@ export function EditProductionLineDialog({ children, productionLine }: EditProdu
             <WorkstationFormField 
               form={form} 
               canAdd={canAddWorkstation} 
-              limit={workstationLimit}
+              limit={workstationLimit === Infinity ? 'Unlimited' : workstationLimit}
               plan={userPlan}
             />
 

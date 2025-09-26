@@ -25,7 +25,7 @@ type LineFormValues = z.infer<typeof lineFormSchema>;
 interface WorkstationFormFieldProps {
   form: UseFormReturn<LineFormValues>;
   canAdd: boolean;
-  limit: number;
+  limit: number | 'Unlimited';
   plan: Plan;
 }
 
@@ -41,7 +41,7 @@ export function WorkstationFormField({ form, canAdd, limit, plan }: WorkstationF
         <FormLabel>Workstations ({fields.length}/{limit})</FormLabel>
          {!canAdd && plan !== 'enterprise' && (
             <Button variant="link" size="sm" asChild className="text-xs h-auto p-0">
-                <Link href="/settings">
+                <Link href="/settings/account">
                     <Lock className="mr-1 h-3 w-3" />
                     Upgrade to add more
                 </Link>

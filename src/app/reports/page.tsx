@@ -175,7 +175,7 @@ export default function ReportsPage() {
             </CardContent>
             <CardContent>
                <Button asChild>
-                <Link href="/settings">Upgrade Plan</Link>
+                <Link href="/settings/account">Upgrade Plan</Link>
               </Button>
             </CardContent>
           </Card>
