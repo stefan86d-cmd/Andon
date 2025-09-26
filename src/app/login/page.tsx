@@ -78,9 +78,7 @@ export default function LoginPage() {
         console.error("Login Error:", error);
         let description = "An unexpected error occurred.";
         
-        if (error.message === 'ACCOUNT_OVER_LIMIT') {
-            description = "Account user limit reached. Please contact an administrator.";
-        } else if (error.code) {
+        if (error.code) {
             switch (error.code) {
                 case "auth/user-not-found":
                 case "auth/wrong-password":

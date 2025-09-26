@@ -1,5 +1,4 @@
 
-
 export type Role = "admin" | "supervisor" | "operator";
 export type Plan = "starter" | "standard" | "pro" | "enterprise";
 
@@ -56,7 +55,9 @@ export type Issue = {
 };
 
 // Type for how an issue is stored in Firestore
-export type IssueDocument = Omit<Issue, 'id' | 'reportedBy' | 'resolvedBy'> & {
+export type IssueDocument = Omit<Issue, 'id' | 'reportedBy' | 'resolvedBy' | 'reportedAt' | 'resolvedAt'> & {
+  reportedAt: any; // Usually a Timestamp
+  resolvedAt?: any; // Usually a Timestamp
   reportedBy: UserRef;
   resolvedBy?: UserRef | null;
 }
@@ -91,5 +92,3 @@ export type IssueByDay = {
   date: string;
   issues: number;
 }
-
-    

@@ -1,7 +1,7 @@
 
 import type { User, Issue, ProductionLine, Role, IssueCategory, Plan, IssueDocument, UserRef } from "@/lib/types";
 import { format, subDays, subHours } from "date-fns";
-import { getFirestore, getDocs, collection, query, where, doc, getDoc, addDoc, updateDoc, deleteDoc, Timestamp, orderBy, writeBatch } from 'firebase/firestore';
+import { getFirestore, getDocs, collection, query, where, doc, getDoc, addDoc, updateDoc, deleteDoc, Timestamp, orderBy, writeBatch, collectionGroup } from 'firebase/firestore';
 import { initializeFirebase } from "@/firebase/server-init";
 
 // --- Production Lines (Firestore Implementation) ---
@@ -48,18 +48,35 @@ const issueDocToIssue = async (docSnap: any): Promise<Issue> => {
     // Convert Firestore Timestamps to JS Date objects
     const reportedAt = (docData.reportedAt as unknown as Timestamp)?.toDate();
     const resolvedAt = docData.resolvedAt ? (docData.resolvedAt as unknown as Timestamp)?.toDate() : undefined;
-
-    // Fetch full user objects from user references
-    const reportedByUser = await getUserByEmail(docData.reportedBy.email);
-    let resolvedBy = null;
-    if (docData.resolvedBy) {
-        resolvedBy = await getUserByEmail(docData.resolvedBy.email);
-    }
     
-    if (!reportedByUser) {
-        // This case should be handled gracefully. Maybe return a placeholder user.
-        // For now, we'll throw, but in a real app you might not want to.
-        throw new Error(`Could not find user with email ${docData.reportedBy.email}`);
+    // For reportedBy, we can construct a partial user object.
+    // In a real app, you might want to fetch the full user profile if needed,
+    // but this avoids extra reads for display purposes.
+    const reportedBy: User = {
+        id: '', // Not available in the ref, but might not be needed for display
+        email: docData.reportedBy.email,
+        firstName: docData.reportedBy.name.split(' ')[0],
+        lastName: docData.reportedBy.name.split(' ').slice(1).join(' '),
+        avatarUrl: docData.reportedBy.avatarUrl,
+        role: 'operator', // Default/unknown role
+        plan: 'starter',   // Default/unknown plan
+        address: '',
+        country: '',
+    };
+    
+    let resolvedBy: User | null = null;
+    if (docData.resolvedBy) {
+         resolvedBy = {
+            id: '',
+            email: docData.resolvedBy.email,
+            firstName: docData.resolvedBy.name.split(' ')[0],
+            lastName: docData.resolvedBy.name.split(' ').slice(1).join(' '),
+            avatarUrl: docData.resolvedBy.avatarUrl,
+            role: 'supervisor',
+            plan: 'starter',
+            address: '',
+            country: '',
+        };
     }
 
     return {
@@ -67,8 +84,8 @@ const issueDocToIssue = async (docSnap: any): Promise<Issue> => {
         id: docSnap.id,
         reportedAt,
         resolvedAt,
-        reportedBy: reportedByUser,
-        resolvedBy,
+        reportedBy: reportedBy,
+        resolvedBy: resolvedBy,
     } as Issue;
 }
 
@@ -79,8 +96,7 @@ export async function getIssues(): Promise<Issue[]> {
     const q = query(issuesCollection, orderBy("reportedAt", "desc"));
     const issuesSnapshot = await getDocs(q);
 
-    const issuesPromises = issuesSnapshot.docs.map(doc => issueDocToIssue(doc));
-    const issuesList = await Promise.all(issuesPromises);
+    const issuesList = await Promise.all(issuesSnapshot.docs.map(doc => issueDocToIssue(doc)));
     
     return issuesList;
 }
@@ -95,5 +111,3 @@ export async function getIssueById(id: string): Promise<Issue | null> {
     }
     return await issueDocToIssue(issueDoc);
 }
-
-    

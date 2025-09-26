@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { AppLayout } from "@/components/layout/app-layout";
@@ -24,8 +23,8 @@ import type { User, ProductionLine } from "@/lib/types";
 
 const planLimits = {
   starter: { lines: 1, users: 5 },
-  standard: { lines: 5, users: 20 },
-  pro: { lines: 10, users: 50 },
+  standard: { lines: 5, users: 50 },
+  pro: { lines: 10, users: 150 },
   enterprise: { lines: Infinity, users: Infinity },
 }
 
