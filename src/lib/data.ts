@@ -18,14 +18,6 @@ export async function getProductionLines(): Promise<ProductionLine[]> {
 
 // --- Users (Firestore Implementation) ---
 
-export async function getAllUsers(): Promise<User[]> {
-    const { firestore } = initializeFirebase();
-    const usersCollection = collection(firestore, "users");
-    const usersSnapshot = await getDocs(usersCollection);
-    const usersList = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
-    return usersList;
-}
-
 export async function getUserByEmail(email: string): Promise<User | null> {
     const { firestore } = initializeFirebase();
     const usersCollection = collection(firestore, "users");

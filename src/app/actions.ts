@@ -252,42 +252,6 @@ export async function updateIssue(issueId: string, data: {
     }
 }
 
-export async function seedUsers() {
-    const { firestore } = initializeFirebase();
-    const usersToSeed = [
-        { id: 'c7TuJzUOWUVt1CALp1jGI1cAmZU2', firstName: 'Alex', lastName: 'Johnson', email: 'alex.j@andon.io', role: 'admin' as Role, plan: 'pro' as const, avatarUrl: '' },
-        { id: 'dQhiONEA3fTXfd3p6Sa7Z15tGQD3', firstName: 'Sam', lastName: 'Miller', email: 'sam.m@andon.io', role: 'supervisor' as Role, plan: 'pro' as const, avatarUrl: '' },
-        { id: 'BPBNYzsv2LZnAyqNjEonV7a07I33', firstName: 'Maria', lastName: 'Garcia', email: 'maria.g@andon.io', role: 'operator' as Role, plan: 'pro' as const, avatarUrl: '' },
-    ];
-
-    let createdCount = 0;
-    let existingCount = 0;
-
-    try {
-        const batch = writeBatch(firestore);
-        const existingUsers = await getAllUsersFromData();
-        const existingEmails = new Set(existingUsers.map(u => u.email));
-
-        for (const userData of usersToSeed) {
-            if (existingEmails.has(userData.email)) {
-                existingCount++;
-            } else {
-                 const { id, ...rest } = userData;
-                 const userDocRef = doc(firestore, "users", id);
-                 batch.set(userDocRef, rest);
-                 createdCount++;
-            }
-        }
-        
-        await batch.commit();
-        revalidatePath('/users');
-        return { success: true, message: `Seeding complete. Created: ${createdCount}, Existing: ${existingCount}.` };
-    } catch (error: any) {
-        return { error: "An error occurred during seeding. " + error.message };
-    }
-}
-
-
 export async function changePassword(userEmail: string, currentPassword: string, newPassword: string) {
     // This is a mock function. In a real app, this would be handled securely.
     // For this demo, we're not actually changing the password in Firebase Auth from the server.
