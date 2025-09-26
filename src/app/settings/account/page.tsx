@@ -17,12 +17,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { toast } from "@/hooks/use-toast";
-import { changePassword, updateUserPlan } from "@/app/actions";
-import { Badge } from "@/components/ui/badge";
+import { changePassword } from "@/app/actions";
 import type { Plan } from "@/lib/types";
-import { CancelSubscriptionDialog } from "@/components/settings/cancel-subscription-dialog";
 import { Logo } from "@/components/layout/logo";
-import { Separator } from "@/components/ui/separator";
 import { countries } from "@/lib/countries";
 import {
   Accordion,
@@ -54,41 +51,25 @@ const passwordFormSchema = z.object({
 type PasswordFormValues = z.infer<typeof passwordFormSchema>;
 
 
-const tiers: Record<Plan, { name: string, price: number }> = {
-  starter: { name: "Starter", price: 0 },
-  standard: { name: "Standard", price: 39.99 },
-  pro: { name: "Pro", price: 59.99 },
-  enterprise: { name: "Enterprise", price: 149.99 },
-};
-
-type Duration = '1' | '12' | '24' | '48';
-type Currency = 'usd' | 'eur' | 'gbp';
-
-
 export default function AccountSettingsPage() {
     const { currentUser, updateCurrentUser } = useUser();
     const [isProfileSubmitting, startProfileTransition] = useTransition();
     const [isPasswordSubmitting, startPasswordTransition] = useTransition();
-    const [isPlanSubmitting, startPlanTransition] = useTransition();
     
     // State for toggling profile edit mode
     const [isEditingProfile, setIsEditingProfile] = useState(false);
 
-    // Plan state
-    const [duration, setDuration] = useState<Duration>('12');
-    const [currency, setCurrency] = useState<Currency>('usd');
-    const [newPlan, setNewPlan] = useState<Plan | undefined>();
 
     const profileForm = useForm<ProfileFormValues>({
         resolver: zodResolver(profileFormSchema),
         defaultValues: {
-            firstName: currentUser?.firstName || "",
-            lastName: currentUser?.lastName || "",
-            address: currentUser?.address || "",
-            city: "", // Mock data does not have city, so we add it
-            postalCode: "", // Mock data does not have postalCode
-            country: currentUser?.country || "",
-            phone: currentUser?.phone || "",
+            firstName: "",
+            lastName: "",
+            address: "",
+            city: "", 
+            postalCode: "", 
+            country: "",
+            phone: "",
         },
     });
 
@@ -107,12 +88,11 @@ export default function AccountSettingsPage() {
                 firstName: currentUser.firstName,
                 lastName: currentUser.lastName,
                 address: currentUser.address,
-                city: "Anytown", // default to empty
-                postalCode: "12345", // default to empty
+                city: "Anytown", // Mock data doesn't have this, so we use a placeholder
+                postalCode: "12345", // Mock data doesn't have this, so we use a placeholder
                 country: currentUser.country,
                 phone: currentUser.phone,
             });
-            setNewPlan(currentUser.plan);
         }
     }, [currentUser, profileForm]);
 
@@ -157,45 +137,12 @@ export default function AccountSettingsPage() {
             }
         });
     }
-    
-    const handlePlanUpgrade = () => {
-        if (!currentUser || !newPlan) return;
-        if (newPlan === currentUser.plan) {
-            toast({ title: "No Change", description: "You are already on this plan." });
-            return;
-        }
-
-        startPlanTransition(async () => {
-            const result = await updateUserPlan(currentUser.id, newPlan);
-            if (result.success) {
-                toast({
-                title: "Plan Updated!",
-                description: `Your plan has been successfully updated to ${newPlan}.`,
-                });
-                updateCurrentUser({ plan: newPlan });
-            } else {
-                toast({
-                variant: "destructive",
-                title: "Update Failed",
-                description: result.error || "Could not update your plan.",
-                });
-            }
-        });
-    }
-    
-    const handleCancelConfirm = () => {
-        toast({
-            title: "Subscription Cancelled (Mock)",
-            description: "Your subscription would be cancelled at the end of the current period.",
-        });
-    }
-
-    const planName = currentUser.plan.charAt(0).toUpperCase() + currentUser.plan.slice(1);
-    const availablePlans = Object.keys(tiers).filter(p => p !== 'starter') as Plan[];
 
     const getCountryName = (code: string) => {
         return countries.find(c => c.code === code)?.name || code;
     }
+    
+    const planName = currentUser.plan.charAt(0).toUpperCase() + currentUser.plan.slice(1);
 
     return (
         <div className="container mx-auto flex min-h-screen items-center justify-center py-12">
@@ -359,7 +306,7 @@ export default function AccountSettingsPage() {
                                     </div>
                                     <div>
                                         <Label className="text-xs text-muted-foreground">Address</Label>
-                                        <p>{currentUser.address || 'N/A'}</p>
+                                        <p>{profileForm.getValues('address') || 'N/A'}</p>
                                     </div>
                                      <div className="grid grid-cols-2 gap-4">
                                         <div>
@@ -373,11 +320,11 @@ export default function AccountSettingsPage() {
                                     </div>
                                     <div>
                                         <Label className="text-xs text-muted-foreground">Country</Label>
-                                        <p>{getCountryName(currentUser.country) || 'N/A'}</p>
+                                        <p>{getCountryName(profileForm.getValues('country')) || 'N/A'}</p>
                                     </div>
                                      <div>
                                         <Label className="text-xs text-muted-foreground">Phone</Label>
-                                        <p>{currentUser.phone || 'N/A'}</p>
+                                        <p>{profileForm.getValues('phone') || 'N/A'}</p>
                                     </div>
                                 </CardContent>
                                 <CardFooter>
@@ -453,70 +400,22 @@ export default function AccountSettingsPage() {
                     <Card>
                         <CardHeader>
                             <CardTitle>Plan & Billing</CardTitle>
-                            <CardDescription>You are currently on the <span className="font-semibold">{planName}</span> plan.</CardDescription>
                         </CardHeader>
-                        <CardContent className="space-y-6">
-                            <div className="space-y-2">
-                                <Label>Change Plan</Label>
-                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                                    <Select value={newPlan} onValueChange={(value) => setNewPlan(value as Plan)}>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Choose a new plan" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {availablePlans.map(p => (
-                                                <SelectItem key={p} value={p} className="capitalize">{p}</SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    <Select value={duration} onValueChange={(value) => setDuration(value as any)}>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Select duration" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="1">1 Month</SelectItem>
-                                            <SelectItem value="12">12 Months</SelectItem>
-                                            <SelectItem value="24">24 Months</SelectItem>
-                                            <SelectItem value="48">48 Months</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                    <Select value={currency} onValueChange={(value) => setCurrency(value as any)}>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Currency" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="usd">USD</SelectItem>
-                                            <SelectItem value="eur">EUR</SelectItem>
-                                            <SelectItem value="gbp">GBP</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                            </div>
-                            <div className="flex gap-2 items-center">
-                                <Button onClick={handlePlanUpgrade} disabled={isPlanSubmitting || !newPlan || newPlan === currentUser.plan}>
-                                    {isPlanSubmitting && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
-                                    {newPlan === currentUser.plan ? 'Current Plan' : (newPlan ? `Upgrade to ${newPlan.charAt(0).toUpperCase() + newPlan.slice(1)}` : 'Select a Plan')}
-                                </Button>
-                                {duration === '12' && <Badge variant="secondary">Save ~20%</Badge>}
-                                {duration === '24' && <Badge variant="secondary">Save ~30%</Badge>}
-                                {duration === '48' && <Badge variant="secondary">Save ~40%</Badge>}
-                            </div>
-                             <Separator />
-                            <div>
-                                <h3 className="text-sm font-semibold mb-2">Cancel Subscription</h3>
-                                <p className="text-sm text-muted-foreground mb-4">
-                                    If you cancel, you will lose access to your plan's features at the end of your billing period.
-                                </p>
-                                <CancelSubscriptionDialog onConfirm={handleCancelConfirm}>
-                                    <Button variant="destructive" className="w-full sm:w-auto">Cancel Subscription</Button>
-                                </CancelSubscriptionDialog>
+                        <CardContent className="space-y-4">
+                            <div className="rounded-lg border bg-card-foreground/5 p-6">
+                                <h3 className="text-lg font-semibold">Current Plan: {planName}</h3>
+                                <p className="text-sm text-muted-foreground">Your workspace is on the {planName} plan.</p>
+                                <p className="text-sm text-muted-foreground mt-2">Your plan renews on January 1, 2025.</p>
                             </div>
                         </CardContent>
+                        <CardFooter>
+                            <Link href="/settings/billing" className={cn(buttonVariants({ variant: "outline" }))}>
+                                View Billing Details
+                            </Link>
+                        </CardFooter>
                     </Card>
                 </div>
             </div>
         </div>
     );
 }
-
-    

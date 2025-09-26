@@ -93,9 +93,9 @@ export default function SettingsPage() {
                                     </div>
                                 </CardContent>
                                 <CardFooter>
-                                     <Link href="/settings/account" className={cn(buttonVariants({ variant: "outline" }))}>
+                                     <a href="/settings/billing" className={cn(buttonVariants({ variant: "outline" }))} target="_blank" rel="noopener noreferrer">
                                         View Billing Details
-                                    </Link>
+                                    </a>
                                 </CardFooter>
                             </Card>
                         )}
