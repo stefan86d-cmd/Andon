@@ -449,5 +449,4 @@ export default function AccountSettingsPage() {
             </div>
         </div>
     );
-
-    
+}
