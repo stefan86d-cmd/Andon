@@ -50,6 +50,7 @@ const nextConfig: NextConfig = {
             'firebase-admin': false,
             'net': false,
             'tls': false,
+            'fs': false,
         };
     }
     
