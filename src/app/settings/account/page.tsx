@@ -21,6 +21,7 @@ import { changePassword, updateUserPlan } from "@/app/actions";
 import { Badge } from "@/components/ui/badge";
 import type { Plan } from "@/lib/types";
 import { CancelSubscriptionDialog } from "@/components/settings/cancel-subscription-dialog";
+import { Logo } from "@/components/layout/logo";
 
 const profileFormSchema = z.object({
   firstName: z.string().min(1, "First name is required."),
@@ -89,7 +90,11 @@ export default function AccountSettingsPage() {
     }, [currentUser, profileForm]);
 
     if (!currentUser) {
-        return <AppLayout><div>Loading...</div></AppLayout>;
+        return (
+            <div className="flex h-screen items-center justify-center">
+                <LoaderCircle className="h-8 w-8 animate-spin" />
+            </div>
+        );
     }
     
     const onProfileSubmit = (data: ProfileFormValues) => {
@@ -161,184 +166,192 @@ export default function AccountSettingsPage() {
     const availablePlans = Object.keys(tiers).filter(p => p !== 'starter') as Plan[];
 
     return (
-        <AppLayout>
-            <main className="flex min-h-[calc(100vh_-_theme(spacing.16))] flex-1 flex-col gap-4 bg-background p-4 md:gap-8 md:p-10">
-                <div className="mx-auto grid w-full max-w-6xl gap-2">
-                    <h1 className="text-3xl font-semibold">Manage Account</h1>
+        <div className="container mx-auto flex min-h-screen items-center justify-center py-12">
+            <div className="w-full max-w-2xl">
+                 <div className="flex justify-center mb-8">
+                    <Link href="/">
+                        <Logo />
+                    </Link>
+                </div>
+                <div className="text-center mb-8">
+                    <h1 className="text-3xl font-semibold">Manage Your Account</h1>
                     <p className="text-muted-foreground">Edit your profile, password, and subscription details.</p>
                 </div>
-                <div className="mx-auto grid w-full max-w-6xl items-start gap-6">
-                    <div className="grid gap-6">
-                         <Card>
-                            <CardHeader>
-                                <CardTitle>Profile Information</CardTitle>
-                                <CardDescription>Update your personal details here.</CardDescription>
-                            </CardHeader>
-                             <Form {...profileForm}>
-                                <form onSubmit={profileForm.handleSubmit(onProfileSubmit)}>
-                                    <CardContent className="space-y-4">
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            <FormField
-                                                control={profileForm.control}
-                                                name="firstName"
-                                                render={({ field }) => (
-                                                    <FormItem>
-                                                        <FormLabel>First Name</FormLabel>
-                                                        <FormControl>
-                                                            <Input {...field} />
-                                                        </FormControl>
-                                                        <FormMessage />
-                                                    </FormItem>
-                                                )}
-                                            />
-                                            <FormField
-                                                control={profileForm.control}
-                                                name="lastName"
-                                                render={({ field }) => (
-                                                    <FormItem>
-                                                        <FormLabel>Last Name</FormLabel>
-                                                        <FormControl>
-                                                            <Input {...field} />
-                                                        </FormControl>
-                                                        <FormMessage />
-                                                    </FormItem>
-                                                )}
-                                            />
-                                        </div>
-                                         <div className="space-y-2">
-                                            <Label htmlFor="email">Email</Label>
-                                            <Input id="email" type="email" defaultValue={currentUser.email} readOnly disabled/>
-                                        </div>
-                                    </CardContent>
-                                    <CardFooter>
-                                        <Button type="submit" disabled={isProfileSubmitting}>
-                                            {isProfileSubmitting && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
-                                            Update Profile
-                                        </Button>
-                                    </CardFooter>
-                                </form>
-                            </Form>
-                        </Card>
-
+                <div className="grid gap-6">
                         <Card>
-                            <CardHeader>
-                                <CardTitle>Change Password</CardTitle>
-                                <CardDescription>Update your password. Make sure it's a strong one.</CardDescription>
-                            </CardHeader>
-                                <Form {...passwordForm}>
-                                <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)}>
-                                    <CardContent className="space-y-4">
+                        <CardHeader>
+                            <CardTitle>Profile Information</CardTitle>
+                            <CardDescription>Update your personal details here.</CardDescription>
+                        </CardHeader>
+                            <Form {...profileForm}>
+                            <form onSubmit={profileForm.handleSubmit(onProfileSubmit)}>
+                                <CardContent className="space-y-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <FormField
-                                            control={passwordForm.control}
-                                            name="currentPassword"
+                                            control={profileForm.control}
+                                            name="firstName"
                                             render={({ field }) => (
                                                 <FormItem>
-                                                    <FormLabel>Current Password</FormLabel>
+                                                    <FormLabel>First Name</FormLabel>
                                                     <FormControl>
-                                                        <Input type="password" {...field} />
+                                                        <Input {...field} />
                                                     </FormControl>
                                                     <FormMessage />
                                                 </FormItem>
                                             )}
                                         />
                                         <FormField
-                                            control={passwordForm.control}
-                                            name="newPassword"
+                                            control={profileForm.control}
+                                            name="lastName"
                                             render={({ field }) => (
                                                 <FormItem>
-                                                    <FormLabel>New Password</FormLabel>
+                                                    <FormLabel>Last Name</FormLabel>
                                                     <FormControl>
-                                                        <Input type="password" {...field} />
+                                                        <Input {...field} />
                                                     </FormControl>
                                                     <FormMessage />
                                                 </FormItem>
                                             )}
                                         />
-                                        <FormField
-                                            control={passwordForm.control}
-                                            name="confirmPassword"
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel>Confirm New Password</FormLabel>
-                                                    <FormControl>
-                                                        <Input type="password" {...field} />
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-                                    </CardContent>
-                                    <CardFooter>
-                                        <Button type="submit" disabled={isPasswordSubmitting}>
-                                            {isPasswordSubmitting && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
-                                            Update Password
-                                        </Button>
-                                    </CardFooter>
-                                </form>
-                            </Form>
-                        </Card>
-                        
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Plan & Billing</CardTitle>
-                                <CardDescription>You are currently on the <span className="font-semibold">{planName}</span> plan.</CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-6">
-                                <div className="space-y-2">
-                                    <Label>Change Plan</Label>
-                                    <div className="flex items-center space-x-2">
-                                        <Select value={newPlan} onValueChange={(value) => setNewPlan(value as Plan)}>
-                                            <SelectTrigger id="new-plan">
-                                                <SelectValue placeholder="Choose a new plan" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {availablePlans.map(p => (
-                                                    <SelectItem key={p} value={p} className="capitalize">{p}</SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                        <Select value={duration} onValueChange={(value) => setDuration(value as any)}>
-                                            <SelectTrigger className="w-[180px]">
-                                                <SelectValue placeholder="Select duration" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="1">1 Month</SelectItem>
-                                                <SelectItem value="12">12 Months</SelectItem>
-                                                <SelectItem value="24">24 Months</SelectItem>
-                                                <SelectItem value="48">48 Months</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                        <Select value={currency} onValueChange={(value) => setCurrency(value as any)}>
-                                            <SelectTrigger className="w-[120px]">
-                                                <SelectValue placeholder="Currency" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="usd">USD</SelectItem>
-                                                <SelectItem value="eur">EUR</SelectItem>
-                                                <SelectItem value="gbp">GBP</SelectItem>
-                                            </SelectContent>
-                                        </Select>
                                     </div>
-                                </div>
-                                <div className="flex gap-2 items-center">
-                                    <Button onClick={handlePlanUpgrade} disabled={isPlanSubmitting || !newPlan || newPlan === currentUser.plan}>
-                                      {isPlanSubmitting && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
-                                      {newPlan === currentUser.plan ? 'Current Plan' : (newPlan ? `Upgrade to ${newPlan.charAt(0).toUpperCase() + newPlan.slice(1)}` : 'Select a Plan')}
+                                        <div className="space-y-2">
+                                        <Label htmlFor="email">Email</Label>
+                                        <Input id="email" type="email" defaultValue={currentUser.email} readOnly disabled/>
+                                    </div>
+                                </CardContent>
+                                <CardFooter>
+                                    <Button type="submit" disabled={isProfileSubmitting}>
+                                        {isProfileSubmitting && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
+                                        Update Profile
                                     </Button>
-                                    {duration === '12' && <Badge variant="secondary">Save ~20%</Badge>}
-                                    {duration === '24' && <Badge variant="secondary">Save ~30%</Badge>}
-                                    {duration === '48' && <Badge variant="secondary">Save ~40%</Badge>}
+                                </CardFooter>
+                            </form>
+                        </Form>
+                    </Card>
+
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Change Password</CardTitle>
+                            <CardDescription>Update your password. Make sure it's a strong one.</CardDescription>
+                        </CardHeader>
+                            <Form {...passwordForm}>
+                            <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)}>
+                                <CardContent className="space-y-4">
+                                    <FormField
+                                        control={passwordForm.control}
+                                        name="currentPassword"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Current Password</FormLabel>
+                                                <FormControl>
+                                                    <Input type="password" {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={passwordForm.control}
+                                        name="newPassword"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>New Password</FormLabel>
+                                                <FormControl>
+                                                    <Input type="password" {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={passwordForm.control}
+                                        name="confirmPassword"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Confirm New Password</FormLabel>
+                                                <FormControl>
+                                                    <Input type="password" {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </CardContent>
+                                <CardFooter>
+                                    <Button type="submit" disabled={isPasswordSubmitting}>
+                                        {isPasswordSubmitting && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
+                                        Update Password
+                                    </Button>
+                                </CardFooter>
+                            </form>
+                        </Form>
+                    </Card>
+                    
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Plan & Billing</CardTitle>
+                            <CardDescription>You are currently on the <span className="font-semibold">{planName}</span> plan.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-6">
+                            <div className="space-y-2">
+                                <Label>Change Plan</Label>
+                                <div className="flex items-center space-x-2">
+                                    <Select value={newPlan} onValueChange={(value) => setNewPlan(value as Plan)}>
+                                        <SelectTrigger id="new-plan">
+                                            <SelectValue placeholder="Choose a new plan" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {availablePlans.map(p => (
+                                                <SelectItem key={p} value={p} className="capitalize">{p}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <Select value={duration} onValueChange={(value) => setDuration(value as any)}>
+                                        <SelectTrigger className="w-[180px]">
+                                            <SelectValue placeholder="Select duration" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="1">1 Month</SelectItem>
+                                            <SelectItem value="12">12 Months</SelectItem>
+                                            <SelectItem value="24">24 Months</SelectItem>
+                                            <SelectItem value="48">48 Months</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    <Select value={currency} onValueChange={(value) => setCurrency(value as any)}>
+                                        <SelectTrigger className="w-[120px]">
+                                            <SelectValue placeholder="Currency" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="usd">USD</SelectItem>
+                                            <SelectItem value="eur">EUR</SelectItem>
+                                            <SelectItem value="gbp">GBP</SelectItem>
+                                        </SelectContent>
+                                    </Select>
                                 </div>
-                            </CardContent>
-                             <CardFooter className="border-t pt-6">
-                                <CancelSubscriptionDialog onConfirm={handleCancelConfirm}>
-                                    <Button variant="destructive" className="w-full sm:w-auto">Cancel Subscription</Button>
-                                </CancelSubscriptionDialog>
-                            </CardFooter>
-                        </Card>
+                            </div>
+                            <div className="flex gap-2 items-center">
+                                <Button onClick={handlePlanUpgrade} disabled={isPlanSubmitting || !newPlan || newPlan === currentUser.plan}>
+                                    {isPlanSubmitting && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
+                                    {newPlan === currentUser.plan ? 'Current Plan' : (newPlan ? `Upgrade to ${newPlan.charAt(0).toUpperCase() + newPlan.slice(1)}` : 'Select a Plan')}
+                                </Button>
+                                {duration === '12' && <Badge variant="secondary">Save ~20%</Badge>}
+                                {duration === '24' && <Badge variant="secondary">Save ~30%</Badge>}
+                                {duration === '48' && <Badge variant="secondary">Save ~40%</Badge>}
+                            </div>
+                        </CardContent>
+                            <CardFooter className="border-t pt-6">
+                            <CancelSubscriptionDialog onConfirm={handleCancelConfirm}>
+                                <Button variant="destructive" className="w-full sm:w-auto">Cancel Subscription</Button>
+                            </CancelSubscriptionDialog>
+                        </CardFooter>
+                    </Card>
+
+                    <div className="text-center text-sm text-muted-foreground pt-4">
+                        <Link href="/dashboard" className="underline">Back to Dashboard</Link>
                     </div>
                 </div>
-            </main>
-        </AppLayout>
+            </div>
+        </div>
     );
 }
+
