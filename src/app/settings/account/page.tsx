@@ -24,6 +24,12 @@ import { CancelSubscriptionDialog } from "@/components/settings/cancel-subscript
 import { Logo } from "@/components/layout/logo";
 import { Separator } from "@/components/ui/separator";
 import { countries } from "@/lib/countries";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion"
 
 
 const profileFormSchema = z.object({
@@ -101,8 +107,8 @@ export default function AccountSettingsPage() {
                 firstName: currentUser.firstName,
                 lastName: currentUser.lastName,
                 address: currentUser.address,
-                city: "", // default to empty
-                postalCode: "", // default to empty
+                city: "Anytown", // default to empty
+                postalCode: "12345", // default to empty
                 country: currentUser.country,
                 phone: currentUser.phone,
             });
@@ -358,11 +364,11 @@ export default function AccountSettingsPage() {
                                      <div className="grid grid-cols-2 gap-4">
                                         <div>
                                             <Label className="text-xs text-muted-foreground">City</Label>
-                                            <p>{"Anytown"}</p>
+                                            <p>{profileForm.getValues('city') || "N/A"}</p>
                                         </div>
                                         <div>
                                             <Label className="text-xs text-muted-foreground">Postal Code</Label>
-                                            <p>{"12345"}</p>
+                                            <p>{profileForm.getValues('postalCode') || "N/A"}</p>
                                         </div>
                                     </div>
                                     <div>
@@ -382,54 +388,60 @@ export default function AccountSettingsPage() {
                     </Card>
 
                      <Card>
-                        <CardHeader>
-                            <CardTitle>Change Password</CardTitle>
-                        </CardHeader>
-                        <Form {...passwordForm}>
-                            <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)}>
-                                <CardContent className="space-y-4">
-                                    <FormField
-                                        control={passwordForm.control}
-                                        name="currentPassword"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Current Password</FormLabel>
-                                                <FormControl><Input type="password" {...field} /></FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                    <FormField
-                                        control={passwordForm.control}
-                                        name="newPassword"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>New Password</FormLabel>
-                                                <FormControl><Input type="password" {...field} /></FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                    <FormField
-                                        control={passwordForm.control}
-                                        name="confirmPassword"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Confirm New Password</FormLabel>
-                                                <FormControl><Input type="password" {...field} /></FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                </CardContent>
-                                <CardFooter>
-                                    <Button type="submit" disabled={isPasswordSubmitting}>
-                                        {isPasswordSubmitting && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
-                                        Update Password
-                                    </Button>
-                                </CardFooter>
-                            </form>
-                        </Form>
+                        <Accordion type="single" collapsible className="w-full">
+                            <AccordionItem value="item-1" className="border-b-0">
+                                <AccordionTrigger className="p-6 hover:no-underline">
+                                    <CardTitle>Change Password</CardTitle>
+                                </AccordionTrigger>
+                                <AccordionContent>
+                                     <Form {...passwordForm}>
+                                        <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)}>
+                                            <CardContent className="space-y-4 pt-0">
+                                                <FormField
+                                                    control={passwordForm.control}
+                                                    name="currentPassword"
+                                                    render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormLabel>Current Password</FormLabel>
+                                                            <FormControl><Input type="password" {...field} /></FormControl>
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                                <FormField
+                                                    control={passwordForm.control}
+                                                    name="newPassword"
+                                                    render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormLabel>New Password</FormLabel>
+                                                            <FormControl><Input type="password" {...field} /></FormControl>
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                                <FormField
+                                                    control={passwordForm.control}
+                                                    name="confirmPassword"
+                                                    render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormLabel>Confirm New Password</FormLabel>
+                                                            <FormControl><Input type="password" {...field} /></FormControl>
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                            </CardContent>
+                                            <CardFooter>
+                                                <Button type="submit" disabled={isPasswordSubmitting}>
+                                                    {isPasswordSubmitting && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
+                                                    Update Password
+                                                </Button>
+                                            </CardFooter>
+                                        </form>
+                                    </Form>
+                                </AccordionContent>
+                            </AccordionItem>
+                        </Accordion>
                     </Card>
                      <div className="text-center text-sm text-muted-foreground pt-4">
                         <Link href="/dashboard" className="underline">Back to Dashboard</Link>
@@ -506,3 +518,5 @@ export default function AccountSettingsPage() {
         </div>
     );
 }
+
+    
