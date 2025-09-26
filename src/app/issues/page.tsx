@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -18,45 +17,42 @@ import {
 import { Button } from "@/components/ui/button";
 import { subHours } from "date-fns";
 import { useUser } from "@/contexts/user-context";
-import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
-import { collection, query, orderBy } from "firebase/firestore";
+import { getIssues, getProductionLines } from "@/lib/data";
 import { allCategories } from "@/lib/constants";
 
 export default function IssuesPage() {
   const { currentUser } = useUser();
-  const firestore = useFirestore();
+  const [issues, setIssues] = useState<Issue[]>([]);
+  const [productionLines, setProductionLines] = useState<ProductionLine[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const issuesQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
-    return query(collection(firestore, "issues"), orderBy("reportedAt", "desc"));
-  }, [firestore]);
-  
-  const linesQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
-    return collection(firestore, "productionLines");
-  }, [firestore]);
-
-  const { data: issues, isLoading: issuesLoading } = useCollection<Issue>(issuesQuery);
-  const { data: productionLines, isLoading: linesLoading } = useCollection<ProductionLine>(linesQuery);
-  
   const [selectedLines, setSelectedLines] = useState<string[]>([]);
   const [tempSelectedLines, setTempSelectedLines] = useState<string[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [tempSelectedCategories, setTempSelectedCategories] = useState<string[]>([]);
 
-  const loading = issuesLoading || linesLoading;
-
   useEffect(() => {
-    if (!issuesLoading && issues && issues.length > 0) {
-      const latestIssueTimestamp = new Date(issues[0].reportedAt).getTime();
-      const lastSeen = localStorage.getItem('lastSeenIssueTimestamp');
-      if (!lastSeen || latestIssueTimestamp > parseInt(lastSeen, 10)) {
-        localStorage.setItem('lastSeenIssueTimestamp', latestIssueTimestamp.toString());
-        window.dispatchEvent(new StorageEvent('storage', { key: 'lastSeenIssueTimestamp' }));
-      }
-    }
-  }, [issues, issuesLoading]);
+    const fetchData = async () => {
+        setLoading(true);
+        const [issuesData, linesData] = await Promise.all([
+            getIssues(),
+            getProductionLines(),
+        ]);
+        setIssues(issuesData);
+        setProductionLines(linesData);
+        setLoading(false);
 
+        if (issuesData.length > 0) {
+            const latestIssueTimestamp = new Date(issuesData[0].reportedAt).getTime();
+            const lastSeen = localStorage.getItem('lastSeenIssueTimestamp');
+            if (!lastSeen || latestIssueTimestamp > parseInt(lastSeen, 10)) {
+                localStorage.setItem('lastSeenIssueTimestamp', latestIssueTimestamp.toString());
+                window.dispatchEvent(new StorageEvent('storage', { key: 'lastSeenIssueTimestamp' }));
+            }
+        }
+    };
+    fetchData();
+  }, []);
 
   useEffect(() => {
     setTempSelectedLines(selectedLines);

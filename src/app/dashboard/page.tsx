@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -6,32 +5,27 @@ import { IssuesDataTable } from "@/components/dashboard/issues-data-table";
 import { StatsCards } from "@/components/dashboard/stats-cards";
 import { AppLayout } from "@/components/layout/app-layout";
 import { getIssues } from "@/lib/data";
-import { subHours, intervalToDuration, differenceInSeconds, min, max } from "date-fns";
+import { subHours, intervalToDuration, differenceInSeconds, max } from "date-fns";
 import { useUser } from "@/contexts/user-context";
 import type { Issue } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
-import { collection, query, orderBy, limit } from "firebase/firestore";
 
 export default function Home() {
   const { currentUser } = useUser();
-  const firestore = useFirestore();
+  const [issues, setIssues] = useState<Issue[]>([]);
+  const [recentIssues, setRecentIssues] = useState<Issue[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const issuesQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
-    return query(collection(firestore, "issues"), orderBy("reportedAt", "desc"));
-  }, [firestore]);
-
-  const { data: issues, isLoading: issuesLoading } = useCollection<Issue>(issuesQuery);
-
-  const recentIssuesQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
-    return query(collection(firestore, "issues"), orderBy("reportedAt", "desc"), limit(5));
-  }, [firestore]);
-
-  const { data: recentIssues, isLoading: recentIssuesLoading } = useCollection<Issue>(recentIssuesQuery);
-
-  const loading = issuesLoading || recentIssuesLoading;
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      const allIssuesData = await getIssues();
+      setIssues(allIssuesData);
+      setRecentIssues(allIssuesData.slice(0, 5));
+      setLoading(false);
+    };
+    fetchData();
+  }, []);
   
   if (!currentUser || (currentUser.role !== 'admin' && currentUser.role !== 'supervisor')) {
     return (
@@ -116,7 +110,10 @@ export default function Home() {
   const resolvedIssues = allIssues.filter(issue => issue.status === 'resolved' && issue.resolvedAt);
 
   const totalResolutionSeconds = resolvedIssues.reduce((acc, issue) => {
-    return acc + differenceInSeconds(issue.resolvedAt!, issue.reportedAt);
+    if (issue.resolvedAt) { // type guard
+        return acc + differenceInSeconds(issue.resolvedAt, issue.reportedAt);
+    }
+    return acc;
   }, 0);
 
   const avgResolutionSeconds = resolvedIssues.length > 0 ? totalResolutionSeconds / resolvedIssues.length : 0;

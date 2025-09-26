@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -18,36 +17,45 @@ import { PlusCircle, LoaderCircle } from "lucide-react";
 import type { Issue, ProductionLine } from "@/lib/types";
 import { subHours } from "date-fns";
 import { useUser } from "@/contexts/user-context";
-import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
-import { collection, query, where, orderBy } from "firebase/firestore";
+import { getProductionLines, getIssues } from "@/lib/data";
 
 export default function LineStatusPage() {
   const { currentUser } = useUser();
   const [selectedLineId, setSelectedLineId] = useState<string | undefined>(undefined);
   const [selectedWorkstation, setSelectedWorkstation] = useState<string | undefined>();
   const [selectionConfirmed, setSelectionConfirmed] = useState(false);
+  const [productionLines, setProductionLines] = useState<ProductionLine[]>([]);
+  const [issues, setIssues] = useState<Issue[]>([]);
+  const [linesLoading, setLinesLoading] = useState(true);
+  const [issuesLoading, setIssuesLoading] = useState(false);
 
-  const firestore = useFirestore();
+  useEffect(() => {
+    const fetchLines = async () => {
+      setLinesLoading(true);
+      const linesData = await getProductionLines();
+      setProductionLines(linesData);
+      setLinesLoading(false);
+    };
+    fetchLines();
+  }, []);
 
-  const linesQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
-    return collection(firestore, "productionLines");
-  }, [firestore]);
-  
-  const { data: productionLines, isLoading: linesLoading } = useCollection<ProductionLine>(linesQuery);
-  
-  const issuesQuery = useMemoFirebase(() => {
-    if (!firestore || !selectedLineId) return null;
-    const twentyFourHoursAgo = subHours(new Date(), 24);
-    return query(
-      collection(firestore, "issues"), 
-      where("productionLineId", "==", selectedLineId),
-      where("reportedAt", ">=", twentyFourHoursAgo),
-      orderBy("reportedAt", "desc")
-    );
-  }, [firestore, selectedLineId]);
-  
-  const { data: issues, isLoading: issuesLoading } = useCollection<Issue>(issuesQuery);
+  useEffect(() => {
+    if (selectedLineId && selectionConfirmed) {
+      const fetchIssues = async () => {
+        setIssuesLoading(true);
+        const allIssues = await getIssues();
+        const twentyFourHoursAgo = subHours(new Date(), 24);
+        const filteredIssues = allIssues.filter(
+          (issue) =>
+            issue.productionLineId === selectedLineId &&
+            issue.reportedAt >= twentyFourHoursAgo
+        );
+        setIssues(filteredIssues.sort((a, b) => b.reportedAt.getTime() - a.reportedAt.getTime()));
+        setIssuesLoading(false);
+      };
+      fetchIssues();
+    }
+  }, [selectedLineId, selectionConfirmed]);
 
   const loading = linesLoading;
 

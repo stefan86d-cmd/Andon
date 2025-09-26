@@ -48,9 +48,11 @@ const nextConfig: NextConfig = {
         config.resolve.fallback = {
             ...config.resolve.fallback,
             'firebase-admin': false,
+            'fs': false,
             'net': false,
             'tls': false,
-            'fs': false,
+            'http2': false,
+            'child_process': false,
         };
     }
     

@@ -1,117 +1,169 @@
-
 "use client";
 
+import { useState, useEffect } from "react";
+import { IssuesDataTable } from "@/components/dashboard/issues-data-table";
+import { ReportIssueDialog } from "@/components/dashboard/report-issue-dialog";
 import { AppLayout } from "@/components/layout/app-layout";
-import { AddProductionLineDialog } from "@/components/lines/add-production-line-dialog";
-import { DeleteProductionLineDialog } from "@/components/lines/delete-production-line-dialog";
-import { EditProductionLineDialog } from "@/components/lines/edit-production-line-dialog";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Edit, PlusCircle, Lock, LoaderCircle } from "lucide-react";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { PlusCircle, LoaderCircle } from "lucide-react";
+import type { Issue, ProductionLine } from "@/lib/types";
+import { subHours } from "date-fns";
 import { useUser } from "@/contexts/user-context";
-import Link from "next/link";
-import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
-import { collection } from "firebase/firestore";
-import type { User, ProductionLine } from "@/lib/types";
+import { getProductionLines, getIssues } from "@/lib/data";
 
-const planLimits = {
-  starter: { lines: 1, users: 5 },
-  standard: { lines: 5, users: 50 },
-  pro: { lines: 10, users: 150 },
-  enterprise: { lines: Infinity, users: Infinity },
-}
-
-export default function LinesPage() {
+export default function LineStatusPage() {
   const { currentUser } = useUser();
-  const firestore = useFirestore();
+  const [selectedLineId, setSelectedLineId] = useState<string | undefined>(undefined);
+  const [selectedWorkstation, setSelectedWorkstation] = useState<string | undefined>();
+  const [selectionConfirmed, setSelectionConfirmed] = useState(false);
+  const [productionLines, setProductionLines] = useState<ProductionLine[]>([]);
+  const [issues, setIssues] = useState<Issue[]>([]);
+  const [linesLoading, setLinesLoading] = useState(true);
+  const [issuesLoading, setIssuesLoading] = useState(false);
 
-  const linesQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
-    return collection(firestore, "productionLines");
-  }, [firestore]);
+  useEffect(() => {
+    const fetchLines = async () => {
+      setLinesLoading(true);
+      const linesData = await getProductionLines();
+      setProductionLines(linesData);
+      setLinesLoading(false);
+    };
+    fetchLines();
+  }, []);
 
-  const { data: productionLines, isLoading } = useCollection<ProductionLine>(linesQuery);
+  useEffect(() => {
+    if (selectedLineId && selectionConfirmed) {
+      const fetchIssues = async () => {
+        setIssuesLoading(true);
+        const allIssues = await getIssues();
+        const twentyFourHoursAgo = subHours(new Date(), 24);
+        const filteredIssues = allIssues.filter(
+          (issue) =>
+            issue.productionLineId === selectedLineId &&
+            issue.reportedAt >= twentyFourHoursAgo
+        );
+        setIssues(filteredIssues.sort((a, b) => b.reportedAt.getTime() - a.reportedAt.getTime()));
+        setIssuesLoading(false);
+      };
+      fetchIssues();
+    }
+  }, [selectedLineId, selectionConfirmed]);
 
-  if (!currentUser) {
-     return <AppLayout><div className="flex h-screen items-center justify-center"><LoaderCircle className="h-8 w-8 animate-spin" /></div></AppLayout>
+  const loading = linesLoading;
+
+  const handleLineChange = (lineId: string) => {
+    setSelectedLineId(lineId);
+    setSelectedWorkstation(undefined); // Reset workstation when line changes
+  };
+
+  const confirmSelection = () => {
+    if (selectedLineId && selectedWorkstation) {
+        setSelectionConfirmed(true);
+    }
   }
-  
+
+  const changeSelection = () => {
+    setSelectionConfirmed(false);
+    setSelectedLineId(undefined);
+    setSelectedWorkstation(undefined);
+  }
+
   const allLines = productionLines || [];
-  const lineLimit = planLimits[currentUser.plan].lines;
-  const canAddLine = allLines.length < lineLimit;
+  const selectedLine: ProductionLine | undefined = allLines.find(
+    (line) => line.id === selectedLineId
+  );
+  
+  const userIssues = issues || [];
+  
+  if (!currentUser || loading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <LoaderCircle className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <AppLayout>
       <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-lg font-semibold md:text-2xl">
-              Production Lines
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              You are using {allLines.length} of {lineLimit} available lines on the {currentUser.plan} plan.
-            </p>
-          </div>
-          {canAddLine ? (
-            <AddProductionLineDialog>
-              <Button size="sm" className="gap-1">
-                <PlusCircle className="h-4 w-4" />
-                Add Production Line
-              </Button>
-            </AddProductionLineDialog>
-          ) : (
-             <Button size="sm" className="gap-1" asChild>
-              <Link href="/settings">
-                <Lock className="h-4 w-4" />
-                Upgrade to Add More
-              </Link>
-            </Button>
-          )}
-        </div>
-        {isLoading ? (
-          <div className="flex justify-center items-center h-64">
-            <LoaderCircle className="h-8 w-8 animate-spin" />
-          </div>
+        
+        {!selectionConfirmed ? (
+             <Card>
+             <CardHeader>
+               <CardTitle>Select Your Workstation</CardTitle>
+               <CardDescription>Choose the production line and workstation you are currently at.</CardDescription>
+             </CardHeader>
+             <CardContent className="grid md:grid-cols-2 gap-4">
+               <div className="flex flex-col gap-2">
+                 <Select onValueChange={handleLineChange} value={selectedLineId}>
+                   <SelectTrigger>
+                     <SelectValue placeholder="Select Production Line" />
+                   </SelectTrigger>
+                   <SelectContent>
+                     {allLines.map((line) => (
+                       <SelectItem key={line.id} value={line.id}>
+                         {line.name}
+                       </SelectItem>
+                     ))}
+                   </SelectContent>
+                 </Select>
+               </div>
+               <div className="flex flex-col gap-2">
+                  <Select onValueChange={setSelectedWorkstation} value={selectedWorkstation} disabled={!selectedLine}>
+                   <SelectTrigger>
+                     <SelectValue placeholder="Select Workstation" />
+                   </SelectTrigger>
+                   <SelectContent>
+                      {selectedLine?.workstations.map((station) => (
+                        <SelectItem key={station} value={station}>
+                          {station}
+                        </SelectItem>
+                      ))}
+                   </SelectContent>
+                 </Select>
+               </div>
+             </CardContent>
+             <CardFooter>
+                <Button onClick={confirmSelection} disabled={!selectedLineId || !selectedWorkstation}>Confirm Selection</Button>
+             </CardFooter>
+           </Card>
         ) : (
-          <div className="grid gap-6">
-            {allLines.map((line) => (
-              <Card key={line.id}>
-                <CardHeader className="flex flex-row items-start justify-between">
-                  <div>
-                    <CardTitle>{line.name}</CardTitle>
-                    <CardDescription>
-                      {line.workstations.length} workstations
-                    </CardDescription>
-                  </div>
-                  <div className="flex gap-2">
-                    <EditProductionLineDialog productionLine={line}>
-                      <Button variant="outline" size="sm">
-                        <Edit className="h-4 w-4" />
-                        <span className="sr-only sm:not-sr-only sm:ml-2">Edit</span>
-                      </Button>
-                    </EditProductionLineDialog>
-                    <DeleteProductionLineDialog productionLine={line} />
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex flex-wrap gap-2">
-                    {line.workstations.map((station) => (
-                      <Badge key={station} variant="secondary">
-                        {station}
-                      </Badge>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+            <div className="flex flex-col gap-4">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div>
+                        <h1 className="text-lg font-semibold md:text-2xl">{selectedLine?.name}</h1>
+                        <p className="text-sm text-muted-foreground">{selectedWorkstation}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <Button variant="outline" onClick={changeSelection}>Change Station</Button>
+                        <ReportIssueDialog
+                            key={`${selectedLineId}-${selectedWorkstation}`}
+                            productionLines={allLines}
+                            selectedLineId={selectedLineId}
+                            selectedWorkstation={selectedWorkstation}
+                        >
+                            <Button>
+                                <PlusCircle className="mr-2 h-4 w-4" />
+                                Report Issue
+                            </Button>
+                        </ReportIssueDialog>
+                    </div>
+                </div>
+                <IssuesDataTable 
+                    issues={userIssues} 
+                    loading={issuesLoading}
+                    title="Recent Issues at Your Station"
+                    description="Issues reported on this line in the last 24 hours." 
+                />
+            </div>
         )}
       </main>
     </AppLayout>
