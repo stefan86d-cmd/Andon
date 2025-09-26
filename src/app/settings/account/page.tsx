@@ -321,9 +321,9 @@ export default function AccountSettingsPage() {
                                     </div>
                                 </div>
                                 <div className="flex gap-2 items-center">
-                                    <Button onClick={handlePlanUpgrade} disabled={isPlanSubmitting || newPlan === currentUser.plan}>
+                                    <Button onClick={handlePlanUpgrade} disabled={isPlanSubmitting || !newPlan || newPlan === currentUser.plan}>
                                       {isPlanSubmitting && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
-                                      {newPlan === currentUser.plan ? 'Current Plan' : `Upgrade to ${newPlan?.charAt(0).toUpperCase() + newPlan!.slice(1)}`}
+                                      {newPlan === currentUser.plan ? 'Current Plan' : (newPlan ? `Upgrade to ${newPlan.charAt(0).toUpperCase() + newPlan.slice(1)}` : 'Select a Plan')}
                                     </Button>
                                     {duration === '12' && <Badge variant="secondary">Save ~20%</Badge>}
                                     {duration === '24' && <Badge variant="secondary">Save ~30%</Badge>}
