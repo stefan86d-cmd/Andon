@@ -42,6 +42,8 @@ const registerFormSchema = z.object({
   password: z.string().min(6, "Password must be at least 6 characters."),
   confirmPassword: z.string(),
   address: z.string().min(1, "Home address is required."),
+  city: z.string().min(1, "City is required."),
+  postalCode: z.string().min(1, "Postal code is required."),
   country: z.string().min(1, "Country is required."),
   phone: z.string().optional(),
 }).refine((data) => data.password === data.confirmPassword, {
@@ -164,6 +166,8 @@ function RegisterContent() {
       password: "",
       confirmPassword: "",
       address: "",
+      city: "",
+      postalCode: "",
       country: "",
       phone: "",
     },
@@ -389,6 +393,34 @@ function RegisterContent() {
                                 </FormItem>
                             )}
                         />
+                         <div className="grid grid-cols-2 gap-4">
+                             <FormField
+                                control={form.control}
+                                name="city"
+                                render={({ field }) => (
+                                    <FormItem>
+                                    <FormLabel>City</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="Anytown" {...field} disabled={isLoading || isGoogleLoading || isMicrosoftLoading} />
+                                    </FormControl>
+                                    <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                             <FormField
+                                control={form.control}
+                                name="postalCode"
+                                render={({ field }) => (
+                                    <FormItem>
+                                    <FormLabel>Postal Code</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="12345" {...field} disabled={isLoading || isGoogleLoading || isMicrosoftLoading} />
+                                    </FormControl>
+                                    <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
                         <div className="grid grid-cols-2 gap-4">
                             <FormField
                                 control={form.control}
