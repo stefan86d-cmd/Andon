@@ -24,10 +24,17 @@ import type { Plan } from "@/lib/types";
 import { CancelSubscriptionDialog } from "@/components/settings/cancel-subscription-dialog";
 import { Logo } from "@/components/layout/logo";
 import { Separator } from "@/components/ui/separator";
+import { countries } from "@/lib/countries";
+
 
 const profileFormSchema = z.object({
-  firstName: z.string().min(1, "First name is required."),
-  lastName: z.string().min(1, "Last name is required."),
+    firstName: z.string().min(1, "First name is required."),
+    lastName: z.string().min(1, "Last name is required."),
+    address: z.string().min(1, "Home address is required."),
+    city: z.string().min(1, "City is required."),
+    postalCode: z.string().min(1, "Postal code is required."),
+    country: z.string().min(1, "Country is required."),
+    phone: z.string().optional(),
 });
 type ProfileFormValues = z.infer<typeof profileFormSchema>;
 
@@ -42,12 +49,12 @@ const passwordFormSchema = z.object({
 type PasswordFormValues = z.infer<typeof passwordFormSchema>;
 
 
-const tiers = [
-  { name: "Starter", price: 0 },
-  { name: "Standard", price: 39.99 },
-  { name: "Pro", price: 59.99 },
-  { name: "Enterprise", price: 149.99 },
-];
+const tiers: Record<Plan, { name: string, price: number }> = {
+  starter: { name: "Starter", price: 0 },
+  standard: { name: "Standard", price: 39.99 },
+  pro: { name: "Pro", price: 59.99 },
+  enterprise: { name: "Enterprise", price: 149.99 },
+};
 
 type Duration = '1' | '12' | '24' | '48';
 type Currency = 'usd' | 'eur' | 'gbp';
@@ -69,6 +76,11 @@ export default function AccountSettingsPage() {
         defaultValues: {
             firstName: currentUser?.firstName || "",
             lastName: currentUser?.lastName || "",
+            address: currentUser?.address || "",
+            city: "", // Mock data does not have city, so we add it
+            postalCode: "", // Mock data does not have postalCode
+            country: currentUser?.country || "",
+            phone: currentUser?.phone || "",
         },
     });
 
@@ -86,6 +98,11 @@ export default function AccountSettingsPage() {
             profileForm.reset({
                 firstName: currentUser.firstName,
                 lastName: currentUser.lastName,
+                address: currentUser.address,
+                city: "", // default to empty
+                postalCode: "", // default to empty
+                country: currentUser.country,
+                phone: currentUser.phone,
             });
             setNewPlan(currentUser.plan);
         }
@@ -104,7 +121,7 @@ export default function AccountSettingsPage() {
             updateCurrentUser(data);
             toast({
                 title: "Profile Updated",
-                description: "Your name has been updated successfully.",
+                description: "Your information has been updated successfully.",
             });
         });
     }
@@ -218,6 +235,84 @@ export default function AccountSettingsPage() {
                                     <div className="space-y-2">
                                         <Label htmlFor="email">Email</Label>
                                         <Input id="email" type="email" defaultValue={currentUser.email} readOnly disabled/>
+                                    </div>
+                                    <FormField
+                                        control={profileForm.control}
+                                        name="address"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                            <FormLabel>Home Address</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="123 Main St" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                     <div className="grid grid-cols-2 gap-4">
+                                         <FormField
+                                            control={profileForm.control}
+                                            name="city"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                <FormLabel>City</FormLabel>
+                                                <FormControl>
+                                                    <Input placeholder="Anytown" {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                         <FormField
+                                            control={profileForm.control}
+                                            name="postalCode"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                <FormLabel>Postal Code</FormLabel>
+                                                <FormControl>
+                                                    <Input placeholder="12345" {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <FormField
+                                            control={profileForm.control}
+                                            name="country"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                <FormLabel>Country</FormLabel>
+                                                <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                                                    <FormControl>
+                                                        <SelectTrigger>
+                                                            <SelectValue placeholder="Select a country" />
+                                                        </SelectTrigger>
+                                                    </FormControl>
+                                                    <SelectContent>
+                                                        {countries.map(country => (
+                                                            <SelectItem key={country.code} value={country.code}>{country.name}</SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                                <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                        <FormField
+                                            control={profileForm.control}
+                                            name="phone"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                <FormLabel>Phone Number (Optional)</FormLabel>
+                                                <FormControl>
+                                                    <Input type="tel" {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
                                     </div>
                                 </CardContent>
                                 <CardFooter>
@@ -354,4 +449,5 @@ export default function AccountSettingsPage() {
             </div>
         </div>
     );
-}
+
+    
