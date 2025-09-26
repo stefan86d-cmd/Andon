@@ -1,3 +1,4 @@
+
 import type { User, Issue, ProductionLine, Role, IssueCategory, Plan, IssueDocument, UserRef } from "@/lib/types";
 import { format, subDays, subHours } from "date-fns";
 
@@ -5,9 +6,9 @@ import { format, subDays, subHours } from "date-fns";
 
 const mockAdminUser: User = {
   id: "qMsJrT4y9nNGVKEqxHM62hdgHz92",
-  firstName: "Stefan",
-  lastName: "Deronjic",
-  email: "stefan.deronjic@andonpro.com",
+  firstName: "Alex",
+  lastName: "Johnson",
+  email: "alex.j@andon.io",
   avatarUrl: "https://images.unsplash.com/photo-1590086782792-42dd2350140d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxwZXJzb24lMjBwb3J0cmFpdHxlbnwwfHx8fDE3NTg1ODUxMDl8MA",
   role: "admin",
   plan: "pro",
@@ -135,7 +136,7 @@ export async function getAllUsers(): Promise<User[]> {
 export async function getUserByEmail(email: string): Promise<User | null> {
     console.log(`MOCK: Getting user by email: ${email}`);
     const user = mockUsers.find(u => u.email === email);
-    if (email === "stefan.deronjic@andonpro.com") {
+    if (email === "alex.j@andon.io") {
         return Promise.resolve(mockAdminUser);
     }
     return Promise.resolve(user || null);
@@ -167,3 +168,5 @@ function subMinutes(date: Date, minutes: number): Date {
   newDate.setMinutes(date.getMinutes() - minutes);
   return newDate;
 }
+
+    
