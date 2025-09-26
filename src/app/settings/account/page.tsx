@@ -355,6 +355,16 @@ export default function AccountSettingsPage() {
                                         <Label className="text-xs text-muted-foreground">Address</Label>
                                         <p>{currentUser.address || 'N/A'}</p>
                                     </div>
+                                     <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <Label className="text-xs text-muted-foreground">City</Label>
+                                            <p>{"Anytown"}</p>
+                                        </div>
+                                        <div>
+                                            <Label className="text-xs text-muted-foreground">Postal Code</Label>
+                                            <p>{"12345"}</p>
+                                        </div>
+                                    </div>
                                     <div>
                                         <Label className="text-xs text-muted-foreground">Country</Label>
                                         <p>{getCountryName(currentUser.country) || 'N/A'}</p>
@@ -496,4 +506,3 @@ export default function AccountSettingsPage() {
         </div>
     );
 }
-
