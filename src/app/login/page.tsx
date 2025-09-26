@@ -56,8 +56,8 @@ function MicrosoftIcon() {
 }
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('maria.g@andon.io');
-  const [password, setPassword] = useState('password');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [isLoggingIn, startLoginTransition] = useTransition();
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [isMicrosoftLoading, setIsMicrosoftLoading] = useState(false);
