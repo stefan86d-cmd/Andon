@@ -1,4 +1,5 @@
 
+
 "use client"
 
 import { AppLayout } from "@/components/layout/app-layout";
@@ -22,6 +23,7 @@ import { Badge } from "@/components/ui/badge";
 import type { Plan } from "@/lib/types";
 import { CancelSubscriptionDialog } from "@/components/settings/cancel-subscription-dialog";
 import { Logo } from "@/components/layout/logo";
+import { Separator } from "@/components/ui/separator";
 
 const profileFormSchema = z.object({
   firstName: z.string().min(1, "First name is required."),
@@ -167,35 +169,36 @@ export default function AccountSettingsPage() {
 
     return (
         <div className="container mx-auto flex min-h-screen items-center justify-center py-12">
-            <div className="w-full max-w-2xl">
-                 <div className="flex justify-center mb-8">
-                    <Link href="/">
-                        <Logo />
-                    </Link>
-                </div>
-                <div className="text-center mb-8">
-                    <h1 className="text-3xl font-semibold">Manage Your Account</h1>
-                    <p className="text-muted-foreground">Edit your profile, password, and subscription details.</p>
-                </div>
-                <div className="grid gap-6">
-                        <Card>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 w-full max-w-6xl">
+                {/* Left Side */}
+                <div className="flex flex-col gap-8">
+                     <div className="flex justify-start">
+                        <Link href="/">
+                            <Logo />
+                        </Link>
+                    </div>
+                     <div>
+                        <h2 className="text-2xl font-bold mt-2">Manage Your Account</h2>
+                        <p className="text-muted-foreground">
+                            Update your profile, password, or subscription plan.
+                        </p>
+                    </div>
+
+                    <Card>
                         <CardHeader>
                             <CardTitle>Profile Information</CardTitle>
-                            <CardDescription>Update your personal details here.</CardDescription>
                         </CardHeader>
-                            <Form {...profileForm}>
+                        <Form {...profileForm}>
                             <form onSubmit={profileForm.handleSubmit(onProfileSubmit)}>
                                 <CardContent className="space-y-4">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <FormField
                                             control={profileForm.control}
                                             name="firstName"
                                             render={({ field }) => (
                                                 <FormItem>
                                                     <FormLabel>First Name</FormLabel>
-                                                    <FormControl>
-                                                        <Input {...field} />
-                                                    </FormControl>
+                                                    <FormControl><Input {...field} /></FormControl>
                                                     <FormMessage />
                                                 </FormItem>
                                             )}
@@ -206,15 +209,13 @@ export default function AccountSettingsPage() {
                                             render={({ field }) => (
                                                 <FormItem>
                                                     <FormLabel>Last Name</FormLabel>
-                                                    <FormControl>
-                                                        <Input {...field} />
-                                                    </FormControl>
+                                                    <FormControl><Input {...field} /></FormControl>
                                                     <FormMessage />
                                                 </FormItem>
                                             )}
                                         />
                                     </div>
-                                        <div className="space-y-2">
+                                    <div className="space-y-2">
                                         <Label htmlFor="email">Email</Label>
                                         <Input id="email" type="email" defaultValue={currentUser.email} readOnly disabled/>
                                     </div>
@@ -229,12 +230,11 @@ export default function AccountSettingsPage() {
                         </Form>
                     </Card>
 
-                    <Card>
+                     <Card>
                         <CardHeader>
                             <CardTitle>Change Password</CardTitle>
-                            <CardDescription>Update your password. Make sure it's a strong one.</CardDescription>
                         </CardHeader>
-                            <Form {...passwordForm}>
+                        <Form {...passwordForm}>
                             <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)}>
                                 <CardContent className="space-y-4">
                                     <FormField
@@ -243,9 +243,7 @@ export default function AccountSettingsPage() {
                                         render={({ field }) => (
                                             <FormItem>
                                                 <FormLabel>Current Password</FormLabel>
-                                                <FormControl>
-                                                    <Input type="password" {...field} />
-                                                </FormControl>
+                                                <FormControl><Input type="password" {...field} /></FormControl>
                                                 <FormMessage />
                                             </FormItem>
                                         )}
@@ -256,9 +254,7 @@ export default function AccountSettingsPage() {
                                         render={({ field }) => (
                                             <FormItem>
                                                 <FormLabel>New Password</FormLabel>
-                                                <FormControl>
-                                                    <Input type="password" {...field} />
-                                                </FormControl>
+                                                <FormControl><Input type="password" {...field} /></FormControl>
                                                 <FormMessage />
                                             </FormItem>
                                         )}
@@ -269,9 +265,7 @@ export default function AccountSettingsPage() {
                                         render={({ field }) => (
                                             <FormItem>
                                                 <FormLabel>Confirm New Password</FormLabel>
-                                                <FormControl>
-                                                    <Input type="password" {...field} />
-                                                </FormControl>
+                                                <FormControl><Input type="password" {...field} /></FormControl>
                                                 <FormMessage />
                                             </FormItem>
                                         )}
@@ -286,7 +280,13 @@ export default function AccountSettingsPage() {
                             </form>
                         </Form>
                     </Card>
-                    
+                     <div className="text-center text-sm text-muted-foreground pt-4">
+                        <Link href="/dashboard" className="underline">Back to Dashboard</Link>
+                    </div>
+                </div>
+
+                {/* Right Side */}
+                <div className="flex flex-col gap-8 pt-0 lg:pt-28">
                     <Card>
                         <CardHeader>
                             <CardTitle>Plan & Billing</CardTitle>
@@ -295,9 +295,9 @@ export default function AccountSettingsPage() {
                         <CardContent className="space-y-6">
                             <div className="space-y-2">
                                 <Label>Change Plan</Label>
-                                <div className="flex items-center space-x-2">
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                                     <Select value={newPlan} onValueChange={(value) => setNewPlan(value as Plan)}>
-                                        <SelectTrigger id="new-plan">
+                                        <SelectTrigger>
                                             <SelectValue placeholder="Choose a new plan" />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -307,7 +307,7 @@ export default function AccountSettingsPage() {
                                         </SelectContent>
                                     </Select>
                                     <Select value={duration} onValueChange={(value) => setDuration(value as any)}>
-                                        <SelectTrigger className="w-[180px]">
+                                        <SelectTrigger>
                                             <SelectValue placeholder="Select duration" />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -318,7 +318,7 @@ export default function AccountSettingsPage() {
                                         </SelectContent>
                                     </Select>
                                     <Select value={currency} onValueChange={(value) => setCurrency(value as any)}>
-                                        <SelectTrigger className="w-[120px]">
+                                        <SelectTrigger>
                                             <SelectValue placeholder="Currency" />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -338,20 +338,20 @@ export default function AccountSettingsPage() {
                                 {duration === '24' && <Badge variant="secondary">Save ~30%</Badge>}
                                 {duration === '48' && <Badge variant="secondary">Save ~40%</Badge>}
                             </div>
+                             <Separator />
+                            <div>
+                                <h3 className="text-sm font-semibold mb-2">Cancel Subscription</h3>
+                                <p className="text-sm text-muted-foreground mb-4">
+                                    If you cancel, you will lose access to your plan's features at the end of your billing period.
+                                </p>
+                                <CancelSubscriptionDialog onConfirm={handleCancelConfirm}>
+                                    <Button variant="destructive" className="w-full sm:w-auto">Cancel Subscription</Button>
+                                </CancelSubscriptionDialog>
+                            </div>
                         </CardContent>
-                            <CardFooter className="border-t pt-6">
-                            <CancelSubscriptionDialog onConfirm={handleCancelConfirm}>
-                                <Button variant="destructive" className="w-full sm:w-auto">Cancel Subscription</Button>
-                            </CancelSubscriptionDialog>
-                        </CardFooter>
                     </Card>
-
-                    <div className="text-center text-sm text-muted-foreground pt-4">
-                        <Link href="/dashboard" className="underline">Back to Dashboard</Link>
-                    </div>
                 </div>
             </div>
         </div>
     );
 }
-
