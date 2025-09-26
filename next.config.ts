@@ -38,26 +38,6 @@ const nextConfig: NextConfig = {
       }
     ],
   },
-  webpack(config, { isServer }) {
-    config.experiments = {
-      ...config.experiments,
-      asyncWebAssembly: true,
-    };
-    
-    if (!isServer) {
-        config.resolve.fallback = {
-            ...config.resolve.fallback,
-            'firebase-admin': false,
-            'fs': false,
-            'net': false,
-            'tls': false,
-            'http2': false,
-            'child_process': false,
-        };
-    }
-    
-    return config;
-  },
 };
 
 const pwaConfig = withPWA({

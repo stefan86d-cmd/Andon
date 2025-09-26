@@ -31,8 +31,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useAuth } from '@/firebase';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { addUser, updateUserPlan } from '@/app/actions';
 import { countries } from '@/lib/countries';
 import type { Plan } from '@/lib/types';
@@ -151,7 +149,6 @@ function RegisterContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { currentUser, login, signInWithGoogle, signInWithMicrosoft, updateCurrentUser } = useUser();
-  const auth = useAuth();
 
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
@@ -190,14 +187,11 @@ function RegisterContent() {
 
   const handleRegistration = async (data: RegisterFormValues) => {
     setIsLoading(true);
-    try {
-      // Step 1: Create user in Firebase Auth
-      const userCredential = await createUserWithEmailAndPassword(auth, data.email, data.password);
-      const user = userCredential.user;
+    // This is a mock registration
+    await new Promise(resolve => setTimeout(resolve, 1000));
 
-      // Step 2: Add user to Firestore via server action
-      const result = await addUser({
-        uid: user.uid,
+    const result = await addUser({
+        uid: `mock-uid-${Date.now()}`,
         firstName: data.firstName,
         lastName: data.lastName,
         email: data.email,
@@ -206,90 +200,46 @@ function RegisterContent() {
         address: data.address,
         country: data.country,
         phone: data.phone,
+    });
+    
+    if (result.success) {
+      toast({
+        title: "Registration Successful!",
+        description: `Welcome to the ${selectedTier.name} plan. Logging you in...`,
       });
-
-      if (result.success) {
-        toast({
-          title: "Registration Successful!",
-          description: `Welcome to the ${selectedTier.name} plan. Logging you in...`,
-        });
-        // Step 3: Login the new user and redirect
-        await login(data.email, data.password);
-        router.push('/dashboard');
-      } else {
-        // TODO: Handle Firestore user creation failure (e.g., delete auth user)
+      await login(data.email, data.password);
+      router.push('/dashboard');
+    } else {
         toast({
           variant: "destructive",
           title: "Registration Failed",
-          description: result.error || "Could not save user details to database.",
+          description: result.error || "Could not save user details.",
         });
-        setIsLoading(false);
-      }
-    } catch (error: any) {
-      // Handle Firebase Auth errors
-      let description = "An unexpected error occurred.";
-      if (error.code) {
-        switch(error.code) {
-            case 'auth/email-already-in-use':
-                description = 'This email address is already in use.';
-                break;
-            case 'auth/invalid-email':
-                description = 'Please enter a valid email address.';
-                break;
-             case 'auth/weak-password':
-                description = 'The password is too weak. Please choose a stronger password.';
-                break;
-            default:
-                description = error.message;
-        }
-     }
-      toast({
-        variant: "destructive",
-        title: "Registration Failed",
-        description: description,
-      });
-      setIsLoading(false);
     }
+
+    setIsLoading(false);
   };
 
   const handleGoogleSignIn = async () => {
     setIsGoogleLoading(true);
-    try {
-        await signInWithGoogle(selectedPlan as any);
-        toast({
-            title: "Registration Successful",
-            description: `Welcome! You're signed up with Google for the ${selectedTier.name} plan.`,
-        });
-        router.push('/dashboard');
-    } catch (error: any) {
-        toast({
-            variant: "destructive",
-            title: "Google Sign-Up Failed",
-            description: error.message || "An unexpected error occurred.",
-        });
-    } finally {
-        setIsGoogleLoading(false);
-    }
+    await signInWithGoogle(selectedPlan as any);
+    toast({
+        title: "Registration Successful",
+        description: `Welcome! You're signed up with Google for the ${selectedTier.name} plan.`,
+    });
+    router.push('/dashboard');
+    setIsGoogleLoading(false);
   }
 
   const handleMicrosoftSignIn = async () => {
     setIsMicrosoftLoading(true);
-    try {
-        await signInWithMicrosoft(selectedPlan as any);
-        toast({
-            title: "Registration Successful",
-            description: `Welcome! You're signed up with Microsoft for the ${selectedTier.name} plan.`,
-        });
-        router.push('/dashboard');
-    } catch (error: any) {
-        toast({
-            variant: "destructive",
-            title: "Microsoft Sign-Up Failed",
-            description: error.message || "An unexpected error occurred during Microsoft sign-up.",
-        });
-    } finally {
-        setIsMicrosoftLoading(false);
-    }
+    await signInWithMicrosoft(selectedPlan as any);
+    toast({
+        title: "Registration Successful",
+        description: `Welcome! You're signed up with Microsoft for the ${selectedTier.name} plan.`,
+    });
+     router.push('/dashboard');
+    setIsMicrosoftLoading(false);
   };
   
   const handlePlanUpgrade = () => {
@@ -585,5 +535,3 @@ export default function RegisterPage() {
         </Suspense>
     )
 }
-
-    

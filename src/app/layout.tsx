@@ -5,7 +5,6 @@ import { Toaster } from "@/components/ui/toaster"
 import { Inter } from 'next/font/google'
 import { ThemeProvider } from '@/components/layout/theme-provider';
 import { UserProvider } from '@/contexts/user-context';
-import { FirebaseClientProvider } from '@/firebase';
 
 export const metadata: Metadata = {
   title: 'AndonPro',
@@ -29,12 +28,10 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <FirebaseClientProvider>
-            <UserProvider>
-                {children}
-            </UserProvider>
-            <Toaster />
-          </FirebaseClientProvider>
+          <UserProvider>
+              {children}
+          </UserProvider>
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>

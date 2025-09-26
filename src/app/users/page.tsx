@@ -1,16 +1,16 @@
 
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { AppLayout } from "@/components/layout/app-layout";
 import { AddUserDialog } from "@/components/users/add-user-dialog";
 import { UsersDataTable } from "@/components/users/users-data-table";
 import { Button } from "@/components/ui/button";
-import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase";
+import { useUser } from "@/contexts/user-context";
 import { PlusCircle, Lock, LoaderCircle } from "lucide-react";
 import Link from "next/link";
-import { collection } from "firebase/firestore";
 import type { User } from "@/lib/types";
+import { getAllUsers } from "@/lib/data";
 
 const planLimits = {
   starter: { users: 5 },
@@ -20,19 +20,21 @@ const planLimits = {
 }
 
 export default function UsersPage() {
-  const { currentUser, loading: userLoading } = useUser();
-  const firestore = useFirestore();
+  const { currentUser } = useUser();
+  const [allUsers, setAllUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const usersQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
-    return collection(firestore, "users");
-  }, [firestore]);
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      const usersData = await getAllUsers();
+      setAllUsers(usersData);
+      setLoading(false);
+    };
+    fetchData();
+  }, []);
 
-  const { data: allUsers, isLoading: usersLoading } = useCollection<User>(usersQuery);
-
-  const isLoading = userLoading || usersLoading;
-
-  if (isLoading) {
+  if (loading || !currentUser) {
     return <AppLayout>
       <main className="flex flex-1 items-center justify-center">
         <LoaderCircle className="h-8 w-8 animate-spin" />
@@ -49,7 +51,7 @@ export default function UsersPage() {
   }
 
   const userLimit = planLimits[currentUser.plan].users;
-  const canAddUser = (allUsers?.length || 0) < userLimit;
+  const canAddUser = allUsers.length < userLimit;
 
   return (
     <AppLayout>

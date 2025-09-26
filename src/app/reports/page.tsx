@@ -28,9 +28,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { allCategories } from "@/lib/constants";
 import { CSVLink } from "react-csv";
-import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
-import { collection, query } from "firebase/firestore";
-
+import { getIssues, getProductionLines } from "@/lib/data";
 
 const ChartGradients = () => (
     <svg width="0" height="0" className="absolute">
@@ -48,21 +46,10 @@ const ChartGradients = () => (
 
 export default function ReportsPage() {
   const { currentUser } = useUser();
-  const firestore = useFirestore();
-
-  const issuesQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
-    return query(collection(firestore, "issues"));
-  }, [firestore]);
-
-  const linesQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
-    return collection(firestore, "productionLines");
-  }, [firestore]);
-
-  const { data: issues, isLoading: issuesLoading } = useCollection<Issue>(issuesQuery);
-  const { data: productionLines, isLoading: linesLoading } = useCollection<ProductionLine>(linesQuery);
-  const loading = issuesLoading || linesLoading;
+  
+  const [issues, setIssues] = useState<Issue[]>([]);
+  const [productionLines, setProductionLines] = useState<ProductionLine[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const [date, setDate] = useState<DateRange | undefined>({
     from: subDays(new Date(), 29),
@@ -71,6 +58,17 @@ export default function ReportsPage() {
   const [selectedLines, setSelectedLines] = useState<string[]>([]);
   const [tempSelectedLines, setTempSelectedLines] = useState<string[]>([]);
   
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      const [issuesData, linesData] = await Promise.all([getIssues(), getProductionLines()]);
+      setIssues(issuesData);
+      setProductionLines(linesData);
+      setLoading(false);
+    };
+    fetchData();
+  }, []);
+
   useEffect(() => {
     setTempSelectedLines(selectedLines);
   }, [selectedLines]);

@@ -1,17 +1,16 @@
+
 "use client";
 
 import React, { createContext, useState, useContext, useEffect, ReactNode, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { onAuthStateChanged, signInWithEmailAndPassword, signOut, type User as FirebaseUser, GoogleAuthProvider, OAuthProvider, signInWithPopup } from "firebase/auth";
-import { useAuth } from '@/firebase';
 import type { Plan, User } from '@/lib/types';
-import { getUserByEmail } from '@/lib/data';
-import { addUser, setCustomUserClaims } from '@/app/actions';
+import { getUserByEmail, mockAdminUser } from '@/lib/data';
+import { addUser } from '@/app/actions';
 
 interface UserContextType {
   currentUser: User | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<boolean>;
   signInWithGoogle: (plan?: Plan) => Promise<void>;
   signInWithMicrosoft: (plan?: Plan) => Promise<void>;
   logout: () => void;
@@ -24,58 +23,54 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
-  const auth = useAuth();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser: FirebaseUser | null) => {
-      if (firebaseUser) {
-        // User is signed in, get the mock profile from our mock data
-        const userProfile = await getUserByEmail(firebaseUser.email!);
-
-        if (userProfile) {
-          setCurrentUser(userProfile);
-        } else {
-           console.warn(`MOCK: User profile not found for email: "${firebaseUser.email}". Using a default mock profile.`);
-           const defaultMockUser = await getUserByEmail("stefan.deronjic@andonpro.com");
-           if (defaultMockUser) {
-              setCurrentUser(defaultMockUser);
-           } else {
-             setCurrentUser(null);
-           }
-        }
-      } else {
-        // User is signed out
-        setCurrentUser(null);
-      }
+    // Simulate checking for a logged-in user
+    const checkUser = async () => {
+      setLoading(true);
+      // In a real app, you'd check a token in localStorage
+      // For this mock, we'll just set the admin user as the default logged in user
+      setCurrentUser(mockAdminUser);
       setLoading(false);
-    });
+    };
+    checkUser();
+  }, []);
 
-    return () => unsubscribe();
-  }, [auth]);
-
-  const login = async (email: string, password: string) => {
-    await signInWithEmailAndPassword(auth, email, password);
+  const login = async (email: string, password: string): Promise<boolean> => {
+    setLoading(true);
+    // This is a mock login. In a real app, you'd call an auth provider.
+    await new Promise(resolve => setTimeout(resolve, 500));
+    const user = await getUserByEmail(email);
+    if (user) {
+      setCurrentUser(user);
+      setLoading(false);
+      return true;
+    }
+    setLoading(false);
+    return false;
   };
   
-  const signInWithProvider = async (provider: GoogleAuthProvider | OAuthProvider, plan: Plan = 'starter') => {
-    const userCredential = await signInWithPopup(auth, provider);
-    // In this mock version, we don't need to do anything extra.
-    // The onAuthStateChanged listener will pick up the logged-in user.
+  const signInWithProvider = async (plan: Plan = 'starter') => {
+    // Mock signing in with a provider
+    setLoading(true);
+    await new Promise(resolve => setTimeout(resolve, 500));
+    setCurrentUser(mockAdminUser);
+    setLoading(false);
   }
 
   const signInWithGoogle = async (plan: Plan = 'starter') => {
-    const provider = new GoogleAuthProvider();
-    await signInWithProvider(provider, plan);
+    await signInWithProvider(plan);
   }
 
   const signInWithMicrosoft = async (plan: Plan = 'starter') => {
-    const provider = new OAuthProvider('microsoft.com');
-    await signInWithProvider(provider, plan);
+    await signInWithProvider(plan);
   };
 
   const logout = async () => {
-    await signOut(auth);
+    setLoading(true);
+    await new Promise(resolve => setTimeout(resolve, 500));
     setCurrentUser(null);
+    setLoading(false);
     router.push('/login');
   };
   

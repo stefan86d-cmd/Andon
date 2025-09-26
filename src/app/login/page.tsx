@@ -67,35 +67,17 @@ export default function LoginPage() {
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     startLoginTransition(async () => {
-      try {
-        await login(email, password);
+      const success = await login(email, password);
+      if (success) {
         toast({
           title: "Login Successful",
           description: `Welcome back! Redirecting...`,
         });
-        // Redirection is handled by AppLayout
-      } catch (error: any) {
-        console.error("Login Error:", error);
-        let description = "An unexpected error occurred.";
-        
-        if (error.code) {
-            switch (error.code) {
-                case "auth/user-not-found":
-                case "auth/wrong-password":
-                case "auth/invalid-credential":
-                    description = "Invalid email or password.";
-                    break;
-                case "auth/invalid-email":
-                    description = "Please enter a valid email address.";
-                    break;
-                default:
-                    description = "Failed to log in. Please try again later.";
-            }
-        }
+      } else {
         toast({
           variant: "destructive",
           title: "Login Failed",
-          description: description,
+          description: "Invalid email or password.",
         });
       }
     });
@@ -103,40 +85,22 @@ export default function LoginPage() {
   
   const handleGoogleSignIn = async () => {
     setIsGoogleLoading(true);
-    try {
-        await signInWithGoogle();
-        toast({
-            title: "Login Successful",
-            description: "Welcome! You're signed in with Google.",
-        });
-    } catch (error: any) {
-        toast({
-            variant: "destructive",
-            title: "Google Sign-In Failed",
-            description: error.message || "An unexpected error occurred during Google sign-in.",
-        });
-    } finally {
-        setIsGoogleLoading(false);
-    }
+    await signInWithGoogle();
+    toast({
+        title: "Login Successful",
+        description: "Welcome! You're signed in with Google.",
+    });
+    setIsGoogleLoading(false);
   }
 
   const handleMicrosoftSignIn = async () => {
     setIsMicrosoftLoading(true);
-    try {
-        await signInWithMicrosoft();
-        toast({
-            title: "Login Successful",
-            description: "Welcome! You're signed in with Microsoft.",
-        });
-    } catch (error: any) {
-        toast({
-            variant: "destructive",
-            title: "Microsoft Sign-In Failed",
-            description: error.message || "An unexpected error occurred during Microsoft sign-in.",
-        });
-    } finally {
-        setIsMicrosoftLoading(false);
-    }
+    await signInWithMicrosoft();
+     toast({
+        title: "Login Successful",
+        description: "Welcome! You're signed in with Microsoft.",
+    });
+    setIsMicrosoftLoading(false);
   };
 
   return (
