@@ -500,7 +500,7 @@ function RegisterContent() {
                     </div>
                     
                      <p className="text-sm text-muted-foreground pt-2">
-                        By clicking the button below, you agree to our <Link href="/terms" className="underline">Terms of Service</Link>.
+                        By clicking the button below, you agree to our <Link href="/terms" className="underline" target="_blank" rel="noopener noreferrer">Terms of Service</Link>.
                     </p>
                     <Button type="submit" form="registration-form" className="w-full" disabled={isLoading || isGoogleLoading || isMicrosoftLoading}>
                         {isLoading && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
