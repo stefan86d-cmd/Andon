@@ -36,7 +36,7 @@ interface UserContextType {
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
-const isDemoMode = process.env.NEXT_PUBLIC_DEMO_MODE === "false";
+const isDemoMode = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
 
 // Helper function to fetch or create a user profile in Firestore
 const getOrCreateUserProfile = async (firebaseUser: FirebaseUser): Promise<User | null> => {
@@ -47,31 +47,20 @@ const getOrCreateUserProfile = async (firebaseUser: FirebaseUser): Promise<User 
         return { id: userDocSnap.id, ...userDocSnap.data() } as User;
     } else {
         // This case is for social sign-ins where the user profile might not exist yet.
-        // The profile is typically created fully on the complete-profile page.
-        // We'll return a partial user object for now.
+        // We create a partial doc but return null so the app routes to complete-profile.
         const [firstName, lastName] = firebaseUser.displayName?.split(' ') || ["", ""];
-        const partialUser: User = {
+        
+        const partialData = {
             id: firebaseUser.uid,
             email: firebaseUser.email || "",
-            firstName,
-            lastName,
-            // These will be properly set in complete-profile
-            role: 'admin', 
-            plan: 'starter',
-            address: "",
-            country: "",
+            firstName: firstName,
+            lastName: lastName,
         };
 
-        // For email/password sign-up, displayName is null, so we don't pre-fill garbage
-        if (!firebaseUser.displayName) {
-            partialUser.firstName = '';
-            partialUser.lastName = '';
-        }
-        
-        // Let's create a partial document so other rules/checks can pass
-        await setDoc(userDocRef, partialUser, { merge: true });
+        await setDoc(userDocRef, partialData, { merge: true });
 
-        return partialUser;
+        // Return null to signal that the profile is incomplete.
+        return null;
     }
 };
 
