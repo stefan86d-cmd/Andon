@@ -50,6 +50,11 @@ const supportMenuItems = [
     { title: "Contact Us", description: "Get in touch with our team for personalized support.", badge: "", href: "/support/contact" },
 ];
 
+const servicesImage = {
+    imageUrl: "/Factory.jpg",
+    description: "Image of a factory production line",
+    imageHint: "production factory",
+};
 
 export default function HomePage() {
 
@@ -65,6 +70,7 @@ export default function HomePage() {
                 <MegaMenu 
                     triggerText="Services" 
                     items={servicesMenuItems}
+                    image={servicesImage}
                 />
                 <MegaMenu 
                     triggerText="Explore" 

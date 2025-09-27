@@ -25,6 +25,12 @@ const supportMenuItems = [
     { title: "Contact Us", description: "Get in touch with our team for personalized support.", badge: "", href: "/support/contact" },
 ];
 
+const servicesImage = {
+    imageUrl: "/Factory.jpg",
+    description: "Image of a factory production line",
+    imageHint: "production factory",
+};
+
 export default function OurStoryPage() {
   return (
     <div className="flex flex-col min-h-screen bg-background">
@@ -38,6 +44,7 @@ export default function OurStoryPage() {
                 <MegaMenu 
                     triggerText="Services" 
                     items={servicesMenuItems}
+                    image={servicesImage}
                 />
                 <MegaMenu 
                     triggerText="Explore" 

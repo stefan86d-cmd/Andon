@@ -139,6 +139,12 @@ const supportMenuItems = [
     { title: "Contact Us", description: "Get in touch with our team for personalized support.", badge: "", href: "/support/contact" },
 ];
 
+const servicesImage = {
+    imageUrl: "/Factory.jpg",
+    description: "Image of a factory production line",
+    imageHint: "production factory",
+};
+
 type Duration = '1' | '12' | '24' | '48';
 type Currency = 'usd' | 'eur' | 'gbp';
 
@@ -176,6 +182,7 @@ export default function PricingPage() {
                         <MegaMenu 
                             triggerText="Services" 
                             items={servicesMenuItems}
+                            image={servicesImage}
                         />
                         <MegaMenu 
                             triggerText="Explore" 
@@ -212,7 +219,7 @@ export default function PricingPage() {
                     <div className="flex space-x-2 items-center">
                         <Select value={duration} onValueChange={(value) => setDuration(value as any)}>
                             <SelectTrigger className="w-[180px]">
-                                <SelectValue placeholder="Select duration" />
+                                <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="1">1 Month</SelectItem>
@@ -225,7 +232,7 @@ export default function PricingPage() {
                             <SelectTrigger className="w-[150px]">
                                 <div className="flex items-center gap-2">
                                     <Globe className="h-4 w-4 text-muted-foreground" />
-                                    <SelectValue placeholder="Select currency" />
+                                    <SelectValue />
                                 </div>
                             </SelectTrigger>
                             <SelectContent>
