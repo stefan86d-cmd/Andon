@@ -152,7 +152,7 @@ function RegisterContent() {
                                     <FormItem>
                                         <FormLabel>Email</FormLabel>
                                         <FormControl>
-                                            <Input type="email" placeholder="john.d@example.com" {...field} disabled={isLoading || isGoogleLoading || isMicrosoftLoading} />
+                                            <Input type="email" {...field} disabled={isLoading || isGoogleLoading || isMicrosoftLoading} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>

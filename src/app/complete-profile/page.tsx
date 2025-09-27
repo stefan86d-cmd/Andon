@@ -54,14 +54,14 @@ const MockStripeInput = () => {
             </div>
             <div className="space-y-3">
                 <div className="relative">
-                    <Input id="card-number" placeholder="Card number" />
+                    <Input id="card-number" />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                     <div className="relative">
-                       <Input id="expiry-date" placeholder="MM / YY" />
+                       <Input id="expiry-date" />
                     </div>
                     <div className="relative">
-                       <Input id="cvc" placeholder="CVC" />
+                       <Input id="cvc" />
                     </div>
                 </div>
             </div>
@@ -127,14 +127,14 @@ function CompleteProfileContent() {
                                 <FormField control={form.control} name="firstName" render={({ field }) => (
                                     <FormItem>
                                     <FormLabel>First Name</FormLabel>
-                                    <FormControl><Input placeholder="John" {...field} /></FormControl>
+                                    <FormControl><Input {...field} /></FormControl>
                                     <FormMessage />
                                     </FormItem>
                                 )} />
                                 <FormField control={form.control} name="lastName" render={({ field }) => (
                                     <FormItem>
                                     <FormLabel>Last Name</FormLabel>
-                                    <FormControl><Input placeholder="Doe" {...field} /></FormControl>
+                                    <FormControl><Input {...field} /></FormControl>
                                     <FormMessage />
                                     </FormItem>
                                 )} />
@@ -142,7 +142,7 @@ function CompleteProfileContent() {
                             <FormField control={form.control} name="address" render={({ field }) => (
                                 <FormItem>
                                 <FormLabel>Home Address</FormLabel>
-                                <FormControl><Input placeholder="123 Main St" {...field} /></FormControl>
+                                <FormControl><Input {...field} /></FormControl>
                                 <FormMessage />
                                 </FormItem>
                             )} />
@@ -150,14 +150,14 @@ function CompleteProfileContent() {
                                 <FormField control={form.control} name="city" render={({ field }) => (
                                     <FormItem>
                                     <FormLabel>City</FormLabel>
-                                    <FormControl><Input placeholder="Anytown" {...field} /></FormControl>
+                                    <FormControl><Input {...field} /></FormControl>
                                     <FormMessage />
                                     </FormItem>
                                 )} />
                                 <FormField control={form.control} name="postalCode" render={({ field }) => (
                                     <FormItem>
                                     <FormLabel>Postal Code</FormLabel>
-                                    <FormControl><Input placeholder="12345" {...field} /></FormControl>
+                                    <FormControl><Input {...field} /></FormControl>
                                     <FormMessage />
                                     </FormItem>
                                 )} />
@@ -167,7 +167,7 @@ function CompleteProfileContent() {
                                     <FormItem>
                                     <FormLabel>Country</FormLabel>
                                     <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                        <FormControl><SelectTrigger><SelectValue placeholder="Select a country" /></SelectTrigger></FormControl>
+                                        <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
                                         <SelectContent>
                                             {countries.map(country => <SelectItem key={country.code} value={country.code}>{country.name}</SelectItem>)}
                                         </SelectContent>

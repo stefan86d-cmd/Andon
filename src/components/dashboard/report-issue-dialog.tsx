@@ -442,7 +442,7 @@ export function ReportIssueDialog({
                         >
                             <FormControl>
                             <SelectTrigger>
-                                <SelectValue placeholder="Select a priority" />
+                                <SelectValue />
                             </SelectTrigger>
                             </FormControl>
                             <SelectContent>

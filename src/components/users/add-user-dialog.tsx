@@ -209,7 +209,7 @@ export function AddUserDialog({ children }: { children: React.ReactNode }) {
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select a role" />
+                        <SelectValue />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
