@@ -30,14 +30,14 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
     }
     
     // If logged in, redirect away from auth pages (except for plan changes).
-    if (currentUser && isAuthPage && pathname !== '/checkout' && pathname !== '/complete-profile' && pathname !== '/register') {
+    if (currentUser && isAuthPage && pathname !== '/checkout') {
       const path = currentUser.role === 'operator' ? '/line-status' : '/dashboard';
       router.replace(path);
     }
 
   }, [currentUser, loading, router, pathname, isAuthPage, isPublicPage]);
   
-  const showHeader = currentUser && !isAuthPage || (currentUser && (pathname === '/checkout' || pathname === '/register' || pathname === '/complete-profile'));
+  const showHeader = currentUser && !isAuthPage;
 
   if (loading && !isAuthPage && !isPublicPage) {
     return (
