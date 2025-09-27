@@ -332,6 +332,11 @@ export default function PricingPage() {
                                                 Renews at {currencySymbols[currency]}{formatPrice(fullMonthlyPrice, currency)}/mo. Cancel anytime.
                                             </p>
                                         )}
+                                         {tier.name === 'Starter' && duration !== '1' && (
+                                            <p className="text-xs text-muted-foreground mt-3 text-center h-8">
+                                                &nbsp;
+                                            </p>
+                                         )}
                                     </CardFooter>
                                 </Card>
                             </div>
@@ -386,3 +391,6 @@ export default function PricingPage() {
     </div>
   );
 }
+
+
+    
