@@ -30,6 +30,11 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
           const path = currentUser.role === 'operator' ? '/line-status' : '/dashboard';
           router.replace(path);
        }
+       // Redirect from public pages to the dashboard if logged in
+       if (isPublicPage) {
+          const path = currentUser.role === 'operator' ? '/line-status' : '/dashboard';
+          router.replace(path);
+       }
     } else {
         // If not loading and not logged in, and not on a public/auth page, redirect to home.
         if (!isPublicPage && !isAuthPage) {
@@ -39,7 +44,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
 
   }, [currentUser, loading, router, pathname, isAuthPage, isPublicPage]);
   
-  const showHeader = currentUser && !isAuthPage;
+  const showHeader = currentUser && !isAuthPage && !isPublicPage;
 
   if (loading && !isAuthPage && !isPublicPage) {
     return (
