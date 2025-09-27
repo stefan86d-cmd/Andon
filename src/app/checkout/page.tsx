@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Logo } from "@/components/layout/logo";
-import { LoaderCircle, Globe, Badge } from 'lucide-react';
+import { LoaderCircle, Globe, Badge as BadgeIcon } from 'lucide-react';
 import Link from 'next/link';
 import {
   Select,
@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/select";
 import type { Plan } from '@/lib/types';
 import { cn } from '@/lib/utils';
+import { Badge } from '@/components/ui/badge';
 
 const tiers = {
   starter: { 
@@ -136,9 +137,9 @@ function CheckoutContent() {
                 </Select>
               </div>
               <div className="flex gap-2 items-center">
-                {selectedDuration === '12' && <span className="text-sm font-semibold text-green-600">Save ~20%</span>}
-                {selectedDuration === '24' && <span className="text-sm font-semibold text-green-600">Save ~30%</span>}
-                {selectedDuration === '48' && <span className="text-sm font-semibold text-green-600">Save ~40%</span>}
+                {selectedDuration === '12' && <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~20%</Badge>}
+                {selectedDuration === '24' && <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~30%</Badge>}
+                {selectedDuration === '48' && <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~40%</Badge>}
               </div>
               <p className="text-sm text-muted-foreground">{renewalText}</p>
             </CardContent>
@@ -155,7 +156,12 @@ function CheckoutContent() {
               <div className="space-y-2">
                 <div className="flex justify-between"><span>Plan</span><span className="capitalize font-medium">{selectedPlan}</span></div>
                 <div className="flex justify-between"><span>Plan Length</span><span>{selectedDuration} Months</span></div>
-                {discount > 0 && <div className="flex justify-between text-green-600"><span>Discount</span><span>-{currencySymbols[selectedCurrency]}{formatPrice(discount, selectedCurrency)}</span></div>}
+                 {discount > 0 && 
+                    <div className="flex justify-between bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300 p-2 rounded-md">
+                        <span>Discount</span>
+                        <span>-{currencySymbols[selectedCurrency]}{formatPrice(discount, selectedCurrency)}</span>
+                    </div>
+                }
               </div>
               <Separator />
                <div className="space-y-1 text-right">
