@@ -29,8 +29,9 @@ export function UserProvider({ children }: { children: ReactNode }) {
     const checkUser = async () => {
       setLoading(true);
       // In a real app, you'd check a token in localStorage
-      // For this mock, we'll start with no user logged in.
-      setCurrentUser(null);
+      // For this mock, we'll start with Bob logged in as requested.
+      const user = await getUserByEmail("bob.o@example.com");
+      setCurrentUser(user);
       setLoading(false);
     };
     checkUser();
@@ -96,5 +97,3 @@ export function useUser() {
   }
   return context;
 }
-
-    

@@ -136,9 +136,6 @@ export async function getAllUsers(): Promise<User[]> {
 export async function getUserByEmail(email: string): Promise<User | null> {
     console.log(`MOCK: Getting user by email: ${email}`);
     const user = mockUsers.find(u => u.email === email);
-    if (email === "alex.j@andon.io") {
-        return Promise.resolve(mockAdminUser);
-    }
     return Promise.resolve(user || null);
 }
 
@@ -168,5 +165,3 @@ function subMinutes(date: Date, minutes: number): Date {
   newDate.setMinutes(date.getMinutes() - minutes);
   return newDate;
 }
-
-    
