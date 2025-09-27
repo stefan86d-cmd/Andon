@@ -26,8 +26,8 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
     
     if (currentUser) {
        // If user profile is not complete (e.g., no role), force to complete-profile page.
-       if (!currentUser.role && pathname !== '/complete-profile') {
-           router.replace('/complete-profile');
+       if (!currentUser.role && pathname !== '/complete-profile' && !pathname.startsWith('/register')) {
+           router.replace(`/complete-profile?plan=${currentUser.plan || 'starter'}`);
            return;
        }
        
@@ -66,6 +66,17 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
   // If we are not on a public or auth page, and we don't have a user, we show a loader
   // while the useEffect redirects. This prevents content from flashing.
   if (!isPublicPage && !isAuthPage && !currentUser) {
+      return (
+          <div className="flex h-screen items-center justify-center">
+              <LoaderCircle className="h-8 w-8 animate-spin" />
+          </div>
+      );
+  }
+
+  // If a user has just signed up but hasn't completed their profile, show a loader
+  // while we redirect to /complete-profile, instead of trying to render a page
+  // that will fail due to permissions.
+  if (currentUser && !currentUser.role && pathname !== '/complete-profile' && !pathname.startsWith('/register')) {
       return (
           <div className="flex h-screen items-center justify-center">
               <LoaderCircle className="h-8 w-8 animate-spin" />
