@@ -78,6 +78,8 @@ function CompleteProfileContent() {
   const { currentUser, loading: userLoading, updateCurrentUser } = useUser();
   const [isLoading, setIsLoading] = useState(false);
 
+  const planFromUrl = searchParams.get('plan') as Plan | null;
+
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
     defaultValues: {
@@ -93,7 +95,7 @@ function CompleteProfileContent() {
     }
   }, [currentUser, userLoading, router]);
 
-  const selectedPlan = searchParams.get('plan') as Plan || 'starter';
+  const selectedPlan = planFromUrl || 'starter';
 
   const handleCreateAccount = async (data: ProfileFormValues) => {
     if (!currentUser || !currentUser.id) {
@@ -125,7 +127,7 @@ function CompleteProfileContent() {
         updateCurrentUser(userProfileData);
 
         toast({
-            title: "Order & Pay Success!",
+            title: "Registration Complete!",
             description: `Welcome to the ${selectedPlan} plan. Your account is ready!`,
         });
 
@@ -239,7 +241,7 @@ function CompleteProfileContent() {
                         </p>
                         <Button type="submit" form="profile-form" className="w-full" disabled={isLoading}>
                             {isLoading && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
-                            Order and Pay
+                            Complete Registration
                         </Button>
                     </CardFooter>
                 </Card>
@@ -264,3 +266,5 @@ export default function CompleteProfilePage() {
         </Suspense>
     )
 }
+
+    
