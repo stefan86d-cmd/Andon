@@ -38,10 +38,10 @@ const profileFormSchema = z.object({
   postalCode: z.string().min(1, "Postal code is required."),
   country: z.string().min(1, "Country is required."),
   phone: z.string().optional(),
-  // Mock credit card fields
-  cardNumber: z.string().min(16, "Invalid card number").max(16, "Invalid card number"),
-  expiryDate: z.string().regex(/^(0[1-9]|1[0-2])\/\d{2}$/, "Invalid expiry date (MM/YY)"),
-  cvc: z.string().min(3, "Invalid CVC").max(4, "Invalid CVC"),
+  // Mock credit card fields - now optional
+  cardNumber: z.string().optional(),
+  expiryDate: z.string().optional(),
+  cvc: z.string().optional(),
 });
 
 type ProfileFormValues = z.infer<typeof profileFormSchema>;
@@ -56,14 +56,14 @@ const MockStripeInput = () => {
             </div>
             <div className="space-y-3">
                 <div className="relative">
-                    <Input id="card-number" />
+                    <Input id="card-number" placeholder="Card Number" />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                     <div className="relative">
-                       <Input id="expiry-date" />
+                       <Input id="expiry-date" placeholder="MM/YY" />
                     </div>
                     <div className="relative">
-                       <Input id="cvc" />
+                       <Input id="cvc" placeholder="CVC" />
                     </div>
                 </div>
             </div>
@@ -117,7 +117,7 @@ function CompleteProfileContent() {
             address: data.address,
             country: data.country,
             phone: data.phone,
-        });
+        }, { merge: true });
 
         toast({
             title: "Order & Pay Success!",
