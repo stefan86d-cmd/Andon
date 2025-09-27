@@ -89,6 +89,7 @@ const StatusDisplay = ({ status }: { status: Status }) => {
 };
 
 const getInitials = (name: string) => {
+    if (!name || typeof name !== 'string') return '??';
     const names = name.split(' ');
     if (names.length > 1) {
         return `${names[0]?.[0] || ''}${names[names.length - 1]?.[0] || ''}`.toUpperCase();
@@ -218,7 +219,3 @@ export function IssuesDataTable({ issues, title, description, loading }: { issue
     </Card>
   );
 }
-
-
-
-
