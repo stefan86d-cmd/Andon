@@ -36,7 +36,7 @@ interface UserContextType {
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
-const isDemoMode = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
+const isDemoMode = process.env.NEXT_PUBLIC_DEMO_MODE === "false";
 
 // Helper function to fetch or create a user profile in Firestore
 const getOrCreateUserProfile = async (firebaseUser: FirebaseUser): Promise<User | null> => {
@@ -50,16 +50,28 @@ const getOrCreateUserProfile = async (firebaseUser: FirebaseUser): Promise<User 
         // The profile is typically created fully on the complete-profile page.
         // We'll return a partial user object for now.
         const [firstName, lastName] = firebaseUser.displayName?.split(' ') || ["", ""];
-        return {
+        const partialUser: User = {
             id: firebaseUser.uid,
             email: firebaseUser.email || "",
             firstName,
             lastName,
-            role: 'admin', // Default new sign-ups to admin
-            plan: 'starter', // Default to starter plan
+            // These will be properly set in complete-profile
+            role: 'admin', 
+            plan: 'starter',
             address: "",
             country: "",
         };
+
+        // For email/password sign-up, displayName is null, so we don't pre-fill garbage
+        if (!firebaseUser.displayName) {
+            partialUser.firstName = '';
+            partialUser.lastName = '';
+        }
+        
+        // Let's create a partial document so other rules/checks can pass
+        await setDoc(userDocRef, partialUser, { merge: true });
+
+        return partialUser;
     }
 };
 
