@@ -96,7 +96,7 @@ function CompleteProfileContent() {
   const selectedPlan = searchParams.get('plan') as Plan || 'starter';
 
   const handleCreateAccount = async (data: ProfileFormValues) => {
-    if (!currentUser) {
+    if (!currentUser || !currentUser.id) {
       toast({ title: "Authentication Error", description: "Your session has expired. Please sign in again.", variant: "destructive" });
       return;
     }
@@ -107,7 +107,7 @@ function CompleteProfileContent() {
     
     try {
         // Save user profile data to Firestore
-        const userDocRef = doc(db, "users", currentUser.uid);
+        const userDocRef = doc(db, "users", currentUser.id);
         await setDoc(userDocRef, {
             firstName: data.firstName,
             lastName: data.lastName,
