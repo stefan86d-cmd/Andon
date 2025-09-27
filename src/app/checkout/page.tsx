@@ -64,22 +64,23 @@ function CheckoutContent() {
   const { currentUser, updateCurrentUser } = useUser();
   const [isSubmitting, startTransition] = useTransition();
 
+  const isExistingUser = !!currentUser;
+  
   const [selectedPlan, setSelectedPlan] = useState<Plan>(searchParams.get('plan') as Plan || 'pro');
-  const [selectedDuration, setSelectedDuration] = useState<Duration>(searchParams.get('duration') as Duration || '12');
+  const [selectedDuration, setSelectedDuration] = useState<Duration>(isExistingUser ? '1' : (searchParams.get('duration') as Duration || '12'));
   const [selectedCurrency, setSelectedCurrency] = useState<Currency>(searchParams.get('currency') as Currency || 'usd');
 
   const selectedTier = tiers[selectedPlan];
-  const monthlyPrice = selectedTier.prices[selectedDuration][selectedCurrency];
+  const monthlyPrice = selectedTier.prices[isExistingUser ? '1' : selectedDuration][selectedCurrency];
   const fullPrice = selectedTier.prices['1'][selectedCurrency];
-  const yearlyPrice = monthlyPrice * parseInt(selectedDuration, 10);
-  const undiscountedTotal = fullPrice * parseInt(selectedDuration, 10);
+  const totalDue = monthlyPrice * parseInt(isExistingUser ? '1' : selectedDuration, 10);
+  const undiscountedTotal = fullPrice * parseInt(isExistingUser ? '1' : selectedDuration, 10);
 
 
   const discount = useMemo(() => {
-    if (selectedDuration === '1') return 0;
-    const undiscounted = fullPrice * parseInt(selectedDuration, 10);
-    return undiscounted - yearlyPrice;
-  }, [selectedDuration, fullPrice, yearlyPrice]);
+    if (isExistingUser || selectedDuration === '1') return 0;
+    return undiscountedTotal - totalDue;
+  }, [selectedDuration, undiscountedTotal, totalDue, isExistingUser]);
 
   const renewalText = useMemo(() => {
       if (selectedPlan === 'starter') return "The Starter plan is always free.";
@@ -90,7 +91,6 @@ function CheckoutContent() {
 
   const handleContinue = () => {
     if (currentUser) {
-        // Logged-in user is changing their plan
         startTransition(async () => {
             if (selectedPlan === currentUser.plan) {
                 toast({ title: "No Change", description: "You are already on this plan." });
@@ -114,7 +114,6 @@ function CheckoutContent() {
             }
         });
     } else {
-        // New user registration
         router.push(`/register?plan=${selectedPlan}&duration=${selectedDuration}&currency=${selectedCurrency}`);
     }
   };
@@ -149,7 +148,7 @@ function CheckoutContent() {
                     {Object.keys(tiers).map(key => <SelectItem key={key} value={key} className="capitalize">{tiers[key as Plan].name}</SelectItem>)}
                   </SelectContent>
                 </Select>
-                <Select value={selectedDuration} onValueChange={(v) => setSelectedDuration(v as Duration)}>
+                <Select value={selectedDuration} onValueChange={(v) => setSelectedDuration(v as Duration)} disabled={isExistingUser}>
                   <SelectTrigger><SelectValue placeholder="Select duration" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="1">1 Month</SelectItem>
@@ -169,11 +168,13 @@ function CheckoutContent() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="flex gap-2 items-center">
-                {selectedDuration === '12' && <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~20%</Badge>}
-                {selectedDuration === '24' && <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~30%</Badge>}
-                {selectedDuration === '48' && <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~40%</Badge>}
-              </div>
+              {!isExistingUser && (
+                <div className="flex gap-2 items-center">
+                    {selectedDuration === '12' && <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~20%</Badge>}
+                    {selectedDuration === '24' && <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~30%</Badge>}
+                    {selectedDuration === '48' && <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~40%</Badge>}
+                </div>
+              )}
               <p className="text-sm text-muted-foreground">{renewalText}</p>
             </CardContent>
           </Card>
@@ -188,7 +189,7 @@ function CheckoutContent() {
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <div className="flex justify-between"><span>Plan</span><span className="capitalize font-medium">{selectedPlan}</span></div>
-                <div className="flex justify-between"><span>Plan Length</span><span>{selectedDuration} Months</span></div>
+                <div className="flex justify-between"><span>Plan Length</span><span>{isExistingUser ? '1 Month' : `${selectedDuration} Months`}</span></div>
                  {discount > 0 && 
                     <div className="flex justify-between bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300 p-2 rounded-md">
                         <span>Discount</span>
@@ -205,7 +206,7 @@ function CheckoutContent() {
                     )}
                     <div className="flex justify-between items-center font-bold text-lg">
                         <span>Subtotal</span>
-                        <span>{currencySymbols[selectedCurrency]}{formatPrice(yearlyPrice, selectedCurrency)}</span>
+                        <span>{currencySymbols[selectedCurrency]}{formatPrice(totalDue, selectedCurrency)}</span>
                     </div>
                 </div>
             </CardContent>

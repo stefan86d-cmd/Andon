@@ -51,7 +51,6 @@ export default function BillingPage() {
     const { currentUser } = useUser();
     const router = useRouter();
 
-    const [duration, setDuration] = useState<Duration>('12');
     const [currency, setCurrency] = useState<Currency>('usd');
     const [newPlan, setNewPlan] = useState<Plan | undefined>(currentUser?.plan);
 
@@ -68,7 +67,8 @@ export default function BillingPage() {
             toast({ title: "No Plan Selected", description: "Please choose a plan to continue." });
             return;
         }
-        router.push(`/checkout?plan=${newPlan}&duration=${duration}&currency=${currency}`);
+        // For existing users, duration is always 1 month (no discount)
+        router.push(`/checkout?plan=${newPlan}&duration=1&currency=${currency}`);
     }
 
     const handleCancelConfirm = () => {
@@ -82,19 +82,8 @@ export default function BillingPage() {
     const availablePlans = Object.keys(tiers).filter(p => p !== 'starter') as Plan[];
 
     const selectedTier = newPlan ? tiers[newPlan] : null;
-    const monthlyPrice = selectedTier ? selectedTier.prices[duration][currency] : 0;
-    const fullPrice = selectedTier ? selectedTier.prices['1'][currency] : 0;
-    const yearlyPrice = monthlyPrice * parseInt(duration, 10);
-    const undiscountedTotal = fullPrice * parseInt(duration, 10);
-
-    const discount = useMemo(() => {
-        if (duration === '1' || !selectedTier) return 0;
-        const undiscounted = selectedTier.prices['1'][currency] * parseInt(duration, 10);
-        const discounted = selectedTier.prices[duration][currency] * parseInt(duration, 10);
-        return undiscounted - discounted;
-    }, [duration, selectedTier, currency]);
-
-
+    const monthlyPrice = selectedTier ? selectedTier.prices['1'][currency] : 0;
+   
     return (
         <div className="container mx-auto flex min-h-screen items-center justify-center py-12">
             <div className="w-full max-w-2xl">
@@ -115,7 +104,7 @@ export default function BillingPage() {
                     </CardHeader>
                     <CardContent className="space-y-6">
                         <div className="space-y-2">
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                 <Select value={newPlan} onValueChange={(value) => setNewPlan(value as Plan)}>
                                     <SelectTrigger>
                                         <SelectValue placeholder="Choose a new plan" />
@@ -124,17 +113,6 @@ export default function BillingPage() {
                                         {availablePlans.map(p => (
                                             <SelectItem key={p} value={p} className="capitalize">{p}</SelectItem>
                                         ))}
-                                    </SelectContent>
-                                </Select>
-                                <Select value={duration} onValueChange={(value) => setDuration(value as any)}>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select duration" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="1">1 Month</SelectItem>
-                                        <SelectItem value="12">12 Months</SelectItem>
-                                        <SelectItem value="24">24 Months</SelectItem>
-                                        <SelectItem value="48">48 Months</SelectItem>
                                     </SelectContent>
                                 </Select>
                                 <Select value={currency} onValueChange={(value) => setCurrency(value as any)}>
@@ -148,27 +126,17 @@ export default function BillingPage() {
                                     </SelectContent>
                                 </Select>
                             </div>
+                             <p className="text-sm text-muted-foreground">Plan changes will be billed monthly.</p>
                         </div>
 
-                         {selectedTier && (
+                         {selectedTier && newPlan !== currentUser.plan && (
                              <div className="space-y-2 rounded-lg border bg-card-foreground/5 p-4">
-                                <div className="space-y-1 text-right">
-                                    {discount > 0 && (
-                                        <p className="text-muted-foreground line-through">
-                                            {currencySymbols[currency]}{formatPrice(undiscountedTotal, currency)}
-                                        </p>
-                                    )}
+                                <div className="space-y-1">
                                     <div className="flex justify-between items-center font-bold text-lg">
-                                        <span>New Subtotal</span>
-                                        <span>{currencySymbols[currency]}{formatPrice(yearlyPrice, currency)}</span>
+                                        <span>New Monthly Price</span>
+                                        <span>{currencySymbols[currency]}{formatPrice(monthlyPrice, currency)}</span>
                                     </div>
                                 </div>
-                                {discount > 0 &&
-                                    <div className="flex justify-between bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300 p-2 rounded-md text-sm">
-                                        <span>Discount</span>
-                                        <span>-{currencySymbols[currency]}{formatPrice(discount, currency)}</span>
-                                    </div>
-                                }
                             </div>
                         )}
                         
@@ -197,4 +165,3 @@ export default function BillingPage() {
         </div>
     );
 }
-
