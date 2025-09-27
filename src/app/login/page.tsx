@@ -104,88 +104,92 @@ export default function LoginPage() {
   };
 
   return (
-    <AppLayout>
-        <div className="flex items-center justify-center min-h-screen bg-background">
-        <Card className="mx-auto max-w-sm w-full">
-        <CardHeader className="space-y-1">
-            <div className="flex justify-center p-6">
-                <Logo />
-            </div>
-            <CardTitle>Login to AndonPro</CardTitle>
-            <CardDescription>
-                Enter your credentials to continue.
-            </CardDescription>
-            </CardHeader>
-            <CardContent>
-            <form onSubmit={handleLogin}>
-                <div className="grid gap-4">
-                <div className="grid gap-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                    id="email"
-                    type="email"
-                    placeholder="alex.j@andon.io"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    disabled={isLoggingIn || isGoogleLoading || isMicrosoftLoading}
-                    />
-                </div>
-                <div className="grid gap-2">
-                    <Label htmlFor="password">Password</Label>
-                    <Input 
-                        id="password" 
-                        type="password"
-                        placeholder="password"
-                        required
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        disabled={isLoggingIn || isGoogleLoading || isMicrosoftLoading}
-                    />
-                </div>
-                <Button type="submit" className="w-full" disabled={isLoggingIn || isGoogleLoading || isMicrosoftLoading}>
-                    {isLoggingIn && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
-                    Login
-                </Button>
-                </div>
-            </form>
-            
-            <div className="mt-4 text-center text-sm">
-                <Link href="/forgot-password" passHref>
-                <span className="underline cursor-pointer">
-                    Forgot password?
-                </span>
-                </Link>
-            </div>
+    <div className="bg-muted">
+        <div className="container mx-auto flex min-h-screen flex-col items-center justify-center py-12">
+            <div className="w-full max-w-sm">
+                <Card>
+                    <CardHeader className="space-y-1">
+                        <div className="flex justify-center p-6">
+                            <Logo />
+                        </div>
+                        <CardTitle>Login to AndonPro</CardTitle>
+                        <CardDescription>
+                            Enter your credentials to continue.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <form onSubmit={handleLogin}>
+                            <div className="grid gap-4">
+                            <div className="grid gap-2">
+                                <Label htmlFor="email">Email</Label>
+                                <Input
+                                id="email"
+                                type="email"
+                                placeholder="alex.j@andon.io"
+                                required
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                disabled={isLoggingIn || isGoogleLoading || isMicrosoftLoading}
+                                />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="password">Password</Label>
+                                <Input 
+                                    id="password" 
+                                    type="password"
+                                    placeholder="password"
+                                    required
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    disabled={isLoggingIn || isGoogleLoading || isMicrosoftLoading}
+                                />
+                            </div>
+                            <Button type="submit" className="w-full" disabled={isLoggingIn || isGoogleLoading || isMicrosoftLoading}>
+                                {isLoggingIn && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
+                                Login
+                            </Button>
+                            </div>
+                        </form>
+                        
+                        <div className="mt-4 text-center text-sm">
+                            <Link href="/forgot-password" passHref>
+                            <span className="underline cursor-pointer">
+                                Forgot password?
+                            </span>
+                            </Link>
+                        </div>
 
-            <div className="relative my-4">
-                <Separator />
-                <span className="absolute left-1/2 -translate-x-1/2 -top-2.5 bg-background px-2 text-xs text-muted-foreground">OR</span>
-            </div>
+                        <div className="relative my-4">
+                            <Separator />
+                            <span className="absolute left-1/2 -translate-x-1/2 -top-2.5 bg-card px-2 text-xs text-muted-foreground">OR</span>
+                        </div>
 
-                <div className="grid grid-cols-1 gap-2">
-                    <Button variant="outline" className="w-full" onClick={handleGoogleSignIn} disabled={isLoggingIn || isGoogleLoading || isMicrosoftLoading}>
-                        {isGoogleLoading ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : <GoogleIcon />}
-                        Sign in with Google
-                    </Button>
-                    <Button variant="outline" className="w-full" onClick={handleMicrosoftSignIn} disabled={isLoggingIn || isGoogleLoading || isMicrosoftLoading}>
-                        {isMicrosoftLoading ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : <MicrosoftIcon />}
-                        Sign in with Microsoft
-                    </Button>
-                </div>
-                
-            <div className="mt-4 text-center text-sm">
-                Don't have an account?{' '}
-                <Link href="/pricing" passHref>
-                    <span className="underline cursor-pointer">
-                        Sign up
-                    </span>
-                </Link>
+                        <div className="grid grid-cols-1 gap-2">
+                            <Button variant="outline" className="w-full" onClick={handleGoogleSignIn} disabled={isLoggingIn || isGoogleLoading || isMicrosoftLoading}>
+                                {isGoogleLoading ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : <GoogleIcon />}
+                                Sign in with Google
+                            </Button>
+                            <Button variant="outline" className="w-full" onClick={handleMicrosoftSignIn} disabled={isLoggingIn || isGoogleLoading || isMicrosoftLoading}>
+                                {isMicrosoftLoading ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : <MicrosoftIcon />}
+                                Sign in with Microsoft
+                            </Button>
+                        </div>
+                            
+                        <div className="mt-4 text-center text-sm">
+                            Don't have an account?{' '}
+                            <Link href="/pricing" passHref>
+                                <span className="underline cursor-pointer">
+                                    Sign up
+                                </span>
+                            </Link>
+                        </div>
+                    </CardContent>
+                </Card>
             </div>
-
-            </CardContent>
-        </Card>
+            <footer className="mt-8 text-center text-sm text-muted-foreground">
+                © {new Date().getFullYear()} AndonPro. All rights reserved.
+            </footer>
         </div>
-    </AppLayout>
+    </div>
   );
 }

@@ -12,60 +12,45 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   
-  const isAuthPage = pathname === '/login' || pathname.startsWith('/register') || pathname.startsWith('/forgot-password') || pathname.startsWith('/reset-password');
-  const isRegisterPage = pathname.startsWith('/register');
+  const authPages = ['/login', '/register', '/complete-profile', '/forgot-password', '/reset-password', '/checkout'];
+  const isAuthPage = authPages.some(page => pathname.startsWith(page));
+  
+  const publicPages = ['/', '/pricing', '/about', '/services', '/support', '/terms'];
+  const isPublicPage = publicPages.some(page => pathname === '/' || (page !== '/' && pathname.startsWith(page)));
+
 
   React.useEffect(() => {
     if (loading) {
       return; // Do nothing while loading
     }
     
-    // If not loading and not logged in, redirect to login page if not on a public/auth page.
-    if (!currentUser && !isAuthPage) {
-      router.replace('/login');
+    // If not loading and not logged in, and not on a public page, redirect to home.
+    if (!currentUser && !isPublicPage && !isAuthPage) {
+      router.replace('/');
     }
     
-    // If logged in, redirect away from login/password reset pages, but allow access to register/upgrade page.
-    if (currentUser && isAuthPage && !isRegisterPage) {
+    // If logged in, redirect away from auth pages (except for plan changes).
+    if (currentUser && isAuthPage && pathname !== '/checkout' && pathname !== '/complete-profile' && pathname !== '/register') {
       const path = currentUser.role === 'operator' ? '/line-status' : '/dashboard';
       router.replace(path);
     }
 
-  }, [currentUser, loading, router, pathname, isAuthPage, isRegisterPage]);
-
-  // While loading, if we are on a protected route, show a loader.
-  if (loading && !isAuthPage) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <LoaderCircle className="h-8 w-8 animate-spin" />
-      </div>
-    );
-  }
-
-  // If not logged in and on a protected route, show a loader until the redirect happens.
-  if (!currentUser && !isAuthPage) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <LoaderCircle className="h-8 w-8 animate-spin" />
-      </div>
-    );
-  }
+  }, [currentUser, loading, router, pathname, isAuthPage, isPublicPage]);
   
-  // If logged in and on a non-register auth page, show a loader until the redirect happens.
-  if (currentUser && isAuthPage && !isRegisterPage) {
+  const showHeader = currentUser && !isAuthPage || (currentUser && (pathname === '/checkout' || pathname === '/register' || pathname === '/complete-profile'));
+
+  if (loading && !isAuthPage && !isPublicPage) {
     return (
-       <div className="flex h-screen items-center justify-center">
+      <div className="flex h-screen items-center justify-center">
         <LoaderCircle className="h-8 w-8 animate-spin" />
       </div>
-    )
+    );
   }
+
 
   return (
     <div className="flex min-h-screen w-full flex-col">
-       {/* Only show header if user is logged in and not on a full-screen auth page */}
-       {currentUser && !isAuthPage && <Header />}
-       {/* Or if user is logged-in and on the register page to upgrade plan */}
-       {currentUser && isRegisterPage && <Header />}
+       {showHeader && <Header />}
       <div className="flex flex-col">
         {children}
       </div>
