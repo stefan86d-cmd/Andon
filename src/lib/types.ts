@@ -43,12 +43,12 @@ export type Issue = {
   priority: Priority;
   status: Status;
   reportedAt: Date;
-  reportedBy: User; // This is a fully populated User object for display
+  reportedBy: UserRef;
   category: IssueCategory;
   subCategory?: string;
   resolutionNotes?: string;
   resolvedAt?: Date;
-  resolvedBy?: User | null; // This is a fully populated User object for display
+  resolvedBy?: UserRef | null;
   productionStopped: boolean;
   itemNumber?: string;
   quantity?: number;
