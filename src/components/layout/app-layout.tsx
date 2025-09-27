@@ -55,12 +55,22 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
   
   const showHeader = currentUser && currentUser.role && !isAuthPage && !isPublicPage;
 
-  if (loading && !isAuthPage && !isPublicPage) {
+  if (loading && !isPublicPage && !isAuthPage) {
     return (
       <div className="flex h-screen items-center justify-center">
         <LoaderCircle className="h-8 w-8 animate-spin" />
       </div>
     );
+  }
+
+  // If we are not on a public or auth page, and we don't have a user, we show a loader
+  // while the useEffect redirects. This prevents content from flashing.
+  if (!isPublicPage && !isAuthPage && !currentUser) {
+      return (
+          <div className="flex h-screen items-center justify-center">
+              <LoaderCircle className="h-8 w-8 animate-spin" />
+          </div>
+      );
   }
 
 

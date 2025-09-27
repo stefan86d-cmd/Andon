@@ -1,10 +1,10 @@
 
 import type { User, Issue, ProductionLine, IssueDocument } from "@/lib/types";
-import { db } from "@/firebase";
+import { auth, db } from "@/firebase";
 import { 
     collection, 
     getDocs, 
-    query, 
+    query,
     where, 
     doc, 
     getDoc,
@@ -12,10 +12,13 @@ import {
     limit
 } from 'firebase/firestore';
 import { handleFirestoreError } from "./firestore-helpers";
+import { getAuth } from "firebase/auth";
 
 // --- Firebase API Functions ---
 
 export async function getProductionLines(): Promise<ProductionLine[]> {
+    const auth = getAuth();
+    if (!auth.currentUser) return [];
     try {
         const linesCollection = collection(db, "productionLines");
         const lineSnapshot = await getDocs(linesCollection);
@@ -28,6 +31,8 @@ export async function getProductionLines(): Promise<ProductionLine[]> {
 }
 
 export async function getAllUsers(): Promise<User[]> {
+    const auth = getAuth();
+    if (!auth.currentUser) return [];
     try {
         const usersCollection = collection(db, "users");
         const userSnapshot = await getDocs(usersCollection);
@@ -70,6 +75,8 @@ export async function getUserById(uid: string): Promise<User | null> {
 }
 
 export async function getIssues(): Promise<Issue[]> {
+    const auth = getAuth();
+    if (!auth.currentUser) return [];
     try {
         const issuesCollection = collection(db, "issues");
         const q = query(issuesCollection, orderBy("reportedAt", "desc"));
