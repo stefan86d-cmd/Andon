@@ -24,15 +24,17 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
       return; // Do nothing while loading
     }
     
-    // If not loading and not logged in, and not on a public page, redirect to home.
-    if (!currentUser && !isPublicPage && !isAuthPage) {
-      router.replace('/');
-    }
-    
-    // If logged in, redirect away from auth pages (except for plan changes).
-    if (currentUser && isAuthPage && pathname !== '/checkout') {
-      const path = currentUser.role === 'operator' ? '/line-status' : '/dashboard';
-      router.replace(path);
+    if (currentUser) {
+       // If logged in, redirect away from auth pages (except for plan changes).
+       if (isAuthPage && pathname !== '/checkout') {
+          const path = currentUser.role === 'operator' ? '/line-status' : '/dashboard';
+          router.replace(path);
+       }
+    } else {
+        // If not loading and not logged in, and not on a public/auth page, redirect to home.
+        if (!isPublicPage && !isAuthPage) {
+            router.replace('/');
+        }
     }
 
   }, [currentUser, loading, router, pathname, isAuthPage, isPublicPage]);
