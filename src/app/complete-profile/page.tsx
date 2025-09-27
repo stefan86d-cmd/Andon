@@ -104,7 +104,8 @@ function CompleteProfileContent() {
   };
 
   return (
-    <div className="container mx-auto flex min-h-screen items-center justify-center py-12">
+    <div className="bg-muted">
+        <div className="container mx-auto flex min-h-screen items-center justify-center py-12">
         <div className="w-full max-w-lg">
             <div className="flex justify-center mb-8">
                 <Link href="/">
@@ -199,6 +200,7 @@ function CompleteProfileContent() {
                 </CardFooter>
             </Card>
         </div>
+    </div>
     </div>
   );
 }

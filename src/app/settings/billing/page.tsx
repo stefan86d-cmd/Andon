@@ -85,7 +85,8 @@ export default function BillingPage() {
     const monthlyPrice = selectedTier ? selectedTier.prices['1'][currency] : 0;
    
     return (
-        <div className="container mx-auto flex min-h-screen items-center justify-center py-12">
+        <div className="bg-muted">
+            <div className="container mx-auto flex min-h-screen items-center justify-center py-12">
             <div className="w-full max-w-2xl">
                  <div className="flex justify-center mb-8">
                     <Link href="/dashboard">
@@ -161,6 +162,7 @@ export default function BillingPage() {
                  <div className="text-center text-sm text-muted-foreground pt-8">
                     <Link href="/settings/account" className="underline">Back to Account Management</Link>
                 </div>
+            </div>
             </div>
         </div>
     );

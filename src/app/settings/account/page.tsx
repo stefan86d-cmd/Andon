@@ -145,7 +145,8 @@ export default function AccountSettingsPage() {
     const planName = currentUser.plan.charAt(0).toUpperCase() + currentUser.plan.slice(1);
 
     return (
-        <div className="container mx-auto flex min-h-screen items-center justify-center py-12">
+        <div className="bg-muted">
+            <div className="container mx-auto flex min-h-screen items-center justify-center py-12">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 w-full max-w-6xl">
                 {/* Left Side */}
                 <div className="flex flex-col gap-8">
@@ -415,6 +416,7 @@ export default function AccountSettingsPage() {
                         </CardFooter>
                     </Card>
                 </div>
+            </div>
             </div>
         </div>
     );
