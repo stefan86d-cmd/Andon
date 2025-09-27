@@ -16,7 +16,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -81,7 +81,6 @@ export function UsersDataTable({ users }: { users: User[] }) {
                         <TableCell>
                             <div className="flex items-center gap-3">
                                 <Avatar className="h-9 w-9 border-2 border-primary">
-                                    <AvatarImage src={user.avatarUrl} alt={name} />
                                     <AvatarFallback>{getInitials(user.firstName, user.lastName)}</AvatarFallback>
                                 </Avatar>
                                 <div className="font-medium">{name}</div>
@@ -119,5 +118,3 @@ export function UsersDataTable({ users }: { users: User[] }) {
     </Card>
   );
 }
-
-    

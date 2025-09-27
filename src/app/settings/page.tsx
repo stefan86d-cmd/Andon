@@ -37,6 +37,7 @@ export default function SettingsPage() {
 
     const hasNotificationsCard = currentUser.role === 'admin' || currentUser.role === 'supervisor';
     const hasSubscriptionCard = currentUser.role === 'admin';
+    const canManageAccount = currentUser.role === 'admin';
 
     const planName = currentUser.plan.charAt(0).toUpperCase() + currentUser.plan.slice(1);
     
@@ -68,11 +69,13 @@ export default function SettingsPage() {
                                     </div>
                                 </div>
                             </CardContent>
-                             <CardFooter>
-                                <Link href="/settings/account" className={cn(buttonVariants({ variant: "default" }))}>
-                                    Manage Account & Billing
-                                </Link>
-                            </CardFooter>
+                             {canManageAccount && (
+                                <CardFooter>
+                                    <Link href="/settings/account" className={cn(buttonVariants({ variant: "default" }))}>
+                                        Manage Account & Billing
+                                    </Link>
+                                </CardFooter>
+                             )}
                         </Card>
 
                         {hasSubscriptionCard && (

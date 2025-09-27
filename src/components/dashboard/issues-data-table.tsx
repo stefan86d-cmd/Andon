@@ -182,7 +182,6 @@ export function IssuesDataTable({ issues, title, description, loading }: { issue
                   </TableCell>
                    <TableCell>
                         <Avatar className="h-9 w-9 border-2 border-primary">
-                            <AvatarImage src={issue.reportedBy.avatarUrl} alt={issue.reportedBy.name} />
                             <AvatarFallback>{getInitials(issue.reportedBy.name)}</AvatarFallback>
                         </Avatar>
                    </TableCell>

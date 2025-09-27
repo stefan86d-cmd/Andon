@@ -7,7 +7,6 @@ export type User = {
   firstName: string;
   lastName: string;
   email: string;
-  avatarUrl: string;
   role: Role;
   plan: Plan;
   address: string;
@@ -20,7 +19,6 @@ export type User = {
 export type UserRef = {
   email: string;
   name: string;
-  avatarUrl: string;
 }
 
 export type ProductionLine = {
