@@ -25,15 +25,24 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
     }
     
     if (currentUser) {
-       // If logged in, redirect away from auth pages (except for plan changes).
-       if (isAuthPage && pathname !== '/checkout') {
-          const path = currentUser.role === 'operator' ? '/line-status' : '/dashboard';
-          router.replace(path);
+       // If user profile is not complete (e.g., no role), force to complete-profile page.
+       if (!currentUser.role && pathname !== '/complete-profile') {
+           router.replace('/complete-profile');
+           return;
        }
-       // Redirect from public pages to the dashboard if logged in
-       if (isPublicPage) {
+       
+       // If logged in and profile is complete, redirect away from auth pages.
+       if (isAuthPage && pathname !== '/checkout' && pathname !== '/complete-profile') {
           const path = currentUser.role === 'operator' ? '/line-status' : '/dashboard';
           router.replace(path);
+          return;
+       }
+       
+       // Redirect from public pages to the dashboard if logged in and profile is complete.
+       if (isPublicPage && currentUser.role) {
+          const path = currentUser.role === 'operator' ? '/line-status' : '/dashboard';
+          router.replace(path);
+          return;
        }
     } else {
         // If not loading and not logged in, and not on a public/auth page, redirect to home.
@@ -44,7 +53,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
 
   }, [currentUser, loading, router, pathname, isAuthPage, isPublicPage]);
   
-  const showHeader = currentUser && !isAuthPage && !isPublicPage;
+  const showHeader = currentUser && currentUser.role && !isAuthPage && !isPublicPage;
 
   if (loading && !isAuthPage && !isPublicPage) {
     return (
