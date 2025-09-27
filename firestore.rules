@@ -2,46 +2,72 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // Helper function to check the role of the requesting user.
-    function isUserRole(role) {
-      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == role;
+
+    // Helper Functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    function getUserData(userId) {
+      return get(/databases/$(database)/documents/users/$(userId)).data;
+    }
+
+    function getUserRole(userId) {
+      return getUserData(userId).role;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && getUserRole(request.auth.uid) == 'admin';
+    }
+
+    function isSupervisor() {
+      return isSignedIn() && (getUserRole(request.auth.uid) == 'supervisor' || isAdmin());
     }
     
-    // Rules for the 'users' collection
+    function isOperator() {
+        return isSignedIn() && getUserRole(request.auth.uid) == 'operator';
+    }
+    
+    function isSameOrg(newUserEmail) {
+      let adminEmail = getUserData(request.auth.uid).email;
+      return adminEmail.split('@')[1] == newUserEmail.split('@')[1];
+    }
+
+    // Collection: users
+    // - Admins can read and write any user document.
+    // - Any authenticated user can read their own document.
+    // - Only admins from the same organization can create users.
     match /users/{userId} {
-      // Admins can read any user profile.
-      // Any authenticated user can read their own profile.
-      allow read: if isUserRole('admin') || request.auth.uid == userId;
-      
-      // Admins can create and update any user.
-      // A user can only update their own profile (but cannot change their own role).
-      allow write: if isUserRole('admin') || (request.auth.uid == userId && request.resource.data.role == resource.data.role);
+      allow read: if isAdmin() || isOwner(userId);
+      allow write: if isAdmin();
+      allow create: if isAdmin() && isSameOrg(request.resource.data.email);
+      allow delete: if isAdmin();
     }
-    
-    // Rules for the 'issues' collection
+
+    // Collection: issues
+    // - Admins and Supervisors can read all issues.
+    // - Operators can read issues on their assigned production line.
+    // - Authenticated users can create new issues.
+    // - Admins and Supervisors can update issues.
     match /issues/{issueId} {
-      // Admins and Supervisors can read any issue.
-      // Operators can read any issue (so they see all issues on their line).
-      allow read: if request.auth != null && (isUserRole('admin') || isUserRole('supervisor') || isUserRole('operator'));
-      
-      // Any authenticated user can create (report) an issue.
-      allow create: if request.auth != null;
-      
-      // Admins and Supervisors can update issues.
-      allow update: if isUserRole('admin') || isUserRole('supervisor');
-      
-      // Only Admins can delete issues.
-      allow delete: if isUserRole('admin');
+      allow read: if isSupervisor() || (isOperator() && resource.data.productionLineId == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.productionLineId);
+      allow create: if isSignedIn();
+      allow update: if isSupervisor();
+      allow delete: if isAdmin();
     }
-    
-    // Rules for the 'productionLines' collection
+
+    // Collection: productionLines
+    // - All authenticated users can read production line data (needed for issue reporting).
+    // - Only Admins can create, update, or delete production lines.
     match /productionLines/{lineId} {
-      // Any authenticated user can read production line data.
-      allow read: if request.auth != null;
-      
-      // Only Admins can create, update, or delete production lines.
-      allow write: if isUserRole('admin');
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+      allow create: if isAdmin();
+      allow delete: if isAdmin();
     }
   }
 }
