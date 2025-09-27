@@ -80,8 +80,7 @@ function CheckoutContent() {
   const renewalText = useMemo(() => {
       const symbol = currencySymbols[selectedCurrency];
       const price = formatPrice(monthlyPrice, selectedCurrency);
-      const period = selectedDuration === '1' ? 'month' : 'year';
-      return `Renews at ${symbol}${price}/mo for a ${period}. Cancel anytime.`;
+      return `Renews at ${symbol}${price}/mo. Cancel anytime.`;
   }, [monthlyPrice, selectedCurrency, selectedDuration]);
 
   const handleContinue = () => {
