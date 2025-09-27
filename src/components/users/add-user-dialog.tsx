@@ -73,8 +73,8 @@ export function AddUserDialog({ children }: { children: React.ReactNode }) {
   });
 
   async function onSubmit(data: UserFormValues) {
-    if (!currentUser) {
-        toast({ title: "Not authorized", description: "You must be logged in to add users.", variant: "destructive" });
+    if (!currentUser || !currentUser.orgId) {
+        toast({ title: "Not authorized", description: "You must be logged in and part of an organization to add users.", variant: "destructive" });
         return;
     }
     
@@ -86,7 +86,8 @@ export function AddUserDialog({ children }: { children: React.ReactNode }) {
             lastName: data.lastName,
             email: data.email,
             role: data.role as "admin" | "supervisor" | "operator",
-            plan: currentUser.plan, // Use the current admin's plan for the new user
+            plan: currentUser.plan, // Use the current admin's plan
+            orgId: currentUser.orgId!, // Pass the admin's orgId
         });
 
         if (result.success) {

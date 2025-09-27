@@ -75,7 +75,7 @@ const MockStripeInput = () => {
 function CompleteProfileContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { currentUser, loading: userLoading } = useUser();
+  const { currentUser, loading: userLoading, updateCurrentUser } = useUser();
   const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<ProfileFormValues>({
@@ -106,9 +106,7 @@ function CompleteProfileContent() {
     await new Promise(resolve => setTimeout(resolve, 1500));
     
     try {
-        // Save user profile data to Firestore
-        const userDocRef = doc(db, "users", currentUser.id);
-        await setDoc(userDocRef, {
+        const userProfileData = {
             firstName: data.firstName,
             lastName: data.lastName,
             email: currentUser.email,
@@ -117,7 +115,14 @@ function CompleteProfileContent() {
             address: data.address,
             country: data.country,
             phone: data.phone,
-        }, { merge: true });
+            orgId: currentUser.id, // The first admin's ID becomes the org ID
+        };
+        // Save user profile data to Firestore
+        const userDocRef = doc(db, "users", currentUser.id);
+        await setDoc(userDocRef, userProfileData, { merge: true });
+
+        // Update context
+        updateCurrentUser(userProfileData);
 
         toast({
             title: "Order & Pay Success!",

@@ -13,6 +13,7 @@ export type User = {
   country: string;
   phone?: string;
   productionLineId?: string;
+  orgId?: string; // Add orgId to the user type
 };
 
 // A simpler reference to a user, used within other documents.
@@ -25,6 +26,7 @@ export type ProductionLine = {
   id: string;
   name: string;
   workstations: string[];
+  orgId?: string; // Add orgId to the production line type
 };
 
 export type Priority = "low" | "medium" | "high" | "critical";

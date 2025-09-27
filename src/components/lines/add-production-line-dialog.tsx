@@ -28,6 +28,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import { LoaderCircle } from "lucide-react";
 import { createProductionLine } from "@/app/actions";
+import { useUser } from "@/contexts/user-context";
 
 const lineFormSchema = z.object({
   name: z.string().min(1, "Line name is required."),
@@ -38,6 +39,7 @@ type LineFormValues = z.infer<typeof lineFormSchema>;
 export function AddProductionLineDialog({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, startSubmittingTransition] = useTransition();
+  const { currentUser } = useUser();
 
   const form = useForm<LineFormValues>({
     resolver: zodResolver(lineFormSchema),
@@ -47,8 +49,12 @@ export function AddProductionLineDialog({ children }: { children: React.ReactNod
   });
 
   function onSubmit(data: LineFormValues) {
+    if (!currentUser || !currentUser.orgId) {
+        toast({ title: "Not authorized", description: "You must be part of an organization to add a line.", variant: "destructive" });
+        return;
+    }
     startSubmittingTransition(async () => {
-        const result = await createProductionLine(data.name);
+        const result = await createProductionLine(data.name, currentUser.orgId!);
 
         if (result.success) {
             toast({

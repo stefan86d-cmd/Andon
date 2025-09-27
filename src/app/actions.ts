@@ -46,11 +46,12 @@ export async function reportIssue(issueData: Omit<Issue, 'id' | 'reportedAt' | '
     }
 }
 
-export async function createProductionLine(name: string) {
+export async function createProductionLine(name: string, orgId: string) {
     try {
         await addDoc(collection(db, "productionLines"), {
             name: name,
             workstations: [],
+            orgId: orgId,
         });
         revalidatePath('/lines');
         revalidatePath('/dashboard');
@@ -84,7 +85,7 @@ export async function deleteProductionLine(lineId: string) {
     }
 }
 
-export async function addUser(data: { uid: string, firstName: string, lastName: string, email: string, role: Role, plan: User['plan'], address?: string, country?: string, phone?: string }) {
+export async function addUser(data: { uid: string, firstName: string, lastName: string, email: string, role: Role, plan: User['plan'], orgId: string, address?: string, country?: string, phone?: string }) {
     try {
         // This is a client-side action that would normally be a backend operation
         // for security reasons (Admin SDK for custom claims).
