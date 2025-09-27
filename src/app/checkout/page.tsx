@@ -78,10 +78,11 @@ function CheckoutContent() {
   }, [selectedDuration, fullPrice, yearlyPrice]);
 
   const renewalText = useMemo(() => {
+      if (selectedPlan === 'starter') return "The Starter plan is always free.";
       const symbol = currencySymbols[selectedCurrency];
-      const price = formatPrice(monthlyPrice, selectedCurrency);
+      const price = formatPrice(fullPrice, selectedCurrency);
       return `Renews at ${symbol}${price}/mo. Cancel anytime.`;
-  }, [monthlyPrice, selectedCurrency, selectedDuration]);
+  }, [fullPrice, selectedCurrency, selectedPlan]);
 
   const handleContinue = () => {
     router.push(`/register?plan=${selectedPlan}&duration=${selectedDuration}&currency=${selectedCurrency}`);
