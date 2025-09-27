@@ -4,7 +4,7 @@
 import React, { createContext, useState, useContext, useEffect, ReactNode, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Plan, User } from '@/lib/types';
-import { getUserByEmail, mockAdminUser } from '@/lib/data';
+import { getUserByEmail } from '@/lib/data';
 import { addUser } from '@/app/actions';
 
 interface UserContextType {
@@ -25,23 +25,20 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
 
   useEffect(() => {
-    // Simulate checking for a logged-in user
-    const checkUser = async () => {
-      setLoading(true);
-      // In a real app, you'd check a token in localStorage
-      // For this mock, we'll start with Bob logged in as requested.
-      const user = await getUserByEmail("bob.o@example.com");
-      setCurrentUser(user);
-      setLoading(false);
-    };
-    checkUser();
+    // This simulates checking for a logged-in user on app start.
+    // In a real app, you would verify a token from localStorage/cookies.
+    // We are now starting with no user logged in.
+    setLoading(true);
+    setCurrentUser(null);
+    setLoading(false);
   }, []);
 
   const login = async (email: string, password: string): Promise<boolean> => {
     setLoading(true);
-    // This is a mock login. In a real app, you'd call an auth provider.
+    // This function now simulates a failed login as mock data is gone.
+    // It is ready to be implemented with a real authentication provider.
     await new Promise(resolve => setTimeout(resolve, 500));
-    const user = await getUserByEmail(email);
+    const user = await getUserByEmail(email); // Will return null
     if (user) {
       setCurrentUser(user);
       setLoading(false);
@@ -52,10 +49,12 @@ export function UserProvider({ children }: { children: ReactNode }) {
   };
   
   const signInWithProvider = async (plan: Plan = 'starter') => {
-    // Mock signing in with a provider
+    // This function is ready for a real provider implementation.
     setLoading(true);
     await new Promise(resolve => setTimeout(resolve, 500));
-    setCurrentUser(mockAdminUser);
+    // In a real implementation, you would get user data from the provider
+    // and then create/update the user in your database.
+    // For now, we do nothing.
     setLoading(false);
   }
 
@@ -69,6 +68,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     setLoading(true);
+    // This function is ready for a real provider implementation.
     await new Promise(resolve => setTimeout(resolve, 500));
     setCurrentUser(null);
     setLoading(false);
