@@ -50,64 +50,71 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-background">
-      <Card className="mx-auto max-w-sm w-full">
-        <CardHeader className="space-y-1">
-          <div className="flex justify-center p-6">
-            <Logo />
-          </div>
-          <CardTitle>Forgot Password</CardTitle>
-          <CardDescription>
-            {submitted 
-              ? "Check your inbox for a password reset link." 
-              : "Enter your email and we'll send you a link to reset your password."
-            }
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {!submitted ? (
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="email"
-                          placeholder="you@example.com"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <Button type="submit" className="w-full" disabled={isSubmitting}>
-                  {isSubmitting && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
-                  Send Reset Link
-                </Button>
-              </form>
-            </Form>
-          ) : (
-            <div className="text-center">
-              <p className="text-sm text-muted-foreground mb-4">
-                Didn't receive an email? Check your spam folder or try again.
-              </p>
-               <Button variant="secondary" className="w-full" onClick={() => setSubmitted(false)}>
-                  Try a different email
-                </Button>
+    <div className="bg-muted">
+        <div className="container mx-auto flex min-h-screen flex-col items-center justify-center py-12">
+            <div className="w-full max-w-sm">
+                <Card>
+                    <CardHeader className="space-y-1">
+                    <div className="flex justify-center p-6">
+                        <Logo />
+                    </div>
+                    <CardTitle>Forgot Password</CardTitle>
+                    <CardDescription>
+                        {submitted 
+                        ? "Check your inbox for a password reset link." 
+                        : "Enter your email and we'll send you a link to reset your password."
+                        }
+                    </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                    {!submitted ? (
+                        <Form {...form}>
+                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                            <FormField
+                            control={form.control}
+                            name="email"
+                            render={({ field }) => (
+                                <FormItem>
+                                <FormLabel>Email</FormLabel>
+                                <FormControl>
+                                    <Input
+                                    type="email"
+                                    placeholder="you@example.com"
+                                    {...field}
+                                    />
+                                </FormControl>
+                                <FormMessage />
+                                </FormItem>
+                            )}
+                            />
+                            <Button type="submit" className="w-full" disabled={isSubmitting}>
+                            {isSubmitting && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
+                            Send Reset Link
+                            </Button>
+                        </form>
+                        </Form>
+                    ) : (
+                        <div className="text-center">
+                        <p className="text-sm text-muted-foreground mb-4">
+                            Didn't receive an email? Check your spam folder or try again.
+                        </p>
+                        <Button variant="secondary" className="w-full" onClick={() => setSubmitted(false)}>
+                            Try a different email
+                            </Button>
+                        </div>
+                    )}
+                    <div className="mt-4 text-center text-sm">
+                        <Link href="/login" className="underline">
+                        Back to login
+                        </Link>
+                    </div>
+                    </CardContent>
+                </Card>
             </div>
-          )}
-           <div className="mt-4 text-center text-sm">
-            <Link href="/login" className="underline">
-              Back to login
-            </Link>
-          </div>
-        </CardContent>
-      </Card>
+            <footer className="mt-8 text-center text-sm text-muted-foreground">
+                © {new Date().getFullYear()} AndonPro. All rights reserved.
+            </footer>
+        </div>
     </div>
   );
 }
