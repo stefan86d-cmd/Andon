@@ -260,7 +260,7 @@ export default function PricingPage() {
                     {tiers.map((tier) => {
                         const price = tier.prices[duration][currency];
                         const isProBestValue = tier.name === "Pro";
-                        const linkHref = `/register?plan=${tier.name.toLowerCase()}&duration=${duration}&currency=${currency}`;
+                        const linkHref = `/checkout?plan=${tier.name.toLowerCase()}&duration=${duration}&currency=${currency}`;
                         
                         let ctaText = tier.cta;
                         if (!currentUser && (tier.name === "Standard" || tier.name === "Pro")) {
@@ -360,3 +360,5 @@ export default function PricingPage() {
     </div>
   );
 }
+
+    

@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { Suspense, useState, useEffect, useTransition } from 'react';
+import React, { Suspense, useState, useTransition } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -13,7 +13,6 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  CardFooter,
 } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -22,96 +21,19 @@ import { Separator } from "@/components/ui/separator";
 import { Logo } from "@/components/layout/logo";
 import { useUser } from '@/contexts/user-context';
 import { toast } from '@/hooks/use-toast';
-import { LoaderCircle, CreditCard, Calendar, Lock, Globe } from 'lucide-react';
+import { LoaderCircle } from 'lucide-react';
 import Link from 'next/link';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { addUser, updateUserPlan } from '@/app/actions';
-import { countries } from '@/lib/countries';
-import type { Plan } from '@/lib/types';
 
 const registerFormSchema = z.object({
-  firstName: z.string().min(1, "First name is required."),
-  lastName: z.string().min(1, "Last name is required."),
   email: z.string().email("Please enter a valid email address."),
   password: z.string().min(6, "Password must be at least 6 characters."),
   confirmPassword: z.string(),
-  address: z.string().min(1, "Home address is required."),
-  city: z.string().min(1, "City is required."),
-  postalCode: z.string().min(1, "Postal code is required."),
-  country: z.string().min(1, "Country is required."),
-  phone: z.string().optional(),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords do not match.",
   path: ["confirmPassword"],
 });
 
 type RegisterFormValues = z.infer<typeof registerFormSchema>;
-
-const tiers: any = {
-  starter: { 
-    name: "Starter", 
-    prices: {
-        '1': { usd: 0, eur: 0, gbp: 0 }, 
-        '12': { usd: 0, eur: 0, gbp: 0 }, 
-        '24': { usd: 0, eur: 0, gbp: 0 }, 
-        '48': { usd: 0, eur: 0, gbp: 0 }
-    } 
-  },
-  standard: { 
-    name: "Standard", 
-    prices: {
-        '1': { usd: 39.99, eur: 36.99, gbp: 32.99 }, 
-        '12': { usd: 31.99, eur: 29.99, gbp: 26.99 }, 
-        '24': { usd: 27.99, eur: 25.99, gbp: 22.99 }, 
-        '48': { usd: 23.99, eur: 21.99, gbp: 19.99 }
-    }
-  },
-  pro: { 
-    name: "Pro", 
-    prices: {
-        '1': { usd: 59.99, eur: 54.99, gbp: 49.99 }, 
-        '12': { usd: 47.99, eur: 43.99, gbp: 39.99 }, 
-        '24': { usd: 41.99, eur: 38.99, gbp: 34.99 }, 
-        '48': { usd: 35.99, eur: 32.99, gbp: 29.99 }
-    }
-  },
-  enterprise: { 
-    name: "Enterprise", 
-    prices: {
-        '1': { usd: 149.99, eur: 139.99, gbp: 124.99 }, 
-        '12': { usd: 119.99, eur: 111.99, gbp: 99.99 }, 
-        '24': { usd: 104.99, eur: 97.99, gbp: 87.99 }, 
-        '48': { usd: 89.99, eur: 83.99, gbp: 74.99 }
-    }
-  },
-};
-
-const currencySymbols = {
-    usd: '$',
-    eur: '€',
-    gbp: '£',
-};
-
-type Currency = 'usd' | 'eur' | 'gbp';
-
-const formatPrice = (price: number, currency: Currency) => {
-    const locale = {
-        usd: 'en-US',
-        eur: 'de-DE',
-        gbp: 'en-GB'
-    }[currency];
-    return price.toLocaleString(locale, {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-    });
-};
-
 
 function GoogleIcon() {
   return (
@@ -150,407 +72,136 @@ function MicrosoftIcon() {
 function RegisterContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { currentUser, login, signInWithGoogle, signInWithMicrosoft, updateCurrentUser } = useUser();
 
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [isMicrosoftLoading, setIsMicrosoftLoading] = useState(false);
-  const [isSubmitting, startTransition] = useTransition();
 
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerFormSchema),
     defaultValues: {
-      firstName: "",
-      lastName: "",
       email: "",
       password: "",
       confirmPassword: "",
-      address: "",
-      city: "",
-      postalCode: "",
-      country: "",
-      phone: "",
     },
   });
 
-  const [selectedPlan, setSelectedPlan] = useState<Plan>(searchParams.get('plan') as Plan || 'standard');
-  const [selectedDuration, setSelectedDuration] = useState(searchParams.get('duration') || '12');
-  const [selectedCurrency, setSelectedCurrency] = useState<Currency>(searchParams.get('currency') as Currency || 'usd');
-  
-  const selectedTier = tiers[selectedPlan];
-  const isFreePlan = selectedPlan === 'starter';
+  const plan = searchParams.get('plan') || 'starter';
+  const duration = searchParams.get('duration') || '12';
+  const currency = searchParams.get('currency') || 'usd';
 
-  // State for plan change UI
-  const [newPlan, setNewPlan] = useState<Plan | undefined>();
-
-  useEffect(() => {
-    if (currentUser) {
-      setNewPlan(Object.keys(tiers).find(p => p !== currentUser.plan) as Plan);
-    }
-  }, [currentUser]);
-
-  const handleRegistration = async (data: RegisterFormValues) => {
+  const handleRegistration = (data: RegisterFormValues) => {
     setIsLoading(true);
-    // This is a mock registration
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    const result = await addUser({
-        uid: `mock-uid-${Date.now()}`,
-        firstName: data.firstName,
-        lastName: data.lastName,
-        email: data.email,
-        role: 'admin', // The first user to register is an admin
-        plan: selectedPlan as any,
-        address: data.address,
-        country: data.country,
-        phone: data.phone,
-    });
-    
-    if (result.success) {
-      toast({
-        title: "Registration Successful!",
-        description: `Welcome to the ${selectedTier.name} plan. Logging you in...`,
-      });
-      await login(data.email, data.password);
-      router.push('/dashboard');
-    } else {
-        toast({
-          variant: "destructive",
-          title: "Registration Failed",
-          description: result.error || "Could not save user details.",
-        });
-    }
-
-    setIsLoading(false);
-  };
-
-  const handleGoogleSignIn = async () => {
-    setIsGoogleLoading(true);
-    await signInWithGoogle(selectedPlan as any);
-    toast({
-        title: "Registration Successful",
-        description: `Welcome! You're signed up with Google for the ${selectedTier.name} plan.`,
-    });
-    router.push('/dashboard');
-    setIsGoogleLoading(false);
-  }
-
-  const handleMicrosoftSignIn = async () => {
-    setIsMicrosoftLoading(true);
-    await signInWithMicrosoft(selectedPlan as any);
-    toast({
-        title: "Registration Successful",
-        description: `Welcome! You're signed up with Microsoft for the ${selectedTier.name} plan.`,
-    });
-     router.push('/dashboard');
-    setIsMicrosoftLoading(false);
+    // Mock registration logic
+    setTimeout(() => {
+      console.log("Registering with:", data.email);
+      router.push(`/complete-profile?plan=${plan}&duration=${duration}&currency=${currency}`);
+      setIsLoading(false);
+    }, 1000);
   };
   
-  const handlePlanUpgrade = () => {
-    if (!currentUser || !newPlan) return;
-
-    startTransition(async () => {
-      const result = await updateUserPlan(currentUser.id, newPlan);
-      if (result.success) {
-        toast({
-          title: "Plan Updated!",
-          description: `Your plan has been successfully updated to ${newPlan}.`,
-        });
-        updateCurrentUser({ ...currentUser, plan: newPlan });
-      } else {
-        toast({
-          variant: "destructive",
-          title: "Update Failed",
-          description: result.error || "Could not update your plan.",
-        });
-      }
-    });
+  const handleGoogleSignIn = () => {
+    setIsGoogleLoading(true);
+    setTimeout(() => {
+      console.log("Signing in with Google");
+      router.push(`/complete-profile?plan=${plan}&duration=${duration}&currency=${currency}`);
+      setIsGoogleLoading(false);
+    }, 1000);
   }
 
-  if (currentUser) {
-    const availablePlans = Object.keys(tiers).filter(p => p !== currentUser.plan) as Plan[];
-    // If the user is already logged in, this page becomes a plan upgrade page.
-    return (
-      <div className="container mx-auto flex min-h-screen items-center justify-center py-12">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle>Change Your Plan</CardTitle>
-            <CardDescription>
-              You are currently on the{' '}
-              <span className="font-semibold capitalize">{currentUser.plan}</span> plan.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="new-plan">Select New Plan</Label>
-              <Select value={newPlan} onValueChange={(value) => setNewPlan(value as Plan)}>
-                  <SelectTrigger id="new-plan">
-                      <SelectValue placeholder="Choose a plan to upgrade to" />
-                  </SelectTrigger>
-                  <SelectContent>
-                      {availablePlans.map(p => (
-                          <SelectItem key={p} value={p} className="capitalize">{p}</SelectItem>
-                      ))}
-                  </SelectContent>
-              </Select>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              Billing changes will apply on your next cycle.
-            </p>
-          </CardContent>
-          <CardFooter className="flex flex-col gap-4">
-            <Button onClick={handlePlanUpgrade} className="w-full" disabled={isSubmitting || !newPlan}>
-              {isSubmitting && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
-              Upgrade to {newPlan ? newPlan.charAt(0).toUpperCase() + newPlan.slice(1) : '...'}
-            </Button>
-            <Button variant="ghost" asChild>
-                <Link href="/dashboard">Back to Dashboard</Link>
-            </Button>
-          </CardFooter>
-        </Card>
-      </div>
-    )
+  const handleMicrosoftSignIn = () => {
+    setIsMicrosoftLoading(true);
+    setTimeout(() => {
+      console.log("Signing in with Microsoft");
+      router.push(`/complete-profile?plan=${plan}&duration=${duration}&currency=${currency}`);
+      setIsMicrosoftLoading(false);
+    }, 1000);
   }
 
   return (
-    <div className="container mx-auto flex min-h-screen items-center justify-center py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 w-full max-w-6xl">
-            {/* Left Side: Registration */}
-            <div className="flex flex-col gap-8">
-                <div className="flex justify-start">
-                    <Link href="/">
-                        <Logo />
-                    </Link>
-                </div>
-                
-                 <div>
-                  <h2 className="text-2xl font-bold mt-2">Create your account</h2>
-                   <p className="text-muted-foreground">
-                    Already have an account?{" "}
-                    <Link href="/login" className="text-primary hover:underline">
-                        Log in
-                    </Link>
-                </p>
-                </div>
+    <div className="flex items-center justify-center min-h-screen bg-background">
+      <Card className="mx-auto max-w-sm w-full">
+        <CardHeader className="space-y-1 text-center">
+            <div className="flex justify-center p-6">
+                <Logo />
+            </div>
+            <CardTitle>Create an Account</CardTitle>
+            <CardDescription>
+                Sign up to continue.
+            </CardDescription>
+        </CardHeader>
+        <CardContent>
+            <div className="grid grid-cols-2 gap-4 mb-4">
+                <Button variant="outline" onClick={handleGoogleSignIn} disabled={isLoading || isGoogleLoading || isMicrosoftLoading}>
+                    {isGoogleLoading ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : <GoogleIcon />}
+                    Google
+                </Button>
+                <Button variant="outline" onClick={handleMicrosoftSignIn} disabled={isLoading || isGoogleLoading || isMicrosoftLoading}>
+                    {isMicrosoftLoading ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : <MicrosoftIcon />}
+                    Microsoft
+                </Button>
+            </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                    <Button variant="outline" onClick={handleGoogleSignIn} disabled={isLoading || isGoogleLoading || isMicrosoftLoading}>
-                        {isGoogleLoading ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : <GoogleIcon />}
-                        Sign up with Google
-                    </Button>
-                    <Button variant="outline" onClick={handleMicrosoftSignIn} disabled={isLoading || isGoogleLoading || isMicrosoftLoading}>
-                        {isMicrosoftLoading ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : <MicrosoftIcon />}
-                        Sign up with Microsoft
-                    </Button>
-                </div>
+            <div className="relative my-4">
+                <Separator />
+                <span className="absolute left-1/2 -translate-x-1/2 -top-2.5 bg-background px-2 text-xs text-muted-foreground">OR</span>
+            </div>
 
-                <div className="relative">
-                    <Separator />
-                    <span className="absolute left-1/2 -translate-x-1/2 -top-2.5 bg-background px-2 text-xs text-muted-foreground">OR</span>
-                </div>
-                
-                <Form {...form}>
-                <form id="registration-form" onSubmit={form.handleSubmit(handleRegistration)} className="space-y-6">
-                    <div className="space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
-                            <FormField
-                                control={form.control}
-                                name="firstName"
-                                render={({ field }) => (
-                                    <FormItem>
-                                    <FormLabel>First Name</FormLabel>
-                                    <FormControl>
-                                        <Input placeholder="John" {...field} disabled={isLoading || isGoogleLoading || isMicrosoftLoading} />
-                                    </FormControl>
-                                    <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="lastName"
-                                render={({ field }) => (
-                                    <FormItem>
-                                    <FormLabel>Last Name</FormLabel>
-                                    <FormControl>
-                                        <Input placeholder="Doe" {...field} disabled={isLoading || isGoogleLoading || isMicrosoftLoading} />
-                                    </FormControl>
-                                    <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                        </div>
-                         <FormField
-                            control={form.control}
-                            name="address"
-                            render={({ field }) => (
-                                <FormItem>
-                                <FormLabel>Home Address</FormLabel>
-                                <FormControl>
-                                    <Input placeholder="123 Main St" {...field} disabled={isLoading || isGoogleLoading || isMicrosoftLoading} />
-                                </FormControl>
-                                <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                         <div className="grid grid-cols-2 gap-4">
-                             <FormField
-                                control={form.control}
-                                name="city"
-                                render={({ field }) => (
-                                    <FormItem>
-                                    <FormLabel>City</FormLabel>
-                                    <FormControl>
-                                        <Input placeholder="Anytown" {...field} disabled={isLoading || isGoogleLoading || isMicrosoftLoading} />
-                                    </FormControl>
-                                    <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                             <FormField
-                                control={form.control}
-                                name="postalCode"
-                                render={({ field }) => (
-                                    <FormItem>
-                                    <FormLabel>Postal Code</FormLabel>
-                                    <FormControl>
-                                        <Input placeholder="12345" {...field} disabled={isLoading || isGoogleLoading || isMicrosoftLoading} />
-                                    </FormControl>
-                                    <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                            <FormField
-                                control={form.control}
-                                name="country"
-                                render={({ field }) => (
-                                    <FormItem>
-                                    <FormLabel>Country</FormLabel>
-                                    <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
-                                        <FormControl>
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Select a country" />
-                                            </SelectTrigger>
-                                        </FormControl>
-                                        <SelectContent>
-                                            {countries.map(country => (
-                                                <SelectItem key={country.code} value={country.code}>{country.name}</SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="phone"
-                                render={({ field }) => (
-                                    <FormItem>
-                                    <FormLabel>Phone Number (Optional)</FormLabel>
-                                    <FormControl>
-                                        <Input type="tel" {...field} disabled={isLoading || isGoogleLoading || isMicrosoftLoading} />
-                                    </FormControl>
-                                    <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                        </div>
-                        <FormField
-                            control={form.control}
-                            name="email"
-                            render={({ field }) => (
-                                <FormItem>
+            <Form {...form}>
+                <form onSubmit={form.handleSubmit(handleRegistration)} className="space-y-4">
+                    <FormField
+                        control={form.control}
+                        name="email"
+                        render={({ field }) => (
+                            <FormItem>
                                 <FormLabel>Email</FormLabel>
                                 <FormControl>
                                     <Input type="email" placeholder="john.d@example.com" {...field} disabled={isLoading || isGoogleLoading || isMicrosoftLoading} />
                                 </FormControl>
                                 <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="password"
-                            render={({ field }) => (
-                                <FormItem>
+                            </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="password"
+                        render={({ field }) => (
+                            <FormItem>
                                 <FormLabel>Password</FormLabel>
                                 <FormControl>
                                     <Input type="password" {...field} disabled={isLoading || isGoogleLoading || isMicrosoftLoading} />
                                 </FormControl>
                                 <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="confirmPassword"
-                            render={({ field }) => (
-                                <FormItem>
-                                <FormLabel>Repeat Password</FormLabel>
+                            </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="confirmPassword"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Confirm Password</FormLabel>
                                 <FormControl>
                                     <Input type="password" {...field} disabled={isLoading || isGoogleLoading || isMicrosoftLoading} />
                                 </FormControl>
                                 <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                    </div>
-                    
-                     <p className="text-sm text-muted-foreground pt-2">
-                        By clicking the button below, you agree to our <Link href="/terms" className="underline" target="_blank" rel="noopener noreferrer">Terms of Service</Link>.
-                    </p>
-                    <Button type="submit" form="registration-form" className="w-full" disabled={isLoading || isGoogleLoading || isMicrosoftLoading}>
+                            </FormItem>
+                        )}
+                    />
+                    <Button type="submit" className="w-full" disabled={isLoading || isGoogleLoading || isMicrosoftLoading}>
                         {isLoading && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
-                        Create Account
+                        Register
                     </Button>
                 </form>
-                </Form>
-
+            </Form>
+            <div className="mt-4 text-center text-sm">
+                Already have an account?{" "}
+                <Link href="/login" className="underline">
+                    Log in
+                </Link>
             </div>
-
-            {/* Right Side: Order Summary */}
-            <div className="flex flex-col gap-8 pt-0 lg:pt-16">
-                 <Card className="w-full">
-                    <CardHeader className="flex flex-row justify-between items-center">
-                        <CardTitle>Order Summary</CardTitle>
-                         <Link href="/pricing" className="text-sm font-medium text-primary hover:underline">
-                            Change plan
-                        </Link>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="space-y-2">
-                            <div className="flex justify-between items-center">
-                                <Label>Plan</Label>
-                                 <Select value={selectedPlan} onValueChange={(value) => setSelectedPlan(value as Plan)}>
-                                    <SelectTrigger className="w-[180px]">
-                                        <SelectValue placeholder="Select plan" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {Object.keys(tiers).map(key => (
-                                            <SelectItem key={key} value={key} className="capitalize">{tiers[key].name}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        </div>
-                        <Separator/>
-                        <div className="flex justify-between items-center font-bold text-lg">
-                            <span>Total due today</span>
-                            <span>{isFreePlan ? `${currencySymbols[selectedCurrency]}0.00` : 'See plans'}</span>
-                        </div>
-                    </CardContent>
-                    <CardFooter>
-                         <Button type="submit" form="registration-form" className="w-full" disabled={isLoading || isGoogleLoading || isMicrosoftLoading}>
-                            {isLoading && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
-                            Create Account
-                        </Button>
-                    </CardFooter>
-                </Card>
-            </div>
-        </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
@@ -567,3 +218,5 @@ export default function RegisterPage() {
         </Suspense>
     )
 }
+
+    
