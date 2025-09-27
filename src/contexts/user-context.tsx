@@ -29,8 +29,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
     const checkUser = async () => {
       setLoading(true);
       // In a real app, you'd check a token in localStorage
-      // For this mock, we'll just set the admin user as the default logged in user
-      setCurrentUser(mockAdminUser);
+      // For this mock, we'll start with no user logged in.
+      setCurrentUser(null);
       setLoading(false);
     };
     checkUser();
