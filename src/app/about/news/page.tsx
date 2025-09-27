@@ -96,7 +96,7 @@ export default function NewsPage() {
             <article className="max-w-3xl mx-auto">
               <div className="text-center mb-8">
                 <h2 className="text-3xl font-bold">AndonPro Has Officially Launched!</h2>
-                <p className="text-muted-foreground mt-2">Published on {format(new Date(), "MMMM d, yyyy")}</p>
+                <p className="text-muted-foreground mt-2">Published on September 27, 2025</p>
               </div>
               <div className="flex justify-center mb-8">
                 <Image 
