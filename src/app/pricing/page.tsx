@@ -145,6 +145,18 @@ const servicesImage = {
     imageHint: "production factory",
 };
 
+const exploreImage = {
+    imageUrl: "/Helsinki.jpg",
+    description: "Image of Helsinki for explore mega menu",
+    imageHint: "Helsinki cityscape",
+};
+
+const supportImage = {
+    imageUrl: "/Tech_support.jpg",
+    description: "Image for support mega menu",
+    imageHint: "technical support",
+};
+
 type Duration = '1' | '12' | '24' | '48';
 type Currency = 'usd' | 'eur' | 'gbp';
 
@@ -187,10 +199,12 @@ export default function PricingPage() {
                         <MegaMenu 
                             triggerText="Explore" 
                             items={exploreMenuItems}
+                            image={exploreImage}
                         />
                         <MegaMenu 
                             triggerText="Support" 
                             items={supportMenuItems}
+                            image={supportImage}
                         />
                     </nav>
                 </div>

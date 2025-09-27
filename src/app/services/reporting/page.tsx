@@ -32,6 +32,18 @@ const servicesImage = {
     imageHint: "production factory",
 };
 
+const exploreImage = {
+    imageUrl: "/Helsinki.jpg",
+    description: "Image of Helsinki for explore mega menu",
+    imageHint: "Helsinki cityscape",
+};
+
+const supportImage = {
+    imageUrl: "/Tech_support.jpg",
+    description: "Image for support mega menu",
+    imageHint: "technical support",
+};
+
 export default function AnalyticsReportingPage() {
   return (
     <div className="flex flex-col min-h-screen bg-background">
@@ -50,10 +62,12 @@ export default function AnalyticsReportingPage() {
                 <MegaMenu 
                     triggerText="Explore" 
                     items={exploreMenuItems}
+                    image={exploreImage}
                 />
                 <MegaMenu 
                     triggerText="Support" 
                     items={supportMenuItems}
+                    image={supportImage}
                 />
             </nav>
           </div>
