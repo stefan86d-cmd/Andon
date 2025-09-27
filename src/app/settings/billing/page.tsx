@@ -5,36 +5,55 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { LoaderCircle } from "lucide-react";
 import { useUser } from "@/contexts/user-context";
-import { useState, useTransition } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import { toast } from "@/hooks/use-toast";
-import { updateUserPlan } from "@/app/actions";
 import type { Plan } from "@/lib/types";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { CancelSubscriptionDialog } from "@/components/settings/cancel-subscription-dialog";
 import { Logo } from "@/components/layout/logo";
+import { useRouter } from "next/navigation";
 
 
-const tiers: Record<Plan, { name: string, price: number }> = {
-  starter: { name: "Starter", price: 0 },
-  standard: { name: "Standard", price: 39.99 },
-  pro: { name: "Pro", price: 59.99 },
-  enterprise: { name: "Enterprise", price: 149.99 },
+const tiers = {
+  starter: { 
+    name: "Starter", 
+    prices: { '1': { usd: 0, eur: 0, gbp: 0 }, '12': { usd: 0, eur: 0, gbp: 0 }, '24': { usd: 0, eur: 0, gbp: 0 }, '48': { usd: 0, eur: 0, gbp: 0 } } 
+  },
+  standard: { 
+    name: "Standard", 
+    prices: { '1': { usd: 39.99, eur: 36.99, gbp: 32.99 }, '12': { usd: 31.99, eur: 29.99, gbp: 26.99 }, '24': { usd: 27.99, eur: 25.99, gbp: 22.99 }, '48': { usd: 23.99, eur: 21.99, gbp: 19.99 } }
+  },
+  pro: { 
+    name: "Pro", 
+    prices: { '1': { usd: 59.99, eur: 54.99, gbp: 49.99 }, '12': { usd: 47.99, eur: 43.99, gbp: 39.99 }, '24': { usd: 41.99, eur: 38.99, gbp: 34.99 }, '48': { usd: 35.99, eur: 32.99, gbp: 29.99 } }
+  },
+  enterprise: { 
+    name: "Enterprise", 
+    prices: { '1': { usd: 149.99, eur: 139.99, gbp: 124.99 }, '12': { usd: 119.99, eur: 111.99, gbp: 99.99 }, '24': { usd: 104.99, eur: 97.99, gbp: 87.99 }, '48': { usd: 89.99, eur: 83.99, gbp: 74.99 } }
+  },
 };
 
-type Duration = '1' | '12' | '24' | '48';
+const currencySymbols = { usd: '$', eur: '€', gbp: '£' };
 type Currency = 'usd' | 'eur' | 'gbp';
+type Duration = '1' | '12' | '24' | '48';
+
+
+const formatPrice = (price: number, currency: Currency) => {
+    const locale = { usd: 'en-US', eur: 'de-DE', gbp: 'en-GB' }[currency];
+    return price.toLocaleString(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+};
 
 
 export default function BillingPage() {
-    const { currentUser, updateCurrentUser } = useUser();
-    const [isPlanSubmitting, startPlanTransition] = useTransition();
+    const { currentUser } = useUser();
+    const router = useRouter();
 
     const [duration, setDuration] = useState<Duration>('12');
     const [currency, setCurrency] = useState<Currency>('usd');
-    const [newPlan, setNewPlan] = useState<Plan | undefined>();
+    const [newPlan, setNewPlan] = useState<Plan | undefined>(currentUser?.plan);
 
     if (!currentUser) {
         return (
@@ -44,29 +63,12 @@ export default function BillingPage() {
         );
     }
     
-    const handlePlanUpgrade = () => {
-        if (!currentUser || !newPlan) return;
-        if (newPlan === currentUser.plan) {
-            toast({ title: "No Change", description: "You are already on this plan." });
+    const handlePlanChange = () => {
+        if (!newPlan) {
+            toast({ title: "No Plan Selected", description: "Please choose a plan to continue." });
             return;
         }
-
-        startPlanTransition(async () => {
-            const result = await updateUserPlan(currentUser.id, newPlan);
-            if (result.success) {
-                toast({
-                title: "Plan Updated!",
-                description: `Your plan has been successfully updated to ${newPlan}.`,
-                });
-                updateCurrentUser({ plan: newPlan });
-            } else {
-                toast({
-                variant: "destructive",
-                title: "Update Failed",
-                description: result.error || "Could not update your plan.",
-                });
-            }
-        });
+        router.push(`/checkout?plan=${newPlan}&duration=${duration}&currency=${currency}`);
     }
 
     const handleCancelConfirm = () => {
@@ -79,11 +81,25 @@ export default function BillingPage() {
     const planName = currentUser.plan.charAt(0).toUpperCase() + currentUser.plan.slice(1);
     const availablePlans = Object.keys(tiers).filter(p => p !== 'starter') as Plan[];
 
+    const selectedTier = newPlan ? tiers[newPlan] : null;
+    const monthlyPrice = selectedTier ? selectedTier.prices[duration][currency] : 0;
+    const fullPrice = selectedTier ? selectedTier.prices['1'][currency] : 0;
+    const yearlyPrice = monthlyPrice * parseInt(duration, 10);
+    const undiscountedTotal = fullPrice * parseInt(duration, 10);
+
+    const discount = useMemo(() => {
+        if (duration === '1' || !selectedTier) return 0;
+        const undiscounted = selectedTier.prices['1'][currency] * parseInt(duration, 10);
+        const discounted = selectedTier.prices[duration][currency] * parseInt(duration, 10);
+        return undiscounted - discounted;
+    }, [duration, selectedTier, currency]);
+
+
     return (
         <div className="container mx-auto flex min-h-screen items-center justify-center py-12">
             <div className="w-full max-w-2xl">
                  <div className="flex justify-center mb-8">
-                    <Link href="/">
+                    <Link href="/dashboard">
                         <Logo />
                     </Link>
                 </div>
@@ -133,14 +149,34 @@ export default function BillingPage() {
                                 </Select>
                             </div>
                         </div>
+
+                         {selectedTier && (
+                             <div className="space-y-2 rounded-lg border bg-card-foreground/5 p-4">
+                                <div className="space-y-1 text-right">
+                                    {discount > 0 && (
+                                        <p className="text-muted-foreground line-through">
+                                            {currencySymbols[currency]}{formatPrice(undiscountedTotal, currency)}
+                                        </p>
+                                    )}
+                                    <div className="flex justify-between items-center font-bold text-lg">
+                                        <span>New Subtotal</span>
+                                        <span>{currencySymbols[currency]}{formatPrice(yearlyPrice, currency)}</span>
+                                    </div>
+                                </div>
+                                {discount > 0 &&
+                                    <div className="flex justify-between bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300 p-2 rounded-md text-sm">
+                                        <span>Discount</span>
+                                        <span>-{currencySymbols[currency]}{formatPrice(discount, currency)}</span>
+                                    </div>
+                                }
+                            </div>
+                        )}
+                        
+
                         <div className="flex gap-2 items-center">
-                            <Button onClick={handlePlanUpgrade} disabled={isPlanSubmitting || !newPlan || newPlan === currentUser.plan}>
-                                {isPlanSubmitting && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
-                                {newPlan === currentUser.plan ? 'Current Plan' : (newPlan ? `Upgrade to ${newPlan.charAt(0).toUpperCase() + newPlan.slice(1)}` : 'Select a Plan')}
+                            <Button onClick={handlePlanChange} disabled={!newPlan || newPlan === currentUser.plan}>
+                                {newPlan === currentUser.plan ? 'Current Plan' : (newPlan ? `Go to Checkout` : 'Select a Plan')}
                             </Button>
-                            {duration === '12' && <Badge variant="secondary">Save ~20%</Badge>}
-                            {duration === '24' && <Badge variant="secondary">Save ~30%</Badge>}
-                            {duration === '48' && <Badge variant="secondary">Save ~40%</Badge>}
                         </div>
                             <Separator />
                         <div>

@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { Suspense, useState, useMemo } from 'react';
+import React, { Suspense, useState, useMemo, useTransition } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import {
@@ -26,6 +26,9 @@ import {
 import type { Plan } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
+import { useUser } from '@/contexts/user-context';
+import { toast } from '@/hooks/use-toast';
+import { updateUserPlan } from '@/app/actions';
 
 const tiers = {
   starter: { 
@@ -58,13 +61,14 @@ const formatPrice = (price: number, currency: Currency) => {
 function CheckoutContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { currentUser, updateCurrentUser } = useUser();
+  const [isSubmitting, startTransition] = useTransition();
 
   const [selectedPlan, setSelectedPlan] = useState<Plan>(searchParams.get('plan') as Plan || 'pro');
   const [selectedDuration, setSelectedDuration] = useState<Duration>(searchParams.get('duration') as Duration || '12');
   const [selectedCurrency, setSelectedCurrency] = useState<Currency>(searchParams.get('currency') as Currency || 'usd');
 
   const selectedTier = tiers[selectedPlan];
-  const isFreePlan = selectedPlan === 'starter';
   const monthlyPrice = selectedTier.prices[selectedDuration][selectedCurrency];
   const fullPrice = selectedTier.prices['1'][selectedCurrency];
   const yearlyPrice = monthlyPrice * parseInt(selectedDuration, 10);
@@ -85,8 +89,37 @@ function CheckoutContent() {
   }, [fullPrice, selectedCurrency, selectedPlan]);
 
   const handleContinue = () => {
-    router.push(`/register?plan=${selectedPlan}&duration=${selectedDuration}&currency=${selectedCurrency}`);
+    if (currentUser) {
+        // Logged-in user is changing their plan
+        startTransition(async () => {
+            if (selectedPlan === currentUser.plan) {
+                toast({ title: "No Change", description: "You are already on this plan." });
+                router.push('/settings/billing');
+                return;
+            }
+            const result = await updateUserPlan(currentUser.id, selectedPlan);
+            if (result.success) {
+                toast({
+                    title: "Plan Updated!",
+                    description: `Your plan has been successfully updated to ${selectedPlan}.`,
+                });
+                updateCurrentUser({ plan: selectedPlan });
+                router.push('/dashboard');
+            } else {
+                toast({
+                    variant: "destructive",
+                    title: "Update Failed",
+                    description: result.error || "Could not update your plan.",
+                });
+            }
+        });
+    } else {
+        // New user registration
+        router.push(`/register?plan=${selectedPlan}&duration=${selectedDuration}&currency=${selectedCurrency}`);
+    }
   };
+
+  const buttonText = currentUser ? "Confirm Plan Change" : "Continue";
 
   return (
     <div className="container mx-auto flex min-h-screen items-center justify-center py-12">
@@ -94,14 +127,14 @@ function CheckoutContent() {
         {/* Left Side: Plan Selection */}
         <div className="flex flex-col gap-8">
           <div className="flex justify-start">
-            <Link href="/">
+            <Link href={currentUser ? "/dashboard" : "/"}>
               <Logo />
             </Link>
           </div>
           <div>
             <h2 className="text-2xl font-bold mt-2">Checkout</h2>
             <p className="text-muted-foreground">
-              Review your plan and continue to create your account.
+              {currentUser ? "Review your new plan details below." : "Review your plan and continue to create your account."}
             </p>
           </div>
           <Card>
@@ -177,7 +210,10 @@ function CheckoutContent() {
                 </div>
             </CardContent>
             <CardFooter>
-              <Button onClick={handleContinue} className="w-full">Continue</Button>
+              <Button onClick={handleContinue} className="w-full" disabled={isSubmitting}>
+                {isSubmitting && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
+                {buttonText}
+              </Button>
             </CardFooter>
           </Card>
         </div>
