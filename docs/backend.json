@@ -222,5 +222,3 @@
     "reasoning": "The Firestore structure uses top-level collections for Users, Issues, and ProductionLines. This flat structure simplifies queries, as all data for a given type is in one place. Security rules will be used to control access. For example, while all issues are in one collection, rules will ensure that only authorized users (like admins or supervisors) can view all issues, while operators might only see issues they reported."
   }
 }
-
-    
