@@ -27,10 +27,6 @@ import Link from 'next/link';
 const registerFormSchema = z.object({
   email: z.string().email("Please enter a valid email address."),
   password: z.string().min(6, "Password must be at least 6 characters."),
-  confirmPassword: z.string(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords do not match.",
-  path: ["confirmPassword"],
 });
 
 type RegisterFormValues = z.infer<typeof registerFormSchema>;
@@ -82,7 +78,6 @@ function RegisterContent() {
     defaultValues: {
       email: "",
       password: "",
-      confirmPassword: "",
     },
   });
 
@@ -175,19 +170,6 @@ function RegisterContent() {
                             </FormItem>
                         )}
                     />
-                    <FormField
-                        control={form.control}
-                        name="confirmPassword"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Confirm Password</FormLabel>
-                                <FormControl>
-                                    <Input type="password" {...field} disabled={isLoading || isGoogleLoading || isMicrosoftLoading} />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
                     <Button type="submit" className="w-full" disabled={isLoading || isGoogleLoading || isMicrosoftLoading}>
                         {isLoading && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
                         Register
@@ -218,5 +200,3 @@ export default function RegisterPage() {
         </Suspense>
     )
 }
-
-    
