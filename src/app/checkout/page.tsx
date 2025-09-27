@@ -122,104 +122,107 @@ function CheckoutContent() {
 
   return (
     <div className="bg-muted">
-        <div className="container mx-auto flex min-h-screen items-center justify-center py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 w-full max-w-6xl">
-            {/* Left Side: Plan Selection */}
-            <div className="flex flex-col gap-8">
-            <div className="flex justify-start">
-                <Link href={currentUser ? "/dashboard" : "/"}>
-                <Logo />
-                </Link>
-            </div>
-            <div>
-                <h2 className="text-2xl font-bold mt-2">Checkout</h2>
-                <p className="text-muted-foreground">
-                {currentUser ? "Review your new plan details below." : "Review your plan and continue to create your account."}
-                </p>
-            </div>
-            <Card>
-                <CardHeader>
-                <CardTitle>Selected Plan</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                <div className="flex gap-2">
-                    <Select value={selectedPlan} onValueChange={(v) => setSelectedPlan(v as Plan)}>
-                    <SelectTrigger><SelectValue placeholder="Select plan" /></SelectTrigger>
-                    <SelectContent>
-                        {Object.keys(tiers).map(key => <SelectItem key={key} value={key} className="capitalize">{tiers[key as Plan].name}</SelectItem>)}
-                    </SelectContent>
-                    </Select>
-                    <Select value={selectedDuration} onValueChange={(v) => setSelectedDuration(v as Duration)} disabled={isExistingUser}>
-                    <SelectTrigger><SelectValue placeholder="Select duration" /></SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="1">1 Month</SelectItem>
-                        <SelectItem value="12">12 Months</SelectItem>
-                        <SelectItem value="24">24 Months</SelectItem>
-                        <SelectItem value="48">48 Months</SelectItem>
-                    </SelectContent>
-                    </Select>
-                    <Select value={selectedCurrency} onValueChange={(v) => setSelectedCurrency(v as Currency)}>
-                    <SelectTrigger className="w-[120px]">
-                        <div className="flex items-center gap-2"><Globe className="h-4 w-4" /><SelectValue placeholder="Currency" /></div>
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="usd">USD</SelectItem>
-                        <SelectItem value="eur">EUR</SelectItem>
-                        <SelectItem value="gbp">GBP</SelectItem>
-                    </SelectContent>
-                    </Select>
+        <div className="container mx-auto flex min-h-screen flex-col items-center justify-center py-12">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 w-full max-w-6xl">
+                {/* Left Side: Plan Selection */}
+                <div className="flex flex-col gap-8">
+                <div className="flex justify-start">
+                    <Link href={currentUser ? "/dashboard" : "/"}>
+                    <Logo />
+                    </Link>
                 </div>
-                {!isExistingUser && (
-                    <div className="flex gap-2 items-center">
-                        {selectedDuration === '12' && <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~20%</Badge>}
-                        {selectedDuration === '24' && <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~30%</Badge>}
-                        {selectedDuration === '48' && <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~40%</Badge>}
+                <div>
+                    <h2 className="text-2xl font-bold mt-2">Checkout</h2>
+                    <p className="text-muted-foreground">
+                    {currentUser ? "Review your new plan details below." : "Review your plan and continue to create your account."}
+                    </p>
+                </div>
+                <Card>
+                    <CardHeader>
+                    <CardTitle>Selected Plan</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                    <div className="flex gap-2">
+                        <Select value={selectedPlan} onValueChange={(v) => setSelectedPlan(v as Plan)}>
+                        <SelectTrigger><SelectValue placeholder="Select plan" /></SelectTrigger>
+                        <SelectContent>
+                            {Object.keys(tiers).map(key => <SelectItem key={key} value={key} className="capitalize">{tiers[key as Plan].name}</SelectItem>)}
+                        </SelectContent>
+                        </Select>
+                        <Select value={selectedDuration} onValueChange={(v) => setSelectedDuration(v as Duration)} disabled={isExistingUser}>
+                        <SelectTrigger><SelectValue placeholder="Select duration" /></SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="1">1 Month</SelectItem>
+                            <SelectItem value="12">12 Months</SelectItem>
+                            <SelectItem value="24">24 Months</SelectItem>
+                            <SelectItem value="48">48 Months</SelectItem>
+                        </SelectContent>
+                        </Select>
+                        <Select value={selectedCurrency} onValueChange={(v) => setSelectedCurrency(v as Currency)}>
+                        <SelectTrigger className="w-[120px]">
+                            <div className="flex items-center gap-2"><Globe className="h-4 w-4" /><SelectValue placeholder="Currency" /></div>
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="usd">USD</SelectItem>
+                            <SelectItem value="eur">EUR</SelectItem>
+                            <SelectItem value="gbp">GBP</SelectItem>
+                        </SelectContent>
+                        </Select>
                     </div>
-                )}
-                <p className="text-sm text-muted-foreground">{renewalText}</p>
-                </CardContent>
-            </Card>
-            </div>
+                    {!isExistingUser && (
+                        <div className="flex gap-2 items-center">
+                            {selectedDuration === '12' && <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~20%</Badge>}
+                            {selectedDuration === '24' && <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~30%</Badge>}
+                            {selectedDuration === '48' && <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~40%</Badge>}
+                        </div>
+                    )}
+                    <p className="text-sm text-muted-foreground">{renewalText}</p>
+                    </CardContent>
+                </Card>
+                </div>
 
-            {/* Right Side: Order Summary */}
-            <div className="flex flex-col gap-8 pt-0 lg:pt-16">
-            <Card className="w-full">
-                <CardHeader>
-                <CardTitle>Order Summary</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                <div className="space-y-2">
-                    <div className="flex justify-between"><span>Plan</span><span className="capitalize font-medium">{selectedPlan}</span></div>
-                    <div className="flex justify-between"><span>Plan Length</span><span>{isExistingUser ? '1 Month' : `${selectedDuration} Months`}</span></div>
-                    {discount > 0 && 
-                        <div className="flex justify-between bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300 p-2 rounded-md">
-                            <span>Discount</span>
-                            <span>-{currencySymbols[selectedCurrency]}{formatPrice(discount, selectedCurrency)}</span>
-                        </div>
-                    }
-                </div>
-                <Separator />
-                <div className="space-y-1 text-right">
-                        {discount > 0 && (
-                            <p className="text-muted-foreground line-through">
-                                {currencySymbols[selectedCurrency]}{formatPrice(undiscountedTotal, selectedCurrency)}
-                            </p>
-                        )}
-                        <div className="flex justify-between items-center font-bold text-lg">
-                            <span>Subtotal</span>
-                            <span>{currencySymbols[selectedCurrency]}{formatPrice(totalDue, selectedCurrency)}</span>
-                        </div>
+                {/* Right Side: Order Summary */}
+                <div className="flex flex-col gap-8 pt-0 lg:pt-16">
+                <Card className="w-full">
+                    <CardHeader>
+                    <CardTitle>Order Summary</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                        <div className="flex justify-between"><span>Plan</span><span className="capitalize font-medium">{selectedPlan}</span></div>
+                        <div className="flex justify-between"><span>Plan Length</span><span>{isExistingUser ? '1 Month' : `${selectedDuration} Months`}</span></div>
+                        {discount > 0 && 
+                            <div className="flex justify-between bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300 p-2 rounded-md">
+                                <span>Discount</span>
+                                <span>-{currencySymbols[selectedCurrency]}{formatPrice(discount, selectedCurrency)}</span>
+                            </div>
+                        }
                     </div>
-                </CardContent>
-                <CardFooter>
-                <Button onClick={handleContinue} className="w-full" disabled={isSubmitting}>
-                    {isSubmitting && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
-                    {buttonText}
-                </Button>
-                </CardFooter>
-            </Card>
+                    <Separator />
+                    <div className="space-y-1 text-right">
+                            {discount > 0 && (
+                                <p className="text-muted-foreground line-through">
+                                    {currencySymbols[selectedCurrency]}{formatPrice(undiscountedTotal, selectedCurrency)}
+                                </p>
+                            )}
+                            <div className="flex justify-between items-center font-bold text-lg">
+                                <span>Subtotal</span>
+                                <span>{currencySymbols[selectedCurrency]}{formatPrice(totalDue, selectedCurrency)}</span>
+                            </div>
+                        </div>
+                    </CardContent>
+                    <CardFooter>
+                    <Button onClick={handleContinue} className="w-full" disabled={isSubmitting}>
+                        {isSubmitting && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
+                        {buttonText}
+                    </Button>
+                    </CardFooter>
+                </Card>
+                </div>
             </div>
-        </div>
+            <footer className="mt-8 text-center text-sm text-muted-foreground">
+                © {new Date().getFullYear()} AndonPro. All rights reserved.
+            </footer>
         </div>
     </div>
   );

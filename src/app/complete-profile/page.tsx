@@ -105,102 +105,105 @@ function CompleteProfileContent() {
 
   return (
     <div className="bg-muted">
-        <div className="container mx-auto flex min-h-screen items-center justify-center py-12">
-        <div className="w-full max-w-lg">
-            <div className="flex justify-center mb-8">
-                <Link href="/">
-                    <Logo />
-                </Link>
+        <div className="container mx-auto flex min-h-screen flex-col items-center justify-center py-12">
+            <div className="w-full max-w-lg">
+                <div className="flex justify-center mb-8">
+                    <Link href="/">
+                        <Logo />
+                    </Link>
+                </div>
+                
+                <Card>
+                    <CardHeader className="text-center">
+                      <h2 className="text-2xl font-bold">Complete Your Profile</h2>
+                      <p className="text-muted-foreground">
+                        Just a few more details to get you started.
+                      </p>
+                    </CardHeader>
+                    <CardContent>
+                        <Form {...form}>
+                        <form id="profile-form" onSubmit={form.handleSubmit(handleCreateAccount)} className="space-y-6">
+                            <div className="grid grid-cols-2 gap-4">
+                                <FormField control={form.control} name="firstName" render={({ field }) => (
+                                    <FormItem>
+                                    <FormLabel>First Name</FormLabel>
+                                    <FormControl><Input placeholder="John" {...field} /></FormControl>
+                                    <FormMessage />
+                                    </FormItem>
+                                )} />
+                                <FormField control={form.control} name="lastName" render={({ field }) => (
+                                    <FormItem>
+                                    <FormLabel>Last Name</FormLabel>
+                                    <FormControl><Input placeholder="Doe" {...field} /></FormControl>
+                                    <FormMessage />
+                                    </FormItem>
+                                )} />
+                            </div>
+                            <FormField control={form.control} name="address" render={({ field }) => (
+                                <FormItem>
+                                <FormLabel>Home Address</FormLabel>
+                                <FormControl><Input placeholder="123 Main St" {...field} /></FormControl>
+                                <FormMessage />
+                                </FormItem>
+                            )} />
+                            <div className="grid grid-cols-2 gap-4">
+                                <FormField control={form.control} name="city" render={({ field }) => (
+                                    <FormItem>
+                                    <FormLabel>City</FormLabel>
+                                    <FormControl><Input placeholder="Anytown" {...field} /></FormControl>
+                                    <FormMessage />
+                                    </FormItem>
+                                )} />
+                                <FormField control={form.control} name="postalCode" render={({ field }) => (
+                                    <FormItem>
+                                    <FormLabel>Postal Code</FormLabel>
+                                    <FormControl><Input placeholder="12345" {...field} /></FormControl>
+                                    <FormMessage />
+                                    </FormItem>
+                                )} />
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <FormField control={form.control} name="country" render={({ field }) => (
+                                    <FormItem>
+                                    <FormLabel>Country</FormLabel>
+                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                        <FormControl><SelectTrigger><SelectValue placeholder="Select a country" /></SelectTrigger></FormControl>
+                                        <SelectContent>
+                                            {countries.map(country => <SelectItem key={country.code} value={country.code}>{country.name}</SelectItem>)}
+                                        </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                    </FormItem>
+                                )} />
+                                <FormField control={form.control} name="phone" render={({ field }) => (
+                                    <FormItem>
+                                    <FormLabel>Phone Number (Optional)</FormLabel>
+                                    <FormControl><Input type="tel" {...field} /></FormControl>
+                                    <FormMessage />
+                                    </FormItem>
+                                )} />
+                            </div>
+                             <div>
+                                <MockStripeInput />
+                            </div>
+                        </form>
+                        </Form>
+                    </CardContent>
+                    <CardFooter className="flex flex-col gap-4">
+                         <p className="text-sm text-muted-foreground text-center">
+                            By clicking the button below, you agree to our <Link href="/terms" className="underline" target="_blank" rel="noopener noreferrer">Terms of Service</Link>.
+                        </p>
+                        <Button type="submit" form="profile-form" className="w-full" disabled={isLoading}>
+                            {isLoading && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
+                            Order and Pay
+                        </Button>
+                    </CardFooter>
+                </Card>
             </div>
-            
-            <Card>
-                <CardHeader className="text-center">
-                  <h2 className="text-2xl font-bold">Complete Your Profile</h2>
-                  <p className="text-muted-foreground">
-                    Just a few more details to get you started.
-                  </p>
-                </CardHeader>
-                <CardContent>
-                    <Form {...form}>
-                    <form id="profile-form" onSubmit={form.handleSubmit(handleCreateAccount)} className="space-y-6">
-                        <div className="grid grid-cols-2 gap-4">
-                            <FormField control={form.control} name="firstName" render={({ field }) => (
-                                <FormItem>
-                                <FormLabel>First Name</FormLabel>
-                                <FormControl><Input placeholder="John" {...field} /></FormControl>
-                                <FormMessage />
-                                </FormItem>
-                            )} />
-                            <FormField control={form.control} name="lastName" render={({ field }) => (
-                                <FormItem>
-                                <FormLabel>Last Name</FormLabel>
-                                <FormControl><Input placeholder="Doe" {...field} /></FormControl>
-                                <FormMessage />
-                                </FormItem>
-                            )} />
-                        </div>
-                        <FormField control={form.control} name="address" render={({ field }) => (
-                            <FormItem>
-                            <FormLabel>Home Address</FormLabel>
-                            <FormControl><Input placeholder="123 Main St" {...field} /></FormControl>
-                            <FormMessage />
-                            </FormItem>
-                        )} />
-                        <div className="grid grid-cols-2 gap-4">
-                            <FormField control={form.control} name="city" render={({ field }) => (
-                                <FormItem>
-                                <FormLabel>City</FormLabel>
-                                <FormControl><Input placeholder="Anytown" {...field} /></FormControl>
-                                <FormMessage />
-                                </FormItem>
-                            )} />
-                            <FormField control={form.control} name="postalCode" render={({ field }) => (
-                                <FormItem>
-                                <FormLabel>Postal Code</FormLabel>
-                                <FormControl><Input placeholder="12345" {...field} /></FormControl>
-                                <FormMessage />
-                                </FormItem>
-                            )} />
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                            <FormField control={form.control} name="country" render={({ field }) => (
-                                <FormItem>
-                                <FormLabel>Country</FormLabel>
-                                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                    <FormControl><SelectTrigger><SelectValue placeholder="Select a country" /></SelectTrigger></FormControl>
-                                    <SelectContent>
-                                        {countries.map(country => <SelectItem key={country.code} value={country.code}>{country.name}</SelectItem>)}
-                                    </SelectContent>
-                                </Select>
-                                <FormMessage />
-                                </FormItem>
-                            )} />
-                            <FormField control={form.control} name="phone" render={({ field }) => (
-                                <FormItem>
-                                <FormLabel>Phone Number (Optional)</FormLabel>
-                                <FormControl><Input type="tel" {...field} /></FormControl>
-                                <FormMessage />
-                                </FormItem>
-                            )} />
-                        </div>
-                         <div>
-                            <MockStripeInput />
-                        </div>
-                    </form>
-                    </Form>
-                </CardContent>
-                <CardFooter className="flex flex-col gap-4">
-                     <p className="text-sm text-muted-foreground text-center">
-                        By clicking the button below, you agree to our <Link href="/terms" className="underline" target="_blank" rel="noopener noreferrer">Terms of Service</Link>.
-                    </p>
-                    <Button type="submit" form="profile-form" className="w-full" disabled={isLoading}>
-                        {isLoading && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
-                        Order and Pay
-                    </Button>
-                </CardFooter>
-            </Card>
+            <footer className="mt-8 text-center text-sm text-muted-foreground">
+                © {new Date().getFullYear()} AndonPro. All rights reserved.
+            </footer>
         </div>
-    </div>
     </div>
   );
 }
@@ -217,5 +220,3 @@ export default function CompleteProfilePage() {
         </Suspense>
     )
 }
-
-    

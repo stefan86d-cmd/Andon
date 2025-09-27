@@ -86,83 +86,86 @@ export default function BillingPage() {
    
     return (
         <div className="bg-muted">
-            <div className="container mx-auto flex min-h-screen items-center justify-center py-12">
-            <div className="w-full max-w-2xl">
-                 <div className="flex justify-center mb-8">
-                    <Link href="/dashboard">
-                        <Logo />
-                    </Link>
-                </div>
-                 <div>
-                    <h2 className="text-2xl font-bold mt-2 text-center">Plan & Billing</h2>
-                    <p className="text-muted-foreground text-center">
-                        You are currently on the <span className="font-semibold">{planName}</span> plan.
-                    </p>
-                </div>
-                <Card className="mt-8">
-                    <CardHeader>
-                        <CardTitle>Change Plan</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-6">
-                        <div className="space-y-2">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                <Select value={newPlan} onValueChange={(value) => setNewPlan(value as Plan)}>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Choose a new plan" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {availablePlans.map(p => (
-                                            <SelectItem key={p} value={p} className="capitalize">{p}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                <Select value={currency} onValueChange={(value) => setCurrency(value as any)}>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Currency" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="usd">USD</SelectItem>
-                                        <SelectItem value="eur">EUR</SelectItem>
-                                        <SelectItem value="gbp">GBP</SelectItem>
-                                    </SelectContent>
-                                </Select>
+            <div className="container mx-auto flex min-h-screen flex-col items-center justify-center py-12">
+                <div className="w-full max-w-2xl">
+                     <div className="flex justify-center mb-8">
+                        <Link href="/dashboard">
+                            <Logo />
+                        </Link>
+                    </div>
+                     <div>
+                        <h2 className="text-2xl font-bold mt-2 text-center">Plan & Billing</h2>
+                        <p className="text-muted-foreground text-center">
+                            You are currently on the <span className="font-semibold">{planName}</span> plan.
+                        </p>
+                    </div>
+                    <Card className="mt-8">
+                        <CardHeader>
+                            <CardTitle>Change Plan</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-6">
+                            <div className="space-y-2">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                    <Select value={newPlan} onValueChange={(value) => setNewPlan(value as Plan)}>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Choose a new plan" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {availablePlans.map(p => (
+                                                <SelectItem key={p} value={p} className="capitalize">{p}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <Select value={currency} onValueChange={(value) => setCurrency(value as any)}>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Currency" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="usd">USD</SelectItem>
+                                            <SelectItem value="eur">EUR</SelectItem>
+                                            <SelectItem value="gbp">GBP</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                 <p className="text-sm text-muted-foreground">Plan changes will be billed monthly.</p>
                             </div>
-                             <p className="text-sm text-muted-foreground">Plan changes will be billed monthly.</p>
-                        </div>
 
-                         {selectedTier && newPlan !== currentUser.plan && (
-                             <div className="space-y-2 rounded-lg border bg-card-foreground/5 p-4">
-                                <div className="space-y-1">
-                                    <div className="flex justify-between items-center font-bold text-lg">
-                                        <span>New Monthly Price</span>
-                                        <span>{currencySymbols[currency]}{formatPrice(monthlyPrice, currency)}</span>
+                             {selectedTier && newPlan !== currentUser.plan && (
+                                 <div className="space-y-2 rounded-lg border bg-card-foreground/5 p-4">
+                                    <div className="space-y-1">
+                                        <div className="flex justify-between items-center font-bold text-lg">
+                                            <span>New Monthly Price</span>
+                                            <span>{currencySymbols[currency]}{formatPrice(monthlyPrice, currency)}</span>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        )}
-                        
+                            )}
+                            
 
-                        <div className="flex gap-2 items-center">
-                            <Button onClick={handlePlanChange} disabled={!newPlan || newPlan === currentUser.plan}>
-                                {newPlan === currentUser.plan ? 'Current Plan' : (newPlan ? `Go to Checkout` : 'Select a Plan')}
-                            </Button>
-                        </div>
-                            <Separator />
-                        <div>
-                            <h3 className="text-sm font-semibold mb-2">Cancel Subscription</h3>
-                            <p className="text-sm text-muted-foreground mb-4">
-                                If you cancel, you will lose access to your plan's features at the end of your billing period.
-                            </p>
-                            <CancelSubscriptionDialog onConfirm={handleCancelConfirm}>
-                                <Button variant="destructive" className="w-full sm:w-auto">Cancel Subscription</Button>
-                            </CancelSubscriptionDialog>
-                        </div>
-                    </CardContent>
-                </Card>
-                 <div className="text-center text-sm text-muted-foreground pt-8">
-                    <Link href="/settings/account" className="underline">Back to Account Management</Link>
+                            <div className="flex gap-2 items-center">
+                                <Button onClick={handlePlanChange} disabled={!newPlan || newPlan === currentUser.plan}>
+                                    {newPlan === currentUser.plan ? 'Current Plan' : (newPlan ? `Go to Checkout` : 'Select a Plan')}
+                                </Button>
+                            </div>
+                                <Separator />
+                            <div>
+                                <h3 className="text-sm font-semibold mb-2">Cancel Subscription</h3>
+                                <p className="text-sm text-muted-foreground mb-4">
+                                    If you cancel, you will lose access to your plan's features at the end of your billing period.
+                                </p>
+                                <CancelSubscriptionDialog onConfirm={handleCancelConfirm}>
+                                    <Button variant="destructive" className="w-full sm:w-auto">Cancel Subscription</Button>
+                                </CancelSubscriptionDialog>
+                            </div>
+                        </CardContent>
+                    </Card>
+                     <div className="text-center text-sm text-muted-foreground pt-8">
+                        <Link href="/settings/account" className="underline">Back to Account Management</Link>
+                    </div>
                 </div>
-            </div>
+                <footer className="mt-8 text-center text-sm text-muted-foreground">
+                    © {new Date().getFullYear()} AndonPro. All rights reserved.
+                </footer>
             </div>
         </div>
     );

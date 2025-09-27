@@ -115,76 +115,79 @@ function RegisterContent() {
 
   return (
     <div className="bg-muted">
-        <div className="flex items-center justify-center min-h-screen">
-        <Card className="mx-auto max-w-sm w-full">
-            <CardHeader className="space-y-1 text-center">
-                <div className="flex justify-center p-6">
-                    <Logo />
-                </div>
-                <CardTitle>Create an Account</CardTitle>
-                <CardDescription>
-                    Sign up to continue.
-                </CardDescription>
-            </CardHeader>
-            <CardContent>
-                <div className="grid grid-cols-2 gap-4 mb-4">
-                    <Button variant="outline" onClick={handleGoogleSignIn} disabled={isLoading || isGoogleLoading || isMicrosoftLoading}>
-                        {isGoogleLoading ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : <GoogleIcon />}
-                        Google
-                    </Button>
-                    <Button variant="outline" onClick={handleMicrosoftSignIn} disabled={isLoading || isGoogleLoading || isMicrosoftLoading}>
-                        {isMicrosoftLoading ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : <MicrosoftIcon />}
-                        Microsoft
-                    </Button>
-                </div>
-
-                <div className="relative my-4">
-                    <Separator />
-                    <span className="absolute left-1/2 -translate-x-1/2 -top-2.5 bg-card px-2 text-xs text-muted-foreground">OR</span>
-                </div>
-
-                <Form {...form}>
-                    <form onSubmit={form.handleSubmit(handleRegistration)} className="space-y-4">
-                        <FormField
-                            control={form.control}
-                            name="email"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Email</FormLabel>
-                                    <FormControl>
-                                        <Input type="email" placeholder="john.d@example.com" {...field} disabled={isLoading || isGoogleLoading || isMicrosoftLoading} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="password"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Password</FormLabel>
-                                    <FormControl>
-                                        <Input type="password" {...field} disabled={isLoading || isGoogleLoading || isMicrosoftLoading} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <Button type="submit" className="w-full" disabled={isLoading || isGoogleLoading || isMicrosoftLoading}>
-                            {isLoading && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
-                            Register
+        <div className="flex min-h-screen flex-col items-center justify-center">
+            <Card className="mx-auto max-w-sm w-full">
+                <CardHeader className="space-y-1 text-center">
+                    <div className="flex justify-center p-6">
+                        <Logo />
+                    </div>
+                    <CardTitle>Create an Account</CardTitle>
+                    <CardDescription>
+                        Sign up to continue.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="grid grid-cols-2 gap-4 mb-4">
+                        <Button variant="outline" onClick={handleGoogleSignIn} disabled={isLoading || isGoogleLoading || isMicrosoftLoading}>
+                            {isGoogleLoading ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : <GoogleIcon />}
+                            Google
                         </Button>
-                    </form>
-                </Form>
-                <div className="mt-4 text-center text-sm">
-                    Already have an account?{" "}
-                    <Link href="/login" className="underline">
-                        Log in
-                    </Link>
-                </div>
-            </CardContent>
-        </Card>
+                        <Button variant="outline" onClick={handleMicrosoftSignIn} disabled={isLoading || isGoogleLoading || isMicrosoftLoading}>
+                            {isMicrosoftLoading ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : <MicrosoftIcon />}
+                            Microsoft
+                        </Button>
+                    </div>
+
+                    <div className="relative my-4">
+                        <Separator />
+                        <span className="absolute left-1/2 -translate-x-1/2 -top-2.5 bg-card px-2 text-xs text-muted-foreground">OR</span>
+                    </div>
+
+                    <Form {...form}>
+                        <form onSubmit={form.handleSubmit(handleRegistration)} className="space-y-4">
+                            <FormField
+                                control={form.control}
+                                name="email"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Email</FormLabel>
+                                        <FormControl>
+                                            <Input type="email" placeholder="john.d@example.com" {...field} disabled={isLoading || isGoogleLoading || isMicrosoftLoading} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="password"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Password</FormLabel>
+                                        <FormControl>
+                                            <Input type="password" {...field} disabled={isLoading || isGoogleLoading || isMicrosoftLoading} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <Button type="submit" className="w-full" disabled={isLoading || isGoogleLoading || isMicrosoftLoading}>
+                                {isLoading && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
+                                Register
+                            </Button>
+                        </form>
+                    </Form>
+                    <div className="mt-4 text-center text-sm">
+                        Already have an account?{" "}
+                        <Link href="/login" className="underline">
+                            Log in
+                        </Link>
+                    </div>
+                </CardContent>
+            </Card>
+            <footer className="mt-8 text-center text-sm text-muted-foreground">
+                © {new Date().getFullYear()} AndonPro. All rights reserved.
+            </footer>
         </div>
     </div>
   );
