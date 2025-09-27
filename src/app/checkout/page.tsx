@@ -24,6 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { Plan } from '@/lib/types';
+import { cn } from '@/lib/utils';
 
 const tiers = {
   starter: { 
@@ -66,6 +67,8 @@ function CheckoutContent() {
   const monthlyPrice = selectedTier.prices[selectedDuration][selectedCurrency];
   const fullPrice = selectedTier.prices['1'][selectedCurrency];
   const yearlyPrice = monthlyPrice * parseInt(selectedDuration, 10);
+  const undiscountedTotal = fullPrice * parseInt(selectedDuration, 10);
+
 
   const discount = useMemo(() => {
     if (selectedDuration === '1') return 0;
@@ -155,10 +158,17 @@ function CheckoutContent() {
                 {discount > 0 && <div className="flex justify-between text-green-600"><span>Discount</span><span>-{currencySymbols[selectedCurrency]}{formatPrice(discount, selectedCurrency)}</span></div>}
               </div>
               <Separator />
-              <div className="flex justify-between items-center font-bold text-lg">
-                <span>Subtotal</span>
-                <span>{currencySymbols[selectedCurrency]}{formatPrice(yearlyPrice, selectedCurrency)}</span>
-              </div>
+               <div className="space-y-1 text-right">
+                    {discount > 0 && (
+                        <p className="text-muted-foreground line-through">
+                            {currencySymbols[selectedCurrency]}{formatPrice(undiscountedTotal, selectedCurrency)}
+                        </p>
+                    )}
+                    <div className="flex justify-between items-center font-bold text-lg">
+                        <span>Subtotal</span>
+                        <span>{currencySymbols[selectedCurrency]}{formatPrice(yearlyPrice, selectedCurrency)}</span>
+                    </div>
+                </div>
             </CardContent>
             <CardFooter>
               <Button onClick={handleContinue} className="w-full">Continue</Button>
