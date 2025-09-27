@@ -12,10 +12,16 @@ import {
     limit
 } from 'firebase/firestore';
 import { handleFirestoreError } from "./firestore-helpers";
+import { mockIssues, mockProductionLines, mockUsers } from "./mock-data";
+
+const isDemoMode = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
 
 // --- Firebase API Functions ---
 
 export async function getProductionLines(): Promise<ProductionLine[]> {
+    if (isDemoMode) {
+        return Promise.resolve(mockProductionLines);
+    }
     try {
         const linesCollection = collection(db, "productionLines");
         const lineSnapshot = await getDocs(linesCollection);
@@ -28,6 +34,9 @@ export async function getProductionLines(): Promise<ProductionLine[]> {
 }
 
 export async function getAllUsers(): Promise<User[]> {
+    if (isDemoMode) {
+        return Promise.resolve(mockUsers);
+    }
     try {
         const usersCollection = collection(db, "users");
         const userSnapshot = await getDocs(usersCollection);
@@ -40,6 +49,10 @@ export async function getAllUsers(): Promise<User[]> {
 }
 
 export async function getUserByEmail(email: string): Promise<User | null> {
+    if (isDemoMode) {
+        const user = mockUsers.find(u => u.email === email) || null;
+        return Promise.resolve(user);
+    }
     try {
         const usersRef = collection(db, "users");
         const q = query(usersRef, where("email", "==", email));
@@ -56,6 +69,10 @@ export async function getUserByEmail(email: string): Promise<User | null> {
 }
 
 export async function getUserById(uid: string): Promise<User | null> {
+    if (isDemoMode) {
+        const user = mockUsers.find(u => u.id === uid) || null;
+        return Promise.resolve(user);
+    }
     try {
         const userDocRef = doc(db, "users", uid);
         const userDoc = await getDoc(userDocRef);
@@ -70,6 +87,9 @@ export async function getUserById(uid: string): Promise<User | null> {
 }
 
 export async function getIssues(): Promise<Issue[]> {
+    if (isDemoMode) {
+        return Promise.resolve(mockIssues);
+    }
     try {
         const issuesCollection = collection(db, "issues");
         const q = query(issuesCollection, orderBy("reportedAt", "desc"));
@@ -91,6 +111,10 @@ export async function getIssues(): Promise<Issue[]> {
 }
 
 export async function getIssueById(id: string): Promise<Issue | null> {
+    if (isDemoMode) {
+        const issue = mockIssues.find(i => i.id === id) || null;
+        return Promise.resolve(issue);
+    }
     try {
         const issueDocRef = doc(db, "issues", id);
         const issueDoc = await getDoc(issueDocRef);
