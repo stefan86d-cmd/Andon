@@ -258,7 +258,10 @@ export default function PricingPage() {
 
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
                     {tiers.map((tier) => {
-                        const price = tier.prices[duration][currency];
+                        const monthlyPrice = tier.prices[duration][currency];
+                        const fullMonthlyPrice = tier.prices['1'][currency];
+                        const totalDiscountedPrice = monthlyPrice * parseInt(duration, 10);
+                        const totalRegularPrice = fullMonthlyPrice * parseInt(duration, 10);
                         const isProBestValue = tier.name === "Pro";
                         const linkHref = `/checkout?plan=${tier.name.toLowerCase()}&duration=${duration}&currency=${currency}`;
                         
@@ -279,12 +282,12 @@ export default function PricingPage() {
                                         <CardTitle className="text-2xl">{tier.name}</CardTitle>
                                         <div className="flex items-baseline justify-center gap-1">
                                             <span className="text-4xl font-bold">
-                                                 {typeof price === 'number'
-                                                    ? `${currencySymbols[currency]}${formatPrice(price, currency)}`
-                                                    : price
+                                                 {typeof monthlyPrice === 'number'
+                                                    ? `${currencySymbols[currency]}${formatPrice(monthlyPrice, currency)}`
+                                                    : monthlyPrice
                                                 }
                                             </span>
-                                            {tier.pricePeriod && typeof price === 'number' && price > 0 && <span className="text-muted-foreground">{tier.pricePeriod}</span>}
+                                            {tier.pricePeriod && typeof monthlyPrice === 'number' && monthlyPrice > 0 && <span className="text-muted-foreground">{tier.pricePeriod}</span>}
                                         </div>
                                         <CardDescription>{tier.description}</CardDescription>
                                     </CardHeader>
@@ -300,12 +303,22 @@ export default function PricingPage() {
                                         ))}
                                         </ul>
                                     </CardContent>
-                                    <CardFooter>
+                                    <CardFooter className="flex-col items-stretch">
                                         <Link href={linkHref} className={cn(buttonVariants({ 
                                             variant: isProBestValue ? 'destructive' : (tier.popular ? 'default' : 'outline'),
                                         }), "w-full")}>
                                             {ctaText}
                                         </Link>
+                                         {tier.name !== 'Starter' && duration !== '1' && (
+                                            <p className="text-xs text-muted-foreground mt-3 text-center">
+                                                Get {duration} months for {currencySymbols[currency]}{formatPrice(totalDiscountedPrice, currency)} (regular price {currencySymbols[currency]}{formatPrice(totalRegularPrice, currency)}). Renews at {currencySymbols[currency]}{formatPrice(fullMonthlyPrice, currency)}/mo.
+                                            </p>
+                                        )}
+                                         {tier.name !== 'Starter' && duration === '1' && (
+                                            <p className="text-xs text-muted-foreground mt-3 text-center">
+                                                Renews at {currencySymbols[currency]}{formatPrice(fullMonthlyPrice, currency)}/mo. Cancel anytime.
+                                            </p>
+                                        )}
                                     </CardFooter>
                                 </Card>
                             </div>
@@ -360,5 +373,3 @@ export default function PricingPage() {
     </div>
   );
 }
-
-    
