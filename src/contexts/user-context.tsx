@@ -36,7 +36,7 @@ interface UserContextType {
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
-const isDemoMode = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
+const isDemoMode = process.env.NEXT_PUBLIC_DEMO_MODE === "false";
 
 // Helper function to fetch or create a user profile in Firestore
 const getOrCreateUserProfile = async (firebaseUser: FirebaseUser): Promise<User | null> => {
@@ -59,8 +59,13 @@ const getOrCreateUserProfile = async (firebaseUser: FirebaseUser): Promise<User 
 
         await setDoc(userDocRef, partialData, { merge: true });
 
-        // Return null to signal that the profile is incomplete.
-        return null;
+        // Return a partial user object to signal that the profile is incomplete.
+        return {
+            id: firebaseUser.uid,
+            email: firebaseUser.email || "",
+            firstName: firstName,
+            lastName: lastName,
+        } as User;
     }
 };
 

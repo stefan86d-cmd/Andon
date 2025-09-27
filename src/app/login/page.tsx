@@ -73,6 +73,7 @@ export default function LoginPage() {
           title: "Login Successful",
           description: `Welcome back! Redirecting...`,
         });
+        router.push('/dashboard');
       } else {
         toast({
           variant: "destructive",
@@ -85,11 +86,14 @@ export default function LoginPage() {
   
   const handleGoogleSignIn = async () => {
     setIsGoogleLoading(true);
-    await signInWithGoogle();
-    toast({
-        title: "Login Successful",
-        description: "Welcome! You're signed in with Google.",
-    });
+    const success = await signInWithGoogle();
+    if (success) {
+        toast({
+            title: "Login Successful",
+            description: "Welcome! You're signed in with Google.",
+        });
+        router.push('/dashboard');
+    }
     setIsGoogleLoading(false);
   }
 
