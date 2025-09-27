@@ -14,7 +14,6 @@ import {
 import { cn } from "@/lib/utils"
 import Image from "next/image"
 import { Badge } from "@/components/ui/badge"
-import type { ImagePlaceholder } from "@/lib/placeholder-images"
 
 interface MegaMenuItem {
     title: string;
@@ -26,7 +25,11 @@ interface MegaMenuItem {
 interface MegaMenuProps {
     triggerText: string;
     items: MegaMenuItem[];
-    image?: ImagePlaceholder;
+    image?: {
+        imageUrl: string;
+        description: string;
+        imageHint: string;
+    };
 }
 
 export function MegaMenu({ triggerText, items, image }: MegaMenuProps) {
@@ -38,7 +41,7 @@ export function MegaMenu({ triggerText, items, image }: MegaMenuProps) {
             {triggerText}
           </NavigationMenuTrigger>
           <NavigationMenuContent>
-            <div className="grid md:grid-cols-2 gap-4 p-4 md:w-[500px] lg:w-[600px]">
+            <div className={cn("grid gap-4 p-4 md:w-[500px] lg:w-[600px]", image && "md:grid-cols-2")}>
               <ul className="grid gap-3">
                 {items.map((item) => (
                   <ListItem

@@ -11,7 +11,6 @@ import { Badge } from "@/components/ui/badge";
 import React, { useState } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MegaMenu } from "@/components/layout/mega-menu";
-import { PlaceHolderImages } from "@/lib/placeholder-images";
 import FooterLogo from "@/components/layout/footer-logo";
 import { useUser } from "@/contexts/user-context";
 
@@ -152,10 +151,6 @@ export default function PricingPage() {
         eur: '€',
         gbp: '£',
     }
-
-    const servicesImage = PlaceHolderImages.find(img => img.id === 'mega-menu-services');
-    const exploreImage = PlaceHolderImages.find(img => img.id === 'mega-menu-explore');
-    const supportImage = PlaceHolderImages.find(img => img.id === 'mega-menu-support');
     
     const formatPrice = (price: number, currency: Currency) => {
         const locale = {
@@ -181,17 +176,14 @@ export default function PricingPage() {
                         <MegaMenu 
                             triggerText="Services" 
                             items={servicesMenuItems}
-                            image={servicesImage}
                         />
                         <MegaMenu 
                             triggerText="Explore" 
                             items={exploreMenuItems}
-                            image={exploreImage}
                         />
                         <MegaMenu 
                             triggerText="Support" 
                             items={supportMenuItems}
-                            image={supportImage}
                         />
                     </nav>
                 </div>

@@ -6,7 +6,6 @@ import { ArrowRight, Factory, BarChart3, Bot, Wrench } from 'lucide-react';
 import { Logo } from "@/components/layout/logo";
 import { cn } from "@/lib/utils";
 import { MegaMenu } from "@/components/layout/mega-menu";
-import { PlaceHolderImages } from "@/lib/placeholder-images";
 import FooterLogo from "@/components/layout/footer-logo";
 import Image from "next/image";
 
@@ -53,9 +52,6 @@ const supportMenuItems = [
 
 
 export default function HomePage() {
-    const servicesImage = PlaceHolderImages.find(img => img.id === 'mega-menu-services');
-    const exploreImage = PlaceHolderImages.find(img => img.id === 'mega-menu-explore');
-    const supportImage = PlaceHolderImages.find(img => img.id === 'mega-menu-support');
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
@@ -69,17 +65,14 @@ export default function HomePage() {
                 <MegaMenu 
                     triggerText="Services" 
                     items={servicesMenuItems}
-                    image={servicesImage}
                 />
                 <MegaMenu 
                     triggerText="Explore" 
                     items={exploreMenuItems}
-                    image={exploreImage}
                 />
                 <MegaMenu 
                     triggerText="Support" 
                     items={supportMenuItems}
-                    image={supportImage}
                 />
             </nav>
           </div>

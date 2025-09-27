@@ -3,7 +3,6 @@ import Link from "next/link";
 import { Logo } from "@/components/layout/logo";
 import { cn } from "@/lib/utils";
 import { MegaMenu } from "@/components/layout/mega-menu";
-import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { buttonVariants } from "@/components/ui/button";
 import {
   Accordion,
@@ -59,10 +58,6 @@ const faqs = [
 ]
 
 export default function FaqPage() {
-    const servicesImage = PlaceHolderImages.find(img => img.id === 'mega-menu-services');
-    const exploreImage = PlaceHolderImages.find(img => img.id === 'mega-menu-explore');
-    const supportImage = PlaceHolderImages.find(img => img.id === 'mega-menu-support');
-
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -75,17 +70,14 @@ export default function FaqPage() {
                 <MegaMenu 
                     triggerText="Services" 
                     items={servicesMenuItems}
-                    image={servicesImage}
                 />
                 <MegaMenu 
                     triggerText="Explore" 
                     items={exploreMenuItems}
-                    image={exploreImage}
                 />
                 <MegaMenu 
                     triggerText="Support" 
                     items={supportMenuItems}
-                    image={supportImage}
                 />
             </nav>
           </div>
