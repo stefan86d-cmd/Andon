@@ -88,16 +88,6 @@ const StatusDisplay = ({ status }: { status: Status }) => {
     );
 };
 
-const getInitials = (name: string) => {
-    if (!name || typeof name !== 'string') return '??';
-    const names = name.split(' ');
-    if (names.length > 1) {
-        return `${names[0]?.[0] || ''}${names[names.length - 1]?.[0] || ''}`.toUpperCase();
-    }
-    return `${names[0]?.[0] || ''}${names[0]?.[1] || ''}`.toUpperCase();
-}
-
-
 export function IssuesDataTable({ issues, title, description, loading }: { issues: Issue[], title?: string, description?: string, loading?: boolean }) {
   const { currentUser } = useUser();
   const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
@@ -147,7 +137,7 @@ export function IssuesDataTable({ issues, title, description, loading }: { issue
                         <TableCell><Skeleton className="h-6 w-3/4" /></TableCell>
                         <TableCell><Skeleton className="h-6 w-20" /></TableCell>
                         <TableCell><Skeleton className="h-6 w-20" /></TableCell>
-                        <TableCell><Skeleton className="h-9 w-9 rounded-full" /></TableCell>
+                        <TableCell><Skeleton className="h-6 w-24" /></TableCell>
                         <TableCell><Skeleton className="h-6 w-20" /></TableCell>
                         {canResolveIssues && <TableCell />}
                     </TableRow>
@@ -181,9 +171,7 @@ export function IssuesDataTable({ issues, title, description, loading }: { issue
                     <StatusDisplay status={issue.status} />
                   </TableCell>
                    <TableCell>
-                        <Avatar className="h-9 w-9 border-2 border-primary">
-                            <AvatarFallback>{getInitials(issue.reportedBy.name)}</AvatarFallback>
-                        </Avatar>
+                        <div className="font-medium">{issue.reportedBy.name}</div>
                    </TableCell>
                   <TableCell>
                     <SafeHydrate>
