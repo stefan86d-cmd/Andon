@@ -26,6 +26,8 @@ import { countries } from '@/lib/countries';
 import type { Plan } from '@/lib/types';
 import { toast } from '@/hooks/use-toast';
 import { useUser } from '@/contexts/user-context';
+import { doc, setDoc } from 'firebase/firestore';
+import { db } from '@/firebase';
 
 
 const profileFormSchema = z.object({
@@ -73,7 +75,7 @@ const MockStripeInput = () => {
 function CompleteProfileContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { login } = useUser();
+  const { currentUser, loading: userLoading } = useUser();
   const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<ProfileFormValues>({
@@ -83,25 +85,62 @@ function CompleteProfileContent() {
       cardNumber: "", expiryDate: "", cvc: ""
     },
   });
+  
+  useEffect(() => {
+    if (!userLoading && !currentUser) {
+      toast({ title: "Not Authenticated", description: "You must be signed in to complete your profile.", variant: "destructive" });
+      router.push('/register');
+    }
+  }, [currentUser, userLoading, router]);
 
   const selectedPlan = searchParams.get('plan') as Plan || 'starter';
 
   const handleCreateAccount = async (data: ProfileFormValues) => {
+    if (!currentUser) {
+      toast({ title: "Authentication Error", description: "Your session has expired. Please sign in again.", variant: "destructive" });
+      return;
+    }
+
     setIsLoading(true);
-    // This is a mock action
+    // This is a mock payment action
     await new Promise(resolve => setTimeout(resolve, 1500));
     
-    toast({
-        title: "Order & Pay Success!",
-        description: `Welcome to the ${selectedPlan} plan. Logging you in...`,
-    });
+    try {
+        // Save user profile data to Firestore
+        const userDocRef = doc(db, "users", currentUser.uid);
+        await setDoc(userDocRef, {
+            firstName: data.firstName,
+            lastName: data.lastName,
+            email: currentUser.email,
+            role: "admin", // First user is always an admin
+            plan: selectedPlan,
+            address: data.address,
+            country: data.country,
+            phone: data.phone,
+        });
 
-    // Mock login after successful "payment"
-    await login("alex.j@andon.io", "password");
+        toast({
+            title: "Order & Pay Success!",
+            description: `Welcome to the ${selectedPlan} plan. Your account is ready!`,
+        });
 
-    router.push('/dashboard');
-    setIsLoading(false);
+        router.push('/dashboard');
+
+    } catch (error) {
+        console.error("Failed to save profile:", error);
+        toast({ title: "Profile Creation Failed", description: "Could not save your profile. Please try again.", variant: "destructive" });
+    } finally {
+        setIsLoading(false);
+    }
   };
+
+  if (userLoading || !currentUser) {
+    return (
+        <div className="flex h-screen items-center justify-center">
+            <LoaderCircle className="h-8 w-8 animate-spin" />
+        </div>
+    );
+  }
 
   return (
     <div className="bg-muted">

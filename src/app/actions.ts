@@ -1,93 +1,169 @@
+
 "use server";
 
 import { revalidatePath } from 'next/cache';
 import type { Plan, Role, User, UserRef } from "@/lib/types";
 import { handleFirestoreError } from '@/lib/firestore-helpers';
 import type { Issue } from '@/lib/types';
-import { getUserByEmail } from '@/lib/data';
+import { getUserByEmail, getUserById } from '@/lib/data';
+import { db, auth } from '@/firebase';
+import { collection, addDoc, serverTimestamp, updateDoc, doc, deleteDoc, getDoc } from 'firebase/firestore';
 
 
-export async function setCustomUserClaims(uid: string, claims: { [key: string]: any }) {
-    // This is a mock function. In a real app with a backend, this would interact with Firebase Admin SDK.
-    console.log(`MOCK: Setting custom claims for UID ${uid}:`, claims);
+export async function setCustomUserClaims(uid: string, claims: { [key:string]: any }) {
+    // In a real app, this would be handled by a Firebase Function
+    // as the Admin SDK is required to set custom claims.
+    console.log(`MOCK (Action): Setting custom claims for UID ${uid}:`, claims);
     return { success: true };
 }
 
-export async function reportIssue(issueData: Omit<Issue, 'id' | 'reportedAt' | 'reportedBy' | 'status' | 'reportedBy' | 'resolvedBy'>, reportedByEmail: string) {
-    console.log("MOCK: reportIssue called with:", issueData);
-    revalidatePath('/dashboard');
-    revalidatePath('/issues');
-    revalidatePath('/line-status');
-    return { success: true };
+
+export async function reportIssue(issueData: Omit<Issue, 'id' | 'reportedAt' | 'status' | 'reportedBy' | 'resolvedBy' >, reportedByEmail: string) {
+    try {
+        const user = await getUserByEmail(reportedByEmail);
+        if (!user) {
+            return { success: false, error: 'Reporting user not found.' };
+        }
+
+        const userRef: UserRef = { email: user.email, name: `${user.firstName} ${user.lastName}` };
+        
+        await addDoc(collection(db, "issues"), {
+            ...issueData,
+            reportedAt: serverTimestamp(),
+            status: "reported",
+            reportedBy: userRef,
+            resolvedBy: null,
+            resolvedAt: null,
+            resolutionNotes: "",
+        });
+        
+        revalidatePath('/dashboard');
+        revalidatePath('/issues');
+        revalidatePath('/line-status');
+        return { success: true };
+    } catch (error) {
+        return handleFirestoreError(error);
+    }
 }
 
 export async function createProductionLine(name: string) {
-    console.log("MOCK: createProductionLine called with:", name);
-    revalidatePath('/lines');
-    revalidatePath('/dashboard');
-    return { success: true };
+    try {
+        await addDoc(collection(db, "productionLines"), {
+            name: name,
+            workstations: [],
+        });
+        revalidatePath('/lines');
+        revalidatePath('/dashboard');
+        return { success: true };
+    } catch (error) {
+        return handleFirestoreError(error);
+    }
 }
 
 export async function editProductionLine(lineId: string, data: { name: string, workstations: { value: string }[] }) {
-    console.log("MOCK: editProductionLine called for", lineId, "with:", data);
-    revalidatePath('/lines');
-    return { success: true };
+    try {
+        const lineRef = doc(db, "productionLines", lineId);
+        await updateDoc(lineRef, {
+            name: data.name,
+            workstations: data.workstations.map(ws => ws.value),
+        });
+        revalidatePath('/lines');
+        return { success: true };
+    } catch (error) {
+        return handleFirestoreError(error);
+    }
 }
 
 export async function deleteProductionLine(lineId: string) {
-    console.log("MOCK: deleteProductionLine called for:", lineId);
-    revalidatePath('/lines');
-    return { success: true };
+   try {
+        await deleteDoc(doc(db, "productionLines", lineId));
+        revalidatePath('/lines');
+        return { success: true };
+    } catch (error) {
+        return handleFirestoreError(error);
+    }
 }
 
 export async function addUser(data: { uid: string, firstName: string, lastName: string, email: string, role: Role, plan: User['plan'], address?: string, country?: string, phone?: string }) {
-    console.log("MOCK: addUser called with:", data);
-    await setCustomUserClaims(data.uid, { role: data.role });
-    revalidatePath('/users');
-    return { success: true, message: `User ${data.email} created successfully.` };
+    try {
+        // This is a client-side action that would normally be a backend operation
+        // for security reasons (Admin SDK for custom claims).
+        await setCustomUserClaims(data.uid, { role: data.role, plan: data.plan });
+        revalidatePath('/users');
+        return { success: true, message: `User ${data.email} created successfully.` };
+    } catch (error) {
+        return handleFirestoreError(error);
+    }
 }
 
 
 export async function deleteUser(uid: string) {
-    console.log("MOCK: deleteUser called for:", uid);
-    revalidatePath('/users');
-    return { success: true };
+    // This is a placeholder for deleting a user.
+    // In a real app, you would use the Firebase Admin SDK to delete the user from Auth
+    // and then delete their document from Firestore. This should be a secure backend operation.
+    try {
+        await deleteDoc(doc(db, "users", uid));
+        revalidatePath('/users');
+        return { success: true };
+    } catch (error) {
+        return handleFirestoreError(error);
+    }
 }
 
 export async function editUser(uid: string, data: { firstName: string, lastName: string, email: string, role: Role }) {
-    console.log("MOCK: editUser called for", uid, "with:", data);
-    await setCustomUserClaims(uid, { role: data.role });
-    revalidatePath('/users');
-    return { success: true };
+    try {
+        const userRef = doc(db, "users", uid);
+        await updateDoc(userRef, data);
+        await setCustomUserClaims(uid, { role: data.role });
+        revalidatePath('/users');
+        return { success: true };
+    } catch (error) {
+        return handleFirestoreError(error);
+    }
 }
 
 export async function updateUserPlan(uid: string, newPlan: Plan) {
-    console.log(`MOCK: updateUserPlan called for ${uid} to plan ${newPlan}`);
-    revalidatePath('/settings');
-    revalidatePath('/users');
-    revalidatePath('/lines');
-    return { success: true, message: `Plan updated to ${newPlan}.` };
+    try {
+        const userRef = doc(db, "users", uid);
+        await updateDoc(userRef, { plan: newPlan });
+        await setCustomUserClaims(uid, { plan: newPlan });
+        revalidatePath('/settings');
+        revalidatePath('/users');
+        revalidatePath('/lines');
+        return { success: true, message: `Plan updated to ${newPlan}.` };
+    } catch (error) {
+        return handleFirestoreError(error);
+    }
 }
-
 
 export async function updateIssue(issueId: string, data: {
     status: 'in_progress' | 'resolved',
     resolutionNotes: string,
     productionStopped: boolean,
 }, resolvedByEmail: string) {
-    console.log("MOCK: updateIssue called for", issueId, "with:", data);
-    revalidatePath('/issues');
-    revalidatePath('/dashboard');
-    return { success: true };
-}
+    try {
+        const issueRef = doc(db, "issues", issueId);
 
-export async function changePassword(userEmail: string, currentPassword: string, newPassword: string) {
-    // This is a mock function. In a real app, this would be handled securely.
-    if (currentPassword !== 'password') {
-        return { success: false, error: 'Incorrect current password.' };
+        const user = await getUserByEmail(resolvedByEmail);
+         if (!user) {
+            return { success: false, error: 'Resolving user not found.' };
+        }
+        const userRef: UserRef = { email: user.email, name: `${user.firstName} ${user.lastName}` };
+
+        const updateData: any = {
+            ...data,
+            resolvedBy: data.status === 'resolved' ? userRef : null,
+            resolvedAt: data.status === 'resolved' ? serverTimestamp() : null,
+        };
+
+        await updateDoc(issueRef, updateData);
+        
+        revalidatePath('/issues');
+        revalidatePath('/dashboard');
+        return { success: true };
+    } catch (error) {
+        return handleFirestoreError(error);
     }
-    console.log(`MOCK: Password for ${userEmail} would be changed here.`);
-    return { success: true };
 }
 
 export async function requestPasswordReset(email: string) {

@@ -68,10 +68,11 @@ function MicrosoftIcon() {
 function RegisterContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { registerWithEmail, signInWithGoogle, signInWithMicrosoft } = useUser();
 
-  const [isLoading, setIsLoading] = useState(false);
-  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
-  const [isMicrosoftLoading, setIsMicrosoftLoading] = useState(false);
+  const [isLoading, startEmailRegisterTransition] = useTransition();
+  const [isGoogleLoading, startGoogleRegisterTransition] = useTransition();
+  const [isMicrosoftLoading, startMicrosoftRegisterTransition] = useTransition();
 
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerFormSchema),
@@ -84,34 +85,39 @@ function RegisterContent() {
   const plan = searchParams.get('plan') || 'starter';
   const duration = searchParams.get('duration') || '12';
   const currency = searchParams.get('currency') || 'usd';
+  
+  const getRedirectUrl = () => `/complete-profile?plan=${plan}&duration=${duration}&currency=${currency}`;
 
   const handleRegistration = (data: RegisterFormValues) => {
-    setIsLoading(true);
-    // Mock registration logic
-    setTimeout(() => {
-      console.log("Registering with:", data.email);
-      router.push(`/complete-profile?plan=${plan}&duration=${duration}&currency=${currency}`);
-      setIsLoading(false);
-    }, 1000);
+    startEmailRegisterTransition(async () => {
+        const success = await registerWithEmail(data.email, data.password);
+        if (success) {
+            router.push(getRedirectUrl());
+        } else {
+            // Error is handled by the context's toast
+        }
+    });
   };
   
   const handleGoogleSignIn = () => {
-    setIsGoogleLoading(true);
-    setTimeout(() => {
-      console.log("Signing in with Google");
-      router.push(`/complete-profile?plan=${plan}&duration=${duration}&currency=${currency}`);
-      setIsGoogleLoading(false);
-    }, 1000);
+    startGoogleRegisterTransition(async () => {
+        const success = await signInWithGoogle();
+        if (success) {
+            router.push(getRedirectUrl());
+        }
+    });
   }
 
   const handleMicrosoftSignIn = () => {
-    setIsMicrosoftLoading(true);
-    setTimeout(() => {
-      console.log("Signing in with Microsoft");
-      router.push(`/complete-profile?plan=${plan}&duration=${duration}&currency=${currency}`);
-      setIsMicrosoftLoading(false);
-    }, 1000);
+    startMicrosoftRegisterTransition(async () => {
+        const success = await signInWithMicrosoft();
+        if (success) {
+            router.push(getRedirectUrl());
+        }
+    });
   }
+  
+  const isAnyLoading = isLoading || isGoogleLoading || isMicrosoftLoading;
 
   return (
     <div className="bg-muted">
@@ -128,11 +134,11 @@ function RegisterContent() {
                 </CardHeader>
                 <CardContent>
                     <div className="grid grid-cols-2 gap-4 mb-4">
-                        <Button variant="outline" onClick={handleGoogleSignIn} disabled={isLoading || isGoogleLoading || isMicrosoftLoading}>
+                        <Button variant="outline" onClick={handleGoogleSignIn} disabled={isAnyLoading}>
                             {isGoogleLoading ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : <GoogleIcon />}
                             Google
                         </Button>
-                        <Button variant="outline" onClick={handleMicrosoftSignIn} disabled={isLoading || isGoogleLoading || isMicrosoftLoading}>
+                        <Button variant="outline" onClick={handleMicrosoftSignIn} disabled={isAnyLoading}>
                             {isMicrosoftLoading ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : <MicrosoftIcon />}
                             Microsoft
                         </Button>
@@ -152,7 +158,7 @@ function RegisterContent() {
                                     <FormItem>
                                         <FormLabel>Email</FormLabel>
                                         <FormControl>
-                                            <Input type="email" {...field} disabled={isLoading || isGoogleLoading || isMicrosoftLoading} />
+                                            <Input type="email" {...field} disabled={isAnyLoading} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -165,13 +171,13 @@ function RegisterContent() {
                                     <FormItem>
                                         <FormLabel>Password</FormLabel>
                                         <FormControl>
-                                            <Input type="password" {...field} disabled={isLoading || isGoogleLoading || isMicrosoftLoading} />
+                                            <Input type="password" {...field} disabled={isAnyLoading} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
                                 )}
                             />
-                            <Button type="submit" className="w-full" disabled={isLoading || isGoogleLoading || isMicrosoftLoading}>
+                            <Button type="submit" className="w-full" disabled={isAnyLoading}>
                                 {isLoading && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
                                 Register
                             </Button>

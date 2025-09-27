@@ -4,20 +4,62 @@
 import React, { createContext, useState, useContext, useEffect, ReactNode, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Plan, User } from '@/lib/types';
-import { getUserByEmail } from '@/lib/data';
+import { getUserByEmail, getUserById } from '@/lib/data';
 import { addUser } from '@/app/actions';
+import { auth, db } from '@/firebase';
+import { 
+    onAuthStateChanged, 
+    signInWithEmailAndPassword,
+    createUserWithEmailAndPassword,
+    GoogleAuthProvider,
+    signInWithPopup,
+    signOut,
+    User as FirebaseUser,
+    getAuth,
+    signInWithRedirect,
+    getRedirectResult,
+} from 'firebase/auth';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { toast } from '@/hooks/use-toast';
+
 
 interface UserContextType {
   currentUser: User | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<boolean>;
-  signInWithGoogle: (plan?: Plan) => Promise<void>;
-  signInWithMicrosoft: (plan?: Plan) => Promise<void>;
+  registerWithEmail: (email: string, password: string) => Promise<boolean>;
+  signInWithGoogle: () => Promise<boolean>;
+  signInWithMicrosoft: () => Promise<boolean>;
   logout: () => void;
   updateCurrentUser: (user: Partial<User>) => void;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
+
+// Helper function to fetch or create a user profile in Firestore
+const getOrCreateUserProfile = async (firebaseUser: FirebaseUser): Promise<User | null> => {
+    const userDocRef = doc(db, "users", firebaseUser.uid);
+    const userDocSnap = await getDoc(userDocRef);
+
+    if (userDocSnap.exists()) {
+        return { id: userDocSnap.id, ...userDocSnap.data() } as User;
+    } else {
+        // This case is for social sign-ins where the user profile might not exist yet.
+        // The profile is typically created fully on the complete-profile page.
+        // We'll return a partial user object for now.
+        const [firstName, lastName] = firebaseUser.displayName?.split(' ') || ["", ""];
+        return {
+            id: firebaseUser.uid,
+            email: firebaseUser.email || "",
+            firstName,
+            lastName,
+            role: 'admin', // Default new sign-ups to admin
+            plan: 'starter', // Default to starter plan
+            address: "",
+            country: "",
+        };
+    }
+};
 
 export function UserProvider({ children }: { children: ReactNode }) {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -25,66 +67,99 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
 
   useEffect(() => {
-    // This simulates checking for a logged-in user on app start.
-    // In a real app, you would verify a token from localStorage/cookies.
-    // We are now starting with no user logged in.
-    setLoading(true);
-    setCurrentUser(null);
-    setLoading(false);
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+        if (firebaseUser) {
+            const userProfile = await getOrCreateUserProfile(firebaseUser);
+            setCurrentUser(userProfile);
+        } else {
+            setCurrentUser(null);
+        }
+        setLoading(false);
+    });
+
+    return () => unsubscribe();
   }, []);
 
   const login = async (email: string, password: string): Promise<boolean> => {
-    setLoading(true);
-    // This function now simulates a failed login as mock data is gone.
-    // It is ready to be implemented with a real authentication provider.
-    await new Promise(resolve => setTimeout(resolve, 500));
-    const user = await getUserByEmail(email); // Will return null
-    if (user) {
-      setCurrentUser(user);
-      setLoading(false);
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      // Auth state change will handle setting the user
       return true;
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Login Failed",
+        description: error.message,
+      });
+      return false;
     }
-    setLoading(false);
-    return false;
   };
   
-  const signInWithProvider = async (plan: Plan = 'starter') => {
-    // This function is ready for a real provider implementation.
-    setLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 500));
-    // In a real implementation, you would get user data from the provider
-    // and then create/update the user in your database.
-    // For now, we do nothing.
-    setLoading(false);
+  const registerWithEmail = async (email: string, password: string): Promise<boolean> => {
+    try {
+        await createUserWithEmailAndPassword(auth, email, password);
+        // Auth state will change and trigger profile creation flow
+        return true;
+    } catch (error: any) {
+        toast({
+            variant: "destructive",
+            title: "Registration Failed",
+            description: error.message
+        });
+        return false;
+    }
+  };
+
+  const signInWithProvider = async (provider: GoogleAuthProvider): Promise<boolean> => {
+    try {
+        await signInWithPopup(auth, provider);
+        // onAuthStateChanged will handle the rest
+        return true;
+    } catch (error: any) {
+        toast({
+            variant: "destructive",
+            title: "Sign-in Failed",
+            description: error.message,
+        });
+        return false;
+    }
+  };
+
+  const signInWithGoogle = async (): Promise<boolean> => {
+    const provider = new GoogleAuthProvider();
+    return signInWithProvider(provider);
   }
 
-  const signInWithGoogle = async (plan: Plan = 'starter') => {
-    await signInWithProvider(plan);
-  }
-
-  const signInWithMicrosoft = async (plan: Plan = 'starter') => {
-    await signInWithProvider(plan);
+  const signInWithMicrosoft = async (): Promise<boolean> => {
+    // Firebase does not have a direct Microsoft provider for web like Google/Facebook.
+    // This typically requires a custom flow with OAuth.
+    // For this app, we will mock a failure and guide the user.
+    toast({
+        title: "Not Implemented",
+        description: "Microsoft sign-in is not configured for this application. Please use Google or Email.",
+        variant: "destructive",
+    });
+    return false;
   };
 
   const logout = async () => {
-    setLoading(true);
-    // This function is ready for a real provider implementation.
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await signOut(auth);
     setCurrentUser(null);
-    setLoading(false);
     router.push('/login');
   };
   
-  const updateCurrentUser = useCallback((userData: Partial<User>) => {
+  const updateCurrentUser = useCallback(async (userData: Partial<User>) => {
     if (currentUser) {
         const updatedUser = { ...currentUser, ...userData };
+        const userDocRef = doc(db, "users", currentUser.id);
+        await setDoc(userDocRef, updatedUser, { merge: true });
         setCurrentUser(updatedUser);
     }
   }, [currentUser]);
 
 
   return (
-    <UserContext.Provider value={{ currentUser, loading, login, signInWithGoogle, signInWithMicrosoft, logout, updateCurrentUser }}>
+    <UserContext.Provider value={{ currentUser, loading, login, registerWithEmail, signInWithGoogle, signInWithMicrosoft, logout, updateCurrentUser }}>
       {children}
     </UserContext.Provider>
   );
