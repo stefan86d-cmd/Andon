@@ -7,7 +7,7 @@ import { handleFirestoreError } from '@/lib/firestore-helpers';
 import type { Issue } from '@/lib/types';
 import { getUserByEmail, getUserById } from '@/lib/data';
 import { db, auth } from '@/firebase';
-import { collection, addDoc, serverTimestamp, updateDoc, doc, deleteDoc, getDoc } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, updateDoc, doc, deleteDoc, getDoc, setDoc } from 'firebase/firestore';
 
 
 export async function setCustomUserClaims(uid: string, claims: { [key:string]: any }) {
@@ -87,8 +87,15 @@ export async function deleteProductionLine(lineId: string) {
 
 export async function addUser(data: { uid: string, firstName: string, lastName: string, email: string, role: Role, plan: User['plan'], orgId: string, address?: string, country?: string, phone?: string }) {
     try {
-        // This is a client-side action that would normally be a backend operation
-        // for security reasons (Admin SDK for custom claims).
+        await setDoc(doc(db, "users", data.uid), {
+            firstName: data.firstName,
+            lastName: data.lastName,
+            email: data.email,
+            role: data.role,
+            plan: data.plan,
+            orgId: data.orgId,
+        });
+
         await setCustomUserClaims(data.uid, { role: data.role, plan: data.plan });
         revalidatePath('/users');
         return { success: true, message: `User ${data.email} created successfully.` };
