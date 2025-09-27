@@ -36,7 +36,6 @@ interface UserContextType {
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
-const isDemoMode = process.env.NEXT_PUBLIC_DEMO_MODE === "false";
 
 // Helper function to fetch or create a user profile in Firestore
 const getOrCreateUserProfile = async (firebaseUser: FirebaseUser): Promise<User | null> => {
@@ -75,16 +74,6 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
 
   useEffect(() => {
-    if (isDemoMode) {
-        const setupDemo = async () => {
-            const demoUser = await getUserById("KbawAuA2mDZvk0JmWxM0lcyS5R52");
-            setCurrentUser(demoUser);
-            setLoading(false);
-        };
-        setupDemo();
-        return;
-    }
-    
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
         if (firebaseUser) {
             const userProfile = await getOrCreateUserProfile(firebaseUser);
@@ -99,10 +88,6 @@ export function UserProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = async (email: string, password: string): Promise<boolean> => {
-    if (isDemoMode) {
-      toast({ title: "Demo Mode", description: "Login is disabled in demo mode." });
-      return false;
-    }
     try {
       await signInWithEmailAndPassword(auth, email, password);
       // Auth state change will handle setting the user
@@ -118,10 +103,6 @@ export function UserProvider({ children }: { children: ReactNode }) {
   };
   
   const registerWithEmail = async (email: string, password: string): Promise<boolean> => {
-     if (isDemoMode) {
-      toast({ title: "Demo Mode", description: "Registration is disabled in demo mode." });
-      return false;
-    }
     try {
         await createUserWithEmailAndPassword(auth, email, password);
         // Auth state will change and trigger profile creation flow
@@ -137,10 +118,6 @@ export function UserProvider({ children }: { children: ReactNode }) {
   };
 
   const signInWithProvider = async (provider: GoogleAuthProvider): Promise<boolean> => {
-     if (isDemoMode) {
-      toast({ title: "Demo Mode", description: "Social sign-in is disabled in demo mode." });
-      return false;
-    }
     try {
         await signInWithPopup(auth, provider);
         // onAuthStateChanged will handle the rest
@@ -161,10 +138,6 @@ export function UserProvider({ children }: { children: ReactNode }) {
   }
 
   const signInWithMicrosoft = async (): Promise<boolean> => {
-     if (isDemoMode) {
-      toast({ title: "Demo Mode", description: "Social sign-in is disabled in demo mode." });
-      return false;
-    }
     // Firebase does not have a direct Microsoft provider for web like Google/Facebook.
     // This typically requires a custom flow with OAuth.
     // For this app, we will mock a failure and guide the user.
@@ -177,25 +150,12 @@ export function UserProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = async () => {
-    if (isDemoMode) {
-        setCurrentUser(null);
-        router.push('/login');
-        toast({ title: "Demo Mode", description: "You have been logged out of the demo." });
-        return;
-    }
     await signOut(auth);
     setCurrentUser(null);
     router.push('/login');
   };
   
   const updateCurrentUser = useCallback(async (userData: Partial<User>) => {
-    if (isDemoMode) {
-      if (currentUser) {
-        setCurrentUser({ ...currentUser, ...userData });
-        toast({ title: "Demo Mode", description: "User data updated in demo session." });
-      }
-      return;
-    }
     if (currentUser) {
         const updatedUser = { ...currentUser, ...userData };
         const userDocRef = doc(db, "users", currentUser.id);
