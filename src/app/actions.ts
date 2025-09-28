@@ -8,7 +8,96 @@ import type { Issue } from '@/lib/types';
 import { getUserByEmail, getUserById } from '@/lib/data';
 import { db, auth } from '@/firebase';
 import { collection, addDoc, serverTimestamp, updateDoc, doc, deleteDoc, getDoc, setDoc, writeBatch } from 'firebase/firestore';
-import seedData from '../docs/seed.json';
+
+const seedData = {
+  "users": {
+    "UID_STARTER": {
+      "firstName": "Alice",
+      "lastName": "Smith",
+      "email": "alice@factory.com",
+      "role": "operator",
+      "plan": "starter",
+      "orgId": "org001",
+      "productionLineId": "line001"
+    },
+    "UID_STANDARD": {
+      "firstName": "Bob",
+      "lastName": "Lee",
+      "email": "bob@factory.com",
+      "role": "operator",
+      "plan": "standard",
+      "orgId": "org001",
+      "productionLineId": "line001"
+    },
+    "UID_PRO": {
+      "firstName": "Charlie",
+      "lastName": "Kim",
+      "email": "charlie@factory.com",
+      "role": "operator",
+      "plan": "pro",
+      "orgId": "org001",
+      "productionLineId": "line002"
+    },
+    "UID_ENTERPRISE": {
+      "firstName": "Dana",
+      "lastName": "Park",
+      "email": "dana@factory.com",
+      "role": "admin",
+      "plan": "enterprise",
+      "orgId": "org001",
+      "productionLineId": "line001"
+    }
+  },
+  "stats": {
+    "org001": {
+      "userCount": 4,
+      "lineCount": 2
+    }
+  },
+  "productionLines": {
+    "line001": {
+      "id": "line001",
+      "name": "Main Assembly Line",
+      "workstations": ["Station A", "Station B"],
+      "orgId": "org001"
+    },
+    "line002": {
+      "id": "line002",
+      "name": "Secondary Line",
+      "workstations": ["Station C", "Station D"],
+      "orgId": "org001"
+    }
+  },
+  "facilityKeywords": {
+    "safety": {
+      "id": "safety",
+      "keyword": "safety"
+    },
+    "quality": {
+      "id": "quality",
+      "keyword": "quality"
+    },
+    "maintenance": {
+      "id": "maintenance",
+      "keyword": "maintenance"
+    }
+  },
+  "issues": {
+    "exampleIssue1": {
+      "description": "Machine stopped unexpectedly",
+      "location": "Station A",
+      "severity": "high",
+      "priority": "urgent",
+      "status": "reported",
+      "reportedBy": "UID_STARTER",
+      "assignedTo": "",
+      "facilityKeyword": "safety",
+      "reportedDate": "2025-09-27T10:00:00Z",
+      "productionLineId": "line001",
+      "orgId": "org001"
+    }
+  }
+};
 
 
 export async function setCustomUserClaims(uid: string, claims: { [key:string]: any }) {
