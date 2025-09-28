@@ -2,26 +2,10 @@
 "use client";
 
 import React, { createContext, useState, useContext, useEffect, ReactNode, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
 import type { Plan, User } from '@/lib/types';
-import { getUserByEmail, getUserById } from '@/lib/data';
-import { addUser } from '@/app/actions';
-import { auth, db } from '@/firebase';
-import { 
-    onAuthStateChanged, 
-    signInWithEmailAndPassword,
-    createUserWithEmailAndPassword,
-    GoogleAuthProvider,
-    signInWithPopup,
-    signOut,
-    User as FirebaseUser,
-    getAuth,
-    signInWithRedirect,
-    getRedirectResult,
-} from 'firebase/auth';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { toast } from '@/hooks/use-toast';
 
+// Firebase has been removed. This context now provides a mock, logged-out state.
 
 interface UserContextType {
   currentUser: User | null;
@@ -36,137 +20,46 @@ interface UserContextType {
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
-
-// Helper function to fetch or create a user profile in Firestore
-const getOrCreateUserProfile = async (firebaseUser: FirebaseUser): Promise<User | null> => {
-    const userDocRef = doc(db, "users", firebaseUser.uid);
-    const userDocSnap = await getDoc(userDocRef);
-
-    if (userDocSnap.exists()) {
-        return { id: userDocSnap.id, ...userDocSnap.data() } as User;
-    } else {
-        // This case is for social sign-ins where the user profile might not exist yet.
-        // We create a partial doc but return null so the app routes to complete-profile.
-        const [firstName, lastName] = firebaseUser.displayName?.split(' ') || ["", ""];
-        
-        const partialData = {
-            id: firebaseUser.uid,
-            email: firebaseUser.email || "",
-            firstName: firstName,
-            lastName: lastName,
-        };
-
-        await setDoc(userDocRef, partialData, { merge: true });
-
-        // Return a partial user object to signal that the profile is incomplete.
-        return {
-            id: firebaseUser.uid,
-            email: firebaseUser.email || "",
-            firstName: firstName,
-            lastName: lastName,
-        } as User;
-    }
-};
-
 export function UserProvider({ children }: { children: ReactNode }) {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const router = useRouter();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-        if (firebaseUser) {
-            const userProfile = await getOrCreateUserProfile(firebaseUser);
-            setCurrentUser(userProfile);
-        } else {
-            setCurrentUser(null);
-        }
+    // Simulate checking auth status
+    setTimeout(() => {
+        setCurrentUser(null);
         setLoading(false);
-    });
-
-    return () => unsubscribe();
+    }, 500);
   }, []);
 
   const login = async (email: string, password: string): Promise<boolean> => {
-    try {
-      await signInWithEmailAndPassword(auth, email, password);
-      // Auth state change will handle setting the user
-      return true;
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Login Failed",
-        description: error.message,
-      });
-      return false;
-    }
+    toast({ variant: "destructive", title: "Login Disabled", description: "Firebase has been removed." });
+    return false;
   };
   
   const registerWithEmail = async (email: string, password: string): Promise<boolean> => {
-    try {
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        const firebaseUser = userCredential.user;
-        // Manually create and set user to avoid race condition with onAuthStateChanged
-        const userProfile = await getOrCreateUserProfile(firebaseUser);
-        setCurrentUser(userProfile);
-        return true;
-    } catch (error: any) {
-        toast({
-            variant: "destructive",
-            title: "Registration Failed",
-            description: error.message
-        });
-        return false;
-    }
-  };
-
-  const signInWithProvider = async (provider: GoogleAuthProvider): Promise<boolean> => {
-    try {
-        await signInWithPopup(auth, provider);
-        // onAuthStateChanged will handle the rest
-        return true;
-    } catch (error: any) {
-        toast({
-            variant: "destructive",
-            title: "Sign-in Failed",
-            description: error.message,
-        });
-        return false;
-    }
+     toast({ variant: "destructive", title: "Registration Disabled", description: "Firebase has been removed." });
+    return false;
   };
 
   const signInWithGoogle = async (): Promise<boolean> => {
-    const provider = new GoogleAuthProvider();
-    return signInWithProvider(provider);
+    toast({ variant: "destructive", title: "Login Disabled", description: "Firebase has been removed." });
+    return false;
   }
 
   const signInWithMicrosoft = async (): Promise<boolean> => {
-    // Firebase does not have a direct Microsoft provider for web like Google/Facebook.
-    // This typically requires a custom flow with OAuth.
-    // For this app, we will mock a failure and guide the user.
-    toast({
-        title: "Not Implemented",
-        description: "Microsoft sign-in is not configured for this application. Please use Google or Email.",
-        variant: "destructive",
-    });
+    toast({ variant: "destructive", title: "Login Disabled", description: "Firebase has been removed." });
     return false;
   };
 
   const logout = async () => {
-    await signOut(auth);
-    setCurrentUser(null);
-    router.push('/login');
+     toast({ title: "Logged Out (Mock)"});
+     setCurrentUser(null);
   };
   
   const updateCurrentUser = useCallback(async (userData: Partial<User>) => {
-    if (currentUser) {
-        const updatedUser = { ...currentUser, ...userData };
-        const userDocRef = doc(db, "users", currentUser.id);
-        await setDoc(userDocRef, updatedUser, { merge: true });
-        setCurrentUser(updatedUser);
-    }
-  }, [currentUser]);
-
+    // Do nothing, as there is no user to update.
+  }, []);
 
   return (
     <UserContext.Provider value={{ currentUser, loading, login, registerWithEmail, signInWithGoogle, signInWithMicrosoft, logout, updateCurrentUser }}>
