@@ -104,8 +104,11 @@ export function UserProvider({ children }: { children: ReactNode }) {
   
   const registerWithEmail = async (email: string, password: string): Promise<boolean> => {
     try {
-        await createUserWithEmailAndPassword(auth, email, password);
-        // Auth state will change and trigger profile creation flow
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const firebaseUser = userCredential.user;
+        // Manually create and set user to avoid race condition with onAuthStateChanged
+        const userProfile = await getOrCreateUserProfile(firebaseUser);
+        setCurrentUser(userProfile);
         return true;
     } catch (error: any) {
         toast({
