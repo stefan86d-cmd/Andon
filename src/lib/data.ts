@@ -98,6 +98,8 @@ export async function getIssues(): Promise<Issue[]> {
 }
 
 export async function getIssueById(id: string): Promise<Issue | null> {
+    const auth = getAuth();
+    if (!auth.currentUser) return null;
     try {
         const issueDocRef = doc(db, "issues", id);
         const issueDoc = await getDoc(issueDocRef);
