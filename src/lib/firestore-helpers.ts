@@ -2,10 +2,10 @@ import { FirebaseError } from "firebase/app";
 
 export function handleFirestoreError(error: unknown) {
     if (error instanceof FirebaseError) {
-        console.error(`Firestore Error (${error.code}):`, error.message);
-        return { success: false, error: `A database error occurred: ${error.message}` };
+        return { success: false, error: `Firestore error (${error.code}): ${error.message}` };
+    } else if (error instanceof Error) {
+        return { success: false, error: `Error: ${error.message}` };
     } else {
-        console.error("An unexpected error occurred:", error);
         return { success: false, error: "An unexpected error occurred." };
     }
 }
