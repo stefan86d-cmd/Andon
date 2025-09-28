@@ -7,7 +7,8 @@ import { handleFirestoreError } from '@/lib/firestore-helpers';
 import type { Issue } from '@/lib/types';
 import { getUserByEmail, getUserById } from '@/lib/data';
 import { db, auth } from '@/firebase';
-import { collection, addDoc, serverTimestamp, updateDoc, doc, deleteDoc, getDoc, setDoc } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, updateDoc, doc, deleteDoc, getDoc, setDoc, writeBatch } from 'firebase/firestore';
+import seedData from '../docs/seed.json';
 
 
 export async function setCustomUserClaims(uid: string, claims: { [key:string]: any }) {
@@ -15,6 +16,58 @@ export async function setCustomUserClaims(uid: string, claims: { [key:string]: a
     // as the Admin SDK is required to set custom claims.
     console.log(`MOCK (Action): Setting custom claims for UID ${uid}:`, claims);
     return { success: true };
+}
+
+export async function seedDatabase() {
+    try {
+        const batch = writeBatch(db);
+
+        // Seed users
+        for (const [id, data] of Object.entries(seedData.users)) {
+            const ref = doc(db, "users", id);
+            batch.set(ref, data);
+        }
+
+        // Seed stats
+        for (const [id, data] of Object.entries(seedData.stats)) {
+            const ref = doc(db, "stats", id);
+            batch.set(ref, data);
+        }
+
+        // Seed productionLines
+        for (const [id, data] of Object.entries(seedData.productionLines)) {
+            const ref = doc(db, "productionLines", id);
+            batch.set(ref, data);
+        }
+        
+        // Seed facilityKeywords
+        for (const [id, data] of Object.entries(seedData.facilityKeywords)) {
+            const ref = doc(db, "facilityKeywords", id);
+            batch.set(ref, data);
+        }
+
+        // Seed issues
+        for (const [id, data] of Object.entries(seedData.issues)) {
+            const ref = doc(db, "issues", id);
+            const issueData = {
+                ...data,
+                reportedAt: new Date(data.reportedDate), // Convert string to Date
+                reportedBy: {
+                    email: "alice@factory.com",
+                    name: "Alice Smith"
+                }
+            };
+            delete (issueData as any).reportedDate;
+            batch.set(ref, issueData);
+        }
+        
+        await batch.commit();
+
+        revalidatePath('/'); // Revalidate all paths
+        return { success: true, message: 'Database seeded successfully!' };
+    } catch (error) {
+        return handleFirestoreError(error);
+    }
 }
 
 
@@ -182,4 +235,9 @@ export async function requestPasswordReset(email: string) {
 export async function resetPassword(token: string, newPassword: string) {
     console.log(`MOCK: Password has been reset successfully.`);
     return { success: true, message: 'Your password has been reset successfully.' };
+}
+
+export async function changePassword(email: string, current: string, newPass: string) {
+    console.log("MOCK: Password changed successfully for", email);
+    return { success: true };
 }
