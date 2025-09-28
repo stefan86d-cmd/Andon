@@ -18,44 +18,37 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
   const publicPages = ['/', '/pricing', '/about', '/services', '/support', '/terms'];
   const isPublicPage = publicPages.some(page => pathname === '/' || (page !== '/' && pathname.startsWith(page)));
 
-
   React.useEffect(() => {
     if (loading) {
-      return; // Do nothing while loading
+      return; // Wait for user status to be determined
     }
-    
+
     if (currentUser) {
-       // If user profile is not complete (e.g., no role), force to complete-profile page.
-       if (!currentUser.role && pathname !== '/complete-profile' && !pathname.startsWith('/register')) {
+      // User is logged in
+      if (!currentUser.role) {
+        // Profile is incomplete, force completion
+        if (!pathname.startsWith('/complete-profile') && !pathname.startsWith('/register')) {
            router.replace(`/complete-profile?plan=${currentUser.plan || 'starter'}`);
-           return;
-       }
-       
-       // If logged in and profile is complete, redirect away from auth pages.
-       if (isAuthPage && pathname !== '/checkout' && pathname !== '/complete-profile') {
-          const path = currentUser.role === 'operator' ? '/line-status' : '/dashboard';
-          router.replace(path);
-          return;
-       }
-       
-       // Redirect from public pages to the dashboard if logged in and profile is complete.
-       if (isPublicPage && currentUser.role) {
-          const path = currentUser.role === 'operator' ? '/line-status' : '/dashboard';
-          router.replace(path);
-          return;
-       }
-    } else {
-        // If not loading and not logged in, and not on a public/auth page, redirect to home.
-        if (!isPublicPage && !isAuthPage) {
-            router.replace('/');
         }
+      } else {
+        // Profile is complete, redirect from auth/public pages to their dashboard
+        if (isAuthPage || isPublicPage) {
+           const path = currentUser.role === 'operator' ? '/line-status' : '/dashboard';
+           router.replace(path);
+        }
+      }
+    } else {
+      // User is not logged in, restrict access to protected pages
+      if (!isPublicPage && !isAuthPage) {
+        router.replace('/login');
+      }
     }
-
   }, [currentUser, loading, router, pathname, isAuthPage, isPublicPage]);
-  
-  const showHeader = currentUser && currentUser.role && !isAuthPage && !isPublicPage;
 
-  if (loading && !isPublicPage && !isAuthPage) {
+  // --- Render Logic ---
+
+  // While loading, show a full-page loader to prevent content flash
+  if (loading) {
     return (
       <div className="flex h-screen items-center justify-center">
         <LoaderCircle className="h-8 w-8 animate-spin" />
@@ -63,27 +56,30 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // If we are not on a public or auth page, and we don't have a user, we show a loader
-  // while the useEffect redirects. This prevents content from flashing.
-  if (!isPublicPage && !isAuthPage && !currentUser) {
-      return (
-          <div className="flex h-screen items-center justify-center">
-              <LoaderCircle className="h-8 w-8 animate-spin" />
-          </div>
-      );
+  // If we are still waiting for a redirect to happen, show a loader
+  if (!currentUser && !isPublicPage && !isAuthPage) {
+     return (
+        <div className="flex h-screen items-center justify-center">
+            <LoaderCircle className="h-8 w-8 animate-spin" />
+        </div>
+    );
+  }
+  if (currentUser && currentUser.role && (isAuthPage || isPublicPage)) {
+     return (
+        <div className="flex h-screen items-center justify-center">
+            <LoaderCircle className="h-8 w-8 animate-spin" />
+        </div>
+    );
+  }
+   if (currentUser && !currentUser.role && !pathname.startsWith('/complete-profile') && !pathname.startsWith('/register')) {
+     return (
+        <div className="flex h-screen items-center justify-center">
+            <LoaderCircle className="h-8 w-8 animate-spin" />
+        </div>
+    );
   }
 
-  // If a user has just signed up but hasn't completed their profile, show a loader
-  // while we redirect to /complete-profile, instead of trying to render a page
-  // that will fail due to permissions.
-  if (currentUser && !currentUser.role && pathname !== '/complete-profile' && !pathname.startsWith('/register')) {
-      return (
-          <div className="flex h-screen items-center justify-center">
-              <LoaderCircle className="h-8 w-8 animate-spin" />
-          </div>
-      );
-  }
-
+  const showHeader = currentUser && currentUser.role && !isAuthPage && !isPublicPage;
 
   return (
     <div className="flex min-h-screen w-full flex-col">
