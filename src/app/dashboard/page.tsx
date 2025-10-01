@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -18,14 +19,22 @@ export default function Home() {
 
   useEffect(() => {
     const fetchData = async () => {
-      setLoading(true);
+      // Don't show loading skeleton on background refreshes
+      if (!issues.length) {
+        setLoading(true);
+      }
       const allIssuesData = await getIssues();
       setIssues(allIssuesData);
       setRecentIssues(allIssuesData.slice(0, 5));
       setLoading(false);
     };
-    fetchData();
-  }, []);
+    
+    fetchData(); // Initial fetch
+
+    const interval = setInterval(fetchData, 30000); // Refresh every 30 seconds
+
+    return () => clearInterval(interval); // Cleanup on unmount
+  }, [issues.length]);
   
   if (!currentUser || (currentUser.role !== 'admin' && currentUser.role !== 'supervisor')) {
     return (
