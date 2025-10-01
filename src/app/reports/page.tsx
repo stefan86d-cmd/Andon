@@ -59,15 +59,17 @@ export default function ReportsPage() {
   const [tempSelectedLines, setTempSelectedLines] = useState<string[]>([]);
   
   useEffect(() => {
+    if (!currentUser?.orgId) return;
+
     const fetchData = async () => {
       setLoading(true);
-      const [issuesData, linesData] = await Promise.all([getIssues(), getProductionLines()]);
+      const [issuesData, linesData] = await Promise.all([getIssues(currentUser.orgId!), getProductionLines(currentUser.orgId!)]);
       setIssues(issuesData);
       setProductionLines(linesData);
       setLoading(false);
     };
     fetchData();
-  }, []);
+  }, [currentUser?.orgId]);
 
   useEffect(() => {
     setTempSelectedLines(selectedLines);

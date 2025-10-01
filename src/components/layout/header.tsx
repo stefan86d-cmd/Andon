@@ -39,8 +39,9 @@ export function Header() {
     }
     
     if (currentUser?.role === 'admin' || currentUser?.role === 'supervisor') {
+      if (!currentUser.orgId) return;
       const calculateNewIssues = async () => {
-        const issues = await getIssues();
+        const issues = await getIssues(currentUser.orgId!);
         const lastSeenTimestamp = localStorage.getItem('lastSeenIssueTimestamp');
         
         let newCount;

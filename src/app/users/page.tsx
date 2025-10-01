@@ -25,14 +25,15 @@ export default function UsersPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!currentUser?.orgId) return;
     const fetchData = async () => {
       setLoading(true);
-      const usersData = await getAllUsers();
+      const usersData = await getAllUsers(currentUser.orgId!);
       setAllUsers(usersData);
       setLoading(false);
     };
     fetchData();
-  }, []);
+  }, [currentUser?.orgId]);
 
   if (loading || !currentUser) {
     return <AppLayout>

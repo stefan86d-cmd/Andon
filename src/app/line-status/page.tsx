@@ -31,14 +31,15 @@ export default function LineStatusPage() {
   const [issuesLoading, setIssuesLoading] = useState(false);
 
   useEffect(() => {
+    if (!currentUser?.orgId) return;
     const fetchLines = async () => {
       setLinesLoading(true);
-      const linesData = await getProductionLines();
+      const linesData = await getProductionLines(currentUser.orgId!);
       setProductionLines(linesData);
       setLinesLoading(false);
     };
     fetchLines();
-  }, []);
+  }, [currentUser?.orgId]);
 
   const allLines = productionLines || [];
   const selectedLine: ProductionLine | undefined = allLines.find(
@@ -46,9 +47,9 @@ export default function LineStatusPage() {
   );
   
   const fetchIssuesForStation = useCallback(async () => {
-    if (selectedLineId && selectedWorkstation && selectedLine) {
+    if (selectedLineId && selectedWorkstation && selectedLine && currentUser?.orgId) {
         setIssuesLoading(true);
-        const allIssues = await getIssues();
+        const allIssues = await getIssues(currentUser.orgId);
         const twentyFourHoursAgo = subHours(new Date(), 24);
         const fullWorkstationName = `${selectedLine.name} - ${selectedWorkstation}`;
         
@@ -61,7 +62,7 @@ export default function LineStatusPage() {
         setIssues(filteredIssues.sort((a, b) => b.reportedAt.getTime() - a.reportedAt.getTime()));
         setIssuesLoading(false);
     }
-  }, [selectedLineId, selectedWorkstation, selectedLine]);
+  }, [selectedLineId, selectedWorkstation, selectedLine, currentUser?.orgId]);
 
 
   useEffect(() => {

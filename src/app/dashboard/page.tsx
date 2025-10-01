@@ -18,12 +18,14 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!currentUser?.orgId) return;
+
     const fetchData = async () => {
       // Don't show loading skeleton on background refreshes
       if (!issues.length) {
         setLoading(true);
       }
-      const allIssuesData = await getIssues();
+      const allIssuesData = await getIssues(currentUser.orgId!);
       setIssues(allIssuesData);
       setRecentIssues(allIssuesData.slice(0, 5));
       setLoading(false);
@@ -34,7 +36,7 @@ export default function Home() {
     const interval = setInterval(fetchData, 30000); // Refresh every 30 seconds
 
     return () => clearInterval(interval); // Cleanup on unmount
-  }, [issues.length]);
+  }, [currentUser?.orgId, issues.length]);
   
   if (!currentUser || (currentUser.role !== 'admin' && currentUser.role !== 'supervisor')) {
     return (

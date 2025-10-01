@@ -33,11 +33,13 @@ export default function IssuesPage() {
   const [tempSelectedCategories, setTempSelectedCategories] = useState<string[]>([]);
 
   useEffect(() => {
+    if (!currentUser?.orgId) return;
+
     const fetchData = async () => {
         setLoading(true);
         const [issuesData, linesData] = await Promise.all([
-            getIssues(),
-            getProductionLines(),
+            getIssues(currentUser.orgId!),
+            getProductionLines(currentUser.orgId!),
         ]);
         setIssues(issuesData);
         setProductionLines(linesData);
@@ -67,7 +69,7 @@ export default function IssuesPage() {
         clearInterval(interval);
         window.removeEventListener('storage', handleStorageChange);
     };
-  }, []);
+  }, [currentUser?.orgId]);
 
   useEffect(() => {
     setTempSelectedLines(selectedLines);

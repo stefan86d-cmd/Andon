@@ -4,10 +4,11 @@ import type { User, Issue, ProductionLine, IssueDocument } from "@/lib/types";
 import { collection, getDocs, doc, getDoc, query, orderBy, where } from "firebase/firestore";
 import { handleFirestoreError } from "./firestore-helpers";
 
-export async function getProductionLines(): Promise<ProductionLine[]> {
+export async function getProductionLines(orgId: string): Promise<ProductionLine[]> {
     try {
         const linesCollection = collection(db, "productionLines");
-        const snapshot = await getDocs(linesCollection);
+        const q = query(linesCollection, where("orgId", "==", orgId));
+        const snapshot = await getDocs(q);
         return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as ProductionLine));
     } catch (error) {
         console.error("Error fetching production lines:", error);
@@ -15,10 +16,11 @@ export async function getProductionLines(): Promise<ProductionLine[]> {
     }
 }
 
-export async function getAllUsers(): Promise<User[]> {
+export async function getAllUsers(orgId: string): Promise<User[]> {
     try {
         const usersCollection = collection(db, "users");
-        const snapshot = await getDocs(usersCollection);
+        const q = query(usersCollection, where("orgId", "==", orgId));
+        const snapshot = await getDocs(q);
         return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
     } catch (error) {
         console.error("Error fetching all users:", error);
@@ -84,10 +86,10 @@ const transformIssueDocument = async (doc: any): Promise<Issue> => {
 };
 
 
-export async function getIssues(): Promise<Issue[]> {
+export async function getIssues(orgId: string): Promise<Issue[]> {
     try {
         const issuesCollection = collection(db, "issues");
-        const q = query(issuesCollection, orderBy("reportedAt", "desc"));
+        const q = query(issuesCollection, where("orgId", "==", orgId), orderBy("reportedAt", "desc"));
         const snapshot = await getDocs(q);
         
         const issues = await Promise.all(snapshot.docs.map(transformIssueDocument));

@@ -28,14 +28,15 @@ export default function LinesPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!currentUser?.orgId) return;
     const fetchLines = async () => {
       setLoading(true);
-      const linesData = await getProductionLines();
+      const linesData = await getProductionLines(currentUser.orgId!);
       setProductionLines(linesData);
       setLoading(false);
     };
     fetchLines();
-  }, []);
+  }, [currentUser?.orgId]);
 
   if (!currentUser || loading) {
     return (
