@@ -79,7 +79,7 @@ export default function IssueTrackingPage() {
 
         <section className="container text-center pb-20">
           <Image
-            src="https://picsum.photos/seed/issues/1200/675"
+            src="/Issues.png"
             alt="Issue Tracking Screenshot"
             width={1200}
             height={675}

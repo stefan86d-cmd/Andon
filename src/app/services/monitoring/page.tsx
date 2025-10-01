@@ -79,7 +79,7 @@ export default function ProductionMonitoringPage() {
 
         <section className="container text-center pb-20">
           <Image
-            src="https://picsum.photos/seed/dashboard/1200/675"
+            src="/Production_monitoring.png"
             alt="AndonPro Dashboard Screenshot"
             width={1200}
             height={675}
