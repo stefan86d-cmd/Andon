@@ -6,11 +6,11 @@ import { getFirestore } from "firebase/firestore";
 // --- IMPORTANT ---
 // Paste your Firebase project's configuration object here.
 const firebaseConfig = {
-  apiKey: "PASTE_YOUR_API_KEY",
-  authDomain: "PASTE_YOUR_AUTH_DOMAIN",
-  projectId: "PASTE_YOUR_PROJECT_ID",
-  storageBucket: "PASTE_YOUR_STORAGE_BUCKET",
-  messagingSenderId: "PASTE_YOUR_MESSAGING_SENDER_ID",
+  apiKey: "AIzaSyCjUZRMo0iUJxRcyI4FREamMzaeuA2zn3A",
+  authDomain: "andon-ef46a.firebaseapp.com",
+  projectId: "andon-ef46a",
+  storageBucket: "andon-ef46a.appspot.com",
+  messagingSenderId: "1035401871381",
   appId: "PASTE_YOUR_APP_ID",
 };
 
