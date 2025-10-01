@@ -32,7 +32,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
         }
       } else {
         // Profile is complete, redirect from auth/public pages to their dashboard
-        if (isAuth_Page || isPublicPage) {
+        if (isAuthPage || isPublicPage) {
            const path = currentUser.role === 'operator' ? '/line-status' : '/dashboard';
            router.replace(path);
         }
