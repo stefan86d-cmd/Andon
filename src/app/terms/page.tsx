@@ -4,7 +4,6 @@ import { Logo } from "@/components/layout/logo";
 import { cn } from "@/lib/utils";
 import { MegaMenu } from "@/components/layout/mega-menu";
 import { buttonVariants } from "@/components/ui/button";
-import { Construction } from "lucide-react";
 import FooterLogo from "@/components/layout/footer-logo";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 
@@ -71,19 +70,43 @@ export default function TermsPage() {
       </header>
 
       <main className="flex-1">
-        <section className="py-20 text-center bg-background">
-            <div className="container">
+        <section className="py-20 bg-background">
+            <div className="container text-center">
                 <h1 className="text-4xl font-bold mb-4">Terms of Service</h1>
+                <p className="text-muted-foreground">Last Updated: September 27, 2025</p>
             </div>
         </section>
         <section className="py-20 bg-muted flex-1">
-            <div className="container text-center">
-                <div className="max-w-md mx-auto">
-                    <Construction className="h-16 w-16 mx-auto text-primary mb-4" />
-                    <h2 className="text-2xl font-semibold mb-2">Coming Soon!</h2>
-                    <p className="text-muted-foreground">
-                        Our Terms of Service are being updated. Please check back soon!
-                    </p>
+            <div className="container max-w-4xl mx-auto">
+                <div className="prose dark:prose-invert max-w-none">
+                    <p>Welcome to AndonPro. These Terms of Service ("Terms") govern your access to and use of the AndonPro application, website, and services (collectively, the "Service"). Please read them carefully.</p>
+
+                    <h3>1. Acceptance of Terms</h3>
+                    <p>By creating an account or by using our Service, you agree to be bound by these Terms and our Privacy Policy. If you do not agree to these Terms, you may not use the Service.</p>
+                    
+                    <h3>2. Use of the Service</h3>
+                    <p>You agree to use the Service only for lawful purposes and in accordance with these Terms. You are responsible for all data and information you input into the Service ("User Data") and for any consequences thereof.</p>
+
+                    <h3>3. User Accounts</h3>
+                    <p>To use the Service, you must create an account. You are responsible for safeguarding your account password and for all activities that occur under your account. You must notify us immediately of any unauthorized use of your account. The first user to register for an organization is designated as the "Admin" and is responsible for managing other users within that organization.</p>
+
+                    <h3>4. Subscriptions and Billing</h3>
+                    <p>The Service is billed on a subscription basis. You will be billed in advance on a recurring, periodic basis (such as monthly or annually), depending on the subscription plan you select. All subscriptions will automatically renew under the then-current rates unless you cancel your subscription through your account management page.</p>
+
+                    <h3>5. User Data and Intellectual Property</h3>
+                    <p>You retain all ownership rights to your User Data. We do not claim any ownership over your data. However, you grant us a worldwide, royalty-free license to use, reproduce, modify, and display the User Data solely for the purpose of providing and improving the Service. Our own materials, including our logo, design, software, and content ("AndonPro IP"), are protected by intellectual property laws and are our exclusive property.</p>
+
+                    <h3>6. Limitation of Liability</h3>
+                    <p>To the fullest extent permitted by law, AndonPro shall not be liable for any indirect, incidental, special, consequential, or punitive damages, or any loss of profits or revenues, whether incurred directly or indirectly, or any loss of data, use, goodwill, or other intangible losses, resulting from (a) your access to or use of or inability to access or use the Service; (b) any conduct or content of any third party on the Service.</p>
+
+                    <h3>7. Termination</h3>
+                    <p>We may suspend or terminate your account and access to the Service at our sole discretion, without prior notice, for conduct that we believe violates these Terms or is otherwise harmful to other users of the Service, us, or third parties. You may cancel your account at any time.</p>
+
+                    <h3>8. Governing Law</h3>
+                    <p>These Terms shall be governed by the laws of Finland, without respect to its conflict of laws principles.</p>
+
+                    <h3>9. Changes to Terms</h3>
+                    <p>We reserve the right to modify these Terms at any time. We will provide notice of any significant changes by posting the new Terms on our site. Your continued use of the Service after any such change constitutes your acceptance of the new Terms.</p>
                 </div>
             </div>
         </section>
