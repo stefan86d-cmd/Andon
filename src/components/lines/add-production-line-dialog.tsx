@@ -5,6 +5,7 @@ import React, { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -40,6 +41,7 @@ export function AddProductionLineDialog({ children }: { children: React.ReactNod
   const [open, setOpen] = useState(false);
   const [isSubmitting, startSubmittingTransition] = useTransition();
   const { currentUser } = useUser();
+  const router = useRouter();
 
   const form = useForm<LineFormValues>({
     resolver: zodResolver(lineFormSchema),
@@ -62,6 +64,7 @@ export function AddProductionLineDialog({ children }: { children: React.ReactNod
                 description: `The line "${data.name}" has been created.`,
             });
             setOpen(false);
+            router.refresh();
         } else {
             toast({
                 variant: "destructive",

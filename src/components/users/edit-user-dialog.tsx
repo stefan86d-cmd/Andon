@@ -5,6 +5,7 @@ import React, { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -54,6 +55,7 @@ interface EditUserDialogProps {
 export function EditUserDialog({ user }: EditUserDialogProps) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, startSubmittingTransition] = useTransition();
+  const router = useRouter();
 
   const form = useForm<UserFormValues>({
     resolver: zodResolver(userFormSchema),
@@ -75,6 +77,7 @@ export function EditUserDialog({ user }: EditUserDialogProps) {
           description: "The user's details have been successfully updated.",
         });
         setOpen(false);
+        router.refresh();
       } else {
         toast({
           variant: "destructive",
@@ -192,5 +195,3 @@ export function EditUserDialog({ user }: EditUserDialogProps) {
     </Dialog>
   );
 }
-
-    

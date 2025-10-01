@@ -37,6 +37,7 @@ import { useUser } from "@/contexts/user-context";
 import { SafeHydrate } from "../layout/safe-hydrate";
 import { Skeleton } from "../ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { useRouter } from "next/navigation";
 
 const categoryInfo: Record<IssueCategory, { label: string; icon: React.ElementType, color: string }> = {
     it: { label: 'IT & Network', icon: Monitor, color: 'text-blue-500' },
@@ -91,15 +92,11 @@ const StatusDisplay = ({ status }: { status: Status }) => {
 export function IssuesDataTable({ issues, title, description, loading }: { issues: Issue[], title?: string, description?: string, loading?: boolean }) {
   const { currentUser } = useUser();
   const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
+  const router = useRouter();
 
   const handleIssueUpdate = (updatedIssue: Issue) => {
-    // In a real app with client-side state management (like SWR or React Query),
-    // you would trigger a re-fetch or optimistically update the local cache.
-    // Since we are using server actions and revalidatePath, a page refresh will show the update.
-    console.log("Issue updated:", updatedIssue);
     setSelectedIssue(null);
-    // For now, we manually reload to see the change.
-    window.location.reload();
+    router.refresh();
   };
   
   const canResolveIssues = currentUser?.role === 'admin' || currentUser?.role === 'supervisor';

@@ -21,6 +21,7 @@ import { changePassword } from "@/app/actions";
 import type { Plan } from "@/lib/types";
 import { Logo } from "@/components/layout/logo";
 import { countries } from "@/lib/countries";
+import { useRouter } from "next/navigation";
 import {
   Accordion,
   AccordionContent,
@@ -55,6 +56,7 @@ export default function AccountSettingsPage() {
     const { currentUser, updateCurrentUser } = useUser();
     const [isProfileSubmitting, startProfileTransition] = useTransition();
     const [isPasswordSubmitting, startPasswordTransition] = useTransition();
+    const router = useRouter();
     
     // State for toggling profile edit mode
     const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -112,6 +114,7 @@ export default function AccountSettingsPage() {
                 description: "Your information has been updated successfully.",
             });
             setIsEditingProfile(false); // Go back to read-only view
+            router.refresh();
         });
     }
 

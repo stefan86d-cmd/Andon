@@ -18,6 +18,7 @@ import { toast } from "@/hooks/use-toast";
 import { LoaderCircle, Trash2 } from "lucide-react";
 import { deleteProductionLine } from "@/app/actions";
 import type { ProductionLine } from "@/lib/types";
+import { useRouter } from "next/navigation";
 
 interface DeleteProductionLineDialogProps {
   productionLine: ProductionLine;
@@ -26,6 +27,7 @@ interface DeleteProductionLineDialogProps {
 export function DeleteProductionLineDialog({ productionLine }: DeleteProductionLineDialogProps) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, startSubmittingTransition] = useTransition();
+  const router = useRouter();
 
   const handleDelete = () => {
     startSubmittingTransition(async () => {
@@ -37,6 +39,7 @@ export function DeleteProductionLineDialog({ productionLine }: DeleteProductionL
           description: `The line "${productionLine.name}" has been deleted.`,
         });
         setOpen(false);
+        router.refresh();
       } else {
         toast({
           variant: "destructive",

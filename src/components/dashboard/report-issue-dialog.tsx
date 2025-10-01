@@ -217,6 +217,7 @@ export function ReportIssueDialog({
               description: "Your issue has been successfully submitted.",
             });
             setOpen(false);
+            router.refresh();
         } else {
             toast({
                 variant: "destructive",

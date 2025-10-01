@@ -5,6 +5,7 @@ import React, { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -59,6 +60,7 @@ export function EditProductionLineDialog({ children, productionLine }: EditProdu
   const [open, setOpen] = useState(false);
   const [isSubmitting, startSubmittingTransition] = useTransition();
   const { currentUser } = useUser();
+  const router = useRouter();
 
   const form = useForm<LineFormValues>({
     resolver: zodResolver(lineFormSchema),
@@ -83,6 +85,7 @@ export function EditProductionLineDialog({ children, productionLine }: EditProdu
                 description: `The line "${data.name}" has been updated.`,
             });
             setOpen(false);
+            router.refresh();
         } else {
             toast({
                 variant: "destructive",

@@ -5,6 +5,7 @@ import React, { useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -58,6 +59,7 @@ interface ResolveIssueDialogProps {
 export function ResolveIssueDialog({ isOpen, onOpenChange, issue, onIssueUpdate }: ResolveIssueDialogProps) {
   const [isSubmitting, startTransition] = useTransition();
   const { currentUser } = useUser();
+  const router = useRouter();
 
   const form = useForm<ResolveIssueFormValues>({
     resolver: zodResolver(resolveIssueFormSchema),
@@ -84,6 +86,7 @@ export function ResolveIssueDialog({ isOpen, onOpenChange, issue, onIssueUpdate 
             onIssueUpdate(issue); // We can pass the original issue to trigger the callback
             onOpenChange(false);
             form.reset();
+            router.refresh();
         } else {
             toast({
                 title: "Update Failed",
