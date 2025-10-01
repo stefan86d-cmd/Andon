@@ -58,7 +58,7 @@ const faqs = [
     },
     {
         question: "How does AndonPro use AI?",
-        answer: "AndonPro integrates AI to provide intelligent insights and streamline your workflow. When an operator reports an issue, our AI can analyze the description to suggest an appropriate priority level, helping supervisors focus on the most critical problems first. Additionally, our reporting tools use AI to analyze issue data, identify trends, and generate actionable recommendations to help you prevent future downtime."
+        answer: "AndonPro integrates AI to provide intelligent insights and streamline your workflow. When an operator reports an issue, our AI can analyze the description to suggest an appropriate priority level, helping supervisors focus on the most critical problems first."
     }
 ]
 
