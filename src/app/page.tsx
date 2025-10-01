@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { MegaMenu } from "@/components/layout/mega-menu";
 import FooterLogo from "@/components/layout/footer-logo";
 import Image from "next/image";
+import { PlaceHolderImages } from "@/lib/placeholder-images";
 
 const features = [
   {
@@ -50,23 +51,10 @@ const supportMenuItems = [
     { title: "Contact Us", description: "Get in touch with our team for personalized support.", badge: "", href: "/support/contact" },
 ];
 
-const servicesImage = {
-    imageUrl: "https://picsum.photos/seed/factory/600/400",
-    description: "Image of a factory production line",
-    imageHint: "production factory",
-};
+const servicesImage = PlaceHolderImages.find(p => p.id === 'mega-menu-services');
+const exploreImage = PlaceHolderImages.find(p => p.id === 'mega-menu-explore');
+const supportImage = PlaceHolderImages.find(p => p.id === 'mega-menu-support');
 
-const exploreImage = {
-    imageUrl: "https://picsum.photos/seed/helsinki/600/400",
-    description: "Image of Helsinki for explore mega menu",
-    imageHint: "Helsinki cityscape",
-};
-
-const supportImage = {
-    imageUrl: "https://picsum.photos/seed/support/600/400",
-    description: "Image for support mega menu",
-    imageHint: "technical support",
-};
 
 export default function HomePage() {
 

@@ -14,6 +14,7 @@ import {
 import { cn } from "@/lib/utils"
 import Image from "next/image"
 import { Badge } from "@/components/ui/badge"
+import type { ImagePlaceholder } from "@/lib/placeholder-images";
 
 interface MegaMenuItem {
     title: string;
@@ -25,11 +26,7 @@ interface MegaMenuItem {
 interface MegaMenuProps {
     triggerText: string;
     items: MegaMenuItem[];
-    image?: {
-        imageUrl: string;
-        description: string;
-        imageHint: string;
-    };
+    image?: ImagePlaceholder;
 }
 
 export function MegaMenu({ triggerText, items, image }: MegaMenuProps) {
@@ -59,7 +56,6 @@ export function MegaMenu({ triggerText, items, image }: MegaMenuProps) {
                     <Image
                         src={image.imageUrl}
                         alt={image.description}
-                        data-ai-hint={image.imageHint}
                         fill
                         className="object-cover"
                     />

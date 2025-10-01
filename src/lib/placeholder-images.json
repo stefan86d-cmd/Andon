@@ -27,7 +27,7 @@
     {
       "id": "user-avatar-alice",
       "description": "Placeholder avatar for Alice Williams",
-      "imageUrl": "https://images.unsplash.com/photo-1535643302794-19c3804b874b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxwZXJzb24lMjBwb3J0cmFpdHxlbnwwfHx8fDE3NTg1ODUxMDl8MA&ixlib-rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1535643302794-19c3804b874b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxwZXJzb24lMjBwb3J0cmFpdHxlbnwwfHx8fDE3NTg1ODUxMDl8MA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "person portrait"
     },
     {
@@ -51,31 +51,31 @@
     {
       "id": "category-other",
       "description": "Icon for other problems",
-      "imageUrl": "https://images.unsplash.com/photo-1663465374413-83cba00bff6f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxxdWVzdGlvbiUyMG1hcmt8ZW58MHx8fHwxNzU4NjA3ODY3fDA&ixlib-rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1663465374413-83cba00bff6f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxxdWVzdGlvbiUyMG1hcmt8ZW58MHx8fHwxNzU4NjA3ODY3fDA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "question mark"
     },
     {
       "id": "mega-menu-services",
       "description": "Image for services mega menu of a factory production line",
-      "imageUrl": "/Factory.jpg",
-      "imageHint": "production factory"
+      "imageUrl": "/factory.jpg",
+      "imageHint": ""
     },
     {
       "id": "mega-menu-explore",
       "description": "Image of Helsinki for explore mega menu",
-      "imageUrl": "/Helsinki.jpg",
-      "imageHint": "Helsinki cityscape"
+      "imageUrl": "/helsinki.jpg",
+      "imageHint": ""
     },
     {
       "id": "mega-menu-support",
       "description": "Image for support mega menu",
-      "imageUrl": "/Tech_support.jpg",
-      "imageHint": "technical support"
+      "imageUrl": "/tech_support.jpg",
+      "imageHint": ""
     },
     {
       "id": "dashboard-screenshot",
       "description": "A placeholder screenshot of the AndonPro dashboard",
-      "imageUrl": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxEYXNoYm9hcmQlMjBBbmFseXRpY3N8ZW58MHx8fHwxNzU4NjA5MzUwfDA&ixlib-rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxEYXNoYm9hcmQlMjBBbmFseXRpY3N8ZW58MHx8fHwxNzU4NjA5MzUwfDA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "dashboard analytics"
     }
   ]
