@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -39,15 +40,23 @@ export default function LineStatusPage() {
     fetchLines();
   }, []);
 
+  const allLines = productionLines || [];
+  const selectedLine: ProductionLine | undefined = allLines.find(
+    (line) => line.id === selectedLineId
+  );
+
   useEffect(() => {
-    if (selectedLineId && selectionConfirmed) {
+    if (selectedLineId && selectedWorkstation && selectionConfirmed) {
       const fetchIssues = async () => {
         setIssuesLoading(true);
         const allIssues = await getIssues();
         const twentyFourHoursAgo = subHours(new Date(), 24);
+        const fullWorkstationName = `${selectedLine?.name} - ${selectedWorkstation}`;
+        
         const filteredIssues = allIssues.filter(
           (issue) =>
             issue.productionLineId === selectedLineId &&
+            issue.location === fullWorkstationName &&
             issue.reportedAt >= twentyFourHoursAgo
         );
         setIssues(filteredIssues.sort((a, b) => b.reportedAt.getTime() - a.reportedAt.getTime()));
@@ -55,7 +64,7 @@ export default function LineStatusPage() {
       };
       fetchIssues();
     }
-  }, [selectedLineId, selectionConfirmed]);
+  }, [selectedLineId, selectedWorkstation, selectedLine, selectionConfirmed]);
 
   const loading = linesLoading;
 
@@ -75,11 +84,6 @@ export default function LineStatusPage() {
     setSelectedLineId(undefined);
     setSelectedWorkstation(undefined);
   }
-
-  const allLines = productionLines || [];
-  const selectedLine: ProductionLine | undefined = allLines.find(
-    (line) => line.id === selectedLineId
-  );
   
   const userIssues = issues || [];
   
@@ -161,7 +165,7 @@ export default function LineStatusPage() {
                     issues={userIssues} 
                     loading={issuesLoading}
                     title="Recent Issues at Your Station"
-                    description="Issues reported on this line in the last 24 hours." 
+                    description="Issues reported on this workstation in the last 24 hours." 
                 />
             </div>
         )}
