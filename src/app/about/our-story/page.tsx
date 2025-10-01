@@ -96,12 +96,11 @@ export default function OurStoryPage() {
                 </div>
                 <div>
                     <Image 
-                        src="https://picsum.photos/seed/helsinki2/800/600"
+                        src="/Helsinki2.jpg"
                         alt="Helsinki cityscape"
                         width={800}
                         height={600}
                         className="rounded-lg shadow-xl"
-                        data-ai-hint="Helsinki city"
                     />
                 </div>
               </div>
