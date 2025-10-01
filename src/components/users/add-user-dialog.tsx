@@ -182,7 +182,7 @@ export function AddUserDialog({ children }: { children: React.ReactNode }) {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="admin">Admin</SelectItem>
+                      <SelectItem value="admin" disabled>Admin</SelectItem>
                       <SelectItem value="supervisor">Supervisor</SelectItem>
                       <SelectItem value="operator">Operator</SelectItem>
                     </SelectContent>

@@ -175,7 +175,7 @@ export function EditUserDialog({ user }: EditUserDialogProps) {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="admin">Admin</SelectItem>
+                      <SelectItem value="admin" disabled>Admin</SelectItem>
                       <SelectItem value="supervisor">Supervisor</SelectItem>
                       <SelectItem value="operator">Operator</SelectItem>
                     </SelectContent>
