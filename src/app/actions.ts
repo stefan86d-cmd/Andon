@@ -8,6 +8,7 @@ import { getUserByEmail, getUserById } from '@/lib/data';
 import { db, auth } from '@/firebase';
 import { collection, addDoc, serverTimestamp, updateDoc, doc, deleteDoc, getDoc, setDoc, writeBatch } from 'firebase/firestore';
 import { createUserWithEmailAndPassword } from "firebase/auth";
+import { seedData } from "@/lib/seed";
 
 export async function setCustomUserClaims(uid: string, claims: { [key:string]: any }) {
     // This function requires the Firebase Admin SDK and should be in a Cloud Function.
@@ -17,7 +18,45 @@ export async function setCustomUserClaims(uid: string, claims: { [key:string]: a
 }
 
 export async function seedDatabase() {
-     return { success: false, error: "Database seeding is disabled in this version." };
+    try {
+        const batch = writeBatch(db);
+
+        // Seed Users
+        for (const [uid, userData] of Object.entries(seedData.users)) {
+            const userRef = doc(db, "users", uid);
+            batch.set(userRef, userData);
+        }
+
+        // Seed Production Lines
+        for (const [lineId, lineData] of Object.entries(seedData.productionLines)) {
+            const lineRef = doc(db, "productionLines", lineId);
+            batch.set(lineRef, lineData);
+        }
+
+        // Seed Issues
+        for (const [issueId, issueData] of Object.entries(seedData.issues)) {
+            const issueRef = doc(db, "issues", issueId);
+            const reportedAtDate = new Date(issueData.reportedDate);
+            batch.set(issueRef, { ...issueData, reportedAt: reportedAtDate });
+        }
+
+        // Seed Stats
+        for (const [orgId, statsData] of Object.entries(seedData.stats)) {
+            const statsRef = doc(db, "stats", orgId);
+            batch.set(statsRef, statsData);
+        }
+        
+        // Seed Facility Keywords
+        for (const [keywordId, keywordData] of Object.entries(seedData.facilityKeywords)) {
+            const keywordRef = doc(db, "facilityKeywords", keywordId);
+            batch.set(keywordRef, keywordData);
+        }
+
+        await batch.commit();
+        return { success: true, message: "Database seeded successfully!" };
+    } catch (error) {
+        return handleFirestoreError(error);
+    }
 }
 
 export async function reportIssue(issueData: Omit<Issue, 'id' | 'reportedAt' | 'status' | 'reportedBy' | 'resolvedBy' >, reportedByEmail: string) {
