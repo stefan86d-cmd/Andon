@@ -57,19 +57,19 @@
     {
       "id": "mega-menu-services",
       "description": "Image for services mega menu of a factory production line",
-      "imageUrl": "/factory.jpg",
+      "imageUrl": "/Factory.jpg",
       "imageHint": ""
     },
     {
       "id": "mega-menu-explore",
       "description": "Image of Helsinki for explore mega menu",
-      "imageUrl": "/helsinki.jpg",
+      "imageUrl": "/Helsinki.jpg",
       "imageHint": ""
     },
     {
       "id": "mega-menu-support",
       "description": "Image for support mega menu",
-      "imageUrl": "/tech_support.jpg",
+      "imageUrl": "/Tech_support.jpg",
       "imageHint": ""
     },
     {
