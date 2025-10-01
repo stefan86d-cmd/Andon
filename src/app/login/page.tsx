@@ -20,6 +20,7 @@ import { LoaderCircle, Database } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
 import { AppLayout } from '@/components/layout/app-layout';
+import { seedDatabase } from '@/app/actions';
 
 function GoogleIcon() {
   return (
@@ -61,6 +62,7 @@ export default function LoginPage() {
   const [isLoggingIn, startLoginTransition] = useTransition();
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [isMicrosoftLoading, setIsMicrosoftLoading] = useState(false);
+  const [isSeeding, startSeedingTransition] = useTransition();
   const router = useRouter();
   const { loading, login, signInWithGoogle, signInWithMicrosoft } = useUser();
 
@@ -106,6 +108,24 @@ export default function LoginPage() {
     });
     setIsMicrosoftLoading(false);
   };
+  
+  const handleSeedDatabase = () => {
+    startSeedingTransition(async () => {
+        const result = await seedDatabase();
+        if (result.success) {
+            toast({
+                title: "Database Seeded!",
+                description: "Sample data has been added to Firestore.",
+            });
+        } else {
+            toast({
+                variant: "destructive",
+                title: "Seeding Failed",
+                description: result.error,
+            });
+        }
+    });
+  }
 
   return (
     <div className="bg-muted">
@@ -184,6 +204,15 @@ export default function LoginPage() {
                                     Sign up
                                 </span>
                             </Link>
+                        </div>
+                         <div className="relative my-4">
+                            <Separator />
+                        </div>
+                        <div>
+                             <Button variant="outline" className="w-full" onClick={handleSeedDatabase} disabled={isSeeding}>
+                                {isSeeding ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : <Database className="mr-2 h-4 w-4" />}
+                                Seed Database
+                            </Button>
                         </div>
                     </CardContent>
                 </Card>
