@@ -53,7 +53,7 @@ interface ResolveIssueDialogProps {
     isOpen: boolean;
     onOpenChange: (isOpen: boolean) => void;
     issue: Issue;
-    onIssueUpdate: (issue: Issue) => void;
+    onIssueUpdate: () => void;
 }
 
 export function ResolveIssueDialog({ isOpen, onOpenChange, issue, onIssueUpdate }: ResolveIssueDialogProps) {
@@ -83,10 +83,9 @@ export function ResolveIssueDialog({ isOpen, onOpenChange, issue, onIssueUpdate 
                 title: "Issue Updated",
                 description: `The issue has been marked as ${data.status}.`,
             });
-            onIssueUpdate(issue); // We can pass the original issue to trigger the callback
+            onIssueUpdate();
             onOpenChange(false);
             form.reset();
-            router.refresh();
         } else {
             toast({
                 title: "Update Failed",

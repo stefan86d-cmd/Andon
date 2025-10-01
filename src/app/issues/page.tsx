@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -52,6 +53,20 @@ export default function IssuesPage() {
         }
     };
     fetchData();
+
+    const handleStorageChange = (event: StorageEvent) => {
+        if (event.key === 'lastSeenIssueTimestamp') {
+            fetchData();
+        }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    const interval = setInterval(fetchData, 30000); 
+
+    return () => {
+        clearInterval(interval);
+        window.removeEventListener('storage', handleStorageChange);
+    };
   }, []);
 
   useEffect(() => {

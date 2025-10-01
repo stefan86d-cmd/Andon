@@ -94,7 +94,7 @@ export function IssuesDataTable({ issues, title, description, loading }: { issue
   const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
   const router = useRouter();
 
-  const handleIssueUpdate = (updatedIssue: Issue) => {
+  const handleIssueUpdate = () => {
     setSelectedIssue(null);
     router.refresh();
   };
