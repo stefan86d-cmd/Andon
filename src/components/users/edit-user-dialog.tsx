@@ -38,6 +38,7 @@ import { LoaderCircle, Pencil } from "lucide-react";
 import { editUser } from "@/app/actions";
 import type { User } from "@/lib/types";
 import { DropdownMenuItem } from "../ui/dropdown-menu";
+import { useUser } from "@/contexts/user-context";
 
 const userFormSchema = z.object({
   firstName: z.string().min(1, "First name is required."),
@@ -56,6 +57,9 @@ export function EditUserDialog({ user }: EditUserDialogProps) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, startSubmittingTransition] = useTransition();
   const router = useRouter();
+  const { currentUser } = useUser();
+
+  const isEditingSelfAsAdmin = currentUser?.id === user.id && user.role === "admin";
 
   const form = useForm<UserFormValues>({
     resolver: zodResolver(userFormSchema),
@@ -164,7 +168,7 @@ export function EditUserDialog({ user }: EditUserDialogProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Role</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                  <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value} disabled={isEditingSelfAsAdmin}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select a role" />
@@ -176,6 +180,11 @@ export function EditUserDialog({ user }: EditUserDialogProps) {
                       <SelectItem value="operator">Operator</SelectItem>
                     </SelectContent>
                   </Select>
+                   {isEditingSelfAsAdmin && (
+                    <p className="text-sm text-muted-foreground">
+                      Admins cannot change their own role.
+                    </p>
+                  )}
                   <FormMessage />
                 </FormItem>
               )}
