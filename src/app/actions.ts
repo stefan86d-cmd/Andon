@@ -79,22 +79,16 @@ export async function deleteProductionLine(lineId: string) {
     }
 }
 
-export async function addUser(data: { uid: string, firstName: string, lastName: string, email: string, role: Role, plan: User['plan'], orgId: string, address?: string, country?: string, phone?: string }) {
-    // This is a simplified version. A real app would use a Cloud Function to create the auth user
-    // and then create the Firestore document.
-     try {
-        const userDocRef = doc(db, "users", data.uid);
-        await setDoc(userDocRef, {
-            firstName: data.firstName,
-            lastName: data.lastName,
-            email: data.email,
-            role: data.role,
-            plan: data.plan,
-            orgId: data.orgId,
+export async function addUser(data: { firstName: string; lastName: string; email: string; role: Role; plan: Plan; orgId: string; }) {
+    try {
+        // Instead of creating the user directly, we create an "invite"
+        // A Cloud Function would then pick this up to create the Auth user and send an email.
+        const invitesCollection = collection(db, "invites");
+        await addDoc(invitesCollection, {
+            ...data,
+            createdAt: serverTimestamp(),
         });
-        // This part would be a cloud function to avoid exposing high-privilege operations
-        // await setCustomUserClaims(auth, data.uid, { role: data.role, plan: data.plan });
-        return { success: true, message: `User ${data.email} created successfully.` };
+        return { success: true, message: `An invitation email will be sent to ${data.email}.` };
     } catch (error) {
         return handleFirestoreError(error);
     }
