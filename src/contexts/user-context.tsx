@@ -2,10 +2,21 @@
 "use client";
 
 import React, { createContext, useState, useContext, useEffect, ReactNode, useCallback } from 'react';
+import { auth, db } from '@/firebase';
+import { 
+    onAuthStateChanged, 
+    signInWithEmailAndPassword, 
+    createUserWithEmailAndPassword,
+    GoogleAuthProvider,
+    signInWithPopup,
+    signOut,
+    User as FirebaseUser,
+    OAuthProvider
+} from 'firebase/auth';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import type { Plan, User } from '@/lib/types';
 import { toast } from '@/hooks/use-toast';
-
-// Firebase has been removed. This context now provides a mock, logged-out state.
+import { getUserById } from '@/lib/data';
 
 interface UserContextType {
   currentUser: User | null;
@@ -24,42 +35,122 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    // Simulate checking auth status
-    setTimeout(() => {
-        setCurrentUser(null);
-        setLoading(false);
-    }, 500);
+  const handleAuthUser = useCallback(async (firebaseUser: FirebaseUser | null) => {
+    if (firebaseUser) {
+      const userProfile = await getUserById(firebaseUser.uid);
+      if (userProfile) {
+        setCurrentUser(userProfile);
+      } else {
+        // This is a new user who just signed up, but their profile isn't in Firestore yet.
+        // We create a temporary user object. The full profile will be created in /complete-profile
+        setCurrentUser({
+          id: firebaseUser.uid,
+          email: firebaseUser.email || "",
+          firstName: firebaseUser.displayName?.split(' ')[0] || "",
+          lastName: firebaseUser.displayName?.split(' ')[1] || "",
+          role: "" as any, // This indicates an incomplete profile
+          plan: "starter", // Default plan
+          address: "",
+          country: "",
+        });
+      }
+    } else {
+      setCurrentUser(null);
+    }
+    setLoading(false);
   }, []);
+  
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, handleAuthUser);
+    return () => unsubscribe();
+  }, [handleAuthUser]);
 
   const login = async (email: string, password: string): Promise<boolean> => {
-    toast({ variant: "destructive", title: "Login Disabled", description: "Firebase has been removed." });
-    return false;
+    setLoading(true);
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      // onAuthStateChanged will handle setting the user
+      return true;
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Login Failed",
+        description: error.message,
+      });
+      setLoading(false);
+      return false;
+    }
   };
   
   const registerWithEmail = async (email: string, password: string): Promise<boolean> => {
-     toast({ variant: "destructive", title: "Registration Disabled", description: "Firebase has been removed." });
-    return false;
+    setLoading(true);
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      // Manually trigger user update to avoid race conditions with the auth listener
+      await handleAuthUser(userCredential.user);
+      return true;
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Registration Failed",
+        description: error.message,
+      });
+      setLoading(false);
+      return false;
+    }
   };
+  
+  const socialSignIn = async (provider: GoogleAuthProvider | OAuthProvider): Promise<boolean> => {
+      setLoading(true);
+      try {
+          await signInWithPopup(auth, provider);
+          // onAuthStateChanged will handle the rest
+          return true;
+      } catch (error: any) {
+          toast({
+              variant: "destructive",
+              title: "Sign-in Failed",
+              description: error.message,
+          });
+          setLoading(false);
+          return false;
+      }
+  }
 
   const signInWithGoogle = async (): Promise<boolean> => {
-    toast({ variant: "destructive", title: "Login Disabled", description: "Firebase has been removed." });
-    return false;
+    const provider = new GoogleAuthProvider();
+    return socialSignIn(provider);
   }
 
   const signInWithMicrosoft = async (): Promise<boolean> => {
-    toast({ variant: "destructive", title: "Login Disabled", description: "Firebase has been removed." });
-    return false;
+    const provider = new OAuthProvider('microsoft.com');
+    return socialSignIn(provider);
   };
 
   const logout = async () => {
-     toast({ title: "Logged Out (Mock)"});
+     setLoading(true);
+     await signOut(auth);
      setCurrentUser(null);
+     setLoading(false);
   };
   
   const updateCurrentUser = useCallback(async (userData: Partial<User>) => {
-    // Do nothing, as there is no user to update.
-  }, []);
+    if (currentUser) {
+        const updatedUser = { ...currentUser, ...userData };
+        setCurrentUser(updatedUser);
+        
+        try {
+            const userDocRef = doc(db, "users", currentUser.id);
+            await setDoc(userDocRef, userData, { merge: true });
+        } catch (error) {
+             toast({
+              variant: "destructive",
+              title: "Update Failed",
+              description: "Could not save your changes. Please try again.",
+            });
+        }
+    }
+  }, [currentUser]);
 
   return (
     <UserContext.Provider value={{ currentUser, loading, login, registerWithEmail, signInWithGoogle, signInWithMicrosoft, logout, updateCurrentUser }}>

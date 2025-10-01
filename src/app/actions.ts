@@ -5,56 +5,133 @@ import type { Plan, Role, User, UserRef } from "@/lib/types";
 import { handleFirestoreError } from '@/lib/firestore-helpers';
 import type { Issue } from '@/lib/types';
 import { getUserByEmail, getUserById } from '@/lib/data';
-
-// --- All actions are now mock/no-op as Firebase has been removed. ---
+import { db, auth } from '@/firebase';
+import { collection, addDoc, serverTimestamp, updateDoc, doc, deleteDoc, getDoc, setDoc, writeBatch } from 'firebase/firestore';
+import { createUserWithEmailAndPassword } from "firebase/auth";
 
 export async function setCustomUserClaims(uid: string, claims: { [key:string]: any }) {
+    // This function requires the Firebase Admin SDK and should be in a Cloud Function.
+    // This client-side mock will just log the action.
     console.log(`MOCK (Action): Setting custom claims for UID ${uid}:`, claims);
     return { success: true };
 }
 
 export async function seedDatabase() {
-    return { success: false, error: 'Database seeding is disabled.' };
+     return { success: false, error: "Database seeding is disabled in this version." };
 }
 
 export async function reportIssue(issueData: Omit<Issue, 'id' | 'reportedAt' | 'status' | 'reportedBy' | 'resolvedBy' >, reportedByEmail: string) {
-    console.log("MOCK: reportIssue called", issueData);
-    return { success: true };
+    try {
+        const user = await getUserByEmail(reportedByEmail);
+        if (!user) {
+            return { success: false, error: "Reporting user not found." };
+        }
+
+        const reportedByRef: UserRef = {
+            email: user.email,
+            name: `${user.firstName} ${user.lastName}`,
+        };
+
+        const issuesCollection = collection(db, "issues");
+        await addDoc(issuesCollection, {
+            ...issueData,
+            reportedAt: serverTimestamp(),
+            status: 'reported',
+            reportedBy: reportedByRef,
+            resolvedAt: null,
+            resolvedBy: null,
+            resolutionNotes: "",
+        });
+        return { success: true };
+    } catch (error) {
+        return handleFirestoreError(error);
+    }
 }
 
 export async function createProductionLine(name: string, orgId: string) {
-    console.log("MOCK: createProductionLine called", name);
-    return { success: true };
+    try {
+        const linesCollection = collection(db, "productionLines");
+        await addDoc(linesCollection, { name, workstations: [], orgId });
+        return { success: true };
+    } catch (error) {
+        return handleFirestoreError(error);
+    }
 }
 
 export async function editProductionLine(lineId: string, data: { name: string, workstations: { value: string }[] }) {
-    console.log("MOCK: editProductionLine called", lineId, data);
-    return { success: true };
+     try {
+        const lineDoc = doc(db, "productionLines", lineId);
+        const workstations = data.workstations.map(ws => ws.value).filter(Boolean);
+        await updateDoc(lineDoc, { name: data.name, workstations });
+        return { success: true };
+    } catch (error) {
+        return handleFirestoreError(error);
+    }
 }
 
 export async function deleteProductionLine(lineId: string) {
-    console.log("MOCK: deleteProductionLine called", lineId);
-    return { success: true };
+    try {
+        const lineDoc = doc(db, "productionLines", lineId);
+        await deleteDoc(lineDoc);
+        return { success: true };
+    } catch (error) {
+        return handleFirestoreError(error);
+    }
 }
 
 export async function addUser(data: { uid: string, firstName: string, lastName: string, email: string, role: Role, plan: User['plan'], orgId: string, address?: string, country?: string, phone?: string }) {
-    console.log("MOCK: addUser called", data);
-    return { success: true, message: `User ${data.email} created successfully (mock).` };
+    // This is a simplified version. A real app would use a Cloud Function to create the auth user
+    // and then create the Firestore document.
+     try {
+        const userDocRef = doc(db, "users", data.uid);
+        await setDoc(userDocRef, {
+            firstName: data.firstName,
+            lastName: data.lastName,
+            email: data.email,
+            role: data.role,
+            plan: data.plan,
+            orgId: data.orgId,
+        });
+        // This part would be a cloud function to avoid exposing high-privilege operations
+        // await setCustomUserClaims(auth, data.uid, { role: data.role, plan: data.plan });
+        return { success: true, message: `User ${data.email} created successfully.` };
+    } catch (error) {
+        return handleFirestoreError(error);
+    }
 }
 
 export async function deleteUser(uid: string) {
-    console.log("MOCK: deleteUser called", uid);
-    return { success: true };
+    // This action only deletes the Firestore user document.
+    // Deleting the Firebase Auth user should be done in a secure Cloud Function.
+    try {
+        const userDoc = doc(db, "users", uid);
+        await deleteDoc(userDoc);
+        return { success: true };
+    } catch (error) {
+        return handleFirestoreError(error);
+    }
 }
 
 export async function editUser(uid: string, data: { firstName: string, lastName: string, email: string, role: Role }) {
-    console.log("MOCK: editUser called", uid, data);
-    return { success: true };
+     try {
+        const userDoc = doc(db, "users", uid);
+        await updateDoc(userDoc, data);
+        // In a real app, you would also trigger a Cloud Function to update the auth email if it changed,
+        // and to update custom claims if the role changed.
+        return { success: true };
+    } catch (error) {
+        return handleFirestoreError(error);
+    }
 }
 
 export async function updateUserPlan(uid: string, newPlan: Plan) {
-    console.log("MOCK: updateUserPlan called", uid, newPlan);
-    return { success: true, message: `Plan updated to ${newPlan} (mock).` };
+     try {
+        const userDoc = doc(db, "users", uid);
+        await updateDoc(userDoc, { plan: newPlan });
+        return { success: true, message: `Plan updated to ${newPlan}.` };
+    } catch (error) {
+        return handleFirestoreError(error);
+    }
 }
 
 export async function updateIssue(issueId: string, data: {
@@ -62,21 +139,49 @@ export async function updateIssue(issueId: string, data: {
     resolutionNotes: string,
     productionStopped: boolean,
 }, resolvedByEmail: string) {
-    console.log("MOCK: updateIssue called", issueId, data);
-    return { success: true };
+    try {
+        const user = await getUserByEmail(resolvedByEmail);
+        if (!user) {
+            return { success: false, error: "Resolving user not found." };
+        }
+        
+        const resolvedByRef: UserRef = {
+            email: user.email,
+            name: `${user.firstName} ${user.lastName}`,
+        };
+
+        const issueDoc = doc(db, "issues", issueId);
+        const updateData: any = { 
+            ...data,
+        };
+
+        if (data.status === 'resolved') {
+            updateData.resolvedAt = serverTimestamp();
+            updateData.resolvedBy = resolvedByRef;
+        }
+
+        await updateDoc(issueDoc, updateData);
+        return { success: true };
+    } catch (error) {
+        return handleFirestoreError(error);
+    }
 }
 
 export async function requestPasswordReset(email: string) {
-    console.log(`MOCK: Password reset requested for: ${email}.`);
+    // This is a mock function because password reset emails can only be sent from the client-side SDK
+    // or the Admin SDK in a secure environment.
+    console.log(`MOCK: Password reset requested for: ${email}. In a real app, this would use sendPasswordResetEmail from the client.`);
     return { success: true, message: 'If an account with this email exists, a password reset link has been sent.' };
 }
 
 export async function resetPassword(token: string, newPassword: string) {
+     // This is a mock function because password resets require client-side SDK.
     console.log(`MOCK: Password has been reset successfully.`);
     return { success: true, message: 'Your password has been reset successfully.' };
 }
 
 export async function changePassword(email: string, current: string, newPass: string) {
+    // This is a mock function. Real implementation would require re-authenticating the user.
     console.log("MOCK: Password changed successfully for", email);
     return { success: true };
 }

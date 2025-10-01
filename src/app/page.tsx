@@ -51,19 +51,19 @@ const supportMenuItems = [
 ];
 
 const servicesImage = {
-    imageUrl: "/Factory.jpg",
+    imageUrl: "https://picsum.photos/seed/factory/600/400",
     description: "Image of a factory production line",
     imageHint: "production factory",
 };
 
 const exploreImage = {
-    imageUrl: "/Helsinki.jpg",
+    imageUrl: "https://picsum.photos/seed/helsinki/600/400",
     description: "Image of Helsinki for explore mega menu",
     imageHint: "Helsinki cityscape",
 };
 
 const supportImage = {
-    imageUrl: "/Tech_support.jpg",
+    imageUrl: "https://picsum.photos/seed/support/600/400",
     description: "Image for support mega menu",
     imageHint: "technical support",
 };
@@ -114,7 +114,7 @@ export default function HomePage() {
         <section className="relative py-20 md:py-32 text-white">
             <div className="absolute inset-0">
                 <Image
-                src="/Production.jpg"
+                src="https://picsum.photos/seed/production/1200/800"
                 alt="Factory production line"
                 fill
                 className="object-cover"
