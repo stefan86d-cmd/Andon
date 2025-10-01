@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { IssuesDataTable } from "@/components/dashboard/issues-data-table";
 import { ReportIssueDialog } from "@/components/dashboard/report-issue-dialog";
 import { AppLayout } from "@/components/layout/app-layout";
@@ -44,14 +44,13 @@ export default function LineStatusPage() {
   const selectedLine: ProductionLine | undefined = allLines.find(
     (line) => line.id === selectedLineId
   );
-
-  useEffect(() => {
-    if (selectedLineId && selectedWorkstation && selectionConfirmed) {
-      const fetchIssues = async () => {
+  
+  const fetchIssuesForStation = useCallback(async () => {
+    if (selectedLineId && selectedWorkstation && selectedLine) {
         setIssuesLoading(true);
         const allIssues = await getIssues();
         const twentyFourHoursAgo = subHours(new Date(), 24);
-        const fullWorkstationName = `${selectedLine?.name} - ${selectedWorkstation}`;
+        const fullWorkstationName = `${selectedLine.name} - ${selectedWorkstation}`;
         
         const filteredIssues = allIssues.filter(
           (issue) =>
@@ -61,10 +60,15 @@ export default function LineStatusPage() {
         );
         setIssues(filteredIssues.sort((a, b) => b.reportedAt.getTime() - a.reportedAt.getTime()));
         setIssuesLoading(false);
-      };
-      fetchIssues();
     }
-  }, [selectedLineId, selectedWorkstation, selectedLine, selectionConfirmed]);
+  }, [selectedLineId, selectedWorkstation, selectedLine]);
+
+
+  useEffect(() => {
+    if (selectionConfirmed) {
+      fetchIssuesForStation();
+    }
+  }, [selectionConfirmed, fetchIssuesForStation]);
 
   const loading = linesLoading;
 
@@ -153,6 +157,7 @@ export default function LineStatusPage() {
                             productionLines={allLines}
                             selectedLineId={selectedLineId}
                             selectedWorkstation={selectedWorkstation}
+                            onIssueReported={fetchIssuesForStation}
                         >
                             <Button>
                                 <PlusCircle className="mr-2 h-4 w-4" />

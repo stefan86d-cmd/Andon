@@ -125,11 +125,13 @@ export function ReportIssueDialog({
   productionLines,
   selectedLineId,
   selectedWorkstation,
+  onIssueReported,
 }: {
   children: React.ReactNode;
   productionLines: ProductionLine[];
   selectedLineId?: string;
   selectedWorkstation?: string;
+  onIssueReported?: () => void;
 }) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, startSubmittingTransition] = useTransition();
@@ -217,7 +219,11 @@ export function ReportIssueDialog({
               description: "Your issue has been successfully submitted.",
             });
             setOpen(false);
-            router.refresh();
+            if (onIssueReported) {
+              onIssueReported();
+            } else {
+              router.refresh();
+            }
         } else {
             toast({
                 variant: "destructive",
