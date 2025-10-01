@@ -102,11 +102,10 @@ export default function HomePage() {
         <section className="relative py-20 md:py-32 text-white">
             <div className="absolute inset-0">
                 <Image
-                src="https://picsum.photos/seed/production/1200/800"
+                src="/Production.jpg"
                 alt="Factory production line"
                 fill
                 className="object-cover"
-                data-ai-hint="production factory"
                 priority
                 />
                 <div className="absolute inset-0 bg-black/60" />
