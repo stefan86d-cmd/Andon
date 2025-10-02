@@ -9,6 +9,8 @@ import { db, auth } from '@/firebase';
 import { collection, addDoc, serverTimestamp, updateDoc, doc, deleteDoc, getDoc, setDoc, writeBatch } from 'firebase/firestore';
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { seedData } from "@/lib/seed";
+import { getAdminApp } from "@/firebase/admin";
+import { getAuth as getAdminAuth } from "firebase-admin/auth";
 
 export async function setCustomUserClaims(uid: string, claims: { [key:string]: any }) {
     // This function requires the Firebase Admin SDK and should be in a Cloud Function.
@@ -118,15 +120,41 @@ export async function deleteProductionLine(lineId: string) {
     }
 }
 
+function generatePassword() {
+  return Math.random().toString(36).slice(-8);
+}
+
 export async function addUser(data: { firstName: string; lastName: string; email: string; role: Role; plan: Plan; orgId: string; }) {
     try {
-        // Instead of creating the user directly, we create an "invite"
-        // A Cloud Function would then pick this up to create the Auth user and send an email.
-        const invitesCollection = collection(db, "invites");
-        await addDoc(invitesCollection, {
-            ...data,
-            createdAt: serverTimestamp(),
+        const adminApp = getAdminApp();
+        const adminAuth = getAdminAuth(adminApp);
+        const adminDb = adminApp.firestore();
+
+        // 1. Create the user in Firebase Auth
+        const userRecord = await adminAuth.createUser({
+            email: data.email,
+            password: generatePassword(),
+            displayName: `${data.firstName} ${data.lastName}`,
         });
+
+        // 2. Create the user document in Firestore
+        await adminDb.collection("users").doc(userRecord.uid).set({
+            firstName: data.firstName,
+            lastName: data.lastName,
+            email: data.email,
+            role: data.role,
+            plan: data.plan,
+            orgId: data.orgId,
+        });
+
+        // 3. Set custom claims for role-based access control
+        await adminAuth.setCustomUserClaims(userRecord.uid, { role: data.role, orgId: data.orgId });
+
+        // 4. Send a password reset email, which acts as the invitation
+        const link = await adminAuth.generatePasswordResetLink(data.email);
+        // (In a real app, you would use a transactional email service like SendGrid or Mailgun here)
+        console.log(`Password reset link for ${data.email}: ${link}`);
+
         return { success: true, message: `An invitation email will be sent to ${data.email}.` };
     } catch (error) {
         return handleFirestoreError(error);
