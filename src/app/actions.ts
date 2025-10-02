@@ -11,6 +11,7 @@ import { createUserWithEmailAndPassword } from "firebase/auth";
 import { seedData } from "@/lib/seed";
 import { getAdminApp } from "@/firebase/admin";
 import { getAuth as getAdminAuth } from "firebase-admin/auth";
+import { sendEmail } from "@/lib/email";
 
 export async function setCustomUserClaims(uid: string, claims: { [key:string]: any }) {
     // This function requires the Firebase Admin SDK and should be in a Cloud Function.
@@ -150,12 +151,22 @@ export async function addUser(data: { firstName: string; lastName: string; email
         // 3. Set custom claims for role-based access control
         await adminAuth.setCustomUserClaims(userRecord.uid, { role: data.role, orgId: data.orgId });
 
-        // 4. Send a password reset email, which acts as the invitation
+        // 4. Send an invitation email via SendGrid
         const link = await adminAuth.generatePasswordResetLink(data.email);
-        // (In a real app, you would use a transactional email service like SendGrid or Mailgun here)
-        console.log(`Password reset link for ${data.email}: ${link}`);
+        
+        await sendEmail({
+            to: data.email,
+            subject: "You're invited to join AndonPro!",
+            html: `
+                <h1>Welcome to AndonPro!</h1>
+                <p>You have been invited to join your team on AndonPro.</p>
+                <p>Click the link below to set your password and get started:</p>
+                <a href="${link}" target="_blank">Set Your Password</a>
+                <p>This link will expire in 24 hours.</p>
+            `,
+        });
 
-        return { success: true, message: `An invitation email will be sent to ${data.email}.` };
+        return { success: true, message: `An invitation email has been sent to ${data.email}.` };
     } catch (error) {
         return handleFirestoreError(error);
     }
