@@ -98,10 +98,8 @@ export default function ContactPage() {
                                 <Mail className="h-6 w-6 text-primary mt-1" />
                                 <div>
                                     <h3 className="font-semibold">Email Us</h3>
-                                    <p className="text-muted-foreground text-sm">For sales inquiries:</p>
-                                    <a href="mailto:sales@andon.pro" className="text-primary hover:underline">sales@andon.pro</a>
                                     <p className="text-muted-foreground text-sm mt-2">For support:</p>
-                                    <a href="mailto:support@andon.pro" className="text-primary hover:underline">support@andon.pro</a>
+                                    <a href="mailto:support@andonpro.com" className="text-primary hover:underline">support@andonpro.com</a>
                                 </div>
                             </div>
                             <div className="flex items-start gap-4">
