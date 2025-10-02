@@ -82,7 +82,7 @@ export default function UsersPage() {
             </Button>
           )}
         </div>
-        <UsersDataTable users={allUsers || []} />
+        <UsersDataTable users={allUsers || []} loading={loading} />
       </main>
     </AppLayout>
   );

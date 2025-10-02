@@ -30,6 +30,7 @@ import { Badge } from "@/components/ui/badge";
 import { DeleteUserDialog } from "./delete-user-dialog";
 import { EditUserDialog } from "./edit-user-dialog";
 import React from "react";
+import { Skeleton } from "../ui/skeleton";
 
 const roleIcons: Record<Role, React.ElementType> = {
     admin: UserCog,
@@ -52,7 +53,7 @@ const getInitials = (firstName: string, lastName: string) => {
 }
 
 
-export function UsersDataTable({ users }: { users: User[] }) {
+export function UsersDataTable({ users, loading }: { users: User[], loading?: boolean }) {
   return (
     <Card>
       <CardHeader>
@@ -74,44 +75,66 @@ export function UsersDataTable({ users }: { users: User[] }) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {users.map((user) => {
-                const name = `${user.firstName || ''} ${user.lastName || ''}`.trim();
-                return (
-                    <TableRow key={user.email}>
+            {loading ? (
+                Array.from({ length: 3 }).map((_, i) => (
+                     <TableRow key={i}>
                         <TableCell>
                             <div className="flex items-center gap-3">
-                                <Avatar className="h-9 w-9 border-2 border-primary">
-                                    <AvatarFallback>{getInitials(user.firstName, user.lastName)}</AvatarFallback>
-                                </Avatar>
-                                <div className="font-medium">{name}</div>
+                                <Skeleton className="h-9 w-9 rounded-full" />
+                                <Skeleton className="h-6 w-32" />
                             </div>
                         </TableCell>
-                        <TableCell>{user.email}</TableCell>
-                        <TableCell>
-                            <RoleDisplay role={user.role} />
-                        </TableCell>
-                        <TableCell>
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                <Button
-                                    aria-haspopup="true"
-                                    size="icon"
-                                    variant="ghost"
-                                >
-                                    <MoreHorizontal className="h-4 w-4" />
-                                    <span className="sr-only">Toggle menu</span>
-                                </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                <EditUserDialog user={user} />
-                                <DeleteUserDialog user={user} />
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        </TableCell>
+                        <TableCell><Skeleton className="h-6 w-40" /></TableCell>
+                        <TableCell><Skeleton className="h-6 w-24" /></TableCell>
+                        <TableCell><Skeleton className="h-8 w-8" /></TableCell>
                     </TableRow>
-                )
-            })}
+                ))
+            ) : users.length > 0 ? (
+                users.map((user) => {
+                    const name = `${user.firstName || ''} ${user.lastName || ''}`.trim();
+                    return (
+                        <TableRow key={user.email}>
+                            <TableCell>
+                                <div className="flex items-center gap-3">
+                                    <Avatar className="h-9 w-9 border-2 border-primary">
+                                        <AvatarFallback>{getInitials(user.firstName, user.lastName)}</AvatarFallback>
+                                    </Avatar>
+                                    <div className="font-medium">{name}</div>
+                                </div>
+                            </TableCell>
+                            <TableCell>{user.email}</TableCell>
+                            <TableCell>
+                                <RoleDisplay role={user.role} />
+                            </TableCell>
+                            <TableCell>
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                    <Button
+                                        aria-haspopup="true"
+                                        size="icon"
+                                        variant="ghost"
+                                    >
+                                        <MoreHorizontal className="h-4 w-4" />
+                                        <span className="sr-only">Toggle menu</span>
+                                    </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                    <EditUserDialog user={user} />
+                                    <DeleteUserDialog user={user} />
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </TableCell>
+                        </TableRow>
+                    )
+                })
+            ) : (
+                <TableRow>
+                    <TableCell colSpan={4} className="h-24 text-center">
+                        No users found.
+                    </TableCell>
+                </TableRow>
+            )}
           </TableBody>
         </Table>
       </CardContent>
