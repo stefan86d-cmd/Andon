@@ -12,7 +12,6 @@ export default function FooterLogo({ className }: { className?: string }) {
             alt="AndonPro logo"
             width={100}
             height={24}
-            className="h-auto w-auto"
             priority
         />
       </div>

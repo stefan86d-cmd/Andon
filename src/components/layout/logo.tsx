@@ -12,7 +12,6 @@ export function Logo({ className }: { className?: string }) {
             alt="AndonPro logo"
             width={100}
             height={24}
-            className="h-auto w-auto dark:hidden"
             priority
         />
          <Image
@@ -20,7 +19,7 @@ export function Logo({ className }: { className?: string }) {
             alt="AndonPro logo"
             width={100}
             height={24}
-            className="h-auto w-auto hidden dark:block"
+            className="hidden dark:block"
             priority
         />
       </div>
