@@ -37,6 +37,7 @@ import { toast } from "@/hooks/use-toast";
 import { addUser } from "@/app/actions";
 import { Eye, EyeOff, LoaderCircle } from "lucide-react";
 import { useUser } from "@/contexts/user-context";
+import type { Role } from "@/lib/types";
 
 const userFormSchema = z.object({
   firstName: z.string().min(1, {
@@ -80,7 +81,7 @@ export function AddUserDialog({ children }: { children: React.ReactNode }) {
             firstName: data.firstName,
             lastName: data.lastName,
             email: data.email,
-            role: data.role as "admin" | "supervisor" | "operator",
+            role: data.role as Role,
             plan: currentUser.plan, // Use the current admin's plan
             orgId: currentUser.orgId!, // Pass the admin's orgId
         });
