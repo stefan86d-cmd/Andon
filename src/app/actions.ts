@@ -196,7 +196,7 @@ export async function editUser(uid: string, data: { firstName: string, lastName:
     }
 }
 
-export async function updateUserPlan(uid: string, newPlan: Plan) {
+export async function updateUserPlan(uid: string, newPlan: Plan): Promise<{success: true, message: string} | {success: false, error: string}> {
      try {
         const userDoc = doc(db, "users", uid);
         await updateDoc(userDoc, { plan: newPlan });
