@@ -9,9 +9,9 @@ const firebaseConfig = {
   apiKey: "AIzaSyCjUZRMo0iUJxRcyI4FREamMzaeuA2zn3A",
   authDomain: "andon-ef46a.firebaseapp.com",
   projectId: "andon-ef46a",
-  storageBucket: "andon-ef46a.appspot.com",
+  storageBucket: "andon-ef46a.firebasestorage.app",
   messagingSenderId: "1035401871381",
-  appId: "1:1035401871381:web:2c87b8f9e618844f2d7a2f",
+  appId: "1:1035401871381:web:0809cb189809e69a874e1c"
 };
 
 // Initialize Firebase
