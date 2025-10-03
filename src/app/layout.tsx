@@ -10,6 +10,7 @@ export const metadata: Metadata = {
   title: 'AndonPro',
   description: 'Monitor workflow and resolve issues on your production line.',
   manifest: '/manifest.json',
+  viewport: 'width=device-width, initial-scale=1',
 };
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
