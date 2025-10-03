@@ -23,7 +23,7 @@ import { LoaderCircle, CreditCard, Calendar, Lock, User as UserIcon } from 'luci
 import Link from 'next/link';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { countries } from '@/lib/countries';
-import type { Plan } from '@/lib/types';
+import type { Plan, Role } from '@/lib/types';
 import { toast } from '@/hooks/use-toast';
 import { useUser } from '@/contexts/user-context';
 import { doc, setDoc } from 'firebase/firestore';
@@ -108,11 +108,13 @@ function CompleteProfileContent() {
     await new Promise(resolve => setTimeout(resolve, 1500));
     
     try {
+        const userRole: Role = "admin"; // First user is always an admin
+
         const userProfileData = {
             firstName: data.firstName,
             lastName: data.lastName,
             email: currentUser.email,
-            role: "admin", // First user is always an admin
+            role: userRole,
             plan: selectedPlan,
             address: data.address,
             country: data.country,
