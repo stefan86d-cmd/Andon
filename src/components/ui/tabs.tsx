@@ -3,28 +3,42 @@
 
 import * as React from "react"
 import * as TabsPrimitive from "@radix-ui/react-tabs"
-
 import { cn } from "@/lib/utils"
 
+// ---------------------
+// Tabs Root
+// ---------------------
 const Tabs = TabsPrimitive.Root
+
+// ---------------------
+// Tabs List
+// ---------------------
+interface TabsListProps
+  extends React.ComponentPropsWithoutRef<typeof TabsPrimitive.List> {
+  orientation?: "horizontal" | "vertical"
+}
 
 const TabsList = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.List>,
-  React.ComponentPropsWithoutRef<typeof TabsPrimitive.List>
->(({ className, ...props }, ref) => (
+  TabsListProps
+>(({ className, orientation = "horizontal", ...props }, ref) => (
   <TabsPrimitive.List
     ref={ref}
+    orientation={orientation}
     className={cn(
       "inline-flex h-auto items-center justify-center rounded-md bg-muted p-1 text-muted-foreground",
-      (props as any).orientation === "vertical" &&
+      orientation === "vertical" &&
         "flex-col h-full bg-transparent p-0 border-r",
       className
     )}
     {...props}
   />
 ))
-TabsList.displayName = TabsPrimitive.List.displayName
+TabsList.displayName = "TabsList"
 
+// ---------------------
+// Tabs Trigger
+// ---------------------
 const TabsTrigger = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.Trigger>,
   React.ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger>
@@ -38,8 +52,11 @@ const TabsTrigger = React.forwardRef<
     {...props}
   />
 ))
-TabsTrigger.displayName = TabsPrimitive.Trigger.displayName
+TabsTrigger.displayName = "TabsTrigger"
 
+// ---------------------
+// Tabs Content
+// ---------------------
 const TabsContent = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof TabsPrimitive.Content>
@@ -53,6 +70,9 @@ const TabsContent = React.forwardRef<
     {...props}
   />
 ))
-TabsContent.displayName = TabsPrimitive.Content.displayName
+TabsContent.displayName = "TabsContent"
 
+// ---------------------
+// Export all
+// ---------------------
 export { Tabs, TabsList, TabsTrigger, TabsContent }
