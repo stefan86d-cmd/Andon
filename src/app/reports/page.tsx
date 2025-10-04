@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import type { Issue, IssueCategory, ProductionLine } from "@/lib/types";
 import { IssuesTrendChart } from "@/components/reports/issues-trend-chart";
 import { format, subDays, eachDayOfInterval, startOfDay, differenceInSeconds } from "date-fns";
-import { Calendar as CalendarIcon, LoaderCircle, ListFilter, Lock, Download } from "lucide-react";
+import { Calendar as CalendarIcon, LoaderCircle, ListFilter, Lock, Download, FileText } from "lucide-react";
 import { PieChartWithPercentages } from "@/components/reports/pie-chart-with-percentages";
 import { FilteredBarChart } from "@/components/reports/filtered-bar-chart";
 import { useUser } from "@/contexts/user-context";
@@ -29,6 +29,7 @@ import { cn } from "@/lib/utils";
 import { allCategories } from "@/lib/constants";
 import { CSVLink } from "react-csv";
 import { getIssues, getProductionLines } from "@/lib/data";
+import { analyzeIssues } from "@/ai/flows/analyze-issues-flow";
 
 const ChartGradients = () => (
     <svg width="0" height="0" className="absolute">
@@ -50,6 +51,8 @@ export default function ReportsPage() {
   const [issues, setIssues] = useState<Issue[]>([]);
   const [productionLines, setProductionLines] = useState<ProductionLine[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isAiLoading, setIsAiLoading] = useState(false);
+  const [aiAnalysis, setAiAnalysis] = useState<string | null>(null);
 
   const [date, setDate] = useState<DateRange | undefined>({
     from: subDays(new Date(), 29),
@@ -87,15 +90,18 @@ export default function ReportsPage() {
 
   const handleFilterConfirm = () => {
     setSelectedLines(tempSelectedLines);
+    setAiAnalysis(null);
   };
   
   const handleFilterReset = () => {
     setTempSelectedLines([]);
     setSelectedLines([]);
+    setAiAnalysis(null);
   };
   
   const handleDateChange = (newDate: DateRange | undefined) => {
       setDate(newDate);
+      setAiAnalysis(null);
   }
 
   const allIssues = issues || [];
@@ -108,6 +114,31 @@ export default function ReportsPage() {
       const isLineSelected = selectedLines.length === 0 || selectedLines.includes(issue.productionLineId);
       return isInDateRange && isLineSelected;
   });
+
+  const handleAiAnalysis = async () => {
+    if (currentUser?.plan !== 'pro' && currentUser?.plan !== 'enterprise') {
+        return;
+    }
+    setIsAiLoading(true);
+    setAiAnalysis(null);
+    try {
+        const issuesForAnalysis = filteredIssues.map(i => ({
+            title: i.title,
+            category: i.category,
+            priority: i.priority,
+            productionStopped: i.productionStopped,
+            reportedAt: format(i.reportedAt, 'yyyy-MM-dd HH:mm'),
+            resolvedAt: i.resolvedAt ? format(i.resolvedAt, 'yyyy-MM-dd HH:mm') : undefined,
+        }));
+
+        const result = await analyzeIssues({ issues: issuesForAnalysis });
+        setAiAnalysis(result.analysis);
+    } catch (error) {
+        console.error("AI Analysis failed:", error);
+    } finally {
+        setIsAiLoading(false);
+    }
+  }
 
   const csvHeaders = [
     { label: "Issue ID", key: "id" },
@@ -234,6 +265,8 @@ export default function ReportsPage() {
       return { name: category.label, value: parseFloat(hours.toFixed(1)), fill: `url(#gradient-${category.id})`, color: category.color };
   }).filter(c => c.value > 0);
 
+  const isAiEnabled = currentUser.plan === 'pro' || currentUser.plan === 'enterprise';
+
   return (
     <AppLayout>
       <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background">
@@ -243,19 +276,19 @@ export default function ReportsPage() {
         </div>
         
         <Card>
-            <CardHeader className="flex-row items-center justify-between">
+            <CardHeader className="flex-col md:flex-row items-start md:items-center justify-between gap-4">
                 <div>
                     <CardTitle>Filters & Export</CardTitle>
-                    <CardDescription>Select filters to refine the reports and export the data.</CardDescription>
+                    <CardDescription>Select filters to refine the reports, then export or analyze the data.</CardDescription>
                 </div>
-                 <div className="flex items-center gap-2">
+                 <div className="flex flex-wrap items-center gap-2">
                     <Popover>
                         <PopoverTrigger asChild>
                         <Button
                             id="date"
                             variant={"outline"}
                             className={cn(
-                                "w-[300px] justify-start text-left font-normal",
+                                "w-full sm:w-[260px] justify-start text-left font-normal",
                                 !date && "text-muted-foreground"
                             )}
                         >
@@ -315,26 +348,46 @@ export default function ReportsPage() {
                         <Button size="sm" onClick={handleFilterConfirm}>Apply</Button>
                     </div>
 
-                     <Button asChild>
-                        <CSVLink
-                          data={csvData}
-                          headers={csvHeaders}
-                          filename={`andonpro_issues_export_${format(new Date(), 'yyyy-MM-dd')}.csv`}
-                          className="flex items-center gap-2"
-                        >
-                            <Download className="h-4 w-4" />
-                            Export Data as CSV
-                        </CSVLink>
-                    </Button>
+                    <div className="pl-2 border-l flex gap-2">
+                        <Button variant="secondary" asChild>
+                            <CSVLink
+                            data={csvData}
+                            headers={csvHeaders}
+                            filename={`andonpro_issues_export_${format(new Date(), 'yyyy-MM-dd')}.csv`}
+                            className="flex items-center gap-2"
+                            >
+                                <Download className="h-4 w-4" />
+                                <span className="sr-only sm:not-sr-only">Export CSV</span>
+                            </CSVLink>
+                        </Button>
+                        {isAiEnabled && (
+                             <Button onClick={handleAiAnalysis} disabled={isAiLoading}>
+                                {isAiLoading ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4 mr-2" />}
+                                <span className="sr-only sm:not-sr-only">AI Analysis</span>
+                            </Button>
+                        )}
+                    </div>
                  </div>
             </CardHeader>
+            {aiAnalysis && (
+                 <CardContent>
+                    <Card className="bg-muted/50">
+                        <CardHeader>
+                            <CardTitle className="text-lg">AI Generated Analysis</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: aiAnalysis.replace(/\n/g, '<br />') }} />
+                        </CardContent>
+                    </Card>
+                 </CardContent>
+            )}
         </Card>
 
         <Tabs defaultValue="issues-by-category">
             <div className="flex justify-center">
-                <TabsList className="grid w-full grid-cols-4 max-w-2xl">
-                    <TabsTrigger value="issues-by-category">Issues by Category</TabsTrigger>
-                    <TabsTrigger value="stops">Production Stops</TabsTrigger>
+                <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 max-w-2xl">
+                    <TabsTrigger value="issues-by-category">By Category</TabsTrigger>
+                    <TabsTrigger value="stops">Stops</TabsTrigger>
                     <TabsTrigger value="by-line">By Line</TabsTrigger>
                     <TabsTrigger value="trend">Trend</TabsTrigger>
                 </TabsList>
@@ -347,7 +400,7 @@ export default function ReportsPage() {
                             <FilteredBarChart data={issuesByCategory} />
                         </div>
                          <div>
-                            <h3 className="font-semibold mb-4 text-center">Issues by Category (%)</h3>
+                            <h3 className="font-semibold mb-4 text-center">Share by Category (%)</h3>
                             <PieChartWithPercentages data={issuesByCategoryWithPercentage} />
                         </div>
                     </CardContent>
