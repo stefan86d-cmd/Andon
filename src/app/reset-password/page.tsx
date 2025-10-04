@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useTransition, Suspense } from 'react';
+import React, { useState, useTransition, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -48,24 +48,35 @@ function ResetPasswordContent() {
 
   const onSubmit = (data: FormValues) => {
     if (!token) {
-      toast({ title: "Error", description: "Invalid or missing reset token.", variant: "destructive" });
-      return;
+        toast({ title: "Error", description: "Invalid or missing reset token.", variant: "destructive" });
+        return;
     }
 
     startTransition(async () => {
-      const result = await resetPassword(token, data.newPassword);
+      try {
+        const result = await resetPassword(token, data.newPassword);
 
-      if ("success" in result && result.success) {
-        toast({
-          title: "Password Reset Successful",
-          description: "You can now log in with your new password.",
-        });
-        router.push('/login');
-      } else {
-        const errorMsg = "error" in result ? result.error : "An unexpected error occurred.";
+        if ("success" in result && result.success) {
+          toast({
+            title: "Password Reset Successful",
+            description: "You can now log in with your new password.",
+          });
+          router.push('/login');
+        } else {
+          const errorMsg = "error" in result && typeof result.error === "string"
+            ? result.error
+            : "An unexpected error occurred.";
+          
+          toast({
+            title: "Password Reset Failed",
+            description: errorMsg, // ✅ always string
+            variant: "destructive",
+          });
+        }
+      } catch (err) {
         toast({
           title: "Password Reset Failed",
-          description: errorMsg,
+          description: "An unexpected error occurred.",
           variant: "destructive",
         });
       }
@@ -73,19 +84,19 @@ function ResetPasswordContent() {
   };
 
   if (!token) {
-    return (
-      <Card className="mx-auto max-w-sm w-full">
-        <CardHeader>
-          <CardTitle>Invalid Link</CardTitle>
-          <CardDescription>This password reset link is invalid or has expired.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Link href="/forgot-password">
-            <Button className="w-full">Request a new link</Button>
-          </Link>
-        </CardContent>
-      </Card>
-    )
+     return (
+       <Card className="mx-auto max-w-sm w-full">
+         <CardHeader>
+           <CardTitle>Invalid Link</CardTitle>
+           <CardDescription>This password reset link is invalid or has expired.</CardDescription>
+         </CardHeader>
+         <CardContent>
+           <Link href="/forgot-password">
+             <Button className="w-full">Request a new link</Button>
+           </Link>
+         </CardContent>
+       </Card>
+     )
   }
 
   return (
@@ -99,7 +110,6 @@ function ResetPasswordContent() {
           Enter a new password for your account.
         </CardDescription>
       </CardHeader>
-
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -110,13 +120,15 @@ function ResetPasswordContent() {
                 <FormItem>
                   <FormLabel>New Password</FormLabel>
                   <FormControl>
-                    <Input type="password" {...field} />
+                    <Input
+                      type="password"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-
             <FormField
               control={form.control}
               name="confirmPassword"
@@ -124,40 +136,42 @@ function ResetPasswordContent() {
                 <FormItem>
                   <FormLabel>Confirm New Password</FormLabel>
                   <FormControl>
-                    <Input type="password" {...field} />
+                    <Input
+                      type="password"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-
             <Button type="submit" className="w-full" disabled={isSubmitting}>
               {isSubmitting && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
               Reset Password
             </Button>
           </form>
         </Form>
-
-        <div className="mt-4 text-center text-sm">
-          <Link href="/login" className="underline">
-            Back to login
-          </Link>
-        </div>
+         <div className="mt-4 text-center text-sm">
+            <Link href="/login" className="underline">
+              Back to login
+            </Link>
+          </div>
       </CardContent>
     </Card>
   );
 }
 
+
 export default function ResetPasswordPage() {
-  return (
-    <div className="flex items-center justify-center min-h-screen bg-background">
-      <Suspense fallback={
-        <div className="flex items-center justify-center">
-          <LoaderCircle className="h-8 w-8 animate-spin" />
+    return (
+        <div className="flex items-center justify-center min-h-screen bg-background">
+            <Suspense fallback={
+                <div className="flex items-center justify-center">
+                    <LoaderCircle className="h-8 w-8 animate-spin" />
+                </div>
+            }>
+                <ResetPasswordContent />
+            </Suspense>
         </div>
-      }>
-        <ResetPasswordContent />
-      </Suspense>
-    </div>
-  );
+    )
 }
