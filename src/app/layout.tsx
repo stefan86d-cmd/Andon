@@ -1,5 +1,5 @@
 
-import type {Metadata} from 'next';
+import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 import { Inter } from 'next/font/google'
@@ -10,7 +10,11 @@ export const metadata: Metadata = {
   title: 'AndonPro',
   description: 'Monitor workflow and resolve issues on your production line.',
   manifest: '/manifest.json',
-  viewport: 'width=device-width, initial-scale=1',
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
 };
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
