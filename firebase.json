@@ -1,5 +1,6 @@
 {
   "hosting": {
+    "frameworksBackend": {},
     "ignore": [
       "firebase.json",
       "**/.*",
