@@ -1,7 +1,6 @@
-
 "use client";
 
-import React, { useState, useEffect, useTransition } from 'react';
+import React, { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import {
@@ -19,9 +18,9 @@ import { toast } from '@/hooks/use-toast';
 import { LoaderCircle, Database } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
-import { AppLayout } from '@/components/layout/app-layout';
 import { seedDatabase } from '@/app/actions';
 
+// --- Icons ---
 function GoogleIcon() {
   return (
     <svg viewBox="0 0 48 48" className="h-5 w-5">
@@ -46,26 +45,28 @@ function GoogleIcon() {
 }
 
 function MicrosoftIcon() {
-    return (
-        <svg viewBox="0 0 21 21" className="h-5 w-5 mr-2">
-            <path fill="#f25022" d="M1 1h9v9H1z" />
-            <path fill="#00a4ef" d="M1 11h9v9H1z" />
-            <path fill="#7fba00" d="M11 1h9v9h-9z" />
-            <path fill="#ffb900" d="M11 11h9v9h-9z" />
-        </svg>
-    )
+  return (
+    <svg viewBox="0 0 21 21" className="h-5 w-5 mr-2">
+      <path fill="#f25022" d="M1 1h9v9H1z" />
+      <path fill="#00a4ef" d="M1 11h9v9H1z" />
+      <path fill="#7fba00" d="M11 1h9v9h-9z" />
+      <path fill="#ffb900" d="M11 11h9v9h-9z" />
+    </svg>
+  );
 }
 
+// --- Page Component ---
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [isLoggingIn, startLoginTransition] = useTransition();
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [isMicrosoftLoading, setIsMicrosoftLoading] = useState(false);
   const [isSeeding, startSeedingTransition] = useTransition();
+  const [isLoggingIn, startLoginTransition] = useTransition();
   const router = useRouter();
-  const { loading, login, signInWithGoogle, signInWithMicrosoft } = useUser();
+  const { login, signInWithGoogle, signInWithMicrosoft } = useUser();
 
+  // --- Login handler ---
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     startLoginTransition(async () => {
@@ -73,7 +74,7 @@ export default function LoginPage() {
       if (success) {
         toast({
           title: "Login Successful",
-          description: `Welcome back! Redirecting...`,
+          description: "Welcome back! Redirecting...",
         });
         router.push('/dashboard');
       } else {
@@ -85,147 +86,186 @@ export default function LoginPage() {
       }
     });
   };
-  
+
+  // --- Google login ---
   const handleGoogleSignIn = async () => {
     setIsGoogleLoading(true);
     const success = await signInWithGoogle();
     if (success) {
-        toast({
-            title: "Login Successful",
-            description: "Welcome! You're signed in with Google.",
-        });
-        router.push('/dashboard');
+      toast({
+        title: "Login Successful",
+        description: "Welcome! You're signed in with Google.",
+      });
+      router.push('/dashboard');
     }
     setIsGoogleLoading(false);
-  }
+  };
 
+  // --- Microsoft login ---
   const handleMicrosoftSignIn = async () => {
     setIsMicrosoftLoading(true);
     await signInWithMicrosoft();
-     toast({
-        title: "Login Successful",
-        description: "Welcome! You're signed in with Microsoft.",
+    toast({
+      title: "Login Successful",
+      description: "Welcome! You're signed in with Microsoft.",
     });
     setIsMicrosoftLoading(false);
   };
-  
+
+  // --- Seed Database ---
   const handleSeedDatabase = () => {
     startSeedingTransition(async () => {
-        const result = await seedDatabase();
-        if (result.success) {
-            toast({
-                title: "Database Seeded!",
-                description: "Sample data has been added to Firestore.",
-            });
-        } else {
-            toast({
-                variant: "destructive",
-                title: "Seeding Failed",
-                description: result.error,
-            });
-        }
+      const result = await seedDatabase();
+
+      if (result.success) {
+        toast({
+          title: "Database Seeded!",
+          description: result.message || "Sample data has been added to Firestore.",
+        });
+      } else {
+        const errorMsg =
+          "error" in result ? result.error : "An unexpected error occurred.";
+
+        toast({
+          variant: "destructive",
+          title: "Seeding Failed",
+          description: errorMsg,
+        });
+      }
     });
-  }
+  };
 
   return (
     <div className="bg-muted">
-        <div className="container mx-auto flex min-h-screen flex-col items-center justify-center py-12">
-            <div className="w-full max-w-sm">
-                <Card>
-                    <CardHeader className="space-y-1">
-                        <div className="flex justify-center p-6">
-                            <Logo />
-                        </div>
-                        <CardTitle>Login to AndonPro</CardTitle>
-                        <CardDescription>
-                            Enter your credentials to continue.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <form onSubmit={handleLogin}>
-                            <div className="grid gap-4">
-                            <div className="grid gap-2">
-                                <Label htmlFor="email">Email</Label>
-                                <Input
-                                id="email"
-                                type="email"
-                                required
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                disabled={isLoggingIn || isGoogleLoading || isMicrosoftLoading}
-                                />
-                            </div>
-                            <div className="grid gap-2">
-                                <Label htmlFor="password">Password</Label>
-                                <Input 
-                                    id="password" 
-                                    type="password"
-                                    required
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    disabled={isLoggingIn || isGoogleLoading || isMicrosoftLoading}
-                                />
-                            </div>
-                            <Button type="submit" className="w-full" disabled={isLoggingIn || isGoogleLoading || isMicrosoftLoading}>
-                                {isLoggingIn && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
-                                Login
-                            </Button>
-                            </div>
-                        </form>
-                        
-                        <div className="mt-4 text-center text-sm">
-                            <Link href="/forgot-password" passHref>
-                            <span className="underline cursor-pointer">
-                                Forgot password?
-                            </span>
-                            </Link>
-                        </div>
+      <div className="container mx-auto flex min-h-screen flex-col items-center justify-center py-12">
+        <div className="w-full max-w-sm">
+          <Card>
+            <CardHeader className="space-y-1">
+              <div className="flex justify-center p-6">
+                <Logo />
+              </div>
+              <CardTitle>Login to AndonPro</CardTitle>
+              <CardDescription>Enter your credentials to continue.</CardDescription>
+            </CardHeader>
 
-                        <div className="relative my-4">
-                            <Separator />
-                            <span className="absolute left-1/2 -translate-x-1/2 -top-2.5 bg-card px-2 text-xs text-muted-foreground">OR</span>
-                        </div>
+            <CardContent>
+              <form onSubmit={handleLogin}>
+                <div className="grid gap-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      required
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      disabled={isLoggingIn || isGoogleLoading || isMicrosoftLoading}
+                    />
+                  </div>
 
-                        <div className="grid grid-cols-1 gap-2">
-                            <Button variant="outline" className="w-full" onClick={handleGoogleSignIn} disabled={isLoggingIn || isGoogleLoading || isMicrosoftLoading}>
-                                {isGoogleLoading ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : <GoogleIcon />}
-                                Sign in with Google
-                            </Button>
-                            <Button variant="outline" className="w-full" onClick={handleMicrosoftSignIn} disabled={isLoggingIn || isGoogleLoading || isMicrosoftLoading}>
-                                {isMicrosoftLoading ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : <MicrosoftIcon />}
-                                Sign in with Microsoft
-                            </Button>
-                        </div>
-                            
-                        <div className="mt-4 text-center text-sm">
-                            Don't have an account?{' '}
-                            <Link href="/pricing" passHref>
-                                <span className="underline cursor-pointer">
-                                    Sign up
-                                </span>
-                            </Link>
-                        </div>
-                         <div className="relative my-4">
-                            <Separator />
-                        </div>
-                        <div>
-                             <Button variant="outline" className="w-full" onClick={handleSeedDatabase} disabled={isSeeding}>
-                                {isSeeding ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : <Database className="mr-2 h-4 w-4" />}
-                                Seed Database
-                            </Button>
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
-            <footer className="mt-8 text-center text-sm text-muted-foreground">
-                <p>© {new Date().getFullYear()} AndonPro. All rights reserved.</p>
-                <p className="mt-2">
-                    <Link href="/" className="underline">
-                        Back to Home
-                    </Link>
-                </p>
-            </footer>
+                  <div className="grid gap-2">
+                    <Label htmlFor="password">Password</Label>
+                    <Input
+                      id="password"
+                      type="password"
+                      required
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      disabled={isLoggingIn || isGoogleLoading || isMicrosoftLoading}
+                    />
+                  </div>
+
+                  <Button
+                    type="submit"
+                    className="w-full"
+                    disabled={isLoggingIn || isGoogleLoading || isMicrosoftLoading}
+                  >
+                    {isLoggingIn && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
+                    Login
+                  </Button>
+                </div>
+              </form>
+
+              <div className="mt-4 text-center text-sm">
+                <Link href="/forgot-password" passHref>
+                  <span className="underline cursor-pointer">Forgot password?</span>
+                </Link>
+              </div>
+
+              <div className="relative my-4">
+                <Separator />
+                <span className="absolute left-1/2 -translate-x-1/2 -top-2.5 bg-card px-2 text-xs text-muted-foreground">
+                  OR
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 gap-2">
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={handleGoogleSignIn}
+                  disabled={isLoggingIn || isGoogleLoading || isMicrosoftLoading}
+                >
+                  {isGoogleLoading ? (
+                    <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <GoogleIcon />
+                  )}
+                  Sign in with Google
+                </Button>
+
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={handleMicrosoftSignIn}
+                  disabled={isLoggingIn || isGoogleLoading || isMicrosoftLoading}
+                >
+                  {isMicrosoftLoading ? (
+                    <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <MicrosoftIcon />
+                  )}
+                  Sign in with Microsoft
+                </Button>
+              </div>
+
+              <div className="mt-4 text-center text-sm">
+                Don't have an account?{" "}
+                <Link href="/pricing" passHref>
+                  <span className="underline cursor-pointer">Sign up</span>
+                </Link>
+              </div>
+
+              <div className="relative my-4">
+                <Separator />
+              </div>
+
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={handleSeedDatabase}
+                disabled={isSeeding}
+              >
+                {isSeeding ? (
+                  <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Database className="mr-2 h-4 w-4" />
+                )}
+                Seed Database
+              </Button>
+            </CardContent>
+          </Card>
         </div>
+
+        <footer className="mt-8 text-center text-sm text-muted-foreground">
+          <p>© {new Date().getFullYear()} AndonPro. All rights reserved.</p>
+          <p className="mt-2">
+            <Link href="/" className="underline">
+              Back to Home
+            </Link>
+          </p>
+        </footer>
+      </div>
     </div>
   );
 }
