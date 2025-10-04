@@ -7,13 +7,13 @@
     "dev": "next dev",
     "genkit:dev": "genkit start -- tsx src/ai/dev.ts",
     "genkit:watch": "genkit start -- tsx --watch src/ai/dev.ts",
-    "build": "next build && next export",
+    "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit"
   },
   "engines": {
-    "node": ">=18 <21"
+    "node": ">=18.0.0 <21.0.0"
   },
   "dependencies": {
     "@genkit-ai/googleai": "^1.14.1",

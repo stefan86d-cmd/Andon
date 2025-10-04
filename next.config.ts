@@ -1,9 +1,6 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // ⚠️ Only keep this if you want static export (no SSR, no API routes)
-  output: "export",
-
   images: {
     unoptimized: true,
     remotePatterns: [
@@ -23,4 +20,3 @@ const nextConfig: NextConfig = {
 };
 
 export default nextConfig;
-
