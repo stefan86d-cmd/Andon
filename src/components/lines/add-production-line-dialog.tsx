@@ -52,7 +52,11 @@ export function AddProductionLineDialog({ children }: { children: React.ReactNod
 
   function onSubmit(data: LineFormValues) {
     if (!currentUser || !currentUser.orgId) {
-        toast({ title: "Not authorized", description: "You must be part of an organization to add a line.", variant: "destructive" });
+        toast({
+            title: "Not authorized",
+            description: "You must be part of an organization to add a line.",
+            variant: "destructive"
+        });
         return;
     }
     startSubmittingTransition(async () => {
@@ -66,10 +70,15 @@ export function AddProductionLineDialog({ children }: { children: React.ReactNod
             setOpen(false);
             router.refresh();
         } else {
+            const errorMsg =
+              typeof result.error === "string"
+                ? result.error
+                : "An unexpected error occurred while adding the line.";
+    
             toast({
                 variant: "destructive",
                 title: "Failed to add line",
-                description: result.error,
+                description: errorMsg,
             });
         }
     });
