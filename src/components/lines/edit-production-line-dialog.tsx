@@ -92,10 +92,15 @@ export function EditProductionLineDialog({
         setOpen(false);
         router.refresh();
       } else {
+        const errorMsg =
+          "error" in result && typeof result.error === 'string'
+            ? result.error
+            : "An unexpected error occurred while updating the line.";
+
         toast({
           variant: "destructive",
           title: "Failed to update line",
-          description: result.error,
+          description: errorMsg,
         });
       }
     });
