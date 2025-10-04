@@ -15,8 +15,8 @@ jobs:
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
-          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_ANDON_EF46A }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_NEW_PROJECT_ID }}'
           channelId: live
-          projectId: andon-ef46a
+          projectId: YOUR_NEW_PROJECT_ID
         env:
           FIREBASE_CLI_EXPERIMENTS: webframeworks
