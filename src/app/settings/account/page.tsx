@@ -121,6 +121,7 @@ export default function AccountSettingsPage() {
     const onPasswordSubmit = (data: PasswordFormValues) => {
         startPasswordTransition(async () => {
             const result = await changePassword(currentUser.email, data.currentPassword, data.newPassword);
+    
             if (result.success) {
                 toast({
                     title: "Password Updated",
@@ -128,18 +129,26 @@ export default function AccountSettingsPage() {
                 });
                 passwordForm.reset();
             } else {
+                // Safely extract the error message
+                const errorMsg =
+                    "error" in result && typeof result.error === "string"
+                        ? result.error
+                        : "An unexpected error occurred.";
+    
                 toast({
                     variant: "destructive",
                     title: "Update Failed",
-                    description: result.error,
+                    description: errorMsg,
                 });
-                 passwordForm.setError("currentPassword", {
+    
+                passwordForm.setError("currentPassword", {
                     type: "manual",
-                    message: result.error,
+                    message: errorMsg,
                 });
             }
         });
-    }
+    };
+    
 
     const getCountryName = (code: string) => {
         return countries.find(c => c.code === code)?.name || code;
