@@ -36,7 +36,7 @@ import {
 import { toast } from "@/hooks/use-toast";
 import { LoaderCircle, Pencil } from "lucide-react";
 import { editUser } from "@/app/actions";
-import type { User } from "@/lib/types";
+import type { User, Role } from "@/lib/types";
 import { DropdownMenuItem } from "../ui/dropdown-menu";
 import { useUser } from "@/contexts/user-context";
 
@@ -73,7 +73,7 @@ export function EditUserDialog({ user }: EditUserDialogProps) {
 
   function onSubmit(data: UserFormValues) {
     startSubmittingTransition(async () => {
-      const result = await editUser(user.id, data);
+      const result = await editUser(user.id, data as { firstName: string, lastName: string, email: string, role: Role });
 
       if (result.success) {
         toast({

@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useTransition } from "react";
@@ -40,15 +41,10 @@ export function DeleteProductionLineDialog({ productionLine }: DeleteProductionL
         setOpen(false);
         router.refresh();
       } else {
-        const errorMsg =
-          typeof result.error === "string"
-            ? result.error
-            : "An unexpected error occurred while deleting the line.";
-
         toast({
           variant: "destructive",
           title: "Failed to delete line",
-          description: errorMsg,
+          description: result.error,
         });
       }
     });
@@ -73,7 +69,7 @@ export function DeleteProductionLineDialog({ productionLine }: DeleteProductionL
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isSubmitting}>No</AlertDialogCancel>
-          <AlertDialogAction onClick={handleDelete} disabled={isSubmitting}>
+          <AlertDialogAction onClick={handleDelete} disabled={isSubmitting} className="bg-destructive hover:bg-destructive/90">
             {isSubmitting && (
               <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
             )}
