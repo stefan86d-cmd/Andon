@@ -52,6 +52,7 @@ export type Issue = {
   productionStopped: boolean;
   itemNumber?: string;
   quantity?: number;
+  orgId: string;
 };
 
 // Type for how an issue is stored in Firestore

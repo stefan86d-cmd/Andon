@@ -1,7 +1,7 @@
 
 "use server";
 
-import type { Plan, Role, User, UserRef } from "@/lib/types";
+import type { Plan, Role, User, UserRef, IssueCategory } from "@/lib/types";
 import { handleFirestoreError } from '@/lib/firestore-helpers';
 import type { Issue } from '@/lib/types';
 import { getUserByEmail, getUserById } from '@/lib/data';
@@ -62,7 +62,7 @@ export async function seedDatabase() {
     }
 }
 
-export async function reportIssue(issueData: Omit<Issue, 'id' | 'reportedAt' | 'status' | 'reportedBy' | 'resolvedBy' >, reportedByEmail: string) {
+export async function reportIssue(issueData: Omit<Issue, 'id' | 'reportedAt' | 'status' | 'reportedBy' | 'resolvedBy' | 'orgId'> & { orgId: string }, reportedByEmail: string): Promise<{ success: true } | { success: false, error: string }> {
     try {
         const user = await getUserByEmail(reportedByEmail);
         if (!user) {
