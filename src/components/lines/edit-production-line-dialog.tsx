@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
-import { LoaderCircle, PlusCircle } from "lucide-react";
+import { LoaderCircle } from "lucide-react";
 import { editProductionLine } from "@/app/actions";
 import type { ProductionLine } from "@/lib/types";
 import { WorkstationFormField } from "./workstation-form-field";
@@ -42,21 +42,26 @@ const planLimits = {
 
 const lineFormSchema = z.object({
   name: z.string().min(1, "Line name is required."),
-  workstations: z.array(
-    z.object({
-      value: z.string().min(1, "Workstation name cannot be empty."),
-    })
-  ).default([]),
+  workstations: z
+    .array(
+      z.object({
+        value: z.string().min(1, "Workstation name cannot be empty."),
+      })
+    )
+    .default([]),
 });
 
 type LineFormValues = z.infer<typeof lineFormSchema>;
 
 interface EditProductionLineDialogProps {
-    children: React.ReactNode;
-    productionLine: ProductionLine;
+  children: React.ReactNode;
+  productionLine: ProductionLine;
 }
 
-export function EditProductionLineDialog({ children, productionLine }: EditProductionLineDialogProps) {
+export function EditProductionLineDialog({
+  children,
+  productionLine,
+}: EditProductionLineDialogProps) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, startSubmittingTransition] = useTransition();
   const { currentUser } = useUser();
@@ -66,33 +71,33 @@ export function EditProductionLineDialog({ children, productionLine }: EditProdu
     resolver: zodResolver(lineFormSchema),
     defaultValues: {
       name: productionLine.name,
-      workstations: productionLine.workstations.map(ws => ({ value: ws })),
+      workstations: productionLine.workstations.map((ws) => ({ value: ws })),
     },
   });
 
-  const workstationCount = form.watch('workstations').length;
-  const userPlan = currentUser?.plan || 'starter';
+  const workstationCount = form.watch("workstations").length;
+  const userPlan = currentUser?.plan || "starter";
   const workstationLimit = planLimits[userPlan].workstations;
   const canAddWorkstation = workstationCount < workstationLimit;
 
   function onSubmit(data: LineFormValues) {
     startSubmittingTransition(async () => {
-        const result = await editProductionLine(productionLine.id, data);
+      const result = await editProductionLine(productionLine.id, data);
 
-        if (result.success) {
-            toast({
-                title: "Production Line Updated",
-                description: `The line "${data.name}" has been updated.`,
-            });
-            setOpen(false);
-            router.refresh();
-        } else {
-            toast({
-                variant: "destructive",
-                title: "Failed to update line",
-                description: result.error,
-            });
-        }
+      if (result.success) {
+        toast({
+          title: "Production Line Updated",
+          description: `The line "${data.name}" has been updated.`,
+        });
+        setOpen(false);
+        router.refresh();
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Failed to update line",
+          description: result.error,
+        });
+      }
     });
   }
 
@@ -100,7 +105,7 @@ export function EditProductionLineDialog({ children, productionLine }: EditProdu
     if (!isOpen) {
       form.reset({
         name: productionLine.name,
-        workstations: productionLine.workstations.map(ws => ({ value: ws })),
+        workstations: productionLine.workstations.map((ws) => ({ value: ws })),
       });
     }
     setOpen(isOpen);
@@ -116,6 +121,7 @@ export function EditProductionLineDialog({ children, productionLine }: EditProdu
             Update the line name and manage its workstations.
           </DialogDescription>
         </DialogHeader>
+
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
@@ -132,26 +138,32 @@ export function EditProductionLineDialog({ children, productionLine }: EditProdu
               )}
             />
 
-            <WorkstationFormField 
-              form={form} 
-              canAdd={canAddWorkstation} 
-              limit={workstationLimit === Infinity ? 'Unlimited' : workstationLimit}
+            <WorkstationFormField
+              form={form}
+              canAdd={canAddWorkstation}
+              limit={
+                workstationLimit === Infinity
+                  ? "Unlimited"
+                  : workstationLimit
+              }
               plan={userPlan}
             />
 
             <DialogFooter>
-                <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setOpen(false)}
-                    disabled={isSubmitting}
-                >
-                    Cancel
-                </Button>
-                <Button type="submit" disabled={isSubmitting}>
-                    {isSubmitting && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
-                    Save Changes
-                </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setOpen(false)}
+                disabled={isSubmitting}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting && (
+                  <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+                )}
+                Save Changes
+              </Button>
             </DialogFooter>
           </form>
         </Form>

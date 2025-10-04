@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useTransition } from "react";
@@ -41,10 +40,15 @@ export function DeleteProductionLineDialog({ productionLine }: DeleteProductionL
         setOpen(false);
         router.refresh();
       } else {
+        const errorMsg =
+          typeof result.error === "string"
+            ? result.error
+            : "An unexpected error occurred while deleting the line.";
+
         toast({
           variant: "destructive",
           title: "Failed to delete line",
-          description: result.error,
+          description: errorMsg,
         });
       }
     });
@@ -54,8 +58,8 @@ export function DeleteProductionLineDialog({ productionLine }: DeleteProductionL
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger asChild>
         <Button variant="destructive" size="sm">
-            <Trash2 className="h-4 w-4" />
-            <span className="sr-only sm:not-sr-only sm:ml-2">Delete</span>
+          <Trash2 className="h-4 w-4" />
+          <span className="sr-only sm:not-sr-only sm:ml-2">Delete</span>
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
@@ -70,7 +74,9 @@ export function DeleteProductionLineDialog({ productionLine }: DeleteProductionL
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isSubmitting}>No</AlertDialogCancel>
           <AlertDialogAction onClick={handleDelete} disabled={isSubmitting}>
-            {isSubmitting && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
+            {isSubmitting && (
+              <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+            )}
             Yes, delete
           </AlertDialogAction>
         </AlertDialogFooter>
