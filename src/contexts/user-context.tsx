@@ -14,11 +14,10 @@ import {
     OAuthProvider
 } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
-import { app } from '@/firebase'; // Import the initialized app
-import { db } from '@/firebase';
+import { app, db } from '@/firebase'; // Import the initialized app
 import type { User } from '@/lib/types';
 import { toast } from '@/hooks/use-toast';
-import { getUserById } from '@/lib/data';
+import { getUserAction } from '@/app/actions';
 
 interface UserContextType {
   currentUser: User | null;
@@ -40,7 +39,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
   const handleAuthUser = useCallback(async (firebaseUser: FirebaseUser | null) => {
     if (firebaseUser) {
-      const userProfile = await getUserById(firebaseUser.uid);
+      // Use the server action to securely fetch user data
+      const userProfile = await getUserAction(firebaseUser.uid);
       if (userProfile) {
         setCurrentUser(userProfile);
       } else {

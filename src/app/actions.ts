@@ -3,7 +3,7 @@
 
 import type { Plan, Role, UserRef, Issue } from "@/lib/types";
 import { handleFirestoreError } from "@/lib/firestore-helpers";
-import { getUserByEmail } from "@/lib/data";
+import { getUserById, getUserByEmail } from "@/lib/data";
 import { db } from "@/firebase/server";
 import {
   collection,
@@ -18,6 +18,7 @@ import { seedData } from "@/lib/seed";
 import { getAdminApp } from "@/firebase/admin";
 import { getAuth as getAdminAuth } from "firebase-admin/auth";
 import { sendEmail } from "@/lib/email";
+import { getUser } from "@/lib/auth";
 
 export type ActionResult = {
   success: boolean;
@@ -26,21 +27,16 @@ export type ActionResult = {
 };
 
 // -----------------------------------------------------------------------------
-// Helper Functions
+// Auth Actions (for client use)
 // -----------------------------------------------------------------------------
-
-export async function setCustomUserClaims(
-  uid: string,
-  claims: { [key: string]: any }
-): Promise<ActionResult> {
-  console.log(`MOCK (Action): Setting custom claims for UID ${uid}:`, claims);
-  return { success: true, message: "Custom claims set successfully." };
+export async function getUserAction(uid: string) {
+    return getUser(uid);
 }
+
 
 // -----------------------------------------------------------------------------
 // Seeding
 // -----------------------------------------------------------------------------
-
 export async function seedDatabase(): Promise<ActionResult> {
   try {
     const batch = writeBatch(db);
@@ -314,11 +310,6 @@ export async function requestPasswordReset(email: string): Promise<ActionResult>
           "If an account with this email exists, a password reset link has been sent.",
       };
   }
-}
-
-export async function resetPassword(token: string, newPassword: string): Promise<ActionResult> {
-  console.log("MOCK: Password has been reset successfully.");
-  return { success: true, message: "Your password has been reset successfully." };
 }
 
 export async function changePassword(email: string, current: string, newPass: string): Promise<ActionResult> {

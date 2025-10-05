@@ -67,9 +67,6 @@ export async function getUserById(uid: string): Promise<User | null> {
 const transformIssueDocument = async (doc: any): Promise<Issue> => {
     const data = doc.data() as IssueDocument;
 
-    let reportedBy: User | null = null;
-    let resolvedBy: User | null = null;
-    
     // In a real app, you would fetch user details here.
     // For this mock, we will just use the name from the UserRef.
     const reportedByName = data.reportedBy?.name || "Unknown User";
