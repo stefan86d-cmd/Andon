@@ -1,22 +1,24 @@
 
 import * as admin from 'firebase-admin';
 
-const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
+// The service account key is expected to be a JSON string in the environment variable.
+const serviceAccountString = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
 
-if (!serviceAccount) {
-    throw new Error('Missing FIREBASE_SERVICE_ACCOUNT_KEY environment variable');
+if (!serviceAccountString) {
+    throw new Error('Missing FIREBASE_SERVICE_ACCOUNT_KEY environment variable. It should be a JSON string.');
 }
 
 let app: admin.app.App;
 
 if (admin.apps.length === 0) {
+    // Parse the JSON string from the environment variable to a service account object.
+    const serviceAccount = JSON.parse(serviceAccountString);
     app = admin.initializeApp({
-        credential: admin.credential.cert(JSON.parse(serviceAccount)),
+        credential: admin.credential.cert(serviceAccount),
     });
 } else {
     app = admin.apps[0]!;
 }
-
 
 export function getAdminApp() {
     return app;
