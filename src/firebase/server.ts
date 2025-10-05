@@ -1,4 +1,4 @@
-import { getAdminApp } from "./admin";
+import getAdminApp from "./admin";
 import { getFirestore, Firestore } from "firebase-admin/firestore";
 
 let db: Firestore;
