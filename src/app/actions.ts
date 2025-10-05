@@ -24,9 +24,13 @@ import { sendEmail } from '@/lib/email';
 // --- Data fetching actions (moved from lib/data.ts) ---
 
 export async function getProductionLines(orgId: string): Promise<ProductionLine[]> {
+    if (!db) {
+        console.error("Firestore not initialized");
+        return [];
+    }
     try {
         const linesCollection = db.collection("productionLines");
-        const q = query(linesCollection, where("orgId", "==", orgId));
+        const q = linesCollection.where("orgId", "==", orgId);
         const snapshot = await getDocs(q);
         return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as ProductionLine));
     } catch (error) {
@@ -36,9 +40,13 @@ export async function getProductionLines(orgId: string): Promise<ProductionLine[
 }
 
 export async function getAllUsers(orgId: string): Promise<User[]> {
+     if (!db) {
+        console.error("Firestore not initialized");
+        return [];
+    }
     try {
         const usersCollection = db.collection("users");
-        const q = query(usersCollection, where("orgId", "==", orgId));
+        const q = usersCollection.where("orgId", "==", orgId);
         const snapshot = await getDocs(q);
         return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
     } catch (error) {
@@ -48,9 +56,13 @@ export async function getAllUsers(orgId: string): Promise<User[]> {
 }
 
 export async function getUserByEmail(email: string): Promise<User | null> {
+    if (!db) {
+        console.error("Firestore not initialized");
+        return null;
+    }
     try {
         const usersRef = db.collection("users");
-        const q = query(usersRef, where("email", "==", email));
+        const q = usersRef.where("email", "==", email);
         const querySnapshot = await getDocs(q);
 
         if (querySnapshot.empty) {
@@ -67,6 +79,10 @@ export async function getUserByEmail(email: string): Promise<User | null> {
 }
 
 export async function getUserById(uid: string): Promise<User | null> {
+    if (!db) {
+        console.error("Firestore not initialized");
+        return null;
+    }
     try {
         const userDocRef = db.doc(`users/${uid}`);
         const userDoc = await getDoc(userDocRef);
@@ -98,6 +114,9 @@ export async function addUser(userData: {
   plan: Plan;
   orgId: string;
 }) {
+  if (!db) {
+    return handleFirestoreError(new Error("Firestore not initialized"));
+  }
   try {
     const { email, firstName, lastName, role, plan, orgId } = userData;
 
@@ -157,6 +176,9 @@ export async function editUser(
   userId: string,
   userData: { firstName: string; lastName: string; email: string; role: Role }
 ) {
+  if (!db) {
+    return handleFirestoreError(new Error("Firestore not initialized"));
+  }
   try {
     const userRef = db.doc(`users/${userId}`);
     await userRef.update({
@@ -176,6 +198,9 @@ export async function editUser(
 }
 
 export async function deleteUser(userId: string) {
+  if (!db) {
+    return handleFirestoreError(new Error("Firestore not initialized"));
+  }
   try {
     const userRef = db.doc(`users/${userId}`);
     await userRef.delete();
@@ -189,6 +214,9 @@ export async function deleteUser(userId: string) {
 }
 
 export async function updateUserPlan(userId: string, newPlan: Plan) {
+    if (!db) {
+        return handleFirestoreError(new Error("Firestore not initialized"));
+    }
     try {
         const userRef = db.doc(`users/${userId}`);
         await userRef.update({ plan: newPlan });
@@ -248,6 +276,9 @@ export async function changePassword(email: string, currentPassword?: string, ne
 // --- Issue Actions ---
 
 export async function reportIssue(issueData: Omit<Issue, 'id' | 'reportedAt' | 'reportedBy' | 'status'>, userEmail: string) {
+  if (!db) {
+    return handleFirestoreError(new Error("Firestore not initialized"));
+  }
   try {
     const reporter = await getUserByEmail(userEmail);
     if (!reporter) {
@@ -272,6 +303,9 @@ export async function reportIssue(issueData: Omit<Issue, 'id' | 'reportedAt' | '
 }
 
 export async function updateIssue(issueId: string, data: { resolutionNotes?: string, status: 'in_progress' | 'resolved', productionStopped: boolean }, userEmail: string) {
+    if (!db) {
+        return handleFirestoreError(new Error("Firestore not initialized"));
+    }
     try {
         const issueRef = db.doc(`issues/${issueId}`);
         const resolver = await getUserByEmail(userEmail);
@@ -299,13 +333,16 @@ export async function updateIssue(issueId: string, data: { resolutionNotes?: str
 
     } catch (error) {
         return handleFirestoreError(error);
-    }
+  }
 }
 
 
 // --- Production Line Actions ---
 
 export async function createProductionLine(name: string, orgId: string) {
+    if (!db) {
+        return handleFirestoreError(new Error("Firestore not initialized"));
+    }
     try {
         // Check for existing line with the same name in the same org
         const linesRef = db.collection('productionLines');
@@ -327,6 +364,9 @@ export async function createProductionLine(name: string, orgId: string) {
 }
 
 export async function editProductionLine(lineId: string, data: { name: string; workstations: { value: string }[] }) {
+  if (!db) {
+    return handleFirestoreError(new Error("Firestore not initialized"));
+  }
   try {
     const lineRef = db.doc(`productionLines/${lineId}`);
     const workstationNames = data.workstations.map(ws => ws.value);
@@ -343,6 +383,9 @@ export async function editProductionLine(lineId: string, data: { name: string; w
 }
 
 export async function deleteProductionLine(lineId: string) {
+  if (!db) {
+    return handleFirestoreError(new Error("Firestore not initialized"));
+  }
   try {
     const lineRef = db.doc(`productionLines/${lineId}`);
     await lineRef.delete();
