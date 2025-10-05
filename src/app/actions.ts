@@ -1,3 +1,4 @@
+
 'use server';
 
 import {
@@ -12,7 +13,7 @@ import {
   query,
   where,
   Timestamp,
-} from 'firebase/firestore';
+} from 'firebase-admin/firestore';
 import { db } from '@/firebase/server';
 import { adminAuth } from '@/firebase/admin';
 import type { Issue, Plan, ProductionLine, Role, User } from '@/lib/types';
@@ -21,6 +22,11 @@ import { handleFirestoreError } from '@/lib/firestore-helpers';
 import { sendEmail } from '@/lib/email';
 
 // --- User Actions ---
+
+export async function getUserAction(uid: string): Promise<User | null> {
+    return getUserById(uid);
+}
+
 
 export async function addUser(userData: {
   firstName: string;
@@ -90,8 +96,8 @@ export async function editUser(
   userData: { firstName: string; lastName: string; email: string; role: Role }
 ) {
   try {
-    const userRef = doc(db, 'users', userId);
-    await updateDoc(userRef, {
+    const userRef = db.doc(`users/${userId}`);
+    await userRef.update({
       ...userData,
     });
 
@@ -109,8 +115,8 @@ export async function editUser(
 
 export async function deleteUser(userId: string) {
   try {
-    const userRef = doc(db, 'users', userId);
-    await deleteDoc(userRef);
+    const userRef = db.doc(`users/${userId}`);
+    await userRef.delete();
     // Note: We are not deleting the user from Firebase Auth to prevent data loss
     // and allow for re-activation. You could add that here if needed:
     // await adminAuth.deleteUser(userId);
@@ -122,8 +128,8 @@ export async function deleteUser(userId: string) {
 
 export async function updateUserPlan(userId: string, newPlan: Plan) {
     try {
-        const userRef = doc(db, "users", userId);
-        await updateDoc(userRef, { plan: newPlan });
+        const userRef = db.doc(`users/${userId}`);
+        await userRef.update({ plan: newPlan });
         return { success: true };
     } catch (error) {
         return handleFirestoreError(error);
@@ -196,7 +202,7 @@ export async function reportIssue(issueData: Omit<Issue, 'id' | 'reportedAt' | '
       }
     };
     
-    const docRef = await addDoc(collection(db, "issues"), newIssue);
+    const docRef = await db.collection("issues").add(newIssue);
     return { success: true, issueId: docRef.id };
   } catch (error) {
     return handleFirestoreError(error);
@@ -205,7 +211,7 @@ export async function reportIssue(issueData: Omit<Issue, 'id' | 'reportedAt' | '
 
 export async function updateIssue(issueId: string, data: { resolutionNotes?: string, status: 'in_progress' | 'resolved', productionStopped: boolean }, userEmail: string) {
     try {
-        const issueRef = doc(db, 'issues', issueId);
+        const issueRef = db.doc(`issues/${issueId}`);
         const resolver = await getUserByEmail(userEmail);
 
         if (!resolver) {
@@ -226,7 +232,7 @@ export async function updateIssue(issueId: string, data: { resolutionNotes?: str
             };
         }
 
-        await updateDoc(issueRef, updateData);
+        await issueRef.update(updateData);
         return { success: true };
 
     } catch (error) {
@@ -240,14 +246,14 @@ export async function updateIssue(issueId: string, data: { resolutionNotes?: str
 export async function createProductionLine(name: string, orgId: string) {
     try {
         // Check for existing line with the same name in the same org
-        const linesRef = collection(db, 'productionLines');
-        const q = query(linesRef, where("name", "==", name), where("orgId", "==", orgId));
-        const querySnapshot = await getDocs(q);
+        const linesRef = db.collection('productionLines');
+        const q = linesRef.where("name", "==", name).where("orgId", "==", orgId);
+        const querySnapshot = await q.get();
         if (!querySnapshot.empty) {
             return { success: false, error: "A production line with this name already exists." };
         }
 
-        const docRef = await addDoc(collection(db, "productionLines"), {
+        const docRef = await db.collection("productionLines").add({
             name: name,
             workstations: [],
             orgId: orgId,
@@ -260,10 +266,10 @@ export async function createProductionLine(name: string, orgId: string) {
 
 export async function editProductionLine(lineId: string, data: { name: string; workstations: { value: string }[] }) {
   try {
-    const lineRef = doc(db, 'productionLines', lineId);
+    const lineRef = db.doc(`productionLines/${lineId}`);
     const workstationNames = data.workstations.map(ws => ws.value);
     
-    await updateDoc(lineRef, {
+    await lineRef.update({
       name: data.name,
       workstations: workstationNames,
     });
@@ -276,8 +282,8 @@ export async function editProductionLine(lineId: string, data: { name: string; w
 
 export async function deleteProductionLine(lineId: string) {
   try {
-    const lineRef = doc(db, 'productionLines', lineId);
-    await deleteDoc(lineRef);
+    const lineRef = db.doc(`productionLines/${lineId}`);
+    await lineRef.delete();
     return { success: true };
   } catch (error) {
     return handleFirestoreError(error);
