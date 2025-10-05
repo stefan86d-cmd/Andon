@@ -2,8 +2,8 @@
 "use client";
 
 import React, { createContext, useState, useContext, useEffect, ReactNode, useCallback } from 'react';
-import { getAuth } from 'firebase/auth';
 import { 
+    getAuth,
     onAuthStateChanged, 
     signInWithEmailAndPassword, 
     createUserWithEmailAndPassword,
@@ -14,8 +14,9 @@ import {
     OAuthProvider
 } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
-import { app, db } from '@/firebase'; // db is needed for updates
-import type { Plan, User } from '@/lib/types';
+import { app } from '@/firebase'; // Import the initialized app
+import { db } from '@/firebase';
+import type { User } from '@/lib/types';
 import { toast } from '@/hooks/use-toast';
 import { getUserById } from '@/lib/data';
 
@@ -27,7 +28,7 @@ interface UserContextType {
   signInWithGoogle: () => Promise<boolean>;
   signInWithMicrosoft: () => Promise<boolean>;
   logout: () => void;
-  updateCurrentUser: (user: Partial<User>) => void;
+  updateCurrentUser: (user: Partial<User>) => Promise<void>;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -35,6 +36,7 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 export function UserProvider({ children }: { children: ReactNode }) {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const auth = getAuth(app);
 
   const handleAuthUser = useCallback(async (firebaseUser: FirebaseUser | null) => {
     if (firebaseUser) {
@@ -53,6 +55,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
           plan: "starter", // Default plan
           address: "",
           country: "",
+          phone: "",
         });
       }
     } else {
@@ -62,23 +65,25 @@ export function UserProvider({ children }: { children: ReactNode }) {
   }, []);
   
   useEffect(() => {
-    const auth = getAuth(app);
     const unsubscribe = onAuthStateChanged(auth, handleAuthUser);
     return () => unsubscribe();
-  }, [handleAuthUser]);
+  }, [auth, handleAuthUser]);
 
   const login = async (email: string, password: string): Promise<boolean> => {
     setLoading(true);
     try {
-      const auth = getAuth(app);
       await signInWithEmailAndPassword(auth, email, password);
       // onAuthStateChanged will handle setting the user
       return true;
     } catch (error: any) {
+      let message = "An unknown error occurred.";
+      if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+          message = "Invalid email or password. Please try again.";
+      }
       toast({
         variant: "destructive",
         title: "Login Failed",
-        description: error.message,
+        description: message,
       });
       setLoading(false);
       return false;
@@ -88,16 +93,19 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const registerWithEmail = async (email: string, password: string): Promise<boolean> => {
     setLoading(true);
     try {
-      const auth = getAuth(app);
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       // Manually trigger user update to avoid race conditions with the auth listener
       await handleAuthUser(userCredential.user);
       return true;
     } catch (error: any) {
+      let message = "An unknown error occurred.";
+      if (error.code === 'auth/email-already-in-use') {
+          message = "This email address is already in use.";
+      }
       toast({
         variant: "destructive",
         title: "Registration Failed",
-        description: error.message,
+        description: message,
       });
       setLoading(false);
       return false;
@@ -107,7 +115,6 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const socialSignIn = async (provider: GoogleAuthProvider | OAuthProvider): Promise<boolean> => {
       setLoading(true);
       try {
-          const auth = getAuth(app);
           await signInWithPopup(auth, provider);
           // onAuthStateChanged will handle the rest
           return true;
@@ -134,7 +141,6 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
      setLoading(true);
-     const auth = getAuth(app);
      await signOut(auth);
      setCurrentUser(null);
      setLoading(false);
@@ -143,19 +149,30 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const updateCurrentUser = useCallback(async (userData: Partial<User>) => {
     if (currentUser) {
         const updatedUser = { ...currentUser, ...userData };
-        setCurrentUser(updatedUser);
         
         try {
             if (!db) throw new Error("Firestore is not initialized");
             const userDocRef = doc(db, "users", currentUser.id);
             await setDoc(userDocRef, userData, { merge: true });
+            // After successful DB write, update local state
+            setCurrentUser(updatedUser);
         } catch (error) {
              toast({
               variant: "destructive",
               title: "Update Failed",
               description: "Could not save your changes. Please try again.",
             });
+            // Re-throw to inform calling components of the failure
+            throw error;
         }
+    } else {
+        const error = new Error("Cannot update user, no user is currently logged in.");
+        toast({
+            variant: "destructive",
+            title: "Update Failed",
+            description: error.message,
+        });
+        throw error;
     }
   }, [currentUser]);
 

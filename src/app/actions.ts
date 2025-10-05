@@ -205,6 +205,9 @@ export async function addUser(data: {
 
 export async function deleteUser(uid: string): Promise<ActionResult> {
   try {
+    const adminApp = getAdminApp();
+    const adminAuth = getAdminAuth(adminApp);
+    await adminAuth.deleteUser(uid);
     await deleteDoc(doc(db, "users", uid));
     return { success: true, message: "User deleted successfully." };
   } catch (error) {
@@ -217,6 +220,13 @@ export async function editUser(
   data: { firstName: string; lastName: string; email: string; role: Role }
 ): Promise<ActionResult> {
   try {
+    const adminApp = getAdminApp();
+    const adminAuth = getAdminAuth(adminApp);
+    await adminAuth.updateUser(uid, {
+      email: data.email,
+      displayName: `${data.firstName} ${data.lastName}`
+    });
+    await adminAuth.setCustomUserClaims(uid, { role: data.role });
     await updateDoc(doc(db, "users", uid), data);
     return { success: true, message: "User updated successfully." };
   } catch (error) {
@@ -272,18 +282,38 @@ export async function updateIssue(
 }
 
 // -----------------------------------------------------------------------------
-// Password Functions (Mocks)
+// Password Functions
 // -----------------------------------------------------------------------------
 
 export async function requestPasswordReset(email: string): Promise<ActionResult> {
-  console.log(
-    `MOCK: Password reset requested for: ${email}. In a real app, this would send an email.`
-  );
-  return {
-    success: true,
-    message:
-      "If an account with this email exists, a password reset link has been sent.",
-  };
+  try {
+    const adminApp = getAdminApp();
+    const adminAuth = getAdminAuth(adminApp);
+    const link = await adminAuth.generatePasswordResetLink(email);
+
+    await sendEmail({
+      to: email,
+      subject: "Reset your AndonPro password",
+      html: `
+        <h1>Reset Your Password</h1>
+        <p>Click the link below to set a new password for your account.</p>
+        <p><a href="${link}" target="_blank">Reset Password</a></p>
+      `,
+    });
+    return {
+      success: true,
+      message:
+        "If an account with this email exists, a password reset link has been sent.",
+    };
+  } catch (error) {
+      // Don't expose whether the user exists or not, but log the error
+      console.error("Password reset error:", error);
+      return {
+        success: true, // Always return success to prevent email enumeration
+        message:
+          "If an account with this email exists, a password reset link has been sent.",
+      };
+  }
 }
 
 export async function resetPassword(token: string, newPassword: string): Promise<ActionResult> {

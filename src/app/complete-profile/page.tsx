@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { Suspense, useState, useEffect } from 'react';
+import React, { Suspense, useState, useEffect, useTransition } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -19,15 +19,13 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/layout/logo";
-import { LoaderCircle, CreditCard, Calendar, Lock, User as UserIcon } from 'lucide-react';
+import { LoaderCircle, CreditCard } from 'lucide-react';
 import Link from 'next/link';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { countries } from '@/lib/countries';
 import type { Plan, Role } from '@/lib/types';
 import { toast } from '@/hooks/use-toast';
 import { useUser } from '@/contexts/user-context';
-import { doc, setDoc } from 'firebase/firestore';
-import { db } from '@/firebase';
 
 
 const profileFormSchema = z.object({
@@ -38,7 +36,6 @@ const profileFormSchema = z.object({
   postalCode: z.string().min(1, "Postal code is required."),
   country: z.string().min(1, "Country is required."),
   phone: z.string().optional(),
-  // Mock credit card fields - now optional
   cardNumber: z.string().optional(),
   expiryDate: z.string().optional(),
   cvc: z.string().optional(),
@@ -76,7 +73,7 @@ function CompleteProfileContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { currentUser, loading: userLoading, updateCurrentUser } = useUser();
-  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, startTransition] = useTransition();
 
   const planFromUrl = searchParams.get('plan') as Plan | null;
 
@@ -93,54 +90,62 @@ function CompleteProfileContent() {
       toast({ title: "Not Authenticated", description: "You must be signed in to complete your profile.", variant: "destructive" });
       router.push('/register');
     }
-  }, [currentUser, userLoading, router]);
+    if (currentUser) {
+        form.reset({
+            firstName: currentUser.firstName || "",
+            lastName: currentUser.lastName || "",
+            address: currentUser.address || "",
+            city: "",
+            postalCode: "",
+            country: currentUser.country || "",
+            phone: currentUser.phone || ""
+        })
+    }
+  }, [currentUser, userLoading, router, form]);
 
   const selectedPlan = planFromUrl || 'starter';
 
-  const handleCreateAccount = async (data: ProfileFormValues) => {
+  const handleCreateAccount = (data: ProfileFormValues) => {
     if (!currentUser || !currentUser.id) {
       toast({ title: "Authentication Error", description: "Your session has expired. Please sign in again.", variant: "destructive" });
       return;
     }
 
-    setIsLoading(true);
-    // This is a mock payment action
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    try {
-        const userRole: Role = "admin"; // First user is always an admin
+    startTransition(async () => {
+        // This is a mock payment action
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        
+        try {
+            const userRole: Role = "admin"; // First user is always an admin
 
-        const userProfileData = {
-            firstName: data.firstName,
-            lastName: data.lastName,
-            email: currentUser.email,
-            role: userRole,
-            plan: selectedPlan,
-            address: data.address,
-            country: data.country,
-            phone: data.phone,
-            orgId: currentUser.id, // The first admin's ID becomes the org ID
-        };
-        // Save user profile data to Firestore
-        const userDocRef = doc(db, "users", currentUser.id);
-        await setDoc(userDocRef, userProfileData, { merge: true });
+            const userProfileData = {
+                firstName: data.firstName,
+                lastName: data.lastName,
+                email: currentUser.email,
+                role: userRole,
+                plan: selectedPlan,
+                address: data.address,
+                city: data.city,
+                postalCode: data.postalCode,
+                country: data.country,
+                phone: data.phone,
+                orgId: currentUser.id, // The first admin's ID becomes the org ID
+            };
 
-        // Update context
-        updateCurrentUser(userProfileData);
+            await updateCurrentUser(userProfileData);
 
-        toast({
-            title: "Registration Complete!",
-            description: `Welcome to the ${selectedPlan} plan. Your account is ready!`,
-        });
+            toast({
+                title: "Registration Complete!",
+                description: `Welcome to the ${selectedPlan} plan. Your account is ready!`,
+            });
 
-        router.push('/dashboard');
+            router.push('/dashboard');
 
-    } catch (error) {
-        console.error("Failed to save profile:", error);
-        toast({ title: "Profile Creation Failed", description: "Could not save your profile. Please try again.", variant: "destructive" });
-    } finally {
-        setIsLoading(false);
-    }
+        } catch (error) {
+            console.error("Failed to save profile:", error);
+            toast({ title: "Profile Creation Failed", description: "Could not save your profile. Please try again.", variant: "destructive" });
+        }
+    });
   };
 
   if (userLoading || !currentUser) {
@@ -241,8 +246,8 @@ function CompleteProfileContent() {
                          <p className="text-sm text-muted-foreground text-center">
                             By clicking the button below, you agree to our <Link href="/terms" className="underline" target="_blank" rel="noopener noreferrer">Terms of Service</Link>.
                         </p>
-                        <Button type="submit" form="profile-form" className="w-full" disabled={isLoading}>
-                            {isLoading && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
+                        <Button type="submit" form="profile-form" className="w-full" disabled={isSubmitting}>
+                            {isSubmitting && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
                             Complete Registration
                         </Button>
                     </CardFooter>
@@ -268,5 +273,3 @@ export default function CompleteProfilePage() {
         </Suspense>
     )
 }
-
-    

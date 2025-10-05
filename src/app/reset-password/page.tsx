@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useTransition, Suspense } from 'react';
@@ -20,6 +21,7 @@ import { LoaderCircle } from 'lucide-react';
 import { resetPassword } from '@/app/actions';
 import { toast } from '@/hooks/use-toast';
 import Link from 'next/link';
+import { getAuth, verifyPasswordResetCode, confirmPasswordReset } from 'firebase/auth';
 
 const formSchema = z.object({
   newPassword: z.string().min(6, "Password must be at least 6 characters."),
@@ -36,7 +38,7 @@ function ResetPasswordContent() {
   const searchParams = useSearchParams();
   const [isSubmitting, startTransition] = useTransition();
 
-  const token = searchParams.get('token');
+  const oobCode = searchParams.get('oobCode');
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -47,43 +49,41 @@ function ResetPasswordContent() {
   });
 
   const onSubmit = (data: FormValues) => {
-    if (!token) {
+    if (!oobCode) {
         toast({ title: "Error", description: "Invalid or missing reset token.", variant: "destructive" });
         return;
     }
 
     startTransition(async () => {
       try {
-        const result = await resetPassword(token, data.newPassword);
+        const auth = getAuth();
+        // Verify the code is valid
+        await verifyPasswordResetCode(auth, oobCode);
 
-        if ("success" in result && result.success) {
-          toast({
-            title: "Password Reset Successful",
-            description: "You can now log in with your new password.",
-          });
-          router.push('/login');
-        } else {
-          const errorMsg = "error" in result && typeof result.error === "string"
-            ? result.error
-            : "An unexpected error occurred.";
-          
-          toast({
-            title: "Password Reset Failed",
-            description: errorMsg, // ✅ always string
-            variant: "destructive",
-          });
+        // Perform the password reset
+        await confirmPasswordReset(auth, oobCode, data.newPassword);
+        
+        toast({
+          title: "Password Reset Successful",
+          description: "You can now log in with your new password.",
+        });
+        router.push('/login');
+        
+      } catch (err: any) {
+        let errorMessage = "An unexpected error occurred.";
+        if (err.code === 'auth/invalid-action-code') {
+            errorMessage = "This password reset link is invalid or has expired. Please request a new one.";
         }
-      } catch (err) {
         toast({
           title: "Password Reset Failed",
-          description: "An unexpected error occurred.",
+          description: errorMessage,
           variant: "destructive",
         });
       }
     });
   };
 
-  if (!token) {
+  if (!oobCode) {
      return (
        <Card className="mx-auto max-w-sm w-full">
          <CardHeader>
@@ -100,78 +100,85 @@ function ResetPasswordContent() {
   }
 
   return (
-    <Card className="mx-auto max-w-sm w-full">
-      <CardHeader className="space-y-1">
-        <div className="flex justify-center p-6">
-          <Logo />
-        </div>
-        <CardTitle>Reset Your Password</CardTitle>
-        <CardDescription>
-          Enter a new password for your account.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="newPassword"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>New Password</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="password"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="confirmPassword"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Confirm New Password</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="password"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
-              {isSubmitting && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
-              Reset Password
-            </Button>
-          </form>
-        </Form>
-         <div className="mt-4 text-center text-sm">
-            <Link href="/login" className="underline">
-              Back to login
-            </Link>
-          </div>
-      </CardContent>
-    </Card>
+    <div className="flex items-center justify-center min-h-screen bg-muted">
+        <Card className="mx-auto max-w-sm w-full">
+        <CardHeader className="space-y-1 text-center">
+            <div className="flex justify-center p-6">
+            <Logo />
+            </div>
+            <CardTitle>Reset Your Password</CardTitle>
+            <CardDescription>
+            Enter a new password for your account.
+            </CardDescription>
+        </CardHeader>
+        <CardContent>
+            <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <FormField
+                control={form.control}
+                name="newPassword"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>New Password</FormLabel>
+                    <FormControl>
+                        <Input
+                        type="password"
+                        {...field}
+                        />
+                    </FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )}
+                />
+                <FormField
+                control={form.control}
+                name="confirmPassword"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Confirm New Password</FormLabel>
+                    <FormControl>
+                        <Input
+                        type="password"
+                        {...field}
+                        />
+                    </FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )}
+                />
+                <Button type="submit" className="w-full" disabled={isSubmitting}>
+                {isSubmitting && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
+                Reset Password
+                </Button>
+            </form>
+            </Form>
+            <div className="mt-4 text-center text-sm">
+                <Link href="/login" className="underline">
+                Back to login
+                </Link>
+            </div>
+        </CardContent>
+        </Card>
+    </div>
   );
 }
 
 
 export default function ResetPasswordPage() {
     return (
-        <div className="flex items-center justify-center min-h-screen bg-background">
-            <Suspense fallback={
-                <div className="flex items-center justify-center">
-                    <LoaderCircle className="h-8 w-8 animate-spin" />
-                </div>
-            }>
-                <ResetPasswordContent />
-            </Suspense>
+        <div className="bg-muted">
+            <div className="container mx-auto flex min-h-screen flex-col items-center justify-center py-12">
+                 <Suspense fallback={
+                    <div className="flex items-center justify-center">
+                        <LoaderCircle className="h-8 w-8 animate-spin" />
+                    </div>
+                }>
+                    <ResetPasswordContent />
+                </Suspense>
+            </div>
+             <footer className="mt-8 text-center text-sm text-muted-foreground pb-8">
+                © {new Date().getFullYear()} AndonPro. All rights reserved.
+            </footer>
         </div>
     )
 }
