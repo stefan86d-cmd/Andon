@@ -1,9 +1,10 @@
+
 "use server";
 
 import type { Plan, Role, UserRef, Issue } from "@/lib/types";
 import { handleFirestoreError } from "@/lib/firestore-helpers";
 import { getUserByEmail } from "@/lib/data";
-import { db } from "@/firebase";
+import { db } from "@/firebase/server";
 import {
   collection,
   addDoc,

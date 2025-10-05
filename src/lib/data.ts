@@ -1,5 +1,5 @@
 
-import { db } from "@/firebase";
+import { db } from "@/firebase/server";
 import type { User, Issue, ProductionLine, IssueDocument } from "@/lib/types";
 import { collection, getDocs, doc, getDoc, query, orderBy, where } from "firebase/firestore";
 import { handleFirestoreError } from "./firestore-helpers";

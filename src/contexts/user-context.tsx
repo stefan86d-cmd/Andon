@@ -2,9 +2,8 @@
 "use client";
 
 import React, { createContext, useState, useContext, useEffect, ReactNode, useCallback } from 'react';
-import { auth, db } from '@/firebase';
+import { getAuth } from 'firebase/auth';
 import { 
-    getAuth,
     onAuthStateChanged, 
     signInWithEmailAndPassword, 
     createUserWithEmailAndPassword,
@@ -14,7 +13,8 @@ import {
     User as FirebaseUser,
     OAuthProvider
 } from 'firebase/auth';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, setDoc } from 'firebase/firestore';
+import { app, db } from '@/firebase'; // db is needed for updates
 import type { Plan, User } from '@/lib/types';
 import { toast } from '@/hooks/use-toast';
 import { getUserById } from '@/lib/data';
@@ -62,14 +62,15 @@ export function UserProvider({ children }: { children: ReactNode }) {
   }, []);
   
   useEffect(() => {
-    const authInstance = getAuth();
-    const unsubscribe = onAuthStateChanged(authInstance, handleAuthUser);
+    const auth = getAuth(app);
+    const unsubscribe = onAuthStateChanged(auth, handleAuthUser);
     return () => unsubscribe();
   }, [handleAuthUser]);
 
   const login = async (email: string, password: string): Promise<boolean> => {
     setLoading(true);
     try {
+      const auth = getAuth(app);
       await signInWithEmailAndPassword(auth, email, password);
       // onAuthStateChanged will handle setting the user
       return true;
@@ -87,6 +88,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const registerWithEmail = async (email: string, password: string): Promise<boolean> => {
     setLoading(true);
     try {
+      const auth = getAuth(app);
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       // Manually trigger user update to avoid race conditions with the auth listener
       await handleAuthUser(userCredential.user);
@@ -105,6 +107,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const socialSignIn = async (provider: GoogleAuthProvider | OAuthProvider): Promise<boolean> => {
       setLoading(true);
       try {
+          const auth = getAuth(app);
           await signInWithPopup(auth, provider);
           // onAuthStateChanged will handle the rest
           return true;
@@ -131,6 +134,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
      setLoading(true);
+     const auth = getAuth(app);
      await signOut(auth);
      setCurrentUser(null);
      setLoading(false);
@@ -142,6 +146,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
         setCurrentUser(updatedUser);
         
         try {
+            if (!db) throw new Error("Firestore is not initialized");
             const userDocRef = doc(db, "users", currentUser.id);
             await setDoc(userDocRef, userData, { merge: true });
         } catch (error) {
