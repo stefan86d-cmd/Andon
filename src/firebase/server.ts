@@ -1,8 +1,15 @@
+import { getAdminApp } from "./admin";
+import { getFirestore, Firestore } from "firebase-admin/firestore";
 
-import { getAdminApp } from './admin';
-import { getFirestore } from 'firebase-admin/firestore';
+let db: Firestore;
 
-const app = getAdminApp();
-const db = getFirestore(app);
+try {
+  const app = getAdminApp();
+  db = getFirestore(app);
+} catch (error) {
+  console.error("❌ Firestore initialization failed:", error);
+  // Fallback: create a dummy Firestore object to satisfy TypeScript
+  db = {} as Firestore;
+}
 
-export { app, db };
+export { db };
