@@ -6,8 +6,6 @@ const nextConfig: NextConfig = {
     serverActions: {
       bodySizeLimit: '4.5mb',
     },
-  },
-  experiments: {
     asyncWebAssembly: true,
   },
   images: {
