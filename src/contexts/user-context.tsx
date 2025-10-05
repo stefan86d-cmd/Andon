@@ -4,6 +4,7 @@
 import React, { createContext, useState, useContext, useEffect, ReactNode, useCallback } from 'react';
 import { auth, db } from '@/firebase';
 import { 
+    getAuth,
     onAuthStateChanged, 
     signInWithEmailAndPassword, 
     createUserWithEmailAndPassword,
@@ -61,7 +62,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
   }, []);
   
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, handleAuthUser);
+    const authInstance = getAuth();
+    const unsubscribe = onAuthStateChanged(authInstance, handleAuthUser);
     return () => unsubscribe();
   }, [handleAuthUser]);
 
