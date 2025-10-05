@@ -1,12 +1,44 @@
 
-import { db } from "@/firebase/server";
+import { db as serverDB } from "@/firebase/server";
+import { db as clientDB } from "@/firebase";
 import type { User, Issue, ProductionLine, IssueDocument } from "@/lib/types";
 import { collection, getDocs, doc, getDoc, query, orderBy, where } from "firebase/firestore";
 import { handleFirestoreError } from "./firestore-helpers";
 
+
+// This function is intended for CLIENT-SIDE use.
+export async function getClientIssues(orgId: string): Promise<Issue[]> {
+    try {
+        const issuesCollection = collection(clientDB, "issues");
+        const q = query(issuesCollection, where("orgId", "==", orgId), orderBy("reportedAt", "desc"));
+        const snapshot = await getDocs(q);
+        
+        const issues = await Promise.all(snapshot.docs.map(transformIssueDocument));
+        return issues;
+
+    } catch (error) {
+        console.error("Error fetching issues:", error);
+        return [];
+    }
+}
+
+// This function is intended for CLIENT-SIDE use.
+export async function getClientProductionLines(orgId: string): Promise<ProductionLine[]> {
+    try {
+        const linesCollection = collection(clientDB, "productionLines");
+        const q = query(linesCollection, where("orgId", "==", orgId));
+        const snapshot = await getDocs(q);
+        return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as ProductionLine));
+    } catch (error) {
+        console.error("Error fetching production lines:", error);
+        return [];
+    }
+}
+
+
 export async function getProductionLines(orgId: string): Promise<ProductionLine[]> {
     try {
-        const linesCollection = collection(db, "productionLines");
+        const linesCollection = collection(serverDB, "productionLines");
         const q = query(linesCollection, where("orgId", "==", orgId));
         const snapshot = await getDocs(q);
         return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as ProductionLine));
@@ -18,7 +50,7 @@ export async function getProductionLines(orgId: string): Promise<ProductionLine[
 
 export async function getAllUsers(orgId: string): Promise<User[]> {
     try {
-        const usersCollection = collection(db, "users");
+        const usersCollection = collection(serverDB, "users");
         const q = query(usersCollection, where("orgId", "==", orgId));
         const snapshot = await getDocs(q);
         return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
@@ -30,7 +62,7 @@ export async function getAllUsers(orgId: string): Promise<User[]> {
 
 export async function getUserByEmail(email: string): Promise<User | null> {
     try {
-        const usersRef = collection(db, "users");
+        const usersRef = collection(serverDB, "users");
         const q = query(usersRef, where("email", "==", email));
         const querySnapshot = await getDocs(q);
 
@@ -49,7 +81,7 @@ export async function getUserByEmail(email: string): Promise<User | null> {
 
 export async function getUserById(uid: string): Promise<User | null> {
     try {
-        const userDocRef = doc(db, "users", uid);
+        const userDocRef = doc(serverDB, "users", uid);
         const userDoc = await getDoc(userDocRef);
 
         if (!userDoc.exists()) {
@@ -67,8 +99,6 @@ export async function getUserById(uid: string): Promise<User | null> {
 const transformIssueDocument = async (doc: any): Promise<Issue> => {
     const data = doc.data() as IssueDocument;
 
-    // In a real app, you would fetch user details here.
-    // For this mock, we will just use the name from the UserRef.
     const reportedByName = data.reportedBy?.name || "Unknown User";
     const resolvedByName = data.resolvedBy?.name || "N/A";
 
@@ -85,7 +115,7 @@ const transformIssueDocument = async (doc: any): Promise<Issue> => {
 
 export async function getIssues(orgId: string): Promise<Issue[]> {
     try {
-        const issuesCollection = collection(db, "issues");
+        const issuesCollection = collection(serverDB, "issues");
         const q = query(issuesCollection, where("orgId", "==", orgId), orderBy("reportedAt", "desc"));
         const snapshot = await getDocs(q);
         
@@ -101,7 +131,7 @@ export async function getIssues(orgId: string): Promise<Issue[]> {
 
 export async function getIssueById(id: string): Promise<Issue | null> {
     try {
-        const issueDocRef = doc(db, "issues", id);
+        const issueDocRef = doc(serverDB, "issues", id);
         const issueDoc = await getDoc(issueDocRef);
         if (!issueDoc.exists()) {
             return null;

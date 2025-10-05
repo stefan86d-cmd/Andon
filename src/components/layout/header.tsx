@@ -15,7 +15,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useEffect, useState, useRef } from "react";
-import { getIssues } from "@/lib/data";
+import { getClientIssues } from "@/lib/data";
 import type { Issue } from "@/lib/types";
 import { Badge } from "../ui/badge";
 
@@ -41,7 +41,7 @@ export function Header() {
     if (currentUser?.role === 'admin' || currentUser?.role === 'supervisor') {
       if (!currentUser.orgId) return;
       const calculateNewIssues = async () => {
-        const issues = await getIssues(currentUser.orgId!);
+        const issues = await getClientIssues(currentUser.orgId!);
         const lastSeenTimestamp = localStorage.getItem('lastSeenIssueTimestamp');
         
         let newCount;

@@ -1,10 +1,11 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
 import { IssuesDataTable } from "@/components/dashboard/issues-data-table";
 import { StatsCards } from "@/components/dashboard/stats-cards";
 import { AppLayout } from "@/components/layout/app-layout";
-import { getIssues } from "@/lib/data";
+import { getClientIssues } from "@/lib/data";
 import { subHours, intervalToDuration, differenceInSeconds, max } from "date-fns";
 import { useUser } from "@/contexts/user-context";
 import type { Issue } from "@/lib/types";
@@ -31,8 +32,8 @@ export default function Home() {
     if (!currentUser?.orgId) return;
 
     const fetchData = async () => {
-      if (!issues.length) setLoading(true);
-      const allIssuesData = await getIssues(currentUser.orgId!);
+      setLoading(true);
+      const allIssuesData = await getClientIssues(currentUser.orgId!);
       setIssues(allIssuesData);
       setRecentIssues(allIssuesData.slice(0, 5));
       setLoading(false);
@@ -41,7 +42,7 @@ export default function Home() {
     fetchData();
     const interval = setInterval(fetchData, 30000);
     return () => clearInterval(interval);
-  }, [currentUser?.orgId, issues.length]);
+  }, [currentUser?.orgId]);
 
   // ✅ Permission check
   if (!currentUser || (currentUser.role !== "admin" && currentUser.role !== "supervisor")) {

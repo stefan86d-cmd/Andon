@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { PlusCircle, LoaderCircle, Factory, Edit, Lock } from "lucide-react";
 import type { ProductionLine } from "@/lib/types";
 import { useUser } from "@/contexts/user-context";
-import { getProductionLines } from "@/lib/data";
+import { getClientProductionLines } from "@/lib/data";
 import { AddProductionLineDialog } from "@/components/lines/add-production-line-dialog";
 import { EditProductionLineDialog } from "@/components/lines/edit-production-line-dialog";
 import { DeleteProductionLineDialog } from "@/components/lines/delete-production-line-dialog";
@@ -31,7 +31,7 @@ export default function LinesPage() {
     if (!currentUser?.orgId) return;
     const fetchLines = async () => {
       setLoading(true);
-      const linesData = await getProductionLines(currentUser.orgId!);
+      const linesData = await getClientProductionLines(currentUser.orgId!);
       setProductionLines(linesData);
       setLoading(false);
     };

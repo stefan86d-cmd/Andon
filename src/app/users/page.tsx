@@ -10,7 +10,8 @@ import { useUser } from "@/contexts/user-context";
 import { PlusCircle, Lock, LoaderCircle } from "lucide-react";
 import Link from "next/link";
 import type { User } from "@/lib/types";
-import { getAllUsers } from "@/lib/data";
+import { collection, query, where, onSnapshot } from "firebase/firestore";
+import { db } from "@/firebase";
 
 const planLimits = {
   starter: { users: 5 },
@@ -25,14 +26,26 @@ export default function UsersPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!currentUser?.orgId) return;
-    const fetchData = async () => {
-      setLoading(true);
-      const usersData = await getAllUsers(currentUser.orgId!);
-      setAllUsers(usersData);
+    if (!currentUser?.orgId) {
       setLoading(false);
+      return;
     };
-    fetchData();
+    
+    setLoading(true);
+    const usersCollection = collection(db, "users");
+    const q = query(usersCollection, where("orgId", "==", currentUser.orgId));
+    
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+        const usersData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
+        setAllUsers(usersData);
+        setLoading(false);
+    }, (error) => {
+        console.error("Error fetching users:", error);
+        setLoading(false);
+    });
+
+    return () => unsubscribe();
+
   }, [currentUser?.orgId]);
 
   if (loading || !currentUser) {

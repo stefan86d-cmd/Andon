@@ -18,10 +18,10 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Logo } from "@/components/layout/logo";
 import { LoaderCircle } from 'lucide-react';
-import { resetPassword } from '@/app/actions';
 import { toast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import { getAuth, verifyPasswordResetCode, confirmPasswordReset } from 'firebase/auth';
+import { app } from '@/firebase'; // Import client-side app
 
 const formSchema = z.object({
   newPassword: z.string().min(6, "Password must be at least 6 characters."),
@@ -56,7 +56,7 @@ function ResetPasswordContent() {
 
     startTransition(async () => {
       try {
-        const auth = getAuth();
+        const auth = getAuth(app); // Use client-side auth
         // Verify the code is valid
         await verifyPasswordResetCode(auth, oobCode);
 

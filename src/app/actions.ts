@@ -1,7 +1,7 @@
 
 "use server";
 
-import type { Plan, Role, UserRef, Issue } from "@/lib/types";
+import type { Plan, Role, UserRef, Issue, User } from "@/lib/types";
 import { handleFirestoreError } from "@/lib/firestore-helpers";
 import { getUserById, getUserByEmail } from "@/lib/data";
 import { db } from "@/firebase/server";
@@ -18,7 +18,7 @@ import { seedData } from "@/lib/seed";
 import { getAdminApp } from "@/firebase/admin";
 import { getAuth as getAdminAuth } from "firebase-admin/auth";
 import { sendEmail } from "@/lib/email";
-import { getUser } from "@/lib/auth";
+import { revalidatePath } from "next/cache";
 
 export type ActionResult = {
   success: boolean;
@@ -29,8 +29,14 @@ export type ActionResult = {
 // -----------------------------------------------------------------------------
 // Auth Actions (for client use)
 // -----------------------------------------------------------------------------
-export async function getUserAction(uid: string) {
-    return getUser(uid);
+export async function getUserAction(uid: string): Promise<User | null> {
+    try {
+        const user = await getUserById(uid);
+        return user;
+    } catch (error) {
+        console.error("Failed to get user:", error);
+        return null;
+    }
 }
 
 
@@ -97,6 +103,9 @@ export async function reportIssue(
       resolvedBy: null,
       resolutionNotes: "",
     });
+    
+    revalidatePath('/issues');
+    revalidatePath('/dashboard');
 
     return { success: true, message: "Issue reported successfully." };
   } catch (error) {
@@ -114,6 +123,7 @@ export async function createProductionLine(
 ): Promise<ActionResult> {
   try {
     await addDoc(collection(db, "productionLines"), { name, workstations: [], orgId });
+    revalidatePath('/lines');
     return { success: true, message: "Production line created successfully." };
   } catch (error) {
     return handleFirestoreError(error);
@@ -127,6 +137,7 @@ export async function editProductionLine(
   try {
     const workstations = data.workstations.map(ws => ws.value).filter(Boolean);
     await updateDoc(doc(db, "productionLines", lineId), { name: data.name, workstations });
+    revalidatePath('/lines');
     return { success: true, message: "Production line updated successfully." };
   } catch (error) {
     return handleFirestoreError(error);
@@ -136,6 +147,7 @@ export async function editProductionLine(
 export async function deleteProductionLine(lineId: string): Promise<ActionResult> {
   try {
     await deleteDoc(doc(db, "productionLines", lineId));
+    revalidatePath('/lines');
     return { success: true, message: "Production line deleted successfully." };
   } catch (error) {
     return handleFirestoreError(error);
@@ -161,7 +173,6 @@ export async function addUser(data: {
   try {
     const adminApp = getAdminApp();
     const adminAuth = getAdminAuth(adminApp);
-    const adminDb = adminApp.firestore();
 
     const userRecord = await adminAuth.createUser({
       email: data.email,
@@ -169,8 +180,9 @@ export async function addUser(data: {
       displayName: `${data.firstName} ${data.lastName}`,
     });
 
-    await adminDb.collection("users").doc(userRecord.uid).set({
+    await db.collection("users").doc(userRecord.uid).set({
       ...data,
+      id: userRecord.uid,
     });
 
     await adminAuth.setCustomUserClaims(userRecord.uid, {
@@ -189,6 +201,8 @@ export async function addUser(data: {
         <p><a href="${link}" target="_blank">Set Your Password</a></p>
       `,
     });
+    
+    revalidatePath('/users');
 
     return {
       success: true,
@@ -205,6 +219,7 @@ export async function deleteUser(uid: string): Promise<ActionResult> {
     const adminAuth = getAdminAuth(adminApp);
     await adminAuth.deleteUser(uid);
     await deleteDoc(doc(db, "users", uid));
+    revalidatePath('/users');
     return { success: true, message: "User deleted successfully." };
   } catch (error) {
     return handleFirestoreError(error);
@@ -224,6 +239,7 @@ export async function editUser(
     });
     await adminAuth.setCustomUserClaims(uid, { role: data.role });
     await updateDoc(doc(db, "users", uid), data);
+    revalidatePath('/users');
     return { success: true, message: "User updated successfully." };
   } catch (error) {
     return handleFirestoreError(error);
@@ -236,6 +252,7 @@ export async function updateUserPlan(
 ): Promise<ActionResult> {
   try {
     await updateDoc(doc(db, "users", uid), { plan: newPlan });
+    revalidatePath('/settings/billing');
     return { success: true, message: `Plan updated to ${newPlan}.` };
   } catch (error) {
     return handleFirestoreError(error);
@@ -271,6 +288,8 @@ export async function updateIssue(
     }
 
     await updateDoc(doc(db, "issues", issueId), updateData);
+    revalidatePath('/issues');
+    revalidatePath('/dashboard');
     return { success: true, message: "Issue updated successfully." };
   } catch (error) {
     return handleFirestoreError(error);
@@ -312,6 +331,8 @@ export async function requestPasswordReset(email: string): Promise<ActionResult>
   }
 }
 
+// This function is intended to be a mock. In a real app, password changes for logged-in
+// users would be handled on the client with reauthentication.
 export async function changePassword(email: string, current: string, newPass: string): Promise<ActionResult> {
   console.log("MOCK: Password changed successfully for", email);
   return { success: true, message: "Password changed successfully." };

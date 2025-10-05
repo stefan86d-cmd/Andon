@@ -28,7 +28,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { allCategories } from "@/lib/constants";
 import { CSVLink } from "react-csv";
-import { getIssues, getProductionLines } from "@/lib/data";
+import { getClientIssues, getClientProductionLines } from "@/lib/data";
 import { analyzeIssues } from "@/ai/flows/analyze-issues-flow";
 
 const ChartGradients = () => (
@@ -66,7 +66,7 @@ export default function ReportsPage() {
 
     const fetchData = async () => {
       setLoading(true);
-      const [issuesData, linesData] = await Promise.all([getIssues(currentUser.orgId!), getProductionLines(currentUser.orgId!)]);
+      const [issuesData, linesData] = await Promise.all([getClientIssues(currentUser.orgId!), getClientProductionLines(currentUser.orgId!)]);
       setIssues(issuesData);
       setProductionLines(linesData);
       setLoading(false);

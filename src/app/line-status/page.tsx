@@ -18,7 +18,7 @@ import { PlusCircle, LoaderCircle } from "lucide-react";
 import type { Issue, ProductionLine } from "@/lib/types";
 import { subHours } from "date-fns";
 import { useUser } from "@/contexts/user-context";
-import { getProductionLines, getIssues } from "@/lib/data";
+import { getClientProductionLines, getClientIssues } from "@/lib/data";
 
 export default function LineStatusPage() {
   const { currentUser } = useUser();
@@ -34,7 +34,7 @@ export default function LineStatusPage() {
     if (!currentUser?.orgId) return;
     const fetchLines = async () => {
       setLinesLoading(true);
-      const linesData = await getProductionLines(currentUser.orgId!);
+      const linesData = await getClientProductionLines(currentUser.orgId!);
       setProductionLines(linesData);
       setLinesLoading(false);
     };
@@ -49,7 +49,7 @@ export default function LineStatusPage() {
   const fetchIssuesForStation = useCallback(async () => {
     if (selectedLineId && selectedWorkstation && selectedLine && currentUser?.orgId) {
         setIssuesLoading(true);
-        const allIssues = await getIssues(currentUser.orgId);
+        const allIssues = await getClientIssues(currentUser.orgId);
         const twentyFourHoursAgo = subHours(new Date(), 24);
         const fullWorkstationName = `${selectedLine.name} - ${selectedWorkstation}`;
         

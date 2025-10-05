@@ -18,7 +18,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { subHours } from "date-fns";
 import { useUser } from "@/contexts/user-context";
-import { getIssues, getProductionLines } from "@/lib/data";
+import { getClientIssues, getClientProductionLines } from "@/lib/data";
 import { allCategories } from "@/lib/constants";
 
 export default function IssuesPage() {
@@ -38,8 +38,8 @@ export default function IssuesPage() {
     const fetchData = async () => {
         setLoading(true);
         const [issuesData, linesData] = await Promise.all([
-            getIssues(currentUser.orgId!),
-            getProductionLines(currentUser.orgId!),
+            getClientIssues(currentUser.orgId!),
+            getClientProductionLines(currentUser.orgId!),
         ]);
         setIssues(issuesData);
         setProductionLines(linesData);
