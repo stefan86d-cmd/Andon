@@ -87,7 +87,7 @@ export default function NewsPage() {
               </div>
               <div className="flex justify-center mb-8">
                 <Image 
-                  src="/Andonpro_Logo_Musta_Syvatty.png"
+                  src="/Andonpro_Logo_Musta_Syvätty.png"
                   alt="AndonPro Logo"
                   width={300}
                   height={72}
