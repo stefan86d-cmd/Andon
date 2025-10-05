@@ -13,10 +13,11 @@ import {
     User as FirebaseUser,
     OAuthProvider
 } from 'firebase/auth';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { doc, setDoc } from 'firebase/firestore';
 import { app, db } from '@/firebase'; // Import the client-side app
 import type { User } from '@/lib/types';
 import { toast } from '@/hooks/use-toast';
+import { getClientUserById } from '@/lib/data';
 
 interface UserContextType {
   currentUser: User | null;
@@ -31,22 +32,6 @@ interface UserContextType {
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
-// This is a new client-side data fetching function
-async function getUserProfile(uid: string): Promise<User | null> {
-    try {
-        const userDocRef = doc(db, "users", uid);
-        const userDoc = await getDoc(userDocRef);
-        if (userDoc.exists()) {
-            return { id: userDoc.id, ...userDoc.data() } as User;
-        }
-        return null;
-    } catch (error) {
-        console.error("Error fetching user profile on client:", error);
-        return null;
-    }
-}
-
-
 export function UserProvider({ children }: { children: ReactNode }) {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -54,8 +39,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
   const handleAuthUser = useCallback(async (firebaseUser: FirebaseUser | null) => {
     if (firebaseUser) {
-      // Use the new client-side function to fetch user data
-      const userProfile = await getUserProfile(firebaseUser.uid);
+      const userProfile = await getClientUserById(firebaseUser.uid);
       if (userProfile) {
         setCurrentUser(userProfile);
       } else {

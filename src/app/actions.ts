@@ -17,9 +17,71 @@ import {
 import { db } from '@/firebase/server';
 import { adminAuth } from '@/firebase/admin';
 import type { Issue, Plan, ProductionLine, Role, User } from '@/lib/types';
-import { getUserByEmail, getUserById } from '@/lib/data';
 import { handleFirestoreError } from '@/lib/firestore-helpers';
 import { sendEmail } from '@/lib/email';
+
+
+// --- Data fetching actions (moved from lib/data.ts) ---
+
+export async function getProductionLines(orgId: string): Promise<ProductionLine[]> {
+    try {
+        const linesCollection = db.collection("productionLines");
+        const q = query(linesCollection, where("orgId", "==", orgId));
+        const snapshot = await getDocs(q);
+        return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as ProductionLine));
+    } catch (error) {
+        console.error("Error fetching production lines:", error);
+        return [];
+    }
+}
+
+export async function getAllUsers(orgId: string): Promise<User[]> {
+    try {
+        const usersCollection = db.collection("users");
+        const q = query(usersCollection, where("orgId", "==", orgId));
+        const snapshot = await getDocs(q);
+        return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
+    } catch (error) {
+        console.error("Error fetching all users:", error);
+        return [];
+    }
+}
+
+export async function getUserByEmail(email: string): Promise<User | null> {
+    try {
+        const usersRef = db.collection("users");
+        const q = query(usersRef, where("email", "==", email));
+        const querySnapshot = await getDocs(q);
+
+        if (querySnapshot.empty) {
+            return null;
+        }
+        
+        const userDoc = querySnapshot.docs[0];
+        return { id: userDoc.id, ...userDoc.data() } as User;
+
+    } catch (error) {
+        handleFirestoreError(error);
+        return null;
+    }
+}
+
+export async function getUserById(uid: string): Promise<User | null> {
+    try {
+        const userDocRef = db.doc(`users/${uid}`);
+        const userDoc = await getDoc(userDocRef);
+
+        if (!userDoc.exists) {
+            return null;
+        }
+
+        return { id: userDoc.id, ...userDoc.data() } as User;
+    } catch (error) {
+        console.error(`Error fetching user by ID ${uid}:`, error);
+        return null;
+    }
+}
+
 
 // --- User Actions ---
 
@@ -248,7 +310,7 @@ export async function createProductionLine(name: string, orgId: string) {
         // Check for existing line with the same name in the same org
         const linesRef = db.collection('productionLines');
         const q = linesRef.where("name", "==", name).where("orgId", "==", orgId);
-        const querySnapshot = await q.get();
+        const querySnapshot = await getDocs(q);
         if (!querySnapshot.empty) {
             return { success: false, error: "A production line with this name already exists." };
         }
