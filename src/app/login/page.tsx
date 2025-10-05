@@ -61,7 +61,6 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [isMicrosoftLoading, setIsMicrosoftLoading] = useState(false);
-  const [isSeeding, startSeedingTransition] = useTransition();
   const [isLoggingIn, startLoginTransition] = useTransition();
   const router = useRouter();
   const { login, signInWithGoogle, signInWithMicrosoft } = useUser();
@@ -110,29 +109,6 @@ export default function LoginPage() {
       description: "Welcome! You're signed in with Microsoft.",
     });
     setIsMicrosoftLoading(false);
-  };
-
-  // --- Seed Database ---
-  const handleSeedDatabase = () => {
-    startSeedingTransition(async () => {
-      const result = await seedDatabase();
-
-      if (result.success) {
-        toast({
-          title: "Database Seeded!",
-          description: result.message || "Sample data has been added to Firestore.",
-        });
-      } else {
-        const errorMsg =
-          "error" in result ? result.error : "An unexpected error occurred.";
-
-        toast({
-          variant: "destructive",
-          title: "Seeding Failed",
-          description: errorMsg,
-        });
-      }
-    });
   };
 
   return (
@@ -236,23 +212,6 @@ export default function LoginPage() {
                 </Link>
               </div>
 
-              <div className="relative my-4">
-                <Separator />
-              </div>
-
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={handleSeedDatabase}
-                disabled={isSeeding}
-              >
-                {isSeeding ? (
-                  <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  <Database className="mr-2 h-4 w-4" />
-                )}
-                Seed Database
-              </Button>
             </CardContent>
           </Card>
         </div>
