@@ -24,7 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { Plan } from '@/lib/types';
-import { cn } from '@/lib/utils';
+import { cn } from "@/lib/utils";
 import { Badge } from '@/components/ui/badge';
 import { useUser } from '@/contexts/user-context';
 import { toast } from '@/hooks/use-toast';
