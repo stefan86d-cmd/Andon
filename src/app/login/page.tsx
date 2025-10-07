@@ -18,7 +18,7 @@ import { toast } from '@/hooks/use-toast';
 import { LoaderCircle, Database } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
-import { seedDatabase } from '@/app/actions';
+
 
 // --- Icons ---
 function GoogleIcon() {

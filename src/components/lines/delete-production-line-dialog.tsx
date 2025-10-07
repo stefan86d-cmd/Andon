@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useTransition } from "react";
@@ -24,7 +23,9 @@ interface DeleteProductionLineDialogProps {
   productionLine: ProductionLine;
 }
 
-export function DeleteProductionLineDialog({ productionLine }: DeleteProductionLineDialogProps) {
+export function DeleteProductionLineDialog({
+  productionLine,
+}: DeleteProductionLineDialogProps) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, startSubmittingTransition] = useTransition();
   const router = useRouter();
@@ -44,7 +45,8 @@ export function DeleteProductionLineDialog({ productionLine }: DeleteProductionL
         toast({
           variant: "destructive",
           title: "Failed to delete line",
-          description: result.error,
+          description:
+            "error" in result ? result.error : "Unknown error occurred.",
         });
       }
     });
@@ -58,6 +60,7 @@ export function DeleteProductionLineDialog({ productionLine }: DeleteProductionL
           <span className="sr-only sm:not-sr-only sm:ml-2">Delete</span>
         </Button>
       </AlertDialogTrigger>
+
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
@@ -67,9 +70,14 @@ export function DeleteProductionLineDialog({ productionLine }: DeleteProductionL
             production line and all of its associated data.
           </AlertDialogDescription>
         </AlertDialogHeader>
+
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isSubmitting}>No</AlertDialogCancel>
-          <AlertDialogAction onClick={handleDelete} disabled={isSubmitting} className="bg-destructive hover:bg-destructive/90">
+          <AlertDialogAction
+            onClick={handleDelete}
+            disabled={isSubmitting}
+            className="bg-destructive hover:bg-destructive/90"
+          >
             {isSubmitting && (
               <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
             )}
