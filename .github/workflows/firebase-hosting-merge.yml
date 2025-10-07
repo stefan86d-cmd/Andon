@@ -51,16 +51,19 @@ jobs:
           repoToken: "${{ secrets.GITHUB_TOKEN }}"
           firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_ANDON_EF46A }}"
           projectId: andon-ef46a
-          channelId: pr-${{ github.event.number }}-${{ github.sha }}
-          expires: 7d # Optional: Preview expires in 7 days
+          channelId: pr-${{ github.event.pull_request.number }}-${{ github.sha }}
+          expires: 7d
+        env:
+          FIREBASE_CLI_EXPERIMENTS: webframeworks
 
       # 7️⃣ Deploy to Production on main push
       - name: Deploy to Firebase Hosting (Production)
-        if: github.event_name == 'push'
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: "${{ secrets.GITHUB_TOKEN }}"
           firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_ANDON_EF46A }}"
           projectId: andon-ef46a
           channelId: live
-
+        env:
+          FIREBASE_CLI_EXPERIMENTS: webframeworks
