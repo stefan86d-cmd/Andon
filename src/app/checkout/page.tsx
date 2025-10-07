@@ -109,7 +109,7 @@ function CheckoutContent() {
                 toast({
                     variant: "destructive",
                     title: "Update Failed",
-                    description: result.error || "Could not update your plan.",
+                    description: "error" in result ? result.error : "Could not update your plan.",
                 });
             }
         });
@@ -239,3 +239,5 @@ export default function CheckoutPage() {
         </Suspense>
     )
 }
+
+    
