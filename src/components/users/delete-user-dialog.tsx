@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useTransition } from "react";
@@ -44,7 +43,8 @@ export function DeleteUserDialog({ user }: DeleteUserDialogProps) {
         toast({
           variant: "destructive",
           title: "Failed to delete user",
-          description: result.error,
+          description:
+            "error" in result ? result.error : "An unknown error occurred.",
         });
       }
     });
@@ -61,18 +61,27 @@ export function DeleteUserDialog({ user }: DeleteUserDialogProps) {
           Delete
         </DropdownMenuItem>
       </AlertDialogTrigger>
+
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
           <AlertDialogDescription>
             This action cannot be undone. This will permanently delete the user account for
-            <span className="font-semibold"> {`${user.firstName} ${user.lastName}`} </span> from Firestore. It will NOT delete the user from Firebase Authentication.
+            <span className="font-semibold"> {`${user.firstName} ${user.lastName}`} </span>{" "}
+            from Firestore. It will NOT delete the user from Firebase Authentication.
           </AlertDialogDescription>
         </AlertDialogHeader>
+
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isSubmitting}>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={handleDelete} disabled={isSubmitting} className="bg-destructive hover:bg-destructive/90">
-            {isSubmitting && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
+          <AlertDialogAction
+            onClick={handleDelete}
+            disabled={isSubmitting}
+            className="bg-destructive hover:bg-destructive/90"
+          >
+            {isSubmitting && (
+              <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+            )}
             Yes, delete user
           </AlertDialogAction>
         </AlertDialogFooter>
