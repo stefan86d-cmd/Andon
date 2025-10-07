@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useTransition } from "react";
@@ -40,6 +39,7 @@ import type { User, Role } from "@/lib/types";
 import { DropdownMenuItem } from "../ui/dropdown-menu";
 import { useUser } from "@/contexts/user-context";
 
+// --- Validation schema ---
 const userFormSchema = z.object({
   firstName: z.string().min(1, "First name is required."),
   lastName: z.string().min(1, "Last name is required."),
@@ -59,7 +59,8 @@ export function EditUserDialog({ user }: EditUserDialogProps) {
   const router = useRouter();
   const { currentUser } = useUser();
 
-  const isEditingSelfAsAdmin = currentUser?.id === user.id && user.role === "admin";
+  const isEditingSelfAsAdmin =
+    currentUser?.id === user.id && user.role === "admin";
 
   const form = useForm<UserFormValues>({
     resolver: zodResolver(userFormSchema),
@@ -73,7 +74,12 @@ export function EditUserDialog({ user }: EditUserDialogProps) {
 
   function onSubmit(data: UserFormValues) {
     startSubmittingTransition(async () => {
-      const result = await editUser(user.id, data as { firstName: string, lastName: string, email: string, role: Role });
+      const result = await editUser(user.id, {
+        firstName: data.firstName,
+        lastName: data.lastName,
+        email: data.email,
+        role: data.role as Role,
+      });
 
       if (result.success) {
         toast({
@@ -86,7 +92,8 @@ export function EditUserDialog({ user }: EditUserDialogProps) {
         toast({
           variant: "destructive",
           title: "Failed to update user",
-          description: result.error,
+          description:
+            "error" in result ? result.error : "An unknown error occurred.",
         });
       }
     });
@@ -108,17 +115,21 @@ export function EditUserDialog({ user }: EditUserDialogProps) {
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-            <Pencil className="mr-2 h-4 w-4" />
-            Edit
+          <Pencil className="mr-2 h-4 w-4" />
+          Edit
         </DropdownMenuItem>
       </DialogTrigger>
+
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Edit User: {`${user.firstName} ${user.lastName}`}</DialogTitle>
+          <DialogTitle>
+            Edit User: {`${user.firstName} ${user.lastName}`}
+          </DialogTitle>
           <DialogDescription>
             Modify the user's details below.
           </DialogDescription>
         </DialogHeader>
+
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
@@ -135,6 +146,7 @@ export function EditUserDialog({ user }: EditUserDialogProps) {
                   </FormItem>
                 )}
               />
+
               <FormField
                 control={form.control}
                 name="lastName"
@@ -149,6 +161,7 @@ export function EditUserDialog({ user }: EditUserDialogProps) {
                 )}
               />
             </div>
+
             <FormField
               control={form.control}
               name="email"
@@ -162,25 +175,33 @@ export function EditUserDialog({ user }: EditUserDialogProps) {
                 </FormItem>
               )}
             />
+
             <FormField
               control={form.control}
               name="role"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Role</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value} disabled={isEditingSelfAsAdmin}>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                    value={field.value}
+                    disabled={isEditingSelfAsAdmin}
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select a role" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="admin" disabled>Admin</SelectItem>
+                      <SelectItem value="admin" disabled>
+                        Admin
+                      </SelectItem>
                       <SelectItem value="supervisor">Supervisor</SelectItem>
                       <SelectItem value="operator">Operator</SelectItem>
                     </SelectContent>
                   </Select>
-                   {isEditingSelfAsAdmin && (
+                  {isEditingSelfAsAdmin && (
                     <p className="text-sm text-muted-foreground">
                       Admins cannot change their own role.
                     </p>
@@ -189,12 +210,20 @@ export function EditUserDialog({ user }: EditUserDialogProps) {
                 </FormItem>
               )}
             />
+
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={isSubmitting}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setOpen(false)}
+                disabled={isSubmitting}
+              >
                 Cancel
               </Button>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
+                {isSubmitting && (
+                  <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+                )}
                 Save Changes
               </Button>
             </DialogFooter>
