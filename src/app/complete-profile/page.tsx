@@ -19,53 +19,82 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/layout/logo";
-import { LoaderCircle, CreditCard } from 'lucide-react';
+import { LoaderCircle } from 'lucide-react';
 import Link from 'next/link';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { countries } from '@/lib/countries';
 import type { Plan, Role } from '@/lib/types';
 import { toast } from '@/hooks/use-toast';
 import { useUser } from '@/contexts/user-context';
+import { loadStripe } from '@stripe/stripe-js';
+import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import { createCheckoutSession } from '@/ai/flows/create-checkout-session-flow';
 
 
 const profileFormSchema = z.object({
   firstName: z.string().min(1, "First name is required."),
   lastName: z.string().min(1, "Last name is required."),
-  address: z.string().min(1, "Home address is required."),
+  address: z.string().min(1, "Address is required."),
   city: z.string().min(1, "City is required."),
   postalCode: z.string().min(1, "Postal code is required."),
   country: z.string().min(1, "Country is required."),
   phone: z.string().optional(),
-  cardNumber: z.string().optional(),
-  expiryDate: z.string().optional(),
-  cvc: z.string().optional(),
 });
 
 type ProfileFormValues = z.infer<typeof profileFormSchema>;
 
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '');
 
-const MockStripeInput = () => {
+
+function CheckoutForm({ onSuccessfulPayment, clientSecret }: { onSuccessfulPayment: () => void, clientSecret: string }) {
+    const stripe = useStripe();
+    const elements = useElements();
+    const [isProcessing, setIsProcessing] = useState(false);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        if (!stripe || !elements) {
+            return;
+        }
+
+        setIsProcessing(true);
+
+        const { error } = await stripe.confirmPayment({
+            elements,
+            confirmParams: {
+                // This is where the user will be redirected after payment.
+                return_url: `${window.location.origin}/dashboard`,
+            },
+            redirect: 'if_required', // Important to handle success without redirecting immediately
+        });
+
+        if (error) {
+            if (error.type === "card_error" || error.type === "validation_error") {
+                setErrorMessage(error.message || "An unexpected error occurred.");
+            } else {
+                setErrorMessage("An unexpected error occurred.");
+            }
+            setIsProcessing(false);
+        } else {
+            // Payment succeeded!
+            setErrorMessage(null);
+            onSuccessfulPayment();
+        }
+    };
+
     return (
-        <div className="border rounded-md p-3 bg-muted/50">
-            <div className="flex justify-between items-center mb-3">
-                <Label htmlFor="card-number" className="text-sm">Card information</Label>
-                <CreditCard className="h-5 w-5 text-muted-foreground" />
-            </div>
-            <div className="space-y-3">
-                <div className="relative">
-                    <Input id="card-number" placeholder="Card Number" />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                    <div className="relative">
-                       <Input id="expiry-date" placeholder="MM/YY" />
-                    </div>
-                    <div className="relative">
-                       <Input id="cvc" placeholder="CVC" />
-                    </div>
-                </div>
-            </div>
-        </div>
-    )
+        <form id="payment-form" onSubmit={handleSubmit}>
+            <PaymentElement id="payment-element" />
+            <Button disabled={isProcessing || !stripe || !elements} id="submit" className="w-full mt-6">
+                <span id="button-text">
+                    {isProcessing ? <LoaderCircle className="animate-spin" /> : "Complete Registration"}
+                </span>
+            </Button>
+            {errorMessage && <div id="payment-message" className="text-destructive mt-2 text-sm">{errorMessage}</div>}
+        </form>
+    );
 }
 
 
@@ -73,15 +102,16 @@ function CompleteProfileContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { currentUser, loading: userLoading, updateCurrentUser } = useUser();
-  const [isSubmitting, startTransition] = useTransition();
+  
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
 
   const planFromUrl = searchParams.get('plan') as Plan | null;
+  const selectedPlan = planFromUrl || 'starter';
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
     defaultValues: {
       firstName: "", lastName: "", address: "", city: "", postalCode: "", country: "", phone: "",
-      cardNumber: "", expiryDate: "", cvc: ""
     },
   });
   
@@ -99,56 +129,80 @@ function CompleteProfileContent() {
             postalCode: "",
             country: currentUser.country || "",
             phone: currentUser.phone || ""
-        })
-    }
-  }, [currentUser, userLoading, router, form]);
+        });
 
-  const selectedPlan = planFromUrl || 'starter';
-
-  const handleCreateAccount = (data: ProfileFormValues) => {
-    if (!currentUser || !currentUser.id) {
-      toast({ title: "Authentication Error", description: "Your session has expired. Please sign in again.", variant: "destructive" });
-      return;
-    }
-
-    startTransition(async () => {
-        // This is a mock payment action
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        
-        try {
-            const userRole: Role = "admin"; // First user is always an admin
-
-            const userProfileData = {
-                firstName: data.firstName,
-                lastName: data.lastName,
-                email: currentUser.email,
-                role: userRole,
-                plan: selectedPlan,
-                address: data.address,
-                city: data.city,
-                postalCode: data.postalCode,
-                country: data.country,
-                phone: data.phone,
-                orgId: currentUser.id, // The first admin's ID becomes the org ID
-            };
-
-            await updateCurrentUser(userProfileData);
-
-            toast({
-                title: "Registration Complete!",
-                description: `Welcome to the ${selectedPlan} plan. Your account is ready!`,
-            });
-
-            router.push('/dashboard');
-
-        } catch (error) {
-            console.error("Failed to save profile:", error);
-            toast({ title: "Profile Creation Failed", description: "Could not save your profile. Please try again.", variant: "destructive" });
+        // Create Checkout Session for paid plans
+        if (selectedPlan !== 'starter' && !clientSecret) {
+            createCheckoutSession({ plan: selectedPlan, email: currentUser.email, userId: currentUser.id })
+                .then(response => {
+                    setClientSecret(response.clientSecret);
+                })
+                .catch(error => {
+                    console.error("Failed to create checkout session:", error);
+                    toast({ title: "Payment Error", description: "Could not initialize payment. Please try again.", variant: "destructive" });
+                });
         }
-    });
+
+    }
+  }, [currentUser, userLoading, router, form, selectedPlan, clientSecret]);
+  
+  const handleProfileSave = async (data: ProfileFormValues) => {
+    if (!currentUser || !currentUser.id) {
+        toast({ title: "Authentication Error", description: "Your session has expired. Please sign in again.", variant: "destructive" });
+        return;
+    }
+
+    try {
+        const userRole: Role = "admin"; // First user is always an admin
+
+        const userProfileData = {
+            firstName: data.firstName,
+            lastName: data.lastName,
+            email: currentUser.email,
+            role: userRole,
+            plan: selectedPlan,
+            address: data.address,
+            city: data.city,
+            postalCode: data.postalCode,
+            country: data.country,
+            phone: data.phone,
+            orgId: currentUser.id, // The first admin's ID becomes the org ID
+        };
+
+        await updateCurrentUser(userProfileData);
+
+        return true;
+    } catch (error) {
+        console.error("Failed to save profile:", error);
+        toast({ title: "Profile Creation Failed", description: "Could not save your profile. Please try again.", variant: "destructive" });
+        return false;
+    }
   };
 
-  if (userLoading || !currentUser) {
+
+  const onSuccessfulPayment = async () => {
+    const profileData = form.getValues();
+    const profileSaved = await handleProfileSave(profileData);
+    
+    if (profileSaved) {
+        toast({
+            title: "Registration Complete!",
+            description: `Welcome to the ${selectedPlan} plan. Your account is ready!`,
+        });
+        router.push('/dashboard');
+    }
+  };
+
+  const handleFreePlanSubmit = async () => {
+    const profileData = form.getValues();
+    const isValid = await form.trigger();
+    if (isValid) {
+      await onSuccessfulPayment();
+    }
+  };
+
+
+  if (userLoading || !currentUser || (selectedPlan !== 'starter' && !clientSecret)) {
     return (
         <div className="flex h-screen items-center justify-center">
             <LoaderCircle className="h-8 w-8 animate-spin" />
@@ -175,7 +229,7 @@ function CompleteProfileContent() {
                     </CardHeader>
                     <CardContent>
                         <Form {...form}>
-                        <form id="profile-form" onSubmit={form.handleSubmit(handleCreateAccount)} className="space-y-6">
+                        <form id="profile-form" className="space-y-6">
                             <div className="grid grid-cols-2 gap-4">
                                 <FormField control={form.control} name="firstName" render={({ field }) => (
                                     <FormItem>
@@ -194,7 +248,7 @@ function CompleteProfileContent() {
                             </div>
                             <FormField control={form.control} name="address" render={({ field }) => (
                                 <FormItem>
-                                <FormLabel>Home Address</FormLabel>
+                                <FormLabel>Address</FormLabel>
                                 <FormControl><Input {...field} /></FormControl>
                                 <FormMessage />
                                 </FormItem>
@@ -236,21 +290,27 @@ function CompleteProfileContent() {
                                     </FormItem>
                                 )} />
                             </div>
-                             <div>
-                                <MockStripeInput />
-                            </div>
+                             {selectedPlan !== 'starter' && clientSecret && (
+                                <div>
+                                    <Label className="mb-2 block">Payment Information</Label>
+                                    <Elements options={{ clientSecret }} stripe={stripePromise}>
+                                        <CheckoutForm onSuccessfulPayment={onSuccessfulPayment} clientSecret={clientSecret} />
+                                    </Elements>
+                                </div>
+                            )}
                         </form>
                         </Form>
                     </CardContent>
-                    <CardFooter className="flex flex-col gap-4">
-                         <p className="text-sm text-muted-foreground text-center">
-                            By clicking the button below, you agree to our <Link href="/terms" className="underline" target="_blank" rel="noopener noreferrer">Terms of Service</Link>.
-                        </p>
-                        <Button type="submit" form="profile-form" className="w-full" disabled={isSubmitting}>
-                            {isSubmitting && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
-                            Complete Registration
-                        </Button>
-                    </CardFooter>
+                     {selectedPlan === 'starter' && (
+                        <CardFooter className="flex flex-col gap-4">
+                            <p className="text-sm text-muted-foreground text-center">
+                                By clicking the button below, you agree to our <Link href="/terms" className="underline" target="_blank" rel="noopener noreferrer">Terms of Service</Link>.
+                            </p>
+                            <Button onClick={handleFreePlanSubmit} className="w-full">
+                                Complete Registration
+                            </Button>
+                        </CardFooter>
+                    )}
                 </Card>
             </div>
             <footer className="mt-8 text-center text-sm text-muted-foreground">
