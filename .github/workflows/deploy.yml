@@ -25,34 +25,24 @@ jobs:
       FIREBASE_CLI_EXPERIMENTS: webframeworks
 
     steps:
-      # 1️⃣ Checkout repository
       - uses: actions/checkout@v4
 
-      # 2️⃣ Use Node.js 20
       - name: Use Node.js 20
         uses: actions/setup-node@v3
         with:
           node-version: 20
 
-      # 3️⃣ Install dependencies
       - name: Install dependencies
         run: npm ci
 
-      # 4️⃣ Authenticate with Firebase using service account
-      - name: Authenticate with Google Cloud
-        uses: google-github-actions/auth@v2
-        with:
-          credentials_json: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_ANDON_EF46A }}'
-
-      # 5️⃣ Build Next.js app
       - name: Build Next.js app
         run: npm run build
 
-      # 6️⃣ Deploy to Firebase Hosting
       - name: Deploy to Firebase Hosting
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
-          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_ANDON_EF46A }}
           projectId: andon-ef46a
           channelId: ${{ github.event_name == 'pull_request' && format('pr-{0}-{1}', github.event.number, github.sha) || 'live' }}
-          args: --force
+          force: true
