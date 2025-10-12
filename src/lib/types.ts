@@ -16,6 +16,7 @@ export type User = {
   orgId?: string; // Add orgId to the user type
   customUserLimit?: number;
   customLineLimit?: number;
+  customWorkstationLimit?: number;
 };
 
 // A simpler reference to a user, used within other documents.

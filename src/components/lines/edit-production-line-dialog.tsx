@@ -78,7 +78,11 @@ export function EditProductionLineDialog({
 
   const workstationCount = form.watch("workstations").length;
   const userPlan = currentUser?.plan || "starter";
-  const workstationLimit = planLimits[userPlan as keyof typeof planLimits] ? planLimits[userPlan as keyof typeof planLimits].workstations : planLimits.custom.workstations;
+  
+  const workstationLimit = currentUser?.plan === 'custom'
+    ? (currentUser.customWorkstationLimit || Infinity)
+    : (planLimits[userPlan as keyof typeof planLimits]?.workstations || Infinity);
+  
   const canAddWorkstation = workstationCount < workstationLimit;
 
   function onSubmit(data: LineFormValues) {
