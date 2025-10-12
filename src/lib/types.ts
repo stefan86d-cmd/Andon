@@ -14,6 +14,8 @@ export type User = {
   phone?: string;
   productionLineId?: string;
   orgId?: string; // Add orgId to the user type
+  customUserLimit?: number;
+  customLineLimit?: number;
 };
 
 // A simpler reference to a user, used within other documents.

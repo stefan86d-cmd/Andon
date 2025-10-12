@@ -60,7 +60,10 @@ export default function LinesPage() {
   }
 
   const allLines = productionLines || [];
-  const lineLimit = planLimits[currentUser.plan as keyof typeof planLimits] ? planLimits[currentUser.plan as keyof typeof planLimits].lines : planLimits.custom.lines;
+  const lineLimit = currentUser.plan === 'custom' 
+    ? (currentUser.customLineLimit || Infinity)
+    : (planLimits[currentUser.plan as keyof typeof planLimits]?.lines || Infinity);
+  
   const canAddLine = allLines.length < lineLimit;
 
   return (

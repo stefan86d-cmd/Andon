@@ -65,7 +65,10 @@ export default function UsersPage() {
     </AppLayout>
   }
 
-  const userLimit = planLimits[currentUser.plan as keyof typeof planLimits] ? planLimits[currentUser.plan as keyof typeof planLimits].users : planLimits.custom.users;
+  const userLimit = currentUser.plan === 'custom' 
+    ? (currentUser.customUserLimit || Infinity)
+    : (planLimits[currentUser.plan as keyof typeof planLimits]?.users || Infinity);
+
   const canAddUser = allUsers.length < userLimit;
 
   return (
