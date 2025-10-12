@@ -3,7 +3,7 @@
 
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, Factory, ClipboardList, LayoutDashboard, BarChart3, Bot, UserCog, LifeBuoy, Puzzle, ShieldCheck, Headset, Shield, BadgeCheck, CheckCircle, Globe, ArrowRight } from "lucide-react";
+import { Users, Factory, ClipboardList, LayoutDashboard, BarChart3, Bot, UserCog, LifeBuoy, Puzzle, ShieldCheck, Headset, Shield, BadgeCheck, CheckCircle, Globe, ArrowRight, Menu } from "lucide-react";
 import Link from "next/link";
 import { Logo } from "@/components/layout/logo";
 import { cn } from "@/lib/utils";
@@ -14,7 +14,8 @@ import { MegaMenu } from "@/components/layout/mega-menu";
 import FooterLogo from "@/components/layout/footer-logo";
 import { useUser } from "@/contexts/user-context";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
-
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 const tiers = [
   {
@@ -102,14 +103,6 @@ const tiers = [
     ],
     cta: "Choose Plan",
   },
-  {
-    name: "Custom",
-    prices: "Contact Us",
-    pricePeriod: "",
-    description: "For unique requirements and unlimited scale.",
-    features: [],
-    cta: "Contact Sales",
-  },
 ];
 
 const guarantees = [
@@ -155,6 +148,13 @@ const supportImage = PlaceHolderImages.find(p => p.id === 'mega-menu-support');
 type Duration = '1' | '12' | '24' | '48';
 type Currency = 'usd' | 'eur' | 'gbp';
 
+const MobileNavLink = ({ href, children }: { href: string; children: React.ReactNode }) => (
+    <Link href={href} className="block py-2 text-muted-foreground hover:text-foreground">
+        {children}
+    </Link>
+);
+
+
 export default function PricingPage() {
     const [duration, setDuration] = useState<Duration>('12');
     const [currency, setCurrency] = useState<Currency>('usd');
@@ -179,41 +179,84 @@ export default function PricingPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
-        <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <div className="container flex h-14 items-center">
-                <div className="mr-4 hidden md:flex items-center">
-                    <Link href="/" className="mr-6 flex items-center space-x-2">
-                        <Logo />
-                    </Link>
-                    <nav className="flex items-center space-x-1 text-sm">
-                        <MegaMenu 
-                            triggerText="Services" 
-                            items={servicesMenuItems}
-                            image={servicesImage}
-                        />
-                        <MegaMenu 
-                            triggerText="Explore" 
-                            items={exploreMenuItems}
-                            image={exploreImage}
-                        />
-                        <MegaMenu 
-                            triggerText="Support" 
-                            items={supportMenuItems}
-                            image={supportImage}
-                        />
-                    </nav>
-                </div>
-                <div className="flex flex-1 items-center justify-end">
-                    <nav className="flex items-center space-x-2">
+       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container flex h-14 items-center">
+            <div className="mr-4 flex items-center">
+                <Link href="/" className="mr-6 flex items-center space-x-2">
+                    <Logo />
+                </Link>
+                <nav className="hidden md:flex items-center space-x-1 text-sm">
+                    <MegaMenu 
+                        triggerText="Services" 
+                        items={servicesMenuItems}
+                        image={servicesImage}
+                    />
+                    <MegaMenu 
+                        triggerText="Explore" 
+                        items={exploreMenuItems}
+                        image={exploreImage}
+                    />
+                    <MegaMenu 
+                        triggerText="Support" 
+                        items={supportMenuItems}
+                        image={supportImage}
+                    />
+                </nav>
+            </div>
+            
+            <Sheet>
+                <SheetTrigger asChild>
+                    <Button variant="ghost" size="icon" className="md:hidden">
+                        <Menu className="h-5 w-5" />
+                        <span className="sr-only">Toggle Menu</span>
+                    </Button>
+                </SheetTrigger>
+                <SheetContent side="left" className="pr-0">
+                    <div className="flex flex-col space-y-4">
+                         <Link href="/" className="mr-6 flex items-center space-x-2">
+                            <Logo />
+                        </Link>
+                        <Accordion type="single" collapsible className="w-full">
+                            <AccordionItem value="services">
+                                <AccordionTrigger>Services</AccordionTrigger>
+                                <AccordionContent>
+                                    <div className="flex flex-col pl-4">
+                                        {servicesMenuItems.map(item => <MobileNavLink key={item.href} href={item.href}>{item.title}</MobileNavLink>)}
+                                    </div>
+                                </AccordionContent>
+                            </AccordionItem>
+                             <AccordionItem value="explore">
+                                <AccordionTrigger>Explore</AccordionTrigger>
+                                <AccordionContent>
+                                     <div className="flex flex-col pl-4">
+                                        {exploreMenuItems.map(item => <MobileNavLink key={item.href} href={item.href}>{item.title}</MobileNavLink>)}
+                                    </div>
+                                </AccordionContent>
+                            </AccordionItem>
+                             <AccordionItem value="support">
+                                <AccordionTrigger>Support</AccordionTrigger>
+                                <AccordionContent>
+                                     <div className="flex flex-col pl-4">
+                                        {supportMenuItems.map(item => <MobileNavLink key={item.href} href={item.href}>{item.title}</MobileNavLink>)}
+                                    </div>
+                                </AccordionContent>
+                            </AccordionItem>
+                        </Accordion>
+                    </div>
+                </SheetContent>
+            </Sheet>
+
+            <div className="flex flex-1 items-center justify-end">
+                <nav className="flex items-center space-x-2">
                     <Link href="/pricing" className={cn(buttonVariants({ variant: "ghost" }))}>
                         Pricing
                     </Link>
                     <Link href="/login" className={cn(buttonVariants({ variant: "default" }))}>
                         Login
                     </Link>
-                    </nav>
-                </div>
+                </nav>
             </div>
+        </div>
       </header>
       <main className="flex-1">
         <section className="py-20 bg-muted/50">
@@ -264,7 +307,7 @@ export default function PricingPage() {
         <section className="py-20 border-t bg-background">
             <div className="container">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                    {tiers.slice(0, 4).map((tier) => {
+                    {tiers.map((tier) => {
                         const isCustom = typeof tier.prices === 'string';
                         const monthlyPrice = !isCustom ? tier.prices[duration][currency] : 0;
                         const fullMonthlyPrice = !isCustom ? tier.prices['1'][currency] : 0;

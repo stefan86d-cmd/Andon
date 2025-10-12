@@ -4,10 +4,13 @@ import { Logo } from "@/components/layout/logo";
 import { cn } from "@/lib/utils";
 import { MegaMenu } from "@/components/layout/mega-menu";
 import { buttonVariants } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Menu } from "lucide-react";
 import Image from "next/image";
 import FooterLogo from "@/components/layout/footer-logo";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Button } from "@/components/ui/button";
 
 const servicesMenuItems = [
     { title: "Production Monitoring", description: "Get a live overview of your entire production line.", badge: "", href: "/services/monitoring" },
@@ -31,43 +34,93 @@ const servicesImage = PlaceHolderImages.find(p => p.id === 'mega-menu-services')
 const exploreImage = PlaceHolderImages.find(p => p.id === 'mega-menu-explore');
 const supportImage = PlaceHolderImages.find(p => p.id === 'mega-menu-support');
 
+const MobileNavLink = ({ href, children }: { href: string; children: React.ReactNode }) => (
+    <Link href={href} className="block py-2 text-muted-foreground hover:text-foreground">
+        {children}
+    </Link>
+);
+
+
 export default function AnalyticsReportingPage() {
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-14 items-center">
-          <div className="mr-4 hidden md:flex items-center">
-            <Link href="/" className="mr-6 flex items-center space-x-2">
-              <Logo />
-            </Link>
-            <nav className="flex items-center space-x-1 text-sm">
-                <MegaMenu 
-                    triggerText="Services" 
-                    items={servicesMenuItems}
-                    image={servicesImage}
-                />
-                <MegaMenu 
-                    triggerText="Explore" 
-                    items={exploreMenuItems}
-                    image={exploreImage}
-                />
-                <MegaMenu 
-                    triggerText="Support" 
-                    items={supportMenuItems}
-                    image={supportImage}
-                />
-            </nav>
-          </div>
-          <div className="flex flex-1 items-center justify-end">
-            <nav className="flex items-center space-x-2">
-               <Link href="/pricing" className={cn(buttonVariants({ variant: "ghost" }))}>
-                Pricing
-              </Link>
-              <Link href="/login" className={cn(buttonVariants({ variant: "default" }))}>
-                Login
-              </Link>
-            </nav>
-          </div>
+            <div className="mr-4 flex items-center">
+                <Link href="/" className="mr-6 flex items-center space-x-2">
+                    <Logo />
+                </Link>
+                <nav className="hidden md:flex items-center space-x-1 text-sm">
+                    <MegaMenu 
+                        triggerText="Services" 
+                        items={servicesMenuItems}
+                        image={servicesImage}
+                    />
+                    <MegaMenu 
+                        triggerText="Explore" 
+                        items={exploreMenuItems}
+                        image={exploreImage}
+                    />
+                    <MegaMenu 
+                        triggerText="Support" 
+                        items={supportMenuItems}
+                        image={supportImage}
+                    />
+                </nav>
+            </div>
+            
+            <Sheet>
+                <SheetTrigger asChild>
+                    <Button variant="ghost" size="icon" className="md:hidden">
+                        <Menu className="h-5 w-5" />
+                        <span className="sr-only">Toggle Menu</span>
+                    </Button>
+                </SheetTrigger>
+                <SheetContent side="left" className="pr-0">
+                    <div className="flex flex-col space-y-4">
+                         <Link href="/" className="mr-6 flex items-center space-x-2">
+                            <Logo />
+                        </Link>
+                        <Accordion type="single" collapsible className="w-full">
+                            <AccordionItem value="services">
+                                <AccordionTrigger>Services</AccordionTrigger>
+                                <AccordionContent>
+                                    <div className="flex flex-col pl-4">
+                                        {servicesMenuItems.map(item => <MobileNavLink key={item.href} href={item.href}>{item.title}</MobileNavLink>)}
+                                    </div>
+                                </AccordionContent>
+                            </AccordionItem>
+                             <AccordionItem value="explore">
+                                <AccordionTrigger>Explore</AccordionTrigger>
+                                <AccordionContent>
+                                     <div className="flex flex-col pl-4">
+                                        {exploreMenuItems.map(item => <MobileNavLink key={item.href} href={item.href}>{item.title}</MobileNavLink>)}
+                                    </div>
+                                </AccordionContent>
+                            </AccordionItem>
+                             <AccordionItem value="support">
+                                <AccordionTrigger>Support</AccordionTrigger>
+                                <AccordionContent>
+                                     <div className="flex flex-col pl-4">
+                                        {supportMenuItems.map(item => <MobileNavLink key={item.href} href={itemhref}>{item.title}</MobileNavLink>)}
+                                    </div>
+                                </AccordionContent>
+                            </AccordionItem>
+                        </Accordion>
+                    </div>
+                </SheetContent>
+            </Sheet>
+
+            <div className="flex flex-1 items-center justify-end">
+                <nav className="flex items-center space-x-2">
+                    <Link href="/pricing" className={cn(buttonVariants({ variant: "ghost" }))}>
+                        Pricing
+                    </Link>
+                    <Link href="/login" className={cn(buttonVariants({ variant: "default" }))}>
+                        Login
+                    </Link>
+                </nav>
+            </div>
         </div>
       </header>
 
