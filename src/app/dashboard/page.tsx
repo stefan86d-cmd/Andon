@@ -24,7 +24,7 @@ type Duration = {
 
 export default function Home() {
   const { currentUser } = useUser();
-  const [issues, setIssues] = useState<Issue[]>([]);
+  const [allIssues, setAllIssues] = useState<Issue[]>([]);
   const [recentIssues, setRecentIssues] = useState<Issue[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -33,9 +33,9 @@ export default function Home() {
 
     const fetchData = async () => {
       setLoading(true);
-      const allIssuesData = await getClientIssues(currentUser.orgId!);
-      setIssues(allIssuesData);
-      setRecentIssues(allIssuesData.slice(0, 5));
+      const issuesData = await getClientIssues(currentUser.orgId!);
+      setAllIssues(issuesData);
+      setRecentIssues(issuesData.slice(0, 5));
       setLoading(false);
     };
 
@@ -57,8 +57,7 @@ export default function Home() {
 
   const now = new Date();
   const twentyFourHoursAgo = subHours(now, 24);
-  const allIssues = issues || [];
-
+  
   const stoppedIssuesInLast24h = allIssues.filter(
     (issue) => issue.productionStopped && issue.reportedAt > twentyFourHoursAgo
   );
@@ -212,7 +211,7 @@ export default function Home() {
                 },
               ]}
             />
-            <IssuesDataTable issues={recentIssues || []} title="Recent Issues" />
+            <IssuesDataTable issues={recentIssues} title="Recent Issues" />
           </>
         )}
       </main>
