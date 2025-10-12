@@ -17,7 +17,7 @@ import { Logo } from "@/components/layout/logo";
 import { useRouter } from "next/navigation";
 
 
-const tiers = {
+const tiers: Record<Exclude<Plan, 'custom'>, { name: string; prices: Record<Duration, Record<Currency, number>> }> & { custom?: any } = {
   starter: { 
     name: "Starter", 
     prices: { '1': { usd: 0, eur: 0, gbp: 0 }, '12': { usd: 0, eur: 0, gbp: 0 }, '24': { usd: 0, eur: 0, gbp: 0 }, '48': { usd: 0, eur: 0, gbp: 0 } } 
@@ -34,6 +34,10 @@ const tiers = {
     name: "Enterprise", 
     prices: { '1': { usd: 149.99, eur: 139.99, gbp: 124.99 }, '12': { usd: 119.99, eur: 111.99, gbp: 99.99 }, '24': { usd: 104.99, eur: 97.99, gbp: 87.99 }, '48': { usd: 89.99, eur: 83.99, gbp: 74.99 } }
   },
+  custom: {
+    name: "Custom",
+    prices: { '1': { usd: 0, eur: 0, gbp: 0 }, '12': { usd: 0, eur: 0, gbp: 0 }, '24': { usd: 0, eur: 0, gbp: 0 }, '48': { usd: 0, eur: 0, gbp: 0 } }
+  }
 };
 
 const currencySymbols = { usd: '$', eur: '€', gbp: '£' };
@@ -79,7 +83,7 @@ export default function BillingPage() {
     }
 
     const planName = currentUser.plan.charAt(0).toUpperCase() + currentUser.plan.slice(1);
-    const availablePlans = Object.keys(tiers).filter(p => p !== 'starter') as Plan[];
+    const availablePlans = Object.keys(tiers).filter(p => p !== 'starter' && p !== 'custom') as Plan[];
 
     const selectedTier = newPlan ? tiers[newPlan] : null;
     const monthlyPrice = selectedTier ? selectedTier.prices['1'][currency] : 0;
@@ -170,3 +174,6 @@ export default function BillingPage() {
         </div>
     );
 }
+
+
+    

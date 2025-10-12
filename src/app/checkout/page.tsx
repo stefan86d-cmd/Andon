@@ -30,7 +30,7 @@ import { useUser } from '@/contexts/user-context';
 import { toast } from '@/hooks/use-toast';
 import { updateUserPlan } from '@/app/actions';
 
-const tiers = {
+const tiers: Record<Plan, { name: string; prices: Record<Duration, Record<Currency, number>> }> = {
   starter: { 
     name: "Starter", 
     prices: { '1': { usd: 0, eur: 0, gbp: 0 }, '12': { usd: 0, eur: 0, gbp: 0 }, '24': { usd: 0, eur: 0, gbp: 0 }, '48': { usd: 0, eur: 0, gbp: 0 } } 
@@ -47,6 +47,10 @@ const tiers = {
     name: "Enterprise", 
     prices: { '1': { usd: 149.99, eur: 139.99, gbp: 124.99 }, '12': { usd: 119.99, eur: 111.99, gbp: 99.99 }, '24': { usd: 104.99, eur: 97.99, gbp: 87.99 }, '48': { usd: 89.99, eur: 83.99, gbp: 74.99 } }
   },
+  custom: {
+    name: "Custom",
+    prices: { '1': { usd: 0, eur: 0, gbp: 0 }, '12': { usd: 0, eur: 0, gbp: 0 }, '24': { usd: 0, eur: 0, gbp: 0 }, '48': { usd: 0, eur: 0, gbp: 0 } }
+  }
 };
 
 const currencySymbols = { usd: '$', eur: '€', gbp: '£' };
@@ -239,5 +243,7 @@ export default function CheckoutPage() {
         </Suspense>
     )
 }
+
+    
 
     
