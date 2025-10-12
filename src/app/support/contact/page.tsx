@@ -145,13 +145,15 @@ export default function ContactPage() {
                                 Have a question or need help? Fill out the form, and we'll get back to you as soon as possible. For specific inquiries, you can also reach us at the email addresses below.
                             </p>
                         </div>
-                        <div className="space-y-4">
+                        <div className="space-y-6">
                             <div className="flex items-start gap-4">
                                 <Mail className="h-6 w-6 text-primary mt-1" />
                                 <div>
                                     <h3 className="font-semibold">Email Us</h3>
-                                    <p className="text-muted-foreground text-sm mt-2">For support:</p>
+                                    <p className="text-muted-foreground text-sm mt-2">For general support:</p>
                                     <a href="mailto:support@andonpro.com" className="text-primary hover:underline">support@andonpro.com</a>
+                                    <p className="text-muted-foreground text-sm mt-2">For sales and custom plans:</p>
+                                    <a href="mailto:sales@andonpro.com" className="text-primary hover:underline">sales@andonpro.com</a>
                                 </div>
                             </div>
                             <div className="flex items-start gap-4">
@@ -214,3 +216,5 @@ export default function ContactPage() {
     </div>
   );
 }
+
+    
