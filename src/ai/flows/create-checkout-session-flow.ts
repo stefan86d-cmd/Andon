@@ -29,8 +29,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
     apiVersion: '2024-06-20',
 });
 
-// Map your app's plans to Stripe Price IDs
-// You need to create these products and prices in your Stripe Dashboard
+// Map your app's plans to Stripe Price IDs from environment variables
 const priceIds: Record<Plan, string> = {
     starter: '', // No price for starter
     standard: process.env.STRIPE_PRICE_ID_STANDARD || '',
@@ -52,13 +51,21 @@ export const createCheckoutSession = ai.defineFlow(
 
     const priceId = priceIds[plan];
     if (!priceId) {
-        throw new Error(`Price ID for plan "${plan}" is not configured.`);
+        throw new Error(`Price ID for plan "${plan}" is not configured. Please check your environment variables.`);
     }
 
-    const customer = await stripe.customers.create({
-        email: email,
-        metadata: { userId: userId },
-    });
+    // Check if a customer with this email or userId already exists
+    let customer;
+    const existingCustomers = await stripe.customers.list({ email: email, limit: 1 });
+    
+    if (existingCustomers.data.length > 0) {
+        customer = existingCustomers.data[0];
+    } else {
+        customer = await stripe.customers.create({
+            email: email,
+            metadata: { userId: userId },
+        });
+    }
 
     const subscription = await stripe.subscriptions.create({
         customer: customer.id,
