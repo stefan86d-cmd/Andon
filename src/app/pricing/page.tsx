@@ -3,7 +3,7 @@
 
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, Factory, ClipboardList, LayoutDashboard, BarChart3, Bot, UserCog, LifeBuoy, Puzzle, ShieldCheck, Headset, Shield, BadgeCheck, CheckCircle, Globe } from "lucide-react";
+import { Users, Factory, ClipboardList, LayoutDashboard, BarChart3, Bot, UserCog, LifeBuoy, Puzzle, ShieldCheck, Headset, Shield, BadgeCheck, CheckCircle, Globe, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { Logo } from "@/components/layout/logo";
 import { cn } from "@/lib/utils";
@@ -263,9 +263,8 @@ export default function PricingPage() {
         
         <section className="py-20 border-t bg-background">
             <div className="container">
-
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-8">
-                    {tiers.map((tier) => {
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                    {tiers.slice(0, 4).map((tier) => {
                         const isCustom = typeof tier.prices === 'string';
                         const monthlyPrice = !isCustom ? tier.prices[duration][currency] : 0;
                         const fullMonthlyPrice = !isCustom ? tier.prices['1'][currency] : 0;
@@ -344,6 +343,24 @@ export default function PricingPage() {
                             </div>
                         )
                     })}
+                </div>
+
+                <div className="mt-20">
+                    <Card className="bg-muted/50">
+                        <div className="grid md:grid-cols-3 items-center">
+                            <div className="p-8 md:col-span-2">
+                                <h2 className="text-2xl font-bold">Looking for more?</h2>
+                                <p className="text-muted-foreground mt-2">
+                                    For unique requirements and unlimited scale, our Custom plan offers dedicated support, custom integrations, and more. Contact us to design a plan that fits your exact needs.
+                                </p>
+                            </div>
+                            <div className="p-8 text-center md:text-right border-t md:border-t-0 md:border-l">
+                                <Link href="/support/contact" className={cn(buttonVariants({ size: 'lg' }))}>
+                                    Contact Sales <ArrowRight className="ml-2 h-5 w-5" />
+                                </Link>
+                            </div>
+                        </div>
+                    </Card>
                 </div>
             </div>
         </section>
