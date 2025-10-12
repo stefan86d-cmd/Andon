@@ -15,9 +15,10 @@ import { db } from "@/firebase";
 
 const planLimits = {
   starter: { users: 5 },
-  standard: { users: 50 },
+  standard: { users: 80 },
   pro: { users: 150 },
-  enterprise: { users: Infinity },
+  enterprise: { users: 400 },
+  custom: { users: Infinity },
 }
 
 export default function UsersPage() {
@@ -64,7 +65,7 @@ export default function UsersPage() {
     </AppLayout>
   }
 
-  const userLimit = planLimits[currentUser.plan].users;
+  const userLimit = planLimits[currentUser.plan as keyof typeof planLimits] ? planLimits[currentUser.plan as keyof typeof planLimits].users : planLimits.custom.users;
   const canAddUser = allUsers.length < userLimit;
 
   return (
@@ -100,3 +101,5 @@ export default function UsersPage() {
     </AppLayout>
   );
 }
+
+    

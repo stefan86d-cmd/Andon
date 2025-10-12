@@ -1,6 +1,6 @@
 
 export type Role = "admin" | "supervisor" | "operator";
-export type Plan = "starter" | "standard" | "pro" | "enterprise";
+export type Plan = "starter" | "standard" | "pro" | "enterprise" | "custom";
 
 export type User = {
   id: string; // This is the Firebase Auth UID
@@ -93,3 +93,5 @@ export type IssueByDay = {
   date: string;
   issues: number;
 }
+
+    

@@ -19,7 +19,8 @@ const planLimits = {
   starter: { lines: 1 },
   standard: { lines: 5 },
   pro: { lines: 10 },
-  enterprise: { lines: Infinity },
+  enterprise: { lines: 20 },
+  custom: { lines: Infinity },
 };
 
 export default function LinesPage() {
@@ -59,7 +60,7 @@ export default function LinesPage() {
   }
 
   const allLines = productionLines || [];
-  const lineLimit = planLimits[currentUser.plan].lines;
+  const lineLimit = planLimits[currentUser.plan as keyof typeof planLimits] ? planLimits[currentUser.plan as keyof typeof planLimits].lines : planLimits.custom.lines;
   const canAddLine = allLines.length < lineLimit;
 
   return (
@@ -126,3 +127,5 @@ export default function LinesPage() {
     </AppLayout>
   );
 }
+
+    

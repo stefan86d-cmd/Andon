@@ -37,7 +37,8 @@ const planLimits = {
   starter: { workstations: 5 },
   standard: { workstations: 10 },
   pro: { workstations: 15 },
-  enterprise: { workstations: Infinity },
+  enterprise: { workstations: 20 },
+  custom: { workstations: Infinity },
 };
 
 const lineFormSchema = z.object({
@@ -77,7 +78,7 @@ export function EditProductionLineDialog({
 
   const workstationCount = form.watch("workstations").length;
   const userPlan = currentUser?.plan || "starter";
-  const workstationLimit = planLimits[userPlan].workstations;
+  const workstationLimit = planLimits[userPlan as keyof typeof planLimits] ? planLimits[userPlan as keyof typeof planLimits].workstations : planLimits.custom.workstations;
   const canAddWorkstation = workstationCount < workstationLimit;
 
   function onSubmit(data: LineFormValues) {
@@ -176,3 +177,5 @@ export function EditProductionLineDialog({
     </Dialog>
   );
 }
+
+    

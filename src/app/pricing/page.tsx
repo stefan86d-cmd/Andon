@@ -47,7 +47,7 @@ const tiers = [
     pricePeriod: "/ month",
     description: "For growing factories that need more power and insights.",
     features: [
-      { text: "Up to 50 users" },
+      { text: "Up to 80 users" },
       { text: "Up to 5 Production Lines" },
       { text: "Up to 10 workstations per line" },
       { text: "Advanced Reporting & Analytics" },
@@ -91,16 +91,31 @@ const tiers = [
         '48': { usd: 89.99, eur: 83.99, gbp: 74.99 },
     },
     pricePeriod: "/ month",
-    description: "For large-scale operations with unlimited resources and dedicated support.",
+    description: "For large-scale operations with expanded resources.",
     features: [
-      { text: "Unlimited Users & Lines" },
+      { text: "Up to 400 users" },
+      { text: "20 Production Lines" },
+      { text: "20 workstations per line" },
       { text: "Advanced Reporting & Analytics" },
       { text: "AI-Powered Issue Prioritization" },
-      { text: "User Role Management" },
-      { text: "Priority Support" },
-      { text: "24/7 Support" }
+      { text: "24/7 Support" },
     ],
     cta: "Choose Plan",
+  },
+    {
+    name: "Custom",
+    prices: "Contact Us",
+    pricePeriod: "",
+    description: "For unique requirements and unlimited scale.",
+    features: [
+      { text: "Unlimited Users & Lines" },
+      { text: "Custom Workstation Configurations" },
+      { text: "Dedicated Infrastructure Options" },
+      { text: "On-Premise Deployment" },
+      { text: "SLA & Dedicated Account Manager" },
+      { text: "Custom Integrations" },
+    ],
+    cta: "Contact Sales",
   },
 ];
 
@@ -256,14 +271,15 @@ export default function PricingPage() {
         <section className="py-20 border-t bg-background">
             <div className="container">
 
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-8">
                     {tiers.map((tier) => {
-                        const monthlyPrice = tier.prices[duration][currency];
-                        const fullMonthlyPrice = tier.prices['1'][currency];
+                        const isCustom = typeof tier.prices === 'string';
+                        const monthlyPrice = !isCustom ? tier.prices[duration][currency] : 0;
+                        const fullMonthlyPrice = !isCustom ? tier.prices['1'][currency] : 0;
                         const totalDiscountedPrice = monthlyPrice * parseInt(duration, 10);
                         const totalRegularPrice = fullMonthlyPrice * parseInt(duration, 10);
                         const isProBestValue = tier.name === "Pro";
-                        const linkHref = `/checkout?plan=${tier.name.toLowerCase()}&duration=${duration}&currency=${currency}`;
+                        const linkHref = isCustom ? "/support/contact" : `/checkout?plan=${tier.name.toLowerCase()}&duration=${duration}&currency=${currency}`;
                         
                         let ctaText = tier.cta;
                         if (!currentUser && (tier.name === "Standard" || tier.name === "Pro")) {
@@ -280,14 +296,20 @@ export default function PricingPage() {
                                 <Card className={`flex flex-col h-full ${tier.popular ? (isProBestValue ? 'border-destructive shadow-lg' : 'border-primary shadow-lg') : ''}`}>
                                     <CardHeader className="text-center">
                                         <CardTitle className="text-2xl">{tier.name}</CardTitle>
-                                        <div className="flex items-baseline justify-center gap-1">
-                                            <span className="text-4xl font-bold">
-                                                 {typeof monthlyPrice === 'number'
-                                                    ? `${currencySymbols[currency]}${formatPrice(monthlyPrice, currency)}`
-                                                    : monthlyPrice
-                                                }
-                                            </span>
-                                            {tier.pricePeriod && typeof monthlyPrice === 'number' && monthlyPrice > 0 && <span className="text-muted-foreground">{tier.pricePeriod}</span>}
+                                        <div className="flex items-baseline justify-center gap-1 h-10">
+                                            {isCustom ? (
+                                                <span className="text-2xl font-bold">{tier.prices}</span>
+                                            ) : (
+                                                <>
+                                                    <span className="text-4xl font-bold">
+                                                        {typeof monthlyPrice === 'number'
+                                                            ? `${currencySymbols[currency]}${formatPrice(monthlyPrice, currency)}`
+                                                            : monthlyPrice
+                                                        }
+                                                    </span>
+                                                    {tier.pricePeriod && typeof monthlyPrice === 'number' && monthlyPrice > 0 && <span className="text-muted-foreground">{tier.pricePeriod}</span>}
+                                                </>
+                                            )}
                                         </div>
                                         <CardDescription>{tier.description}</CardDescription>
                                     </CardHeader>
@@ -309,17 +331,17 @@ export default function PricingPage() {
                                         }), "w-full")}>
                                             {ctaText}
                                         </Link>
-                                         {tier.name !== 'Starter' && duration !== '1' && (
+                                         {!isCustom && tier.name !== 'Starter' && duration !== '1' && (
                                             <p className="text-xs text-muted-foreground mt-3 text-center">
                                                 Get {duration} months for {currencySymbols[currency]}{formatPrice(totalDiscountedPrice, currency)} (regular price {currencySymbols[currency]}{formatPrice(totalRegularPrice, currency)}). Renews at {currencySymbols[currency]}{formatPrice(fullMonthlyPrice, currency)}/mo.
                                             </p>
                                         )}
-                                         {tier.name !== 'Starter' && duration === '1' && (
+                                         {!isCustom && tier.name !== 'Starter' && duration === '1' && (
                                             <p className="text-xs text-muted-foreground mt-3 text-center">
                                                 Renews at {currencySymbols[currency]}{formatPrice(fullMonthlyPrice, currency)}/mo. Cancel anytime.
                                             </p>
                                         )}
-                                         {tier.name === 'Starter' && duration !== '1' && (
+                                         {(isCustom || (tier.name === 'Starter' && duration !== '1')) && (
                                             <p className="text-xs text-muted-foreground mt-3 text-center h-8">
                                                 &nbsp;
                                             </p>
@@ -378,3 +400,5 @@ export default function PricingPage() {
     </div>
   );
 }
+
+    
