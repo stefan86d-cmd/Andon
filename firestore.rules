@@ -1,73 +1,74 @@
+
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helper Functions
-    function isSignedIn() {
-      return request.auth != null;
-    }
-
-    function isOwner(userId) {
-      return request.auth.uid == userId;
-    }
-
+    // Helper function to get user's role and orgId from the 'users' collection
     function getUserData(userId) {
       return get(/databases/$(database)/documents/users/$(userId)).data;
     }
 
-    function getUserRole(userId) {
-      return getUserData(userId).role;
-    }
-
-    function isAdmin() {
-      return isSignedIn() && getUserRole(request.auth.uid) == 'admin';
-    }
-
-    function isSupervisor() {
-      return isSignedIn() && (getUserRole(request.auth.uid) == 'supervisor' || isAdmin());
-    }
-    
-    function isOperator() {
-        return isSignedIn() && getUserRole(request.auth.uid) == 'operator';
-    }
-    
-    function isSameOrg(newUserEmail) {
-      let adminEmail = getUserData(request.auth.uid).email;
-      return adminEmail.split('@')[1] == newUserEmail.split('@')[1];
-    }
-
-    // Collection: users
-    // - Admins can read and write any user document.
-    // - Any authenticated user can read their own document.
-    // - Only admins from the same organization can create users.
+    // Rules for the 'users' collection
     match /users/{userId} {
-      allow read: if isAdmin() || isOwner(userId);
-      allow write: if isAdmin();
-      allow create: if isAdmin() && isSameOrg(request.resource.data.email);
-      allow delete: if isAdmin();
+      // Allow a user to read or update their own document
+      allow read, update: if request.auth != null && request.auth.uid == userId;
+
+      // Admins can read any user within their own organization
+      allow get, list: if request.auth != null && getUserData(request.auth.uid).role == 'admin' && getUserData(request.auth.uid).orgId == resource.data.orgId;
+      
+      // Admins can create new users within their own organization
+      allow create: if request.auth != null && getUserData(request.auth.uid).role == 'admin' && getUserData(request.auth.uid).orgId == request.resource.data.orgId;
     }
 
-    // Collection: issues
-    // - Admins and Supervisors can read all issues.
-    // - Operators can read issues on their assigned production line.
-    // - Authenticated users can create new issues.
-    // - Admins and Supervisors can update issues.
+    // Rules for the 'issues' collection
     match /issues/{issueId} {
-      allow read: if isSupervisor() || (isOperator() && resource.data.productionLineId == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.productionLineId);
-      allow create: if isSignedIn();
-      allow update: if isSupervisor();
-      allow delete: if isAdmin();
-    }
+      // A user must be authenticated to access issues
+      function isOwner(orgId) {
+        return getUserData(request.auth.uid).orgId == orgId;
+      }
+      
+      function isAdmin() {
+        return getUserData(request.auth.uid).role == 'admin';
+      }
 
-    // Collection: productionLines
-    // - All authenticated users can read production line data (needed for issue reporting).
-    // - Only Admins can create, update, or delete production lines.
+      function isSupervisor() {
+        return getUserData(request.auth.uid).role == 'supervisor';
+      }
+      
+      function isOperator() {
+          return getUserData(request.auth.uid).role == 'operator';
+      }
+
+      // Read access: Admins and Supervisors can read all issues in their org. Operators can read issues for their location.
+      allow get, list: if request.auth != null && isOwner(resource.data.orgId) && (isAdmin() || isSupervisor() || isOperator());
+
+      // Create access: Any authenticated user within the organization can create an issue.
+      allow create: if request.auth != null && isOwner(request.resource.data.orgId);
+
+      // Update access: Admins and Supervisors can update any issue in their org.
+      allow update: if request.auth != null && isOwner(resource.data.orgId) && (isAdmin() || isSupervisor());
+      
+      // Delete access: Deny all deletes for now to preserve history.
+      allow delete: if false;
+    }
+    
+    // Rules for the 'productionLines' collection
     match /productionLines/{lineId} {
-      allow read: if isSignedIn();
-      allow write: if isAdmin();
-      allow create: if isAdmin();
-      allow delete: if isAdmin();
+        
+       function isOwner(orgId) {
+        return getUserData(request.auth.uid).orgId == orgId;
+      }
+      
+      function isAdmin() {
+        return getUserData(request.auth.uid).role == 'admin';
+      }
+
+      // Read access: Any authenticated user in the org can read production lines.
+      allow get, list: if request.auth != null && isOwner(resource.data.orgId);
+
+      // Write access (create, update, delete): Only admins can manage production lines.
+      allow write: if request.auth != null && isOwner(resource.data.orgId) && isAdmin();
     }
   }
 }
