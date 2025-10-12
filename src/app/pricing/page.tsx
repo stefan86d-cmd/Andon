@@ -20,6 +20,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 const tiers = [
   {
     name: "Starter",
+    id: "starter",
     prices: {
         '1': { usd: 0, eur: 0, gbp: 0 },
         '12': { usd: 0, eur: 0, gbp: 0 },
@@ -39,6 +40,7 @@ const tiers = [
   },
   {
     name: "Standard",
+    id: "standard",
     prices: {
         '1': { usd: 39.99, eur: 36.99, gbp: 32.99 },
         '12': { usd: 31.99, eur: 29.99, gbp: 26.99 },
@@ -61,6 +63,7 @@ const tiers = [
   },
   {
     name: "Pro",
+    id: "pro",
     prices: {
         '1': { usd: 59.99, eur: 54.99, gbp: 49.99 },
         '12': { usd: 47.99, eur: 43.99, gbp: 39.99 },
@@ -85,6 +88,7 @@ const tiers = [
   },
   {
     name: "Enterprise",
+    id: "enterprise",
     prices: {
         '1': { usd: 149.99, eur: 139.99, gbp: 124.99 },
         '12': { usd: 119.99, eur: 111.99, gbp: 99.99 },
@@ -104,6 +108,13 @@ const tiers = [
     cta: "Choose Plan",
   },
 ];
+
+const customTier = {
+    name: "Custom",
+    id: "custom",
+    description: "For unique requirements and unlimited scale, our Custom plan offers dedicated support, custom integrations, and more. Contact us to design a plan that fits your exact needs.",
+    cta: "Contact Sales"
+}
 
 const guarantees = [
     {
@@ -308,13 +319,12 @@ export default function PricingPage() {
             <div className="container">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                     {tiers.map((tier) => {
-                        const isCustom = typeof tier.prices === 'string';
-                        const monthlyPrice = !isCustom ? tier.prices[duration][currency] : 0;
-                        const fullMonthlyPrice = !isCustom ? tier.prices['1'][currency] : 0;
+                        const monthlyPrice = tier.prices[duration][currency];
+                        const fullMonthlyPrice = tier.prices['1'][currency];
                         const totalDiscountedPrice = monthlyPrice * parseInt(duration, 10);
                         const totalRegularPrice = fullMonthlyPrice * parseInt(duration, 10);
                         const isProBestValue = tier.name === "Pro";
-                        const linkHref = isCustom ? "/support/contact" : `/checkout?plan=${tier.name.toLowerCase()}&duration=${duration}&currency=${currency}`;
+                        const linkHref = `/checkout?plan=${tier.id.toLowerCase()}&duration=${duration}&currency=${currency}`;
                         
                         let ctaText = tier.cta;
                         if (!currentUser && (tier.name === "Standard" || tier.name === "Pro")) {
@@ -332,19 +342,15 @@ export default function PricingPage() {
                                     <CardHeader className="text-center">
                                         <CardTitle className="text-2xl">{tier.name}</CardTitle>
                                         <div className="flex items-baseline justify-center gap-1 h-10">
-                                            {isCustom ? (
-                                                <span className="text-2xl font-bold">{tier.prices}</span>
-                                            ) : (
-                                                <>
-                                                    <span className="text-4xl font-bold">
-                                                        {typeof monthlyPrice === 'number'
-                                                            ? `${currencySymbols[currency]}${formatPrice(monthlyPrice, currency)}`
-                                                            : monthlyPrice
-                                                        }
-                                                    </span>
-                                                    {tier.pricePeriod && typeof monthlyPrice === 'number' && monthlyPrice > 0 && <span className="text-muted-foreground">{tier.pricePeriod}</span>}
-                                                </>
-                                            )}
+                                            
+                                            <span className="text-4xl font-bold">
+                                                {typeof monthlyPrice === 'number' && monthlyPrice > 0
+                                                    ? `${currencySymbols[currency]}${formatPrice(monthlyPrice, currency)}`
+                                                    : (tier.name === 'Starter' ? 'Free' : tier.prices)
+                                                }
+                                            </span>
+                                            {tier.pricePeriod && typeof monthlyPrice === 'number' && monthlyPrice > 0 && <span className="text-muted-foreground">{tier.pricePeriod}</span>}
+                                        
                                         </div>
                                         <CardDescription>{tier.description}</CardDescription>
                                     </CardHeader>
@@ -366,17 +372,17 @@ export default function PricingPage() {
                                         }), "w-full")}>
                                             {ctaText}
                                         </Link>
-                                         {!isCustom && tier.name !== 'Starter' && duration !== '1' && (
+                                         {tier.name !== 'Starter' && duration !== '1' && (
                                             <p className="text-xs text-muted-foreground mt-3 text-center">
                                                 Get {duration} months for {currencySymbols[currency]}{formatPrice(totalDiscountedPrice, currency)} (regular price {currencySymbols[currency]}{formatPrice(totalRegularPrice, currency)}). Renews at {currencySymbols[currency]}{formatPrice(fullMonthlyPrice, currency)}/mo.
                                             </p>
                                         )}
-                                         {!isCustom && tier.name !== 'Starter' && duration === '1' && (
+                                         {tier.name !== 'Starter' && duration === '1' && (
                                             <p className="text-xs text-muted-foreground mt-3 text-center">
                                                 Renews at {currencySymbols[currency]}{formatPrice(fullMonthlyPrice, currency)}/mo. Cancel anytime.
                                             </p>
                                         )}
-                                         {(isCustom || (tier.name === 'Starter' && duration !== '1')) && (
+                                         {(tier.name === 'Starter' && duration !== '1') && (
                                             <p className="text-xs text-muted-foreground mt-3 text-center h-8">
                                                 &nbsp;
                                             </p>
@@ -392,14 +398,14 @@ export default function PricingPage() {
                     <Card className="bg-muted/50">
                         <div className="grid md:grid-cols-3 items-center">
                             <div className="p-8 md:col-span-2">
-                                <h2 className="text-2xl font-bold">Looking for more?</h2>
+                                <h2 className="text-2xl font-bold">{customTier.name}</h2>
                                 <p className="text-muted-foreground mt-2">
-                                    For unique requirements and unlimited scale, our Custom plan offers dedicated support, custom integrations, and more. Contact us to design a plan that fits your exact needs.
+                                    {customTier.description}
                                 </p>
                             </div>
                             <div className="p-8 text-center md:text-right border-t md:border-t-0 md:border-l">
                                 <Link href="/support/contact" className={cn(buttonVariants({ size: 'lg' }))}>
-                                    Contact Sales <ArrowRight className="ml-2 h-5 w-5" />
+                                    {customTier.cta} <ArrowRight className="ml-2 h-5 w-5" />
                                 </Link>
                             </div>
                         </div>
@@ -453,3 +459,5 @@ export default function PricingPage() {
     </div>
   );
 }
+
+    
