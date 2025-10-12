@@ -102,19 +102,12 @@ const tiers = [
     ],
     cta: "Choose Plan",
   },
-    {
+  {
     name: "Custom",
     prices: "Contact Us",
     pricePeriod: "",
     description: "For unique requirements and unlimited scale.",
-    features: [
-      { text: "Unlimited Users & Lines" },
-      { text: "Custom Workstation Configurations" },
-      { text: "Dedicated Infrastructure Options" },
-      { text: "On-Premise Deployment" },
-      { text: "SLA & Dedicated Account Manager" },
-      { text: "Custom Integrations" },
-    ],
+    features: [],
     cta: "Contact Sales",
   },
 ];
@@ -400,5 +393,3 @@ export default function PricingPage() {
     </div>
   );
 }
-
-    
