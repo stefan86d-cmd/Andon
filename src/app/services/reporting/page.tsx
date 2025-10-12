@@ -102,7 +102,7 @@ export default function AnalyticsReportingPage() {
                                 <AccordionTrigger>Support</AccordionTrigger>
                                 <AccordionContent>
                                      <div className="flex flex-col pl-4">
-                                        {supportMenuItems.map(item => <MobileNavLink key={item.href} href={itemhref}>{item.title}</MobileNavLink>)}
+                                        {supportMenuItems.map(item => <MobileNavLink key={item.href} href={item.href}>{item.title}</MobileNavLink>)}
                                     </div>
                                 </AccordionContent>
                             </AccordionItem>
