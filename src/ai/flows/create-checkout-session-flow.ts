@@ -14,7 +14,7 @@ import Stripe from 'stripe';
 import type { Plan } from '@/lib/types';
 
 const CreateCheckoutSessionInputSchema = z.object({
-  plan: z.enum(['starter', 'standard', 'pro', 'enterprise']),
+  plan: z.enum(['starter', 'standard', 'pro', 'enterprise', 'custom']),
   email: z.string().email(),
   userId: z.string(),
 });
@@ -35,6 +35,7 @@ const priceIds: Record<Plan, string> = {
     standard: process.env.STRIPE_PRICE_ID_STANDARD || '',
     pro: process.env.STRIPE_PRICE_ID_PRO || '',
     enterprise: process.env.STRIPE_PRICE_ID_ENTERPRISE || '',
+    custom: '', // Custom plans are handled via manual invoicing
 };
 
 
@@ -45,8 +46,8 @@ export const createCheckoutSession = ai.defineFlow(
     outputSchema: CreateCheckoutSessionOutputSchema,
   },
   async ({ plan, email, userId }) => {
-    if (plan === 'starter') {
-        throw new Error('Starter plan does not require payment.');
+    if (plan === 'starter' || plan === 'custom') {
+        throw new Error('This plan does not require automated payment.');
     }
 
     const priceId = priceIds[plan];
