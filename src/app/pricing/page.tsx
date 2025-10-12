@@ -344,9 +344,9 @@ export default function PricingPage() {
                                         <div className="flex items-baseline justify-center gap-1 h-10">
                                             
                                             <span className="text-4xl font-bold">
-                                                {typeof monthlyPrice === 'number' && monthlyPrice > 0
-                                                    ? `${currencySymbols[currency]}${formatPrice(monthlyPrice, currency)}`
-                                                    : (tier.name === 'Starter' ? 'Free' : tier.prices)
+                                                {tier.name === 'Starter'
+                                                    ? 'Free'
+                                                    : `${currencySymbols[currency]}${formatPrice(monthlyPrice, currency)}`
                                                 }
                                             </span>
                                             {tier.pricePeriod && typeof monthlyPrice === 'number' && monthlyPrice > 0 && <span className="text-muted-foreground">{tier.pricePeriod}</span>}
@@ -459,5 +459,3 @@ export default function PricingPage() {
     </div>
   );
 }
-
-    
