@@ -10,6 +10,9 @@ export const metadata: Metadata = {
   title: 'AndonPro',
   description: 'Monitor workflow and resolve issues on your production line.',
   manifest: '/manifest.json',
+  icons: {
+    icon: '/Andonpro_Liikemerkki_Musta.jpg',
+  },
 };
 
 export const viewport: Viewport = {
