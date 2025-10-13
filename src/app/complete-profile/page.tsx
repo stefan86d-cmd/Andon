@@ -29,6 +29,7 @@ import { useUser } from '@/contexts/user-context';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { createCheckoutSession } from '@/ai/flows/create-checkout-session-flow';
+import { sendWelcomeEmail } from '@/app/actions';
 
 
 const profileFormSchema = z.object({
@@ -149,7 +150,7 @@ function CompleteProfileContent() {
   const handleProfileSave = async (data: ProfileFormValues) => {
     if (!currentUser || !currentUser.id) {
         toast({ title: "Authentication Error", description: "Your session has expired. Please sign in again.", variant: "destructive" });
-        return;
+        return false;
     }
 
     try {
@@ -170,6 +171,9 @@ function CompleteProfileContent() {
         };
 
         await updateCurrentUser(userProfileData);
+
+        // Send welcome email after profile is saved
+        await sendWelcomeEmail(currentUser.id);
 
         return true;
     } catch (error) {
@@ -194,10 +198,15 @@ function CompleteProfileContent() {
   };
 
   const handleFreePlanSubmit = async () => {
-    const profileData = form.getValues();
     const isValid = await form.trigger();
     if (isValid) {
-      await onSuccessfulPayment();
+      const profileData = form.getValues();
+      await handleProfileSave(profileData);
+      toast({
+          title: "Registration Complete!",
+          description: `Welcome to the ${selectedPlan} plan. Your account is ready!`,
+      });
+      router.push('/dashboard');
     }
   };
 

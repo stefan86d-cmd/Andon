@@ -10,6 +10,7 @@ import { adminAuth } from '@/firebase/admin';
 import type { Issue, Plan, ProductionLine, Role, User } from '@/lib/types';
 import { handleFirestoreError } from '@/lib/firestore-helpers';
 import { sendEmail } from '@/lib/email';
+import { getAuth } from 'firebase/auth';
 
 // --- Data fetching actions ---
 
@@ -151,12 +152,56 @@ export async function deleteUser(userId: string) {
 export async function updateUserPlan(userId: string, newPlan: Plan) {
   if (!db) return handleFirestoreError(new Error('Firestore not initialized'));
   try {
-    await db.collection('users').doc(userId).update({ plan: newPlan });
+    const userRef = db.collection('users').doc(userId);
+    const userSnap = await userRef.get();
+    if (!userSnap.exists) {
+        return { success: false, error: 'User not found.' };
+    }
+    const user = userSnap.data() as User;
+    
+    await userRef.update({ plan: newPlan });
+
+    await sendEmail({
+        to: user.email,
+        subject: "Your AndonPro Plan Has Been Changed",
+        html: `<h1>Subscription Update</h1>
+               <p>Hello ${user.firstName},</p>
+               <p>This email confirms that your AndonPro plan has been successfully changed to the <strong>${newPlan.charAt(0).toUpperCase() + newPlan.slice(1)}</strong> plan.</p>
+               <p>Thank you for using AndonPro!</p>`
+    });
+
     return { success: true };
   } catch (error) {
     return handleFirestoreError(error);
   }
 }
+
+export async function sendWelcomeEmail(userId: string) {
+    if (!db) return handleFirestoreError(new Error('Firestore not initialized'));
+    try {
+        const user = await getUserById(userId);
+        if (!user) {
+            return { success: false, error: "User not found for welcome email."};
+        }
+        
+        const planName = user.plan.charAt(0).toUpperCase() + user.plan.slice(1);
+
+        await sendEmail({
+            to: user.email,
+            subject: `Welcome to AndonPro, ${user.firstName}!`,
+            html: `<h1>Welcome to AndonPro!</h1>
+                   <p>Hello ${user.firstName},</p>
+                   <p>Your account has been successfully created and you are now on the <strong>${planName}</strong> plan.</p>
+                   <p>You can now log in and start exploring the features.</p>
+                   <a href="${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/login">Log In Now</a>
+                   <p>Thank you for joining AndonPro!</p>`
+        });
+        return { success: true };
+    } catch(error) {
+        return handleFirestoreError(error);
+    }
+}
+
 
 // --- Password Actions ---
 
@@ -179,6 +224,23 @@ export async function requestPasswordReset(email: string) {
     return { success: true, message: 'If this email is registered, you will receive a password reset link.' };
   }
 }
+
+export async function sendPasswordChangedEmail(email: string) {
+    try {
+        await sendEmail({
+            to: email,
+            subject: 'Your AndonPro Password Has Been Changed',
+            html: `<p>This is a confirmation that the password for your AndonPro account has been changed.</p>
+                   <p>If you did not make this change, please contact our support team immediately.</p>`
+        });
+        return { success: true };
+    } catch (error) {
+        console.error('Password change confirmation email failed:', error);
+        // Don't block the user flow for this
+        return { success: true }; 
+    }
+}
+
 
 export async function changePassword(email: string, currentPassword?: string, newPassword?: string) {
   if (!currentPassword || !newPassword) return { success: false, error: 'Passwords not provided.' };

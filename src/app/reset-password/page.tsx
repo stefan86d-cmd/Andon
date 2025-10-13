@@ -22,6 +22,7 @@ import { toast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import { getAuth, verifyPasswordResetCode, confirmPasswordReset } from 'firebase/auth';
 import { app } from '@/firebase'; // Import client-side app
+import { sendPasswordChangedEmail } from '@/app/actions';
 
 const formSchema = z.object({
   newPassword: z.string().min(6, "Password must be at least 6 characters."),
@@ -37,6 +38,7 @@ function ResetPasswordContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isSubmitting, startTransition] = useTransition();
+  const [userEmail, setUserEmail] = useState<string | null>(null);
 
   const oobCode = searchParams.get('oobCode');
 
@@ -48,8 +50,23 @@ function ResetPasswordContent() {
     },
   });
 
+  // Verify the reset code and get the user's email
+  React.useEffect(() => {
+    if (oobCode) {
+      const auth = getAuth(app);
+      verifyPasswordResetCode(auth, oobCode)
+        .then((email) => {
+          setUserEmail(email);
+        })
+        .catch(() => {
+          toast({ title: "Invalid Link", description: "This password reset link is invalid or has expired.", variant: "destructive" });
+        });
+    }
+  }, [oobCode]);
+
+
   const onSubmit = (data: FormValues) => {
-    if (!oobCode) {
+    if (!oobCode || !userEmail) {
         toast({ title: "Error", description: "Invalid or missing reset token.", variant: "destructive" });
         return;
     }
@@ -57,11 +74,11 @@ function ResetPasswordContent() {
     startTransition(async () => {
       try {
         const auth = getAuth(app); // Use client-side auth
-        // Verify the code is valid
-        await verifyPasswordResetCode(auth, oobCode);
-
-        // Perform the password reset
+        
         await confirmPasswordReset(auth, oobCode, data.newPassword);
+
+        // Send confirmation email
+        await sendPasswordChangedEmail(userEmail);
         
         toast({
           title: "Password Reset Successful",
@@ -83,7 +100,7 @@ function ResetPasswordContent() {
     });
   };
 
-  if (!oobCode) {
+  if (!oobCode || !userEmail) {
      return (
        <Card className="mx-auto max-w-sm w-full">
          <CardHeader>
@@ -108,7 +125,7 @@ function ResetPasswordContent() {
             </div>
             <CardTitle>Reset Your Password</CardTitle>
             <CardDescription>
-            Enter a new password for your account.
+            Enter a new password for your account: {userEmail}
             </CardDescription>
         </CardHeader>
         <CardContent>
