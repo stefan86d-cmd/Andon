@@ -31,7 +31,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
            router.replace(`/complete-profile?plan=${currentUser.plan || 'starter'}`);
         }
       } else {
-        // Profile is complete, redirect from auth/public pages to their dashboard
+        // Profile is complete, redirect from auth/public pages to their correct dashboard
         if (isAuthPage || isPublicPage) {
            const path = currentUser.role === 'operator' ? '/line-status' : '/dashboard';
            router.replace(path);
