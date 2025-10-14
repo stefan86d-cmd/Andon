@@ -25,7 +25,7 @@ export default function SettingsPage() {
         return <AppLayout><div>Loading...</div></AppLayout>;
     }
     
-    const handleNotificationChange = (key: 'newIssue' | 'issueResolved', value: boolean) => {
+    const handleNotificationChange = (key: 'newIssue' | 'issueResolved' | 'muteSound', value: boolean) => {
         const currentPrefs = currentUser.notificationPreferences || {};
         updateCurrentUser({ notificationPreferences: { ...currentPrefs, [key]: value } });
         toast({ title: "Preferences Saved", description: "Your notification settings have been updated."});
@@ -137,6 +137,22 @@ export default function SettingsPage() {
                                                     id="issue-resolved" 
                                                     checked={currentUser.notificationPreferences?.issueResolved ?? false}
                                                     onCheckedChange={(checked) => handleNotificationChange('issueResolved', checked)}
+                                                />
+                                            </div>
+                                        </div>
+                                </div>
+                                <div className="space-y-2">
+                                        <h3 className="text-lg font-medium">Sound</h3>
+                                        <div className="space-y-4">
+                                            <div className="flex items-center justify-between rounded-lg border p-4">
+                                                <div className="space-y-0.5">
+                                                    <Label htmlFor="mute-sound" className="text-base">Mute Sound</Label>
+                                                    <p className="text-sm text-muted-foreground">Mute all notification sounds within the app.</p>
+                                                </div>
+                                                <Switch 
+                                                    id="mute-sound" 
+                                                    checked={currentUser.notificationPreferences?.muteSound ?? true}
+                                                    onCheckedChange={(checked) => handleNotificationChange('muteSound', checked)}
                                                 />
                                             </div>
                                         </div>

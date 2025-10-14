@@ -23,6 +23,7 @@ export type User = {
   notificationPreferences?: {
     newIssue?: boolean;
     issueResolved?: boolean;
+    muteSound?: boolean;
   };
   theme?: Theme;
 };

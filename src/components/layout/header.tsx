@@ -22,14 +22,10 @@ import { Badge } from "../ui/badge";
 export function Header() {
   const { currentUser } = useUser();
   const [newIssuesCount, setNewIssuesCount] = useState(0);
-  const [isMuted, setIsMuted] = useState(true);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const prevIssuesCountRef = useRef(newIssuesCount);
 
-  useEffect(() => {
-    const muted = localStorage.getItem('notificationMuted') === 'true';
-    setIsMuted(muted);
-  }, []);
+  const isMuted = currentUser?.notificationPreferences?.muteSound ?? true;
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -78,12 +74,6 @@ export function Header() {
       };
     }
   }, [currentUser, isMuted]);
-  
-  const toggleMute = () => {
-    const newMutedState = !isMuted;
-    setIsMuted(newMutedState);
-    localStorage.setItem('notificationMuted', String(newMutedState));
-  }
 
   const capitalize = (s: string) => {
     if (typeof s !== 'string') return ''
@@ -109,34 +99,17 @@ export function Header() {
       <div className="w-full flex-1" />
 
       {currentUser && currentUser.role !== 'operator' && (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="relative">
-                {isMuted ? <BellOff className="h-5 w-5" /> : <Bell className="h-5 w-5" />}
-                <span className="sr-only">Toggle notifications</span>
+        <Button asChild variant="ghost" size="icon" className="relative">
+            <Link href="/issues">
+                {newIssuesCount > 0 ? <Bell className="h-5 w-5" /> : <BellOff className="h-5 w-5" />}
+                <span className="sr-only">View notifications</span>
                 {newIssuesCount > 0 && (
                     <Badge className="absolute top-0 right-0 h-5 w-5 shrink-0 items-center justify-center rounded-full p-0 text-xs font-medium">
                         {newIssuesCount}
                     </Badge>
                 )}
-            </Button>
-          </DropdownMenuTrigger>
-           <DropdownMenuContent align="end">
-            <DropdownMenuItem asChild>
-                <Link href="/issues">
-                    View Issues
-                </Link>
-            </DropdownMenuItem>
-             <DropdownMenuItem onClick={toggleMute}>
-                {isMuted ? (
-                    <Volume2 className="mr-2 h-4 w-4" />
-                ) : (
-                    <VolumeX className="mr-2 h-4 w-4" />
-                )}
-                <span>{isMuted ? 'Unmute' : 'Mute'}</span>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+            </Link>
+        </Button>
       )}
       {currentUser && (
         <div className="flex items-center gap-2">
