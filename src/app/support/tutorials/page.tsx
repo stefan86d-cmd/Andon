@@ -55,42 +55,38 @@ const adminTutorials = [
             <>Navigate to the 'User Management' page from the main menu (<InlineIcon icon={Users} />).</>,
             <>Click the 'Add User' button.
                 <TutorialVisual>
-                    <Button size="sm" className="gap-1" disabled><PlusCircle className="h-4 w-4" /> Add User</Button>
+                    <div className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium h-9 px-3 bg-primary text-primary-foreground">
+                        <PlusCircle className="h-4 w-4 mr-1" /> Add User
+                    </div>
                 </TutorialVisual>
             </>,
             <>Fill in the new user's first name, last name, and email address.
                  <TutorialVisual>
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <Label htmlFor="tut-fname">First Name</Label>
-                            <Input id="tut-fname" placeholder="John" disabled />
+                            <div className="text-sm font-medium leading-none">First Name</div>
+                            <div className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-muted-foreground">John</div>
                         </div>
                          <div className="space-y-2">
-                            <Label htmlFor="tut-lname">Last Name</Label>
-                            <Input id="tut-lname" placeholder="Doe" disabled />
+                            <div className="text-sm font-medium leading-none">Last Name</div>
+                            <div className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-muted-foreground">Doe</div>
                         </div>
                     </div>
                      <div className="space-y-2 mt-4">
-                        <Label htmlFor="tut-email">Email Address</Label>
-                        <Input id="tut-email" placeholder="john.doe@example.com" disabled />
+                        <div className="text-sm font-medium leading-none">Email Address</div>
+                        <div className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-muted-foreground">john.doe@example.com</div>
                     </div>
                  </TutorialVisual>
             </>,
             <>Select a role from the dropdown menu ('Supervisor' or 'Operator').
                 <TutorialVisual>
-                     <Label>Role</Label>
-                     <Select disabled>
-                        <SelectTrigger><SelectValue placeholder="Select a role" /></SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="supervisor">Supervisor</SelectItem>
-                            <SelectItem value="operator">Operator</SelectItem>
-                        </SelectContent>
-                     </Select>
+                     <div className="text-sm font-medium leading-none mb-2">Role</div>
+                     <div className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm">Select a role</div>
                 </TutorialVisual>
             </>,
             <>Click 'Send Invitation'. The user will receive an email with instructions to set up their account and password.
                  <TutorialVisual>
-                    <Button disabled>Send Invitation</Button>
+                    <div className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium h-10 px-4 py-2 bg-primary text-primary-foreground">Send Invitation</div>
                 </TutorialVisual>
             </>
         ]
@@ -102,29 +98,31 @@ const adminTutorials = [
             <>Navigate to the 'Production Lines' page from the main menu (<InlineIcon icon={Factory} />).</>,
             <>To add a new line, click 'Add Line', enter a unique name, and click 'Save'.
                 <TutorialVisual>
-                    <Button disabled><PlusCircle className="mr-2 h-4 w-4" />Add Line</Button>
+                    <div className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium h-10 px-4 py-2 bg-primary text-primary-foreground">
+                        <PlusCircle className="mr-2 h-4 w-4" />Add Line
+                    </div>
                 </TutorialVisual>
             </>,
             <>To edit an existing line, click the 'Edit' button (<InlineIcon icon={Edit} />) on its card.</>,
             <>In the edit dialog, you can update the line's name and add or remove workstations.
                  <TutorialVisual>
                     <div className="space-y-2">
-                        <Label htmlFor="tut-linename">Line Name</Label>
-                        <Input id="tut-linename" value="Assembly Line 1" disabled />
+                        <div className="text-sm font-medium leading-none">Line Name</div>
+                        <div className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground">Assembly Line 1</div>
                     </div>
                      <div className="space-y-2 mt-4">
-                        <Label>Workstations</Label>
+                        <div className="text-sm font-medium leading-none">Workstations</div>
                         <div className="flex items-center gap-2">
-                            <Input value="Station A" disabled />
-                            <Button type="button" variant="ghost" size="icon" disabled><Trash2 className="h-4 w-4 text-muted-foreground" /></Button>
+                            <div className="flex-1 h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground">Station A</div>
+                            <div className="h-10 w-10 inline-flex items-center justify-center"><Trash2 className="h-4 w-4 text-muted-foreground" /></div>
                         </div>
                          <div className="flex items-center gap-2">
-                            <Input value="Station B" disabled />
-                            <Button type="button" variant="ghost" size="icon" disabled><Trash2 className="h-4 w-4 text-muted-foreground" /></Button>
+                            <div className="flex-1 h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground">Station B</div>
+                            <div className="h-10 w-10 inline-flex items-center justify-center"><Trash2 className="h-4 w-4 text-muted-foreground" /></div>
                         </div>
-                        <Button type="button" variant="ghost" size="sm" className="gap-1 text-muted-foreground" disabled>
+                        <div className="h-9 px-3 py-2 inline-flex items-center gap-1 text-muted-foreground">
                             <PlusCircle className="h-4 w-4" /> Add Workstation
-                        </Button>
+                        </div>
                     </div>
                  </TutorialVisual>
             </>,
@@ -140,25 +138,23 @@ const adminTutorials = [
                  <TutorialVisual>
                      <div className="space-y-4">
                         <div className="space-y-2">
-                            <Label htmlFor="tut-notes">Resolution Notes</Label>
-                            <Textarea id="tut-notes" placeholder="Technician dispatched..." disabled />
+                            <div className="text-sm font-medium leading-none">Resolution Notes</div>
+                            <div className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-muted-foreground">Technician dispatched...</div>
                         </div>
                         <div className="space-y-2">
-                             <Label>Status</Label>
-                             <Select disabled>
-                                <SelectTrigger><SelectValue placeholder="In Progress" /></SelectTrigger>
-                             </Select>
+                             <div className="text-sm font-medium leading-none">Status</div>
+                             <div className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm">In Progress</div>
                         </div>
                         <div className="flex items-center space-x-2">
-                            <Checkbox id="terms" disabled />
-                            <label htmlFor="terms" className="text-sm font-medium leading-none">Production Stop</label>
+                            <div className="h-4 w-4 rounded-sm border border-primary peer-disabled:cursor-not-allowed peer-disabled:opacity-70" />
+                            <div className="text-sm font-medium leading-none">Production Stop</div>
                         </div>
                      </div>
                  </TutorialVisual>
             </>,
             <>Click 'Save Changes' to update the issue.
                  <TutorialVisual>
-                    <Button disabled>Save Changes</Button>
+                    <div className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium h-10 px-4 py-2 bg-primary text-primary-foreground">Save Changes</div>
                 </TutorialVisual>
             </>
         ]
@@ -174,28 +170,34 @@ const operatorTutorials = [
             <>Select your current 'Production Line' and 'Workstation'.
                  <TutorialVisual>
                     <div className="grid md:grid-cols-2 gap-4">
-                        <Select disabled><SelectTrigger><SelectValue placeholder="Select Production Line" /></SelectTrigger></Select>
-                        <Select disabled><SelectTrigger><SelectValue placeholder="Select Workstation" /></SelectTrigger></Select>
+                        <div className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm">Select Production Line</div>
+                        <div className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm">Select Workstation</div>
                     </div>
                  </TutorialVisual>
             </>,
             <>Click 'Confirm Selection' to view issues and enable reporting.
-                <TutorialVisual><Button disabled>Confirm Selection</Button></TutorialVisual>
+                <TutorialVisual>
+                    <div className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium h-10 px-4 py-2 bg-primary text-primary-foreground">Confirm Selection</div>
+                </TutorialVisual>
             </>,
             <>To report a new issue, click the 'Report Issue' button.
-                <TutorialVisual><Button disabled><PlusCircle className="mr-2 h-4 w-4" /> Report Issue</Button></TutorialVisual>
+                <TutorialVisual>
+                    <div className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium h-10 px-4 py-2 bg-primary text-primary-foreground">
+                        <PlusCircle className="mr-2 h-4 w-4" /> Report Issue
+                    </div>
+                </TutorialVisual>
             </>,
             <>Follow the steps in the dialog: select a category and provide a brief description.
                 <TutorialVisual>
                     <div className="grid grid-cols-2 gap-4 py-4">
-                        <Card className="flex flex-col items-center justify-center p-4 bg-accent text-accent-foreground cursor-pointer">
+                        <div className="flex flex-col items-center justify-center p-4 rounded-lg border bg-accent text-accent-foreground">
                             <Users className="h-12 w-12 mb-2 text-primary" />
                             <p className="text-sm font-medium">IT & Network</p>
-                        </Card>
-                         <Card className="flex flex-col items-center justify-center p-4 hover:bg-accent hover:text-accent-foreground cursor-pointer">
+                        </div>
+                         <div className="flex flex-col items-center justify-center p-4 rounded-lg border bg-card text-card-foreground">
                             <Factory className="h-12 w-12 mb-2 text-primary" />
                             <p className="text-sm font-medium">Logistics</p>
-                        </Card>
+                        </div>
                     </div>
                 </TutorialVisual>
             </>,
