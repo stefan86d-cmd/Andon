@@ -3,7 +3,7 @@
 
 import React, { Suspense, useState, useEffect, useTransition } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useForm } from 'react-hook-form';
+import { useForm, useFormContext } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Button } from "@/components/ui/button";
@@ -370,5 +370,3 @@ export default function CompleteProfilePage() {
         </Suspense>
     )
 }
-
-    
