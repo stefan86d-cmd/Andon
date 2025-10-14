@@ -22,6 +22,7 @@ import type { Plan } from "@/lib/types";
 import { Logo } from "@/components/layout/logo";
 import { countries } from "@/lib/countries";
 import { useRouter } from "next/navigation";
+import { format } from "date-fns";
 import {
   Accordion,
   AccordionContent,
@@ -155,6 +156,10 @@ export default function AccountSettingsPage() {
     }
     
     const planName = currentUser.plan.charAt(0).toUpperCase() + currentUser.plan.slice(1);
+
+    const renewalDate = currentUser.subscriptionEndsAt 
+        ? format(new Date(currentUser.subscriptionEndsAt), "MMMM d, yyyy")
+        : "N/A";
 
     return (
         <div className="bg-muted">
@@ -418,7 +423,9 @@ export default function AccountSettingsPage() {
                                 <div className="rounded-lg border bg-card-foreground/5 p-6">
                                     <h3 className="text-lg font-semibold">Current Plan: {planName}</h3>
                                     <p className="text-sm text-muted-foreground">Your workspace is on the {planName} plan.</p>
-                                    <p className="text-sm text-muted-foreground mt-2">Your plan renews on January 1, 2025.</p>
+                                     <p className="text-sm text-muted-foreground mt-2">
+                                        {currentUser.plan === 'starter' ? 'The Starter plan is always free.' : `Your plan renews on ${renewalDate}.`}
+                                    </p>
                                 </div>
                             </CardContent>
                             <CardFooter>

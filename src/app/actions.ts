@@ -1,3 +1,4 @@
+
 'use server';
 
 import {
@@ -149,7 +150,7 @@ export async function deleteUser(userId: string) {
   }
 }
 
-export async function updateUserPlan(userId: string, newPlan: Plan) {
+export async function updateUserPlan(userId: string, newPlan: Plan, planData: Partial<User>) {
   if (!db) return handleFirestoreError(new Error('Firestore not initialized'));
   try {
     const userRef = db.collection('users').doc(userId);
@@ -159,7 +160,7 @@ export async function updateUserPlan(userId: string, newPlan: Plan) {
     }
     const user = userSnap.data() as User;
     
-    await userRef.update({ plan: newPlan });
+    await userRef.update(planData);
 
     await sendEmail({
         to: user.email,

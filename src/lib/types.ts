@@ -17,6 +17,8 @@ export type User = {
   customUserLimit?: number;
   customLineLimit?: number;
   customWorkstationLimit?: number;
+  subscriptionStartsAt?: Date;
+  subscriptionEndsAt?: Date;
 };
 
 // A simpler reference to a user, used within other documents.
@@ -96,5 +98,3 @@ export type IssueByDay = {
   date: string;
   issues: number;
 }
-
-    

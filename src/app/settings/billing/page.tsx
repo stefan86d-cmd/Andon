@@ -15,6 +15,7 @@ import { Separator } from "@/components/ui/separator";
 import { CancelSubscriptionDialog } from "@/components/settings/cancel-subscription-dialog";
 import { Logo } from "@/components/layout/logo";
 import { useRouter } from "next/navigation";
+import { format } from "date-fns";
 
 
 const tiers: Record<Exclude<Plan, 'custom'>, { name: string; prices: Record<Duration, Record<Currency, number>> }> & { custom?: any } = {
@@ -87,6 +88,10 @@ export default function BillingPage() {
 
     const selectedTier = newPlan ? tiers[newPlan] : null;
     const monthlyPrice = selectedTier ? selectedTier.prices['1'][currency] : 0;
+    
+    const renewalDate = currentUser.subscriptionEndsAt 
+        ? format(new Date(currentUser.subscriptionEndsAt), "MMMM d, yyyy")
+        : "N/A";
    
     return (
         <div className="bg-muted">
@@ -100,7 +105,8 @@ export default function BillingPage() {
                      <div>
                         <h2 className="text-2xl font-bold mt-2 text-center">Plan & Billing</h2>
                         <p className="text-muted-foreground text-center">
-                            You are currently on the <span className="font-semibold">{planName}</span> plan.
+                            You are currently on the <span className="font-semibold">{planName}</span> plan. 
+                             {currentUser.plan !== 'starter' && ` Your subscription renews on ${renewalDate}.`}
                         </p>
                     </div>
                     <Card className="mt-8">
@@ -158,7 +164,7 @@ export default function BillingPage() {
                                     If you cancel, you will lose access to your plan's features at the end of your billing period.
                                 </p>
                                 <CancelSubscriptionDialog onConfirm={handleCancelConfirm}>
-                                    <Button variant="destructive" className="w-full sm:w-auto">Cancel Subscription</Button>
+                                    <Button variant="destructive" className="w-full sm:w-auto" disabled={currentUser.plan === 'starter'}>Cancel Subscription</Button>
                                 </CancelSubscriptionDialog>
                             </div>
                         </CardContent>

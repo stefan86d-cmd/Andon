@@ -13,7 +13,7 @@ import {
     User as FirebaseUser,
     OAuthProvider
 } from 'firebase/auth';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc, Timestamp } from 'firebase/firestore';
 import { app, db } from '@/firebase'; // Import the client-side app
 import type { User } from '@/lib/types';
 import { toast } from '@/hooks/use-toast';
@@ -153,7 +153,17 @@ export function UserProvider({ children }: { children: ReactNode }) {
         try {
             if (!db) throw new Error("Firestore is not initialized");
             const userDocRef = doc(db, "users", currentUser.id);
-            await setDoc(userDocRef, userData, { merge: true });
+
+            // Convert Date objects to Firestore Timestamps for serialization
+            const dataToSave: any = { ...userData };
+            if (dataToSave.subscriptionStartsAt instanceof Date) {
+                dataToSave.subscriptionStartsAt = Timestamp.fromDate(dataToSave.subscriptionStartsAt);
+            }
+            if (dataToSave.subscriptionEndsAt instanceof Date) {
+                dataToSave.subscriptionEndsAt = Timestamp.fromDate(dataToSave.subscriptionEndsAt);
+            }
+
+            await setDoc(userDocRef, dataToSave, { merge: true });
             // After successful DB write, update local state
             setCurrentUser(updatedUser);
         } catch (error) {

@@ -1,7 +1,7 @@
 
 import { db as clientDB } from "@/firebase";
 import type { User, Issue, ProductionLine, IssueDocument } from "@/lib/types";
-import { collection, getDocs, doc, getDoc, query, orderBy, where } from "firebase/firestore";
+import { collection, getDocs, doc, getDoc, query, orderBy, where, Timestamp } from "firebase/firestore";
 
 
 // This function is intended for CLIENT-SIDE use.
@@ -43,7 +43,17 @@ export async function getClientUserById(uid: string): Promise<User | null> {
             return null;
         }
 
-        return { id: userDoc.id, ...userDoc.data() } as User;
+        const data = userDoc.data();
+        
+        // Convert Firestore Timestamps to JS Date objects
+        const user: User = {
+          id: userDoc.id,
+          ...data,
+          subscriptionStartsAt: data.subscriptionStartsAt instanceof Timestamp ? data.subscriptionStartsAt.toDate() : undefined,
+          subscriptionEndsAt: data.subscriptionEndsAt instanceof Timestamp ? data.subscriptionEndsAt.toDate() : undefined,
+        } as User;
+
+        return user;
     } catch (error) {
         console.error(`Error fetching user by ID ${uid}:`, error);
         return null;

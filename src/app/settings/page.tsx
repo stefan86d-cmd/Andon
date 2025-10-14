@@ -17,24 +17,19 @@ import { cn } from "@/lib/utils";
 export default function SettingsPage() {
     const { currentUser } = useUser();
     const [isCancelled, setIsCancelled] = useState(false);
-    const [endDate, setEndDate] = useState<Date | null>(null);
-
-    const handleCancelConfirm = () => {
-        const futureDate = new Date();
-        futureDate.setMonth(futureDate.getMonth() + 1);
-        setEndDate(futureDate);
-        setIsCancelled(true);
-    };
-
-    const handleRenew = () => {
-        setIsCancelled(false);
-        setEndDate(null);
-    }
     
     if (!currentUser) {
         return <AppLayout><div>Loading...</div></AppLayout>;
     }
 
+    const handleCancelConfirm = () => {
+        setIsCancelled(true);
+    };
+
+    const handleRenew = () => {
+        setIsCancelled(false);
+    }
+    
     const hasNotificationsCard = currentUser.role === 'admin' || currentUser.role === 'supervisor';
     const hasSubscriptionCard = currentUser.role === 'admin';
     const canManageAccount = currentUser.role === 'admin';
@@ -44,6 +39,12 @@ export default function SettingsPage() {
     const getInitials = (firstName: string, lastName: string) => {
         return `${firstName?.[0] || ''}${lastName?.[0] || ''}`;
     }
+
+    const renewalDate = currentUser.subscriptionEndsAt 
+        ? format(new Date(currentUser.subscriptionEndsAt), "MMMM d, yyyy")
+        : "N/A";
+        
+    const isSubscriptionCancelled = isCancelled; // In a real app, this would come from user data
 
     return (
         <AppLayout>
@@ -88,15 +89,17 @@ export default function SettingsPage() {
                                     <div className="rounded-lg border bg-card-foreground/5 p-6">
                                         <h3 className="text-lg font-semibold">Current Plan: {planName}</h3>
                                         <p className="text-sm text-muted-foreground">Your workspace is on the {planName} plan.</p>
-                                        {isCancelled && endDate ? (
-                                            <p className="text-sm font-semibold text-destructive mt-2">Your plan is cancelled and will end on {format(endDate, "MMMM d, yyyy")}.</p>
+                                        {isSubscriptionCancelled ? (
+                                            <p className="text-sm font-semibold text-destructive mt-2">Your plan is cancelled and will end on {renewalDate}.</p>
                                         ) : (
-                                            <p className="text-sm text-muted-foreground mt-2">Your plan renews on January 1, 2025.</p>
+                                             <p className="text-sm text-muted-foreground mt-2">
+                                                {currentUser.plan === 'starter' ? 'The Starter plan is always free.' : `Your plan renews on ${renewalDate}.`}
+                                            </p>
                                         )}
                                     </div>
                                 </CardContent>
                                 <CardFooter>
-                                     <a href="/settings/billing" className={cn(buttonVariants({ variant: "outline" }))} target="_blank" rel="noopener noreferrer">
+                                     <a href="/settings/billing" className={cn(buttonVariants({ variant: "outline" }))}>
                                         View Billing Details
                                     </a>
                                 </CardFooter>

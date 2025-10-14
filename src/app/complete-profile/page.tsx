@@ -30,6 +30,7 @@ import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { createCheckoutSession } from '@/ai/flows/create-checkout-session-flow';
 import { sendWelcomeEmail } from '@/app/actions';
+import { addMonths } from 'date-fns';
 
 
 const profileFormSchema = z.object({
@@ -43,6 +44,8 @@ const profileFormSchema = z.object({
 });
 
 type ProfileFormValues = z.infer<typeof profileFormSchema>;
+type Duration = '1' | '12' | '24' | '48';
+
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '');
 
@@ -107,7 +110,9 @@ function CompleteProfileContent() {
   const [clientSecret, setClientSecret] = useState<string | null>(null);
 
   const planFromUrl = searchParams.get('plan') as Plan | null;
+  const durationFromUrl = searchParams.get('duration') as Duration | null;
   const selectedPlan = planFromUrl || 'starter';
+  const selectedDuration = durationFromUrl || '1';
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
@@ -155,6 +160,11 @@ function CompleteProfileContent() {
 
     try {
         const userRole: Role = "admin"; // First user is always an admin
+        
+        const now = new Date();
+        const subscriptionEndDate = selectedPlan === 'starter' 
+            ? undefined 
+            : addMonths(now, parseInt(selectedDuration, 10));
 
         const userProfileData = {
             firstName: data.firstName,
@@ -168,6 +178,8 @@ function CompleteProfileContent() {
             country: data.country,
             phone: data.phone,
             orgId: currentUser.id, // The first admin's ID becomes the org ID
+            subscriptionStartsAt: selectedPlan !== 'starter' ? now : undefined,
+            subscriptionEndsAt: subscriptionEndDate,
         };
 
         await updateCurrentUser(userProfileData);

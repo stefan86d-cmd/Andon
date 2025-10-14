@@ -29,6 +29,7 @@ import { Badge } from '@/components/ui/badge';
 import { useUser } from '@/contexts/user-context';
 import { toast } from '@/hooks/use-toast';
 import { updateUserPlan } from '@/app/actions';
+import { addMonths } from 'date-fns';
 
 const tiers: Record<Plan, { name: string; prices: Record<Duration, Record<Currency, number>> }> = {
   starter: { 
@@ -101,13 +102,21 @@ function CheckoutContent() {
                 router.push('/settings/billing');
                 return;
             }
-            const result = await updateUserPlan(currentUser.id, selectedPlan);
+            
+            const newSubscriptionEndDate = addMonths(new Date(), 1);
+            const userUpdateData = { 
+                plan: selectedPlan,
+                subscriptionStartsAt: new Date(),
+                subscriptionEndsAt: newSubscriptionEndDate,
+            };
+
+            const result = await updateUserPlan(currentUser.id, selectedPlan, userUpdateData);
             if (result.success) {
                 toast({
                     title: "Plan Updated!",
                     description: `Your plan has been successfully updated to ${selectedPlan}.`,
                 });
-                updateCurrentUser({ plan: selectedPlan });
+                updateCurrentUser(userUpdateData); // Optimistically update local state
                 router.push('/dashboard');
             } else {
                 toast({
@@ -243,7 +252,3 @@ export default function CheckoutPage() {
         </Suspense>
     )
 }
-
-    
-
-    
