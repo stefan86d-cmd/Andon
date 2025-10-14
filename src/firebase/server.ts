@@ -5,24 +5,25 @@ import { getFirestore, Firestore } from 'firebase-admin/firestore';
 let db: Firestore;
 
 try {
-  if (admin.apps.length === 0) {
-    const serviceAccountKey = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
-    if (!serviceAccountKey) {
-        throw new Error("FIREBASE_SERVICE_ACCOUNT_KEY environment variable is not set.");
+  const serviceAccountKey = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
+  
+  if (serviceAccountKey) {
+    if (admin.apps.length === 0) {
+      admin.initializeApp({
+        credential: admin.credential.cert(JSON.parse(serviceAccountKey)),
+        projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+      });
     }
-    
-    admin.initializeApp({
-      credential: admin.credential.cert(JSON.parse(serviceAccountKey)),
-      projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-    });
+    db = getFirestore();
+  } else {
+    console.warn("FIREBASE_SERVICE_ACCOUNT_KEY is not set. Firebase Admin SDK will not be initialized. This is expected in client-side rendering but is an error in server-side contexts.");
   }
-  db = getFirestore();
 } catch (error: any) {
   console.error(
     '❌ Firebase Admin initialization failed:',
     error.stack || error.message
   );
-  // To prevent the app from crashing, db will be undefined, but functions using it must handle this.
 }
 
+// @ts-ignore
 export { db };
