@@ -1,11 +1,12 @@
 
 export type Role = "admin" | "supervisor" | "operator";
 export type Plan = "starter" | "standard" | "pro" | "enterprise" | "custom";
+export type Theme = "light" | "dark" | "system";
 
 export type User = {
   id: string; // This is the Firebase Auth UID
   firstName: string;
-  lastName: string;
+  lastName:string;
   email: string;
   role: Role;
   plan: Plan;
@@ -19,6 +20,11 @@ export type User = {
   customWorkstationLimit?: number;
   subscriptionStartsAt?: Date;
   subscriptionEndsAt?: Date;
+  notificationPreferences?: {
+    newIssue?: boolean;
+    issueResolved?: boolean;
+  };
+  theme?: Theme;
 };
 
 // A simpler reference to a user, used within other documents.

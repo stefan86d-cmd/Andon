@@ -107,6 +107,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
         address: "",
         country: "",
         orgId: firebaseUser.uid, // The new user's ID becomes their organization ID
+        notificationPreferences: { newIssue: true, issueResolved: false }, // Default notification prefs
+        theme: 'system', // Default theme
       };
       
       const userDocRef = doc(db, "users", firebaseUser.uid);
