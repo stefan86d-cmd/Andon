@@ -53,7 +53,7 @@ const faqs = [
     },
     {
         question: "What pricing tiers are available?",
-        answer: "We offer a range of pricing tiers to fit teams of all sizes. Our plans include a free **Starter** tier for small teams just getting started, a **Standard** tier for growing factories, a **Pro** tier with advanced features like AI-powered analytics and priority support, and an **Enterprise** plan for large-scale operations requiring unlimited resources and dedicated support. You can find detailed information on our <a href='/pricing' class='text-primary underline'>Pricing Page</a>."
+        answer: "We offer a range of pricing tiers to fit teams of all sizes. Our plans include a free **Starter** tier for small teams, a **Standard** tier for growing factories, a **Pro** tier with advanced features, an **Enterprise** plan for large-scale operations, and a **Custom** plan for unique requirements. You can find detailed information on our <a href='/pricing' class='text-primary underline'>Pricing Page</a>."
     },
     {
         question: "How customizable is the platform?",
