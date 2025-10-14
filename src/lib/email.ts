@@ -1,25 +1,19 @@
 
-import sgMail from '@sendgrid/mail';
+import { Resend } from 'resend';
 
-const apiKey = process.env.SENDGRID_API_KEY;
-const fromEmail = process.env.SENDGRID_FROM_EMAIL;
-
-if (apiKey) {
-    sgMail.setApiKey(apiKey);
-} else {
-    console.warn("SENDGRID_API_KEY is not set. Emails will be logged to the console instead of being sent.");
-}
+const resend = new Resend(process.env.RESEND_API_KEY);
+const fromEmail = process.env.RESEND_FROM_EMAIL;
 
 interface EmailPayload {
     to: string;
     subject: string;
-    text?: string;
     html: string;
+    text?: string;
 }
 
-export async function sendEmail({ to, subject, text, html }: EmailPayload) {
-    if (!apiKey || !fromEmail) {
-        console.log("--- Mock Email ---");
+export async function sendEmail({ to, subject, html }: EmailPayload) {
+    if (!process.env.RESEND_API_KEY || !fromEmail) {
+        console.log("--- Mock Email (Resend not configured) ---");
         console.log(`To: ${to}`);
         console.log(`From: ${fromEmail || 'not-configured@example.com'}`);
         console.log(`Subject: ${subject}`);
@@ -29,24 +23,16 @@ export async function sendEmail({ to, subject, text, html }: EmailPayload) {
         return;
     }
 
-    const msg = {
-        to,
-        from: fromEmail,
-        subject,
-        text: text || 'This is a fallback text content for the email.',
-        html,
-    };
-
     try {
-        await sgMail.send(msg);
+        await resend.emails.send({
+            from: fromEmail,
+            to: to,
+            subject: subject,
+            html: html,
+        });
         console.log(`Email sent successfully to ${to}`);
     } catch (error) {
-        console.error('Error sending email:', error);
-
-        if ((error as any).response) {
-            console.error((error as any).response.body)
-        }
-        
+        console.error('Error sending email with Resend:', error);
         throw new Error("Failed to send email.");
     }
 }
