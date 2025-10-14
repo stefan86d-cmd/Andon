@@ -64,7 +64,7 @@ function CheckoutForm({ onSuccessfulPayment, clientSecret }: { onSuccessfulPayme
         }
 
         setIsProcessing(true);
-
+        
         const { error } = await stripe.confirmPayment({
             elements,
             confirmParams: {
@@ -87,9 +87,19 @@ function CheckoutForm({ onSuccessfulPayment, clientSecret }: { onSuccessfulPayme
             onSuccessfulPayment();
         }
     };
+    
+    const form = useFormContext();
+
+    const handleFormSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        const isValid = await form.trigger();
+        if (isValid) {
+            await handleSubmit(e);
+        }
+    }
 
     return (
-        <form id="payment-form" onSubmit={handleSubmit}>
+        <form id="payment-form" onSubmit={handleFormSubmit}>
             <PaymentElement id="payment-element" />
             <Button disabled={isProcessing || !stripe || !elements} id="submit" className="w-full mt-6">
                 <span id="button-text">
@@ -108,6 +118,7 @@ function CompleteProfileContent() {
   const { currentUser, loading: userLoading, updateCurrentUser } = useUser();
   
   const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const [isSubmitting, startTransition] = useTransition();
 
   const planFromUrl = searchParams.get('plan') as Plan | null;
   const durationFromUrl = searchParams.get('duration') as Duration | null;
@@ -209,17 +220,21 @@ function CompleteProfileContent() {
     }
   };
 
-  const handleFreePlanSubmit = async () => {
-    const isValid = await form.trigger();
-    if (isValid) {
-      const profileData = form.getValues();
-      await handleProfileSave(profileData);
-      toast({
-          title: "Registration Complete!",
-          description: `Welcome to the ${selectedPlan} plan. Your account is ready!`,
-      });
-      router.push('/dashboard');
-    }
+  const handleFreePlanSubmit = () => {
+      startTransition(async () => {
+        const isValid = await form.trigger();
+        if (isValid) {
+            const profileData = form.getValues();
+            const profileSaved = await handleProfileSave(profileData);
+            if (profileSaved) {
+                toast({
+                    title: "Registration Complete!",
+                    description: `Welcome to the ${selectedPlan} plan. Your account is ready!`,
+                });
+                router.push('/dashboard');
+            }
+        }
+    });
   };
 
 
@@ -327,7 +342,8 @@ function CompleteProfileContent() {
                             <p className="text-sm text-muted-foreground text-center">
                                 By clicking the button below, you agree to our <Link href="/terms" className="underline" target="_blank" rel="noopener noreferrer">Terms of Service</Link>.
                             </p>
-                            <Button onClick={handleFreePlanSubmit} className="w-full">
+                            <Button onClick={handleFreePlanSubmit} className="w-full" disabled={isSubmitting}>
+                                {isSubmitting && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
                                 Complete Registration
                             </Button>
                         </CardFooter>
@@ -354,3 +370,5 @@ export default function CompleteProfilePage() {
         </Suspense>
     )
 }
+
+    
