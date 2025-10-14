@@ -257,3 +257,4 @@ export default function TutorialsPage() {
       </footer>
     </div>
   );
+}
