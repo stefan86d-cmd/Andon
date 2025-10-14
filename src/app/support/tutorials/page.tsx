@@ -4,13 +4,12 @@ import { Logo } from "@/components/layout/logo";
 import { cn } from "@/lib/utils";
 import { MegaMenu } from "@/components/layout/mega-menu";
 import { buttonVariants } from "@/components/ui/button";
-import { Activity, Edit, PlusCircle, Users, CheckCircle, Menu } from "lucide-react";
+import { Activity, Edit, PlusCircle, Users, CheckCircle, Menu, LayoutDashboard, Trash2 } from "lucide-react";
 import FooterLogo from "@/components/layout/footer-logo";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const servicesMenuItems = [
     { title: "Production Monitoring", description: "Get a live overview of your entire production line.", badge: "", href: "/services/monitoring" },
@@ -30,13 +29,17 @@ const supportMenuItems = [
     { title: "Contact Us", description: "Get in touch with our team for personalized support.", badge: "", href: "/support/contact" },
 ];
 
+const InlineIcon = ({ icon: Icon }: { icon: React.ElementType }) => (
+    <Icon className="inline-block h-4 w-4 mr-1.5 -mt-0.5 text-primary" />
+);
+
 const adminTutorials = [
     {
         icon: Users,
         title: "Adding Users & Assigning Roles",
         content: [
-            "Navigate to the 'User Management' page from the main menu.",
-            "Click the 'Add User' button to open the user creation form.",
+            <>Navigate to the 'User Management' page from the main menu (<InlineIcon icon={Menu} />).</>,
+            <>Click the 'Add User' button (<InlineIcon icon={PlusCircle} />) to open the user creation form.</>,
             "Fill in the new user's first name, last name, and email address.",
             "Select a role from the dropdown menu ('Supervisor' or 'Operator').",
             "Click 'Send Invitation'. The user will receive an email with instructions to set up their account and password."
@@ -46,18 +49,18 @@ const adminTutorials = [
         icon: Edit,
         title: "Managing Production Lines & Workstations",
         content: [
-            "Navigate to the 'Production Lines' page from the main menu.",
-            "To add a new line, click 'Add Line', enter a unique name, and click 'Save'.",
-            "To edit an existing line, click the 'Edit' button on its card.",
+            <>Navigate to the 'Production Lines' page from the main menu (<InlineIcon icon={Menu} />).</>,
+            <>To add a new line, click 'Add Line' (<InlineIcon icon={PlusCircle} />), enter a unique name, and click 'Save'.</>,
+            <>To edit an existing line, click the 'Edit' button (<InlineIcon icon={Edit} />) on its card.</>,
             "In the edit dialog, you can update the line's name.",
-            "You can also add new workstations by clicking 'Add Workstation' or remove existing ones using the trash icon."
+            <>You can also add new workstations by clicking 'Add Workstation' (<InlineIcon icon={PlusCircle} />) or remove existing ones using the trash icon (<InlineIcon icon={Trash2} />).</>
         ]
     },
     {
         icon: CheckCircle,
         title: "Resolving and Updating Issues",
         content: [
-            "Navigate to the 'Issue Tracker' or 'Dashboard' page to see a list of active issues.",
+            <>Navigate to the 'Issue Tracker' (<InlineIcon icon={Activity} />) or 'Dashboard' (<InlineIcon icon={LayoutDashboard} />) page to see a list of active issues.</>,
             "Click on any issue row in the table to open the details dialog.",
             "In the dialog, you can add resolution notes to document your progress or solution.",
             "Change the issue's status to 'In Progress' or 'Resolved' using the status dropdown.",
@@ -72,17 +75,16 @@ const operatorTutorials = [
         icon: Activity,
         title: "Selecting Your Station & Reporting an Issue",
         content: [
-            "Navigate to the 'Line Status' page from the main menu.",
+            <>Navigate to the 'Line Status' page from the main menu (<InlineIcon icon={Menu} />).</>,
             "First, select your current 'Production Line' from the first dropdown menu.",
             "Next, select your specific 'Workstation' from the second dropdown.",
             "Click 'Confirm Selection' to view issues at your station and enable the reporting button.",
-            "To report a new issue, click the 'Report Issue' button.",
+            <>To report a new issue, click the 'Report Issue' button (<InlineIcon icon={PlusCircle} />).</>,
             "Follow the steps in the dialog: select a category, a sub-category (if applicable), and provide a brief description of the problem.",
             "Click 'Submit Issue'. Supervisors will be notified instantly."
         ]
     }
 ];
-
 
 const servicesImage = PlaceHolderImages.find(p => p.id === 'mega-menu-services');
 const exploreImage = PlaceHolderImages.find(p => p.id === 'mega-menu-explore');
@@ -255,4 +257,3 @@ export default function TutorialsPage() {
       </footer>
     </div>
   );
-}
