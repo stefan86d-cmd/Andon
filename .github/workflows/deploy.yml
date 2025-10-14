@@ -38,6 +38,10 @@ jobs:
         with:
           node-version: 20
 
+      - name: Create .env.local file
+        run: |
+          echo "FIREBASE_SERVICE_ACCOUNT_KEY=${{ secrets.FIREBASE_SERVICE_ACCOUNT_ANDON_EF46A }}" > .env.local
+
       - name: Install dependencies
         run: npm ci
 
