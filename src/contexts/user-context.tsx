@@ -11,7 +11,8 @@ import {
     signInWithPopup,
     signOut,
     User as FirebaseUser,
-    OAuthProvider
+    OAuthProvider,
+    Auth
 } from 'firebase/auth';
 import { doc, setDoc, Timestamp } from 'firebase/firestore';
 import { app, db } from '@/firebase/client';
@@ -35,7 +36,15 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 export function UserProvider({ children }: { children: ReactNode }) {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const auth = getAuth(app);
+  const [auth, setAuth] = useState<Auth | null>(null);
+
+  useEffect(() => {
+    const authInstance = getAuth(app);
+    setAuth(authInstance);
+
+    const unsubscribe = onAuthStateChanged(authInstance, handleAuthUser);
+    return () => unsubscribe();
+  }, []);
 
   const handleAuthUser = useCallback(async (firebaseUser: FirebaseUser | null) => {
     if (firebaseUser) {
@@ -63,13 +72,9 @@ export function UserProvider({ children }: { children: ReactNode }) {
     }
     setLoading(false);
   }, []);
-  
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, handleAuthUser);
-    return () => unsubscribe();
-  }, [auth, handleAuthUser]);
 
   const login = async (email: string, password: string): Promise<boolean> => {
+    if (!auth) return false;
     setLoading(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
@@ -91,6 +96,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   };
   
   const registerWithEmail = async (email: string, password: string): Promise<boolean> => {
+    if (!auth) return false;
     setLoading(true);
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
@@ -134,6 +140,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   };
   
   const socialSignIn = async (provider: GoogleAuthProvider | OAuthProvider): Promise<boolean> => {
+      if (!auth) return false;
       setLoading(true);
       try {
           await signInWithPopup(auth, provider);
@@ -161,6 +168,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = async () => {
+     if (!auth) return;
      setLoading(true);
      await signOut(auth);
      setCurrentUser(null);
