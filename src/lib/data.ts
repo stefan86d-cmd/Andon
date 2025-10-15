@@ -1,5 +1,5 @@
 
-import { db as clientDB } from "@/firebase";
+import { db } from "@/firebase/client";
 import type { User, Issue, ProductionLine, IssueDocument } from "@/lib/types";
 import { collection, getDocs, doc, getDoc, query, orderBy, where, Timestamp } from "firebase/firestore";
 
@@ -7,7 +7,7 @@ import { collection, getDocs, doc, getDoc, query, orderBy, where, Timestamp } fr
 // This function is intended for CLIENT-SIDE use.
 export async function getClientIssues(orgId: string): Promise<Issue[]> {
     try {
-        const issuesCollection = collection(clientDB, "issues");
+        const issuesCollection = collection(db, "issues");
         const q = query(issuesCollection, where("orgId", "==", orgId), orderBy("reportedAt", "desc"));
         const snapshot = await getDocs(q);
         
@@ -23,7 +23,7 @@ export async function getClientIssues(orgId: string): Promise<Issue[]> {
 // This function is intended for CLIENT-SIDE use.
 export async function getClientProductionLines(orgId: string): Promise<ProductionLine[]> {
     try {
-        const linesCollection = collection(clientDB, "productionLines");
+        const linesCollection = collection(db, "productionLines");
         const q = query(linesCollection, where("orgId", "==", orgId));
         const snapshot = await getDocs(q);
         return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as ProductionLine));
@@ -36,7 +36,7 @@ export async function getClientProductionLines(orgId: string): Promise<Productio
 // This function is intended for CLIENT-SIDE use.
 export async function getClientUserById(uid: string): Promise<User | null> {
     try {
-        const userDocRef = doc(clientDB, "users", uid);
+        const userDocRef = doc(db, "users", uid);
         const userDoc = await getDoc(userDocRef);
 
         if (!userDoc.exists()) {
