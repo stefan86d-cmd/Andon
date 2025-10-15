@@ -14,7 +14,7 @@ import {
     OAuthProvider
 } from 'firebase/auth';
 import { doc, setDoc, Timestamp } from 'firebase/firestore';
-import { app, db } from '@/firebase'; // Import the client-side app
+import { app, db } from '@/firebase/client'; // Corrected import
 import type { User } from '@/lib/types';
 import { toast } from '@/hooks/use-toast';
 import { getClientUserById } from '@/lib/data';

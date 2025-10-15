@@ -21,7 +21,7 @@ import { LoaderCircle } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import { getAuth, verifyPasswordResetCode, confirmPasswordReset } from 'firebase/auth';
-import { app } from '@/firebase'; // Import client-side app
+import { app } from '@/firebase/client';
 import { sendPasswordChangedEmail } from '@/app/actions';
 
 const formSchema = z.object({

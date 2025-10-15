@@ -11,7 +11,7 @@ import { PlusCircle, Lock, LoaderCircle } from "lucide-react";
 import Link from "next/link";
 import type { User } from "@/lib/types";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
-import { db } from "@/firebase";
+import { db } from "@/firebase/client";
 
 const planLimits = {
   starter: { users: 5 },
