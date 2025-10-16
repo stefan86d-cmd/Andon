@@ -73,7 +73,7 @@ export async function addUser(userData: {
   plan: Plan;
   orgId: string;
 }) {
-  if (!db) return handleFirestoreError(new Error('Firestore not initialized'));
+  if (!db || !adminAuth) return handleFirestoreError(new Error('Admin SDK not initialized'));
   try {
     const { email, firstName, lastName, role, plan, orgId } = userData;
 
@@ -125,7 +125,7 @@ export async function editUser(
   userId: string,
   userData: { firstName: string; lastName: string; email: string; role: Role }
 ) {
-  if (!db) return handleFirestoreError(new Error('Firestore not initialized'));
+  if (!db || !adminAuth) return handleFirestoreError(new Error('Admin SDK not initialized'));
   try {
     await db.collection('users').doc(userId).update(userData);
 
@@ -207,6 +207,11 @@ export async function sendWelcomeEmail(userId: string) {
 // --- Password Actions ---
 
 export async function requestPasswordReset(email: string) {
+  if (!adminAuth) {
+    console.error('Password reset request failed: adminAuth not available.');
+    // Still return success to prevent email enumeration
+    return { success: true, message: 'If this email is registered, you will receive a password reset link.' };
+  }
   try {
     const user = await getUserByEmail(email);
     const resetLink = user ? await adminAuth.generatePasswordResetLink(email) : null;
