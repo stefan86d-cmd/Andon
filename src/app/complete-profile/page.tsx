@@ -28,7 +28,6 @@ import { toast } from '@/hooks/use-toast';
 import { useUser } from '@/contexts/user-context';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
-import { createCheckoutSession } from '@/ai/flows/create-checkout-session-flow';
 import { sendWelcomeEmail } from '@/app/actions';
 import { addMonths } from 'date-fns';
 
@@ -147,19 +146,6 @@ function CompleteProfileContent() {
             country: currentUser.country || "",
             phone: currentUser.phone || ""
         });
-
-        // Create Checkout Session for paid plans
-        if (selectedPlan !== 'starter' && !clientSecret) {
-            createCheckoutSession({ plan: selectedPlan, email: currentUser.email, userId: currentUser.id })
-                .then(response => {
-                    setClientSecret(response.clientSecret);
-                })
-                .catch(error => {
-                    console.error("Failed to create checkout session:", error);
-                    toast({ title: "Payment Error", description: "Could not initialize payment. Please try again.", variant: "destructive" });
-                });
-        }
-
     }
   }, [currentUser, userLoading, router, form, selectedPlan, clientSecret]);
   

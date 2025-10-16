@@ -29,7 +29,6 @@ import { cn } from "@/lib/utils";
 import { allCategories } from "@/lib/constants";
 import { CSVLink } from "react-csv";
 import { getClientIssues, getClientProductionLines } from "@/lib/data";
-import { analyzeIssues } from "@/ai/flows/analyze-issues-flow";
 
 const ChartGradients = () => (
     <svg width="0" height="0" className="absolute">
@@ -114,31 +113,6 @@ export default function ReportsPage() {
       const isLineSelected = selectedLines.length === 0 || selectedLines.includes(issue.productionLineId);
       return isInDateRange && isLineSelected;
   });
-
-  const handleAiAnalysis = async () => {
-    if (currentUser?.plan !== 'pro' && currentUser?.plan !== 'enterprise') {
-        return;
-    }
-    setIsAiLoading(true);
-    setAiAnalysis(null);
-    try {
-        const issuesForAnalysis = filteredIssues.map(i => ({
-            title: i.title,
-            category: i.category,
-            priority: i.priority,
-            productionStopped: i.productionStopped,
-            reportedAt: format(i.reportedAt, 'yyyy-MM-dd HH:mm'),
-            resolvedAt: i.resolvedAt ? format(i.resolvedAt, 'yyyy-MM-dd HH:mm') : undefined,
-        }));
-
-        const result = await analyzeIssues({ issues: issuesForAnalysis });
-        setAiAnalysis(result.analysis);
-    } catch (error) {
-        console.error("AI Analysis failed:", error);
-    } finally {
-        setIsAiLoading(false);
-    }
-  }
 
   const csvHeaders = [
     { label: "Issue ID", key: "id" },
@@ -279,7 +253,7 @@ export default function ReportsPage() {
             <CardHeader className="flex-col md:flex-row items-start md:items-center justify-between gap-4">
                 <div>
                     <CardTitle>Filters & Export</CardTitle>
-                    <CardDescription>Select filters to refine the reports, then export or analyze the data.</CardDescription>
+                    <CardDescription>Select filters to refine the reports, then export the data.</CardDescription>
                 </div>
                  <div className="flex flex-wrap items-center gap-2">
                     <Popover>
@@ -360,27 +334,9 @@ export default function ReportsPage() {
                                 <span className="sr-only sm:not-sr-only">Export CSV</span>
                             </CSVLink>
                         </Button>
-                        {isAiEnabled && (
-                             <Button onClick={handleAiAnalysis} disabled={isAiLoading}>
-                                {isAiLoading ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4 mr-2" />}
-                                <span className="sr-only sm:not-sr-only">AI Analysis</span>
-                            </Button>
-                        )}
                     </div>
                  </div>
             </CardHeader>
-            {aiAnalysis && (
-                 <CardContent>
-                    <Card className="bg-muted/50">
-                        <CardHeader>
-                            <CardTitle className="text-lg">AI Generated Analysis</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: aiAnalysis.replace(/\n/g, '<br />') }} />
-                        </CardContent>
-                    </Card>
-                 </CardContent>
-            )}
         </Card>
 
         <Tabs defaultValue="issues-by-category">

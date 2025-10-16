@@ -41,7 +41,7 @@ const supportImage = PlaceHolderImages.find(p => p.id === 'mega-menu-support');
 const faqs = [
     {
         question: "What is AndonPro?",
-        answer: "AndonPro is a modern, intuitive application designed to monitor and manage production line workflows. It allows operators to report issues in real-time from any workstation, which helps teams minimize downtime and improve overall efficiency. Supervisors and administrators get a live overview of the entire production line, can track key performance indicators, and use AI-powered insights to make data-driven decisions."
+        answer: "AndonPro is a modern, intuitive application designed to monitor and manage production line workflows. It allows operators to report issues in real-time from any workstation, which helps teams minimize downtime and improve overall efficiency. Supervisors and administrators get a live overview of the entire production line, can track key performance indicators, and use data-driven insights to make decisions."
     },
     {
         question: "What are the different user roles?",
@@ -58,10 +58,6 @@ const faqs = [
     {
         question: "How customizable is the platform?",
         answer: "AndonPro is highly customizable. Administrators can define their own production lines and add, edit, or remove the specific workstations within each line. This ensures that the application's structure perfectly mirrors your factory's layout and workflow. Unlike rigid, off-the-shelf solutions, AndonPro adapts to your environment, not the other way around."
-    },
-    {
-        question: "How does AndonPro use AI?",
-        answer: "AndonPro integrates AI to provide intelligent insights and streamline your workflow. When an operator reports an issue, our AI can analyze the description to suggest an appropriate priority level, helping supervisors focus on the most critical problems first."
     }
 ]
 

@@ -2,7 +2,7 @@
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
-import { ArrowRight, Factory, BarChart3, Bot, Wrench, Menu } from 'lucide-react';
+import { ArrowRight, Factory, BarChart3, Wrench, Menu } from 'lucide-react';
 import { Logo } from "@/components/layout/logo";
 import { cn } from "@/lib/utils";
 import { MegaMenu } from "@/components/layout/mega-menu";
@@ -19,19 +19,14 @@ const features = [
     description: 'Get a live overview of your entire production line. Instantly see workstation statuses and active issues.',
   },
   {
-    icon: <Bot className="h-10 w-10 text-primary" />,
-    title: 'AI-Powered Prioritization',
-    description: 'Leverage AI to automatically assess the urgency of reported issues, helping your team focus on what matters most.',
+    icon: <Wrench className="h-10 w-10 text-primary" />,
+    title: 'Customizable Workflows',
+    description: 'Unlike other monitoring tools, AndonPro allows you to fully customize and edit your production lines and workstations.',
   },
   {
     icon: <BarChart3 className="h-10 w_10 text-primary" />,
     title: 'Insightful Reporting',
     description: 'Track key performance indicators, analyze downtime, and identify recurring problems with our comprehensive reports.',
-  },
-  {
-    icon: <Wrench className="h-10 w-10 text-primary" />,
-    title: 'Customizable Workflows',
-    description: 'Unlike other monitoring tools, AndonPro allows you to fully customize and edit your production lines and workstations.',
   },
 ];
 
@@ -166,7 +161,7 @@ export default function HomePage() {
               Empower Your Production Line
             </h1>
             <p className="max-w-2xl mx-auto text-lg text-gray-200 mb-8">
-              AndonPro is the modern solution to monitor workflow, report issues instantly, and minimize downtime with powerful data exports and AI-assisted prioritization.
+              AndonPro is the modern solution to monitor workflow, report issues instantly, and minimize downtime with powerful data exports.
             </p>
             <Link href="/pricing" className={cn(buttonVariants({ size: "lg" }))}>
               Get Started Free <ArrowRight className="ml-2 h-5 w-5" />
@@ -183,7 +178,7 @@ export default function HomePage() {
                 Everything you need to optimize your manufacturing process and resolve issues faster than ever before.
               </p>
             </div>
-            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
               {features.map((feature) => (
                 <Card key={feature.title} className="text-center">
                   <CardHeader>

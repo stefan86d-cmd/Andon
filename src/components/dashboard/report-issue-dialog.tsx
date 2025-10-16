@@ -6,7 +6,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { reportIssue } from "@/app/actions";
-import { prioritizeIssue } from "@/ai/flows/prioritize-reported-issues";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
@@ -155,7 +154,6 @@ export function ReportIssueDialog({
 }) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, startSubmittingTransition] = useTransition();
-  const [isSuggesting, startSuggestionTransition] = useTransition();
   const [step, setStep] = useState(1);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const router = useRouter();
@@ -269,35 +267,7 @@ export function ReportIssueDialog({
     });
   }
 
-  const handleAiSuggestion = () => {
-    const desc = form.watch("description");
-    if (!desc) {
-      toast({
-        variant: "destructive",
-        title: "Description required",
-        description: "Please provide a description before using AI suggestion.",
-      });
-      return;
-    }
-    startSuggestionTransition(async () => {
-      try {
-        const result = await prioritizeIssue({ description: desc });
-        form.setValue("priority", result.priorityLevel as Priority);
-        toast({
-          title: "AI Suggestion",
-          description: `AI suggested "${result.priorityLevel}" priority.`,
-        });
-      } catch {
-        toast({
-          variant: "destructive",
-          title: "AI Suggestion Failed",
-        });
-      }
-    });
-  };
-
   const currentCategory = categories.find((c) => c.id === selectedCategory);
-  const isAiPriorityEnabled = currentUser?.plan !== "starter";
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -411,21 +381,6 @@ export function ReportIssueDialog({
                           <SelectItem value="critical">Critical</SelectItem>
                         </SelectContent>
                       </Select>
-                      {isAiPriorityEnabled && (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={handleAiSuggestion}
-                          disabled={isSuggesting}
-                        >
-                          {isSuggesting ? (
-                            <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
-                          ) : (
-                            <Zap className="mr-2 h-4 w-4 text-yellow-500" />
-                          )}
-                          AI Suggest
-                        </Button>
-                      )}
                     </div>
                   </FormItem>
                 )}
