@@ -3,7 +3,6 @@ import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 import { Inter } from 'next/font/google'
-import { ThemeProvider } from '@/components/layout/theme-provider';
 import { UserProvider } from '@/contexts/user-context';
 
 export const metadata: Metadata = {
@@ -31,15 +30,8 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} font-body antialiased`}>
           <UserProvider>
-            <ThemeProvider
-              attribute="class"
-              defaultTheme="light"
-              enableSystem
-              disableTransitionOnChange
-            >
-              {children}
-              <Toaster />
-            </ThemeProvider>
+            {children}
+            <Toaster />
           </UserProvider>
       </body>
     </html>

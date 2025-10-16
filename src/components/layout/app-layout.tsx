@@ -6,6 +6,7 @@ import { Header } from "@/components/layout/header";
 import { useUser } from "@/contexts/user-context";
 import { useRouter, usePathname } from "next/navigation";
 import { LoaderCircle } from "lucide-react";
+import { ThemeProvider } from "./theme-provider";
 
 function AppLayoutContent({ children }: { children: React.ReactNode }) {
   const { currentUser, loading } = useUser();
@@ -81,14 +82,25 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
 
   const showHeader = currentUser && currentUser.role && !isAuthPage && !isPublicPage;
 
-  return (
-    <div className="flex min-h-screen w-full flex-col">
-       {showHeader && <Header />}
-      <div className="flex flex-col">
-        {children}
-      </div>
-    </div>
-  );
+  if (showHeader) {
+    return (
+      <ThemeProvider
+        attribute="class"
+        defaultTheme="light"
+        enableSystem
+        disableTransitionOnChange
+      >
+        <div className="flex min-h-screen w-full flex-col">
+          <Header />
+          <div className="flex flex-col">
+            {children}
+          </div>
+        </div>
+      </ThemeProvider>
+    );
+  }
+
+  return <>{children}</>
 }
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
