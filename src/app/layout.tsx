@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   description: 'Monitor workflow and resolve issues on your production line.',
   manifest: '/manifest.json',
   icons: {
-    icon: '/Andonpro_Liikemerkki_Musta.jpg',
+    icon: '/favicon.ico',
   },
 };
 
