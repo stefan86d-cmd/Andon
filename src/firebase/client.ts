@@ -4,8 +4,6 @@ import { initializeApp, getApps, getApp, type FirebaseApp, type FirebaseOptions 
 import { getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 
-// This function is now responsible for both creating the config and initializing the app.
-// It will only be called on the client-side, ensuring process.env is available.
 const getClientInstances = () => {
   const firebaseConfig: FirebaseOptions = {
     apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
