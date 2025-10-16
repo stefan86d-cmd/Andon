@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { createContext, useState, useContext, useEffect, ReactNode, useCallback } from 'react';
@@ -104,22 +105,17 @@ export function UserProvider({ children }: { children: ReactNode }) {
       const firebaseUser = userCredential.user;
 
       // Immediately create a basic user profile in Firestore
-      const newUser: User = {
+      const newUser: Partial<User> = {
         id: firebaseUser.uid,
         email: firebaseUser.email || "",
-        firstName: "", // Will be filled in during profile completion
-        lastName: "",  // Will be filled in during profile completion
         role: "" as any, // Indicates incomplete profile
-        plan: "starter", // Default plan
-        address: "",
-        country: "",
         orgId: firebaseUser.uid, // The new user's ID becomes their organization ID
         notificationPreferences: { newIssue: true, issueResolved: false, muteSound: true }, // Default notification prefs
         theme: 'system', // Default theme
       };
       
       const userDocRef = doc(db, "users", firebaseUser.uid);
-      await setDoc(userDocRef, newUser);
+      await setDoc(userDocRef, newUser, { merge: true });
 
       // Manually trigger user update to avoid race conditions with the auth listener
       await handleAuthUser(firebaseUser);
