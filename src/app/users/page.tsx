@@ -11,7 +11,7 @@ import { PlusCircle, Lock, LoaderCircle } from "lucide-react";
 import Link from "next/link";
 import type { User } from "@/lib/types";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
-import { db } from "@/firebase/client";
+import { getClientInstances } from "@/firebase/client";
 
 const planLimits = {
   starter: { users: 5 },
@@ -33,6 +33,7 @@ export default function UsersPage() {
     };
     
     setLoading(true);
+    const { db } = getClientInstances();
     const usersCollection = collection(db, "users");
     const q = query(usersCollection, where("orgId", "==", currentUser.orgId));
     
