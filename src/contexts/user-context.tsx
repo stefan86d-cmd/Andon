@@ -38,14 +38,6 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [auth, setAuth] = useState<Auth | null>(null);
 
-  useEffect(() => {
-    const authInstance = getAuth(app);
-    setAuth(authInstance);
-
-    const unsubscribe = onAuthStateChanged(authInstance, handleAuthUser);
-    return () => unsubscribe();
-  }, []);
-
   const handleAuthUser = useCallback(async (firebaseUser: FirebaseUser | null) => {
     if (firebaseUser) {
       const userProfile = await getClientUserById(firebaseUser.uid);
@@ -72,6 +64,14 @@ export function UserProvider({ children }: { children: ReactNode }) {
     }
     setLoading(false);
   }, []);
+
+  useEffect(() => {
+    const authInstance = getAuth(app);
+    setAuth(authInstance);
+
+    const unsubscribe = onAuthStateChanged(authInstance, handleAuthUser);
+    return () => unsubscribe();
+  }, [handleAuthUser]);
 
   const login = async (email: string, password: string): Promise<boolean> => {
     if (!auth) return false;
