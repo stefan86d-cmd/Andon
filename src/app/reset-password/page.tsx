@@ -21,7 +21,7 @@ import { LoaderCircle } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import { getAuth, verifyPasswordResetCode, confirmPasswordReset } from 'firebase/auth';
-import { app } from '@/firebase/client';
+import { getClientInstances } from '@/firebase/client';
 import { sendPasswordChangedEmail } from '@/app/actions';
 
 const formSchema = z.object({
@@ -53,6 +53,7 @@ function ResetPasswordContent() {
   // Verify the reset code and get the user's email
   React.useEffect(() => {
     if (oobCode) {
+      const { app } = getClientInstances();
       const auth = getAuth(app);
       verifyPasswordResetCode(auth, oobCode)
         .then((email) => {
@@ -73,6 +74,7 @@ function ResetPasswordContent() {
 
     startTransition(async () => {
       try {
+        const { app } = getClientInstances();
         const auth = getAuth(app); // Use client-side auth
         
         await confirmPasswordReset(auth, oobCode, data.newPassword);

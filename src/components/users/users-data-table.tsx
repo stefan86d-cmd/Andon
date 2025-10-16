@@ -31,6 +31,7 @@ import { DeleteUserDialog } from "./delete-user-dialog";
 import { EditUserDialog } from "./edit-user-dialog";
 import React from "react";
 import { Skeleton } from "../ui/skeleton";
+import { useUser } from "@/contexts/user-context";
 
 const roleIcons: Record<Role, React.ElementType> = {
     admin: UserCog,
@@ -54,6 +55,7 @@ const getInitials = (firstName: string, lastName: string) => {
 
 
 export function UsersDataTable({ users, loading }: { users: User[], loading?: boolean }) {
+  const { currentUser } = useUser();
   return (
     <Card>
       <CardHeader>
@@ -92,6 +94,7 @@ export function UsersDataTable({ users, loading }: { users: User[], loading?: bo
             ) : users.length > 0 ? (
                 users.map((user) => {
                     const name = `${user.firstName || ''} ${user.lastName || ''}`.trim();
+                    const isCurrentUser = currentUser?.id === user.id;
                     return (
                         <TableRow key={user.email}>
                             <TableCell>
@@ -108,7 +111,7 @@ export function UsersDataTable({ users, loading }: { users: User[], loading?: bo
                             </TableCell>
                             <TableCell>
                                 <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
+                                    <DropdownMenuTrigger asChild disabled={isCurrentUser}>
                                     <Button
                                         aria-haspopup="true"
                                         size="icon"

@@ -13,19 +13,29 @@ const firebaseConfig: FirebaseOptions = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID
 };
 
-let app: FirebaseApp;
-let db: ReturnType<typeof getFirestore>;
-
-function initializeFirebase() {
-    if (!getApps().length) {
-        app = initializeApp(firebaseConfig);
-    } else {
-        app = getApp();
+function getFirebaseApp(): FirebaseApp {
+    if (getApps().length > 0) {
+        return getApp();
     }
-    db = getFirestore(app);
+    
+    // Check for missing keys only on the client-side
+    if (typeof window !== 'undefined' && !firebaseConfig.apiKey) {
+        console.error("Firebase config is missing API key.");
+    }
+    
+    return initializeApp(firebaseConfig);
 }
 
-// Initialize on first import in the client
-initializeFirebase();
+// Lazy-initialized instances
+let app: FirebaseApp | null = null;
+let db: ReturnType<typeof getFirestore> | null = null;
 
-export { app, db };
+function getClientInstances() {
+    if (!app) {
+        app = getFirebaseApp();
+        db = getFirestore(app);
+    }
+    return { app, db };
+}
+
+export { getClientInstances };

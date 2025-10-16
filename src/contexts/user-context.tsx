@@ -15,7 +15,7 @@ import {
     Auth
 } from 'firebase/auth';
 import { doc, setDoc, Timestamp } from 'firebase/firestore';
-import { app, db } from '@/firebase/client';
+import { getClientInstances } from '@/firebase/client';
 import type { User } from '@/lib/types';
 import { toast } from '@/hooks/use-toast';
 import { getClientUserById } from '@/lib/data';
@@ -66,6 +66,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
+    const { app, db } = getClientInstances();
     const authInstance = getAuth(app);
     setAuth(authInstance);
 
@@ -97,6 +98,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   
   const registerWithEmail = async (email: string, password: string): Promise<boolean> => {
     if (!auth) return false;
+    const { db } = getClientInstances();
     setLoading(true);
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
@@ -176,6 +178,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   };
   
   const updateCurrentUser = useCallback(async (userData: Partial<User>) => {
+    const { db } = getClientInstances();
     if (currentUser) {
         const updatedUser = { ...currentUser, ...userData };
         
