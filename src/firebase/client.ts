@@ -13,22 +13,20 @@ const firebaseConfig: FirebaseOptions = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// Singleton pattern to initialize Firebase only once
-function initializeFirebase() {
-    if (getApps().length > 0) {
-        return getApp();
-    }
-    
-    // Check for missing keys only on the client-side
-    if (typeof window !== 'undefined' && !firebaseConfig.apiKey) {
-        console.error("Firebase config is missing API key. Make sure your environment variables are set correctly.");
-    }
-    
-    return initializeApp(firebaseConfig);
-}
-
+// Singleton pattern to initialize and get Firebase instances
 function getClientInstances() {
-    const app = initializeFirebase();
+    let app: FirebaseApp;
+
+    if (getApps().length === 0) {
+         if (!firebaseConfig.apiKey) {
+            // This error will only be thrown on the client if the env vars are not set.
+            throw new Error("Firebase config is missing API key. Make sure your environment variables are set correctly.");
+        }
+        app = initializeApp(firebaseConfig);
+    } else {
+        app = getApp();
+    }
+    
     const db = getFirestore(app);
     const auth = getAuth(app);
     return { app, db, auth };
@@ -36,7 +34,3 @@ function getClientInstances() {
 
 // Exporting this function to be used in contexts/hooks
 export { getClientInstances };
-
-// Also exporting for direct use if needed, but getClientInstances is preferred
-export const app = initializeFirebase();
-export const db = getFirestore(app);
