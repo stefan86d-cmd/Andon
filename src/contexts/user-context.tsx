@@ -66,8 +66,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    const { app, db } = getClientInstances();
-    const authInstance = getAuth(app);
+    // getClientInstances ensures Firebase is initialized on the client
+    const { auth: authInstance } = getClientInstances();
     setAuth(authInstance);
 
     const unsubscribe = onAuthStateChanged(authInstance, handleAuthUser);
