@@ -101,8 +101,6 @@ const tiers = [
       { text: "Up to 20 workstations per line" },
       { text: "User Role Management" },
       { text: "Advanced Reporting & Analytics" },
-      { text: "Dedicated Account Manager" },
-      { text: "Advanced Security & SSO" },
       { text: "24/7 Priority Support" },
     ],
     cta: "Choose Plan",
