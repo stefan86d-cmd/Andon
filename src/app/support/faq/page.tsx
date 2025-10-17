@@ -58,6 +58,10 @@ const faqs = [
     {
         question: "How customizable is the platform?",
         answer: "AndonPro is highly customizable. Administrators can define their own production lines and add, edit, or remove the specific workstations within each line. This ensures that the application's structure perfectly mirrors your factory's layout and workflow."
+    },
+    {
+        question: "What issue categories can I report?",
+        answer: "AndonPro comes with several predefined categories to help you classify issues effectively. These include: <ul class='list-disc pl-5 space-y-2 mt-2'><li>IT & Network</li><li>Logistics</li><li>Tool & Equipment</li><li>Quality Control</li><li>Need Assistance</li><li>Other</li></ul> We are constantly working on expanding our features and adding more customization options for future releases."
     }
 ]
 
