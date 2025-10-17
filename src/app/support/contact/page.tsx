@@ -12,8 +12,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import FooterLogo from "@/components/layout/footer-logo";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 
 const servicesMenuItems = [
     { title: "Production Monitoring", description: "Get a live overview of your entire production line.", badge: "", href: "/services/monitoring" },
@@ -80,6 +81,9 @@ export default function ContactPage() {
                     </Button>
                 </SheetTrigger>
                 <SheetContent side="left" className="pr-0">
+                    <VisuallyHidden>
+                        <SheetTitle>Mobile Navigation Menu</SheetTitle>
+                    </VisuallyHidden>
                     <div className="flex flex-col space-y-4">
                          <Link href="/" className="mr-6 flex items-center space-x-2">
                             <Logo />
@@ -216,5 +220,4 @@ export default function ContactPage() {
     </div>
   );
 }
-
     

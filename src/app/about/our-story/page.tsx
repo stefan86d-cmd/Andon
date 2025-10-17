@@ -8,9 +8,10 @@ import Image from "next/image";
 import FooterLogo from "@/components/layout/footer-logo";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { Menu } from "lucide-react";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 
 
 const servicesMenuItems = [
@@ -78,6 +79,9 @@ export default function OurStoryPage() {
                     </Button>
                 </SheetTrigger>
                 <SheetContent side="left" className="pr-0">
+                    <VisuallyHidden>
+                        <SheetTitle>Mobile Navigation Menu</SheetTitle>
+                    </VisuallyHidden>
                     <div className="flex flex-col space-y-4">
                          <Link href="/" className="mr-6 flex items-center space-x-2">
                             <Logo />
