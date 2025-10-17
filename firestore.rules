@@ -3,55 +3,42 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // --- Helper functions ---
-    function getUserData(userId) {
-      return get(/databases/$(database)/documents/users/$(userId)).data;
-    }
-    
-    function isUserInOrg(userId, orgId) {
-      return getUserData(userId).orgId == orgId;
-    }
-    
-    function isUserRole(userId, role) {
-      return getUserData(userId).role == role;
-    }
-
-    // --- USERS COLLECTION ---
+    // --- Users Collection ---
     match /users/{userId} {
-      // Allow a new authenticated user to create their own profile after signing up
+      // Any authenticated user can read user data within their own org.
+      allow read: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.orgId == resource.data.orgId;
+      
+      // A user can create their own user document.
       allow create: if request.auth != null && request.auth.uid == userId;
-
-      // Allow users to read or update their own profile
-      allow read, update: if request.auth.uid == userId;
-
-      // Allow admins to read or update any user within their org
-      allow read, update: if isUserRole(request.auth.uid, 'admin') &&
-                           isUserInOrg(request.auth.uid, getUserData(userId).orgId);
+      
+      // A user can only update their own document.
+      allow update: if request.auth != null && request.auth.uid == userId;
+      
+      // Only admins can delete users. An admin cannot delete themselves.
+      allow delete: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' && request.auth.uid != userId;
     }
 
-    // --- PRODUCTION LINES COLLECTION ---
+    // --- Production Lines Collection ---
     match /productionLines/{lineId} {
-      // Any authenticated user in the same org can read
-      allow read: if request.auth != null && isUserInOrg(request.auth.uid, resource.data.orgId);
+      // Allow any authenticated user in the same org to read production lines.
+      allow read: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.orgId == resource.data.orgId;
       
-      // Only admins can modify production lines
-      allow create, update, delete: if request.auth != null && isUserRole(request.auth.uid, 'admin');
+      // Only admins can create, update, or delete production lines.
+      allow write: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
 
-    // --- ISSUES COLLECTION ---
+    // --- Issues Collection ---
     match /issues/{issueId} {
-      // Any authenticated user in the same org can read issues
-      allow read: if request.auth != null && isUserInOrg(request.auth.uid, resource.data.orgId);
+      // Allow any authenticated user in the same org to read issues.
+      allow read: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.orgId == resource.data.orgId;
       
-      // Any authenticated user can create an issue for their own org
-      allow create: if request.auth != null && request.resource.data.orgId == getUserData(request.auth.uid).orgId;
+      // Any authenticated user can create an issue.
+      allow create: if request.auth != null;
       
-      // Admins and supervisors can update issues in their org
-      allow update: if request.auth != null &&
-                    (isUserRole(request.auth.uid, 'admin') || isUserRole(request.auth.uid, 'supervisor')) &&
-                    isUserInOrg(request.auth.uid, resource.data.orgId);
-
-      // Deleting issues is not allowed for data integrity
+      // Only admins or supervisors can update an issue.
+      allow update: if request.auth != null && (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'supervisor');
+      
+      // Deleting issues is not allowed from the client.
       allow delete: if false;
     }
   }
