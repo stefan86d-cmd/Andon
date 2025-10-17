@@ -327,7 +327,7 @@ export async function editProductionLine(lineId: string, data: { name: string; w
     const workstationNames = data.workstations.map(ws => ws.value);
     await db.collection('productionLines').doc(lineId).update({ name: data.name, workstations: workstationNames });
     return { success: true };
-  } catch (error)_ {
+  } catch (error) {
     return handleFirestoreError(error);
   }
 }
