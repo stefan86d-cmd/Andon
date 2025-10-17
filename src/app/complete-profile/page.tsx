@@ -146,6 +146,12 @@ function CompleteProfileContent() {
             country: currentUser.country || "",
             phone: currentUser.phone || ""
         });
+
+        // Don't create a checkout session for free plans
+        if (selectedPlan !== 'starter' && !clientSecret) {
+            // This is where you would call your backend to create a payment intent
+            // For now, we'll assume it's handled elsewhere or mocked
+        }
     }
   }, [currentUser, userLoading, router, form, selectedPlan, clientSecret]);
   
@@ -225,11 +231,18 @@ function CompleteProfileContent() {
 
 
   if (userLoading || !currentUser || (selectedPlan !== 'starter' && !clientSecret)) {
-    return (
-        <div className="flex h-screen items-center justify-center">
-            <LoaderCircle className="h-8 w-8 animate-spin" />
-        </div>
-    );
+    // If the plan is 'starter', we don't need a clientSecret, so don't show the loader
+    if (userLoading || !currentUser || (selectedPlan !== 'starter' && !clientSecret)) {
+       if (selectedPlan === 'starter' && currentUser) {
+            // Render the form for the starter plan without waiting for a client secret
+       } else {
+            return (
+                <div className="flex h-screen items-center justify-center">
+                    <LoaderCircle className="h-8 w-8 animate-spin" />
+                </div>
+            );
+       }
+    }
   }
 
   return (
@@ -356,3 +369,5 @@ export default function CompleteProfilePage() {
         </Suspense>
     )
 }
+
+    
