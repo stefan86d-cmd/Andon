@@ -6,12 +6,14 @@ import {
   getFirestore,
   Timestamp,
 } from 'firebase-admin/firestore';
-import { db } from '@/firebase/server';
+import { db as lazilyGetDb } from '@/firebase/server';
 import { adminAuth } from '@/firebase/admin';
 import type { Issue, Plan, ProductionLine, Role, User } from '@/lib/types';
 import { handleFirestoreError } from '@/lib/firestore-helpers';
 import { sendEmail } from '@/lib/email';
 import { getAuth } from 'firebase/auth';
+
+const db = lazilyGetDb();
 
 // --- Data fetching actions ---
 
@@ -325,7 +327,7 @@ export async function editProductionLine(lineId: string, data: { name: string; w
     const workstationNames = data.workstations.map(ws => ws.value);
     await db.collection('productionLines').doc(lineId).update({ name: data.name, workstations: workstationNames });
     return { success: true };
-  } catch (error) {
+  } catch (error)_ {
     return handleFirestoreError(error);
   }
 }

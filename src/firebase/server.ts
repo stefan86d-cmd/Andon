@@ -4,27 +4,24 @@ import { getAdminApp } from "./admin";
 
 let db: Firestore | undefined;
 
-function getDb(): Firestore {
-    if (!db) {
-        const app = getAdminApp();
-        if (!app) {
-            // This will happen if the service account isn't available.
-            // We throw an error here to make it clear that the server is not configured.
-            throw new Error("FATAL: Firebase Admin SDK not initialized. Server-side database operations will fail.");
-        }
-        db = getFirestore(app);
+function getDb(): Firestore | undefined {
+    if (db) {
+        return db;
     }
+
+    const app = getAdminApp();
+    if (!app) {
+        // This will happen if the service account isn't available.
+        // We return undefined instead of throwing to avoid crashing the server.
+        return undefined;
+    }
+    db = getFirestore(app);
     return db;
 }
 
-// Export a proxy-like object that lazily gets the db instance.
-// This ensures getDb() is only called when `db` is actually accessed.
-const dbProxy = new Proxy({}, {
-    get(_, prop) {
-        const firestore = getDb();
-        return Reflect.get(firestore, prop);
-    }
-}) as Firestore;
+// To avoid re-exporting `undefined` and allow for conditional use,
+// we export the function itself. Components that need the admin db
+// can call it and handle the possibility of it being unavailable.
+const lazilyGetDb = () => getDb();
 
-
-export { dbProxy as db };
+export { lazilyGetDb as db };
