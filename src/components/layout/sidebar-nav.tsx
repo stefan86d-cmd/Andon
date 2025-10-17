@@ -28,13 +28,12 @@ const allNavItems = [
 interface SidebarNavProps {
     userRole: Role;
     className?: string;
+    isMobile?: boolean;
 }
 
-export function SidebarNav({ userRole, className }: SidebarNavProps) {
+export function SidebarNav({ userRole, className, isMobile }: SidebarNavProps) {
     const pathname = usePathname()
     const navItems = allNavItems.filter(item => item.roles.includes(userRole));
-
-    const isMobile = className?.includes('md:hidden');
 
     if (isMobile) {
         return (
