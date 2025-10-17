@@ -1,5 +1,11 @@
 
 import * as admin from "firebase-admin";
+import * as dotenv from 'dotenv';
+import * as path from 'path';
+
+// Load environment variables from .env file
+dotenv.config({ path: path.resolve(process.cwd(), '.env') });
+
 
 let adminApp: admin.app.App | undefined;
 
