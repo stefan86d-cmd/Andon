@@ -57,7 +57,7 @@ const faqs = [
     },
     {
         question: "How customizable is the platform?",
-        answer: "AndonPro is highly customizable. Administrators can define their own production lines and add, edit, or remove the specific workstations within each line. This ensures that the application's structure perfectly mirrors your factory's layout and workflow. Unlike rigid, off-the-shelf solutions, AndonPro adapts to your environment, not the other way around."
+        answer: "AndonPro is highly customizable. Administrators can define their own production lines and add, edit, or remove the specific workstations within each line. This ensures that the application's structure perfectly mirrors your factory's layout and workflow."
     }
 ]
 
