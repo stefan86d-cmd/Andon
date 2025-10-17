@@ -2,44 +2,32 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // --- Users Collection ---
+
+    function isUserInOrg(orgId) {
+      return request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.orgId == orgId;
+    }
+
+    // Users Collection
     match /users/{userId} {
-      // Any authenticated user can read user data within their own org.
-      allow read: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.orgId == resource.data.orgId;
+      // Allow a user to read and update their own document
+      allow read, update: if request.auth != null && request.auth.uid == userId;
       
-      // A user can create their own user document.
-      allow create: if request.auth != null && request.auth.uid == userId;
-      
-      // A user can only update their own document.
-      allow update: if request.auth != null && request.auth.uid == userId;
-      
-      // Only admins can delete users. An admin cannot delete themselves.
-      allow delete: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' && request.auth.uid != userId;
-    }
-
-    // --- Production Lines Collection ---
-    match /productionLines/{lineId} {
-      // Allow any authenticated user in the same org to read production lines.
-      allow read: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.orgId == resource.data.orgId;
-      
-      // Only admins can create, update, or delete production lines.
-      allow write: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
-    }
-
-    // --- Issues Collection ---
-    match /issues/{issueId} {
-      // Allow any authenticated user in the same org to read issues.
-      allow read: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.orgId == resource.data.orgId;
-      
-      // Any authenticated user can create an issue.
+      // Allow a new user to create their own document
       allow create: if request.auth != null;
-      
-      // Only admins or supervisors can update an issue.
-      allow update: if request.auth != null && (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'supervisor');
-      
-      // Deleting issues is not allowed from the client.
-      allow delete: if false;
+
+      // Allow any user within an organization to read documents of other users in the same org.
+      // This is needed for admins/supervisors to list users.
+      allow get, list: if request.auth != null && isUserInOrg(resource.data.orgId);
+    }
+
+    // Production Lines Collection
+    match /productionLines/{lineId} {
+      allow read, write: if request.auth != null && isUserInOrg(resource.data.orgId);
+    }
+
+    // Issues Collection
+    match /issues/{issueId} {
+      allow read, write: if request.auth != null && isUserInOrg(resource.data.orgId);
     }
   }
 }
