@@ -144,7 +144,7 @@ export default function IssueTrackingPage() {
             <div className="container text-center">
                 <h2 className="text-3xl font-bold mb-6">What is Issue Tracking?</h2>
                 <p className="max-w-3xl mx-auto text-muted-foreground mb-8">
-                    Issue Tracking is the core of AndonPro's system, allowing any operator to report problems from their workstation the moment they occur. This instantly alerts supervisors and relevant teams, ensuring rapid response. Our AI-powered prioritization automatically assesses the urgency of each issue, so your team can focus on what matters most to keep the production line moving and minimize costly downtime.
+                    Issue Tracking is the core of AndonPro's system, allowing any operator to report problems from their workstation the moment they occur. This instantly alerts supervisors and relevant teams, ensuring rapid response to keep the production line moving and minimize costly downtime.
                 </p>
                 <Link href="/pricing" className={cn(buttonVariants({ size: "lg" }))}>
                     Explore Pricing Options <ArrowRight className="ml-2 h-5 w-5" />
