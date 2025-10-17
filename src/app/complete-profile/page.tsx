@@ -169,7 +169,7 @@ function CompleteProfileContent() {
             ? undefined 
             : addMonths(now, parseInt(selectedDuration, 10));
 
-        const userProfileData = {
+        const userProfileData: any = {
             firstName: data.firstName,
             lastName: data.lastName,
             email: currentUser.email,
@@ -181,9 +181,13 @@ function CompleteProfileContent() {
             country: data.country,
             phone: data.phone,
             orgId: currentUser.id, // The first admin's ID becomes the org ID
-            subscriptionStartsAt: selectedPlan !== 'starter' ? now : undefined,
-            subscriptionEndsAt: subscriptionEndDate,
         };
+        
+        if (selectedPlan !== 'starter') {
+            userProfileData.subscriptionStartsAt = now;
+            userProfileData.subscriptionEndsAt = subscriptionEndDate;
+        }
+
 
         await updateCurrentUser(userProfileData);
 
