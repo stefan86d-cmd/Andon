@@ -2,7 +2,7 @@
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
-import { ArrowRight, Factory, BarChart3, Wrench, Menu } from 'lucide-react';
+import { ArrowRight, Factory, BarChart3, Wrench, Menu, PiggyBank } from 'lucide-react';
 import { Logo } from "@/components/layout/logo";
 import { cn } from "@/lib/utils";
 import { MegaMenu } from "@/components/layout/mega-menu";
@@ -24,9 +24,14 @@ const features = [
     description: 'Unlike other monitoring tools, AndonPro allows you to fully customize and edit your production lines and workstations.',
   },
   {
-    icon: <BarChart3 className="h-10 w_10 text-primary" />,
+    icon: <BarChart3 className="h-10 w-10 text-primary" />,
     title: 'Insightful Reporting',
     description: 'Track key performance indicators, analyze downtime, and identify recurring problems with our comprehensive reports.',
+  },
+  {
+    icon: <PiggyBank className="h-10 w-10 text-primary" />,
+    title: 'Affordable Pricing',
+    description: 'Get started for free and scale with flexible, transparent pricing plans that fit teams and factories of all sizes.',
   },
 ];
 
@@ -178,7 +183,7 @@ export default function HomePage() {
                 Everything you need to optimize your manufacturing process and resolve issues faster than ever before.
               </p>
             </div>
-            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
               {features.map((feature) => (
                 <Card key={feature.title} className="text-center">
                   <CardHeader>
@@ -220,7 +225,7 @@ export default function HomePage() {
               <nav className="flex justify-center md:justify-end space-x-4 mt-2">
                 <Link href="/about/our-story" className="text-sm hover:text-white">Our Story</Link>
                 <Link href="/pricing" className="text-sm hover:text-white">Pricing</Link>
-                <Link href="/support/contact" className="text-sm hover:text-white">Contact</Link>
+                <Link href="/support/contact" className="text-sm hover-text-white">Contact</Link>
               </nav>
             </div>
           </div>
