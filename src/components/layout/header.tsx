@@ -110,7 +110,7 @@ export function Header() {
       {currentUser && currentUser.role !== 'operator' && (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="relative">
+                <Button variant="ghost" size="icon" className="relative focus-visible:ring-0 focus-visible:ring-offset-0">
                     {isMuted ? <BellOff className="h-5 w-5" /> : <Bell className="h-5 w-5" />}
                     <span className="sr-only">Toggle notifications menu</span>
                     {newIssuesCount > 0 && (
