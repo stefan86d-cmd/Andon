@@ -111,7 +111,7 @@ export function Header() {
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="relative">
-                    {newIssuesCount > 0 ? <Bell className="h-5 w-5" /> : <BellOff className="h-5 w-5" />}
+                    {isMuted ? <BellOff className="h-5 w-5" /> : <Bell className="h-5 w-5" />}
                     <span className="sr-only">Toggle notifications menu</span>
                     {newIssuesCount > 0 && (
                         <Badge className="absolute top-0 right-0 h-5 w-5 shrink-0 items-center justify-center rounded-full p-0 text-xs font-medium">
