@@ -268,6 +268,8 @@ export function ReportIssueDialog({
   }
 
   const currentCategory = categories.find((c) => c.id === selectedCategory);
+  const showQualityFields = selectedCategory === 'quality';
+
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -344,6 +346,38 @@ export function ReportIssueDialog({
         {step === 3 && (
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              
+              {showQualityFields && (
+                <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                    control={form.control}
+                    name="itemNumber"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Item Number</FormLabel>
+                        <FormControl>
+                            <Input {...field} placeholder="e.g., 123-ABC" />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                    <FormField
+                    control={form.control}
+                    name="quantity"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Quantity/Pieces</FormLabel>
+                        <FormControl>
+                            <Input type="number" {...field} placeholder="e.g., 10" />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                </div>
+              )}
+              
               <FormField
                 control={form.control}
                 name="description"
