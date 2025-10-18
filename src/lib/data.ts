@@ -7,6 +7,10 @@ import { collection, getDocs, doc, getDoc, query, orderBy, where, Timestamp } fr
 // This function is intended for CLIENT-SIDE use.
 export async function getClientIssues(orgId: string): Promise<Issue[]> {
     const { db } = getClientInstances();
+    if (!db) {
+        console.warn("Firestore is not initialized, skipping issue fetch.");
+        return [];
+    }
     try {
         const issuesCollection = collection(db, "issues");
         const q = query(issuesCollection, where("orgId", "==", orgId), orderBy("reportedAt", "desc"));
@@ -24,6 +28,10 @@ export async function getClientIssues(orgId: string): Promise<Issue[]> {
 // This function is intended for CLIENT-SIDE use.
 export async function getClientProductionLines(orgId: string): Promise<ProductionLine[]> {
     const { db } = getClientInstances();
+    if (!db) {
+        console.warn("Firestore is not initialized, skipping production line fetch.");
+        return [];
+    }
     try {
         const linesCollection = collection(db, "productionLines");
         const q = query(linesCollection, where("orgId", "==", orgId));
@@ -38,6 +46,10 @@ export async function getClientProductionLines(orgId: string): Promise<Productio
 // This function is intended for CLIENT-SIDE use.
 export async function getClientUserById(uid: string): Promise<User | null> {
     const { db } = getClientInstances();
+    if (!db) {
+        console.warn("Firestore is not initialized, skipping user fetch.");
+        return null;
+    }
     try {
         const userDocRef = doc(db, "users", uid);
         const userDoc = await getDoc(userDocRef);
