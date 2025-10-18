@@ -356,7 +356,7 @@ export function ReportIssueDialog({
                         <FormItem>
                         <FormLabel>Item Number</FormLabel>
                         <FormControl>
-                            <Input {...field} placeholder="e.g., 123-ABC" />
+                            <Input {...field} />
                         </FormControl>
                         <FormMessage />
                         </FormItem>
@@ -369,7 +369,7 @@ export function ReportIssueDialog({
                         <FormItem>
                         <FormLabel>Quantity/Pieces</FormLabel>
                         <FormControl>
-                            <Input type="number" {...field} placeholder="e.g., 10" />
+                            <Input type="number" {...field} />
                         </FormControl>
                         <FormMessage />
                         </FormItem>
