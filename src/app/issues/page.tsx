@@ -104,7 +104,7 @@ export default function IssuesPage() {
     setTempSelectedCategories((prev) =>
       prev.includes(categoryId)
         ? prev.filter((id) => id !== categoryId)
-        : [...prev, lineId]
+        : [...prev, categoryId]
     );
   }
 
