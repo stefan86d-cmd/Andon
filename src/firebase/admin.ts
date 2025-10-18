@@ -1,57 +1,56 @@
 
 import * as admin from "firebase-admin";
 
-// Keep a single shared instance across hot reloads and serverless cold starts.
+// This will hold the single initialized instance of the Firebase App.
 let adminApp: admin.app.App;
 
+/**
+ * Initializes and returns the Firebase Admin App instance.
+ * It ensures that the app is initialized only once.
+ */
 function getAdminApp(): admin.app.App {
-  if (!admin.apps.length) {
-    try {
-      // For production environments (like Firebase Hosting/Cloud Functions),
-      // the SDK will automatically discover credentials.
-      adminApp = admin.initializeApp();
-      console.log("✅ Initialized Firebase Admin with default credentials");
-    } catch (defaultInitError) {
-      console.warn(
-        "⚠️ Failed to initialize with default credentials. Trying manual service account for local development..."
-      );
-
-      // For local development, fall back to the service account environment variable.
-      const serviceAccountString = process.env.FIREBASE_SERVICE_ACCOUNT_ANDON_EF46A;
-
-      if (!serviceAccountString) {
-        console.error(
-          "❌ No service account found in environment variables. Firebase Admin cannot initialize for local development. Ensure FIREBASE_SERVICE_ACCOUNT_ANDON_EF46A is set in your .env.local file."
-        );
-        throw new Error(
-          "Firebase Admin SDK failed to initialize — missing service account for local development."
-        );
-      }
-
-      try {
-        const serviceAccount = JSON.parse(serviceAccountString);
-        adminApp = admin.initializeApp({
-          credential: admin.credential.cert(serviceAccount),
-        });
-        console.log("✅ Initialized Firebase Admin with manual service account for local development");
-      } catch (manualError) {
-        console.error("❌ Invalid service account JSON in environment variable.", manualError);
-        throw manualError;
-      }
-    }
-  } else {
-    // If already initialized, use the existing app instance.
-    adminApp = admin.app();
+  // If the app is already initialized, return it.
+  if (admin.apps.length > 0 && admin.apps[0]) {
+    return admin.apps[0];
   }
 
-  return adminApp;
+  // Retrieve the service account JSON from environment variables.
+  const serviceAccountString = process.env.FIREBASE_SERVICE_ACCOUNT_ANDON_EF46A;
+
+  // Check if the service account variable is set.
+  if (!serviceAccountString) {
+    console.error(
+      "❌ Firebase Admin SDK initialization failed: The FIREBASE_SERVICE_ACCOUNT_ANDON_EF46A environment variable is not set."
+    );
+    throw new Error("Firebase Admin credentials are not configured.");
+  }
+
+  try {
+    // Parse the service account string into a JSON object.
+    const serviceAccount = JSON.parse(serviceAccountString);
+
+    // Initialize the Firebase Admin App with the parsed credentials.
+    adminApp = admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount),
+    });
+
+    console.log("✅ Firebase Admin SDK initialized successfully.");
+    return adminApp;
+
+  } catch (error) {
+    console.error("❌ Firebase Admin SDK initialization failed due to an error:", error);
+    // Re-throw the error to ensure the server fails loudly if configuration is wrong.
+    throw new Error("Failed to initialize Firebase Admin SDK. Check your service account credentials.");
+  }
 }
 
-// Initialize once and export reusable instances
+// Initialize the app immediately and export the services.
+// This ensures that any credential errors are caught at startup.
 const app = getAdminApp();
 
 export const adminAuth = admin.auth(app);
 export const adminDb = admin.firestore(app);
 export const adminStorage = admin.storage(app);
 
+// Also export the app getter for any advanced use cases.
 export { getAdminApp };
