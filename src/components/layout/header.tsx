@@ -1,7 +1,7 @@
 
 "use client";
 
-import { Bell, Menu, VolumeX, Volume2, BellOff } from "lucide-react";
+import { Bell, Menu, VolumeX, Volume2, BellOff, Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UserNav } from "@/components/layout/user-nav";
 import Link from "next/link";
@@ -12,6 +12,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useEffect, useState, useRef } from "react";
@@ -20,7 +21,7 @@ import type { Issue } from "@/lib/types";
 import { Badge } from "../ui/badge";
 
 export function Header() {
-  const { currentUser } = useUser();
+  const { currentUser, updateCurrentUser } = useUser();
   const [newIssuesCount, setNewIssuesCount] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const prevIssuesCountRef = useRef(newIssuesCount);
@@ -80,6 +81,13 @@ export function Header() {
     return s.charAt(0).toUpperCase() + s.slice(1)
   }
 
+  const handleMuteToggle = () => {
+    const currentPrefs = currentUser?.notificationPreferences || {};
+    updateCurrentUser({
+      notificationPreferences: { ...currentPrefs, muteSound: !isMuted },
+    });
+  };
+
   return (
     <header className="flex h-14 items-center gap-4 border-b bg-muted/40 px-4 lg:h-[60px] lg:px-6 sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="flex items-center gap-4">
@@ -100,17 +108,36 @@ export function Header() {
       <div className="w-full flex-1" />
 
       {currentUser && currentUser.role !== 'operator' && (
-        <Button asChild variant="ghost" size="icon" className="relative">
-            <Link href="/issues">
-                {newIssuesCount > 0 ? <Bell className="h-5 w-5" /> : <BellOff className="h-5 w-5" />}
-                <span className="sr-only">View notifications</span>
-                {newIssuesCount > 0 && (
-                    <Badge className="absolute top-0 right-0 h-5 w-5 shrink-0 items-center justify-center rounded-full p-0 text-xs font-medium">
-                        {newIssuesCount}
-                    </Badge>
-                )}
-            </Link>
-        </Button>
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="relative">
+                    {newIssuesCount > 0 ? <Bell className="h-5 w-5" /> : <BellOff className="h-5 w-5" />}
+                    <span className="sr-only">Toggle notifications menu</span>
+                    {newIssuesCount > 0 && (
+                        <Badge className="absolute top-0 right-0 h-5 w-5 shrink-0 items-center justify-center rounded-full p-0 text-xs font-medium">
+                            {newIssuesCount}
+                        </Badge>
+                    )}
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+                <DropdownMenuItem asChild>
+                    <Link href="/issues" className="cursor-pointer">
+                        <Activity className="mr-2 h-4 w-4" />
+                        <span>Active Issues</span>
+                    </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleMuteToggle} className="cursor-pointer">
+                    {isMuted ? (
+                        <Volume2 className="mr-2 h-4 w-4" />
+                    ) : (
+                        <VolumeX className="mr-2 h-4 w-4" />
+                    )}
+                    <span>{isMuted ? 'Unmute' : 'Mute'} Sounds</span>
+                </DropdownMenuItem>
+            </DropdownMenuContent>
+        </DropdownMenu>
       )}
       {currentUser && (
         <div className="flex items-center gap-2">
