@@ -82,7 +82,8 @@ export function Header() {
   }
 
   const handleMuteToggle = () => {
-    const currentPrefs = currentUser?.notificationPreferences || {};
+    if (!currentUser) return;
+    const currentPrefs = currentUser.notificationPreferences || { newIssue: true, issueResolved: true, muteSound: true };
     updateCurrentUser({
       notificationPreferences: { ...currentPrefs, muteSound: !isMuted },
     });
