@@ -266,13 +266,8 @@ export function ReportIssueDialog({
 
   const currentCategory = categories.find((c) => c.id === selectedCategory);
   
-  const watchedSubCategory = form.watch("subCategory");
-
   const showExtraFields =
-    selectedCategory === "quality" ||
-    (selectedCategory === "logistics" &&
-      (watchedSubCategory === "material-shortage" ||
-        watchedSubCategory === "incorrect-material"));
+    selectedCategory === "quality" || selectedCategory === "logistics";
 
 
   return (
