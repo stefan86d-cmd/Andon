@@ -96,7 +96,6 @@ export function IssuesDataTable({ issues, title, description, loading }: { issue
 
   const handleIssueUpdate = () => {
     setSelectedIssue(null);
-    router.refresh();
   };
   
   const canResolveIssues = currentUser?.role === 'admin' || currentUser?.role === 'supervisor';
@@ -157,6 +156,12 @@ export function IssuesDataTable({ issues, title, description, loading }: { issue
                     <div className="text-sm text-muted-foreground">
                       {issue.title}
                     </div>
+                     {(issue.itemNumber || (issue.quantity && issue.quantity > 0)) && (
+                        <div className="text-xs text-muted-foreground mt-1 space-x-2">
+                           {issue.itemNumber && <span>Item: <span className="font-semibold">{issue.itemNumber}</span></span>}
+                           {issue.quantity && issue.quantity > 0 && <span>Qty: <span className="font-semibold">{issue.quantity}</span></span>}
+                        </div>
+                    )}
                   </TableCell>
                   <TableCell>
                     <Badge variant="outline" className={cn(`capitalize border-0 font-medium`, priorityColors[issue.priority])}>
