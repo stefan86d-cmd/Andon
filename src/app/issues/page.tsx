@@ -22,18 +22,28 @@ import { getClientIssues, getClientProductionLines } from "@/lib/data";
 import { allCategories } from "@/lib/constants";
 import { IssuesGrid } from "@/components/dashboard/issues-grid";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function IssuesPage() {
   const { currentUser } = useUser();
+  const isMobile = useIsMobile();
   const [issues, setIssues] = useState<Issue[]>([]);
   const [productionLines, setProductionLines] = useState<ProductionLine[]>([]);
   const [loading, setLoading] = useState(true);
-  const [view, setView] = useState<'list' | 'grid'>('list');
+  const [view, setView] = useState<'list' | 'grid'>();
 
   const [selectedLines, setSelectedLines] = useState<string[]>([]);
   const [tempSelectedLines, setTempSelectedLines] = useState<string[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [tempSelectedCategories, setTempSelectedCategories] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (isMobile) {
+      setView('grid');
+    } else {
+      setView('list');
+    }
+  }, [isMobile]);
 
   useEffect(() => {
     if (!currentUser?.orgId) return;
@@ -94,7 +104,7 @@ export default function IssuesPage() {
     setTempSelectedCategories((prev) =>
       prev.includes(categoryId)
         ? prev.filter((id) => id !== categoryId)
-        : [...prev, categoryId]
+        : [...prev, lineId]
     );
   }
 
@@ -128,6 +138,8 @@ export default function IssuesPage() {
   );
 
   const renderContent = (issues: Issue[], title: string, description: string) => {
+    if (!view) return null; // Don't render until view is determined
+
     if (view === 'list') {
       return (
         <IssuesDataTable
@@ -163,14 +175,14 @@ export default function IssuesPage() {
                 <TabsTrigger value="resolved">Resolved</TabsTrigger>
               </TabsList>
               <div className="absolute right-0 flex gap-2 items-center">
-                 <ToggleGroup type="single" value={view} onValueChange={(value) => value && setView(value as 'list' | 'grid')} aria-label="View mode">
+                 {view && <ToggleGroup type="single" value={view} onValueChange={(value) => value && setView(value as 'list' | 'grid')} aria-label="View mode">
                     <ToggleGroupItem value="list" aria-label="List view">
                         <Rows className="h-4 w-4" />
                     </ToggleGroupItem>
                     <ToggleGroupItem value="grid" aria-label="Grid view">
                         <LayoutGrid className="h-4 w-4" />
                     </ToggleGroupItem>
-                </ToggleGroup>
+                </ToggleGroup>}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="outline" size="sm" className="gap-1">
