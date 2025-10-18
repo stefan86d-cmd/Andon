@@ -99,6 +99,8 @@ export async function addUser(userData: {
       address: '',
       country: '',
       orgId,
+      notificationPreferences: { newIssue: true, issueResolved: true, muteSound: true },
+      theme: 'system',
     };
 
     await db.collection('users').doc(userRecord.uid).set(newUser);
@@ -273,7 +275,32 @@ export async function reportIssue(issueData: Omit<Issue, 'id' | 'reportedAt' | '
     };
 
     const docRef = await db.collection('issues').add(newIssue);
-    return { success: true, issueId: docRef.id };
+    const issueId = docRef.id;
+
+    // Send email notifications
+    const usersSnapshot = await db.collection('users').where('orgId', '==', issueData.orgId).get();
+    const users = usersSnapshot.docs.map(doc => doc.data() as User);
+    const recipients = users.filter(user => (user.role === 'admin' || user.role === 'supervisor') && user.notificationPreferences.newIssue);
+
+    const dashboardUrl = process.env.NEXT_PUBLIC_BASE_URL ? `${process.env.NEXT_PUBLIC_BASE_URL}/issues` : 'http://localhost:3000/issues';
+
+    for (const user of recipients) {
+        await sendEmail({
+            to: user.email,
+            subject: `New Issue Reported: ${issueData.title}`,
+            html: `<h1>New Issue Reported</h1>
+                   <p>A new issue has been reported on the production line.</p>
+                   <ul>
+                     <li><strong>Title:</strong> ${issueData.title}</li>
+                     <li><strong>Location:</strong> ${issueData.location}</li>
+                     <li><strong>Priority:</strong> ${issueData.priority}</li>
+                     <li><strong>Reported By:</strong> ${reporter.firstName} ${reporter.lastName}</li>
+                   </ul>
+                   <a href="${dashboardUrl}">View Issue Details</a>`
+        });
+    }
+
+    return { success: true, issueId };
   } catch (error) {
     return handleFirestoreError(error);
   }
@@ -289,6 +316,11 @@ export async function updateIssue(
     const resolver = await getUserByEmail(userEmail);
     if (!resolver) return { success: false, error: 'Resolving user not found.' };
 
+    const issueRef = db.collection('issues').doc(issueId);
+    const issueSnap = await issueRef.get();
+    if (!issueSnap.exists) return { success: false, error: 'Issue not found.'};
+    const issue = issueSnap.data() as Issue;
+
     const updateData: any = {
       resolutionNotes: data.resolutionNotes,
       status: data.status,
@@ -300,7 +332,30 @@ export async function updateIssue(
       updateData.resolvedBy = { name: `${resolver.firstName} ${resolver.lastName}`, email: resolver.email };
     }
 
-    await db.collection('issues').doc(issueId).update(updateData);
+    await issueRef.update(updateData);
+
+    // If the issue is resolved, notify the original reporter
+    if (data.status === 'resolved' && issue.reportedBy.email) {
+      const reporter = await getUserByEmail(issue.reportedBy.email);
+      if (reporter && reporter.notificationPreferences.issueResolved) {
+         const dashboardUrl = process.env.NEXT_PUBLIC_BASE_URL ? `${process.env.NEXT_PUBLIC_BASE_URL}/issues` : 'http://localhost:3000/issues';
+         await sendEmail({
+           to: reporter.email,
+           subject: `Your Reported Issue Has Been Resolved: ${issue.title}`,
+           html: `<h1>Issue Resolved</h1>
+                  <p>The issue you reported has been resolved.</p>
+                  <ul>
+                    <li><strong>Title:</strong> ${issue.title}</li>
+                    <li><strong>Location:</strong> ${issue.location}</li>
+                    <li><strong>Resolved By:</strong> ${resolver.firstName} ${resolver.lastName}</li>
+                    <li><strong>Resolution Notes:</strong> ${data.resolutionNotes || 'N/A'}</li>
+                  </ul>
+                  <a href="${dashboardUrl}">View Details</a>`
+         });
+      }
+    }
+
+
     return { success: true };
   } catch (error) {
     return handleFirestoreError(error);

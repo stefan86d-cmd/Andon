@@ -15,7 +15,7 @@ export async function sendEmail({ to, subject, html }: EmailPayload) {
     if (!process.env.RESEND_API_KEY || !fromEmail) {
         console.log("--- Mock Email (Resend not configured) ---");
         console.log(`To: ${to}`);
-        console.log(`From: ${fromEmail || 'not-configured@example.com'}`);
+        console.log(`From: AndonPro <${fromEmail || 'noreply@andonpro.com'}>`);
         console.log(`Subject: ${subject}`);
         console.log("--- HTML Body ---");
         console.log(html);
@@ -25,7 +25,7 @@ export async function sendEmail({ to, subject, html }: EmailPayload) {
 
     try {
         await resend.emails.send({
-            from: `AndonPro Support <${fromEmail}>`,
+            from: `AndonPro <${fromEmail}>`,
             to,
             subject,
             html,

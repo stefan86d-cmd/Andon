@@ -20,12 +20,12 @@ export type User = {
   customWorkstationLimit?: number;
   subscriptionStartsAt?: Date;
   subscriptionEndsAt?: Date;
-  notificationPreferences?: {
-    newIssue?: boolean;
-    issueResolved?: boolean;
-    muteSound?: boolean;
+  notificationPreferences: {
+    newIssue: boolean;
+    issueResolved: boolean;
+    muteSound: boolean;
   };
-  theme?: Theme;
+  theme: Theme;
 };
 
 // A simpler reference to a user, used within other documents.
