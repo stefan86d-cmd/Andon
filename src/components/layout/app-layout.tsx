@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { Suspense } from "react";
+import React, { Suspense, useEffect } from "react";
 import { Header } from "@/components/layout/header";
 import { useUser } from "@/contexts/user-context";
 import { useRouter, usePathname } from "next/navigation";
@@ -19,36 +19,35 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
   const publicPages = ['/', '/pricing', '/about', '/services', '/support', '/terms'];
   const isPublicPage = publicPages.some(page => pathname === '/' || (page !== '/' && pathname.startsWith(page)));
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (loading) {
       return; // Wait for user status to be determined
     }
 
+    // If user is logged in...
     if (currentUser) {
-      // User is logged in
+      // and their profile is incomplete, force them to the profile completion page.
       if (!currentUser.role) {
-        // Profile is incomplete, force completion
-        if (!pathname.startsWith('/complete-profile') && !pathname.startsWith('/register')) {
+        if (!pathname.startsWith('/complete-profile')) {
            router.replace(`/complete-profile?plan=${currentUser.plan || 'starter'}`);
         }
-      } else {
-        // Profile is complete, redirect from auth/public pages to their correct dashboard
-        if (isAuthPage || isPublicPage) {
-           const path = currentUser.role === 'operator' ? '/line-status' : '/dashboard';
-           router.replace(path);
-        }
+      } 
+      // If their profile is complete and they are on a public or auth page,
+      // redirect them to their appropriate dashboard.
+      else if (isPublicPage || isAuthPage) {
+        const path = currentUser.role === 'operator' ? '/line-status' : '/dashboard';
+        router.replace(path);
       }
-    } else {
-      // User is not logged in, restrict access to protected pages
-      if (!isPublicPage && !isAuthPage) {
-        router.replace('/login');
-      }
+    } 
+    // If user is not logged in, block access to protected pages.
+    else if (!isPublicPage && !isAuthPage) {
+      router.replace('/login');
     }
   }, [currentUser, loading, router, pathname, isAuthPage, isPublicPage]);
 
   // --- Render Logic ---
 
-  // While loading, show a full-page loader to prevent content flash
+  // Show a full-page loader while the initial user state is being determined.
   if (loading) {
     return (
       <div className="flex h-screen items-center justify-center">
@@ -57,29 +56,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // If we are still waiting for a redirect to happen, show a loader
-  if (!currentUser && !isPublicPage && !isAuthPage) {
-     return (
-        <div className="flex h-screen items-center justify-center">
-            <LoaderCircle className="h-8 w-8 animate-spin" />
-        </div>
-    );
-  }
-  if (currentUser && currentUser.role && (isAuthPage || isPublicPage)) {
-     return (
-        <div className="flex h-screen items-center justify-center">
-            <LoaderCircle className="h-8 w-8 animate-spin" />
-        </div>
-    );
-  }
-   if (currentUser && !currentUser.role && !pathname.startsWith('/complete-profile') && !pathname.startsWith('/register')) {
-     return (
-        <div className="flex h-screen items-center justify-center">
-            <LoaderCircle className="h-8 w-8 animate-spin" />
-        </div>
-    );
-  }
-
+  // Determine if the main app header should be shown.
   const showHeader = currentUser && currentUser.role && !isAuthPage && !isPublicPage;
 
   if (showHeader) {
@@ -100,7 +77,8 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
     );
   }
 
-  return <>{children}</>
+  // For public pages or auth pages, just render the content.
+  return <>{children}</>;
 }
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
