@@ -31,6 +31,8 @@ jobs:
         run: npm run build
         env:
           NEXT_PUBLIC_BASE_URL: https://andonpro.com
+          # This secret holds the entire content of the JSON service account key downloaded from the Google Cloud Console.
+          # It is used by the server during the build process (`next build`) to access Firebase services.
           FIREBASE_SERVICE_ACCOUNT_ANDON_EF46A: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_ANDON_EF46A }}
           NEXT_PUBLIC_FIREBASE_API_KEY: ${{ secrets.NEXT_PUBLIC_FIREBASE_API_KEY }}
           NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: ${{ secrets.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN }}
