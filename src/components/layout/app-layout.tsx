@@ -31,12 +31,23 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
         if (!pathname.startsWith('/complete-profile')) {
            router.replace(`/complete-profile?plan=${currentUser.plan || 'starter'}`);
         }
+        return; // Stop further checks until profile is complete
       } 
+
+      // If the user is an operator, ensure they are always on the line-status page.
+      if (currentUser.role === 'operator' && pathname !== '/line-status') {
+          // Allow access to settings page
+          if (pathname.startsWith('/settings')) {
+              return;
+          }
+          router.replace('/line-status');
+          return;
+      }
+      
       // If their profile is complete and they are on a public or auth page,
-      // redirect them to their appropriate dashboard.
-      else if (isPublicPage || isAuthPage) {
-        const path = currentUser.role === 'operator' ? '/line-status' : '/dashboard';
-        router.replace(path);
+      // redirect them to their appropriate dashboard (if not an operator).
+      if ((isPublicPage || isAuthPage) && currentUser.role !== 'operator') {
+        router.replace('/dashboard');
       }
     } 
     // If user is not logged in, block access to protected pages.
