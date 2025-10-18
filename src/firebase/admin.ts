@@ -29,6 +29,11 @@ function getAdminApp(): admin.app.App {
     // Parse the service account string into a JSON object.
     const serviceAccount = JSON.parse(serviceAccountString);
 
+    // IMPORTANT: Explicitly handle escaped newlines in the private key.
+    if (serviceAccount.private_key) {
+      serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+    }
+
     // Initialize the Firebase Admin App with the parsed credentials.
     adminApp = admin.initializeApp({
       credential: admin.credential.cert(serviceAccount),
@@ -37,10 +42,14 @@ function getAdminApp(): admin.app.App {
     console.log("✅ Firebase Admin SDK initialized successfully.");
     return adminApp;
 
-  } catch (error) {
+  } catch (error: any) {
     console.error("❌ Firebase Admin SDK initialization failed due to an error:", error);
+    // Add more detailed logging for parsing errors
+    if (error instanceof SyntaxError) {
+        console.error("This is likely due to a malformed JSON string in your FIREBASE_SERVICE_ACCOUNT_ANDON_EF46A environment variable.");
+    }
     // Re-throw the error to ensure the server fails loudly if configuration is wrong.
-    throw new Error("Failed to initialize Firebase Admin SDK. Check your service account credentials.");
+    throw new Error(`Failed to initialize Firebase Admin SDK. Check your service account credentials. Details: ${error.message}`);
   }
 }
 
