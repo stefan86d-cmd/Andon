@@ -63,7 +63,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
     return (
       <ThemeProvider
         attribute="class"
-        defaultTheme="light"
+        defaultTheme={currentUser.theme || "light"}
         enableSystem
         disableTransitionOnChange
       >
