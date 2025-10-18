@@ -1,48 +1,54 @@
-
 import * as admin from "firebase-admin";
 
-let adminApp: admin.app.App | undefined;
+// Keep a single shared instance across hot reloads and serverless cold starts.
+let adminApp: admin.app.App;
 
-function initializeAdminApp(): admin.app.App | undefined {
-    // In a deployed environment, the service account should be available as an environment variable.
-    // The check for admin.apps.length prevents re-initializing the app on hot reloads.
-    if (admin.apps.length > 0) {
-        return admin.app();
-    }
-
-    const serviceAccountString = process.env.FIREBASE_SERVICE_ACCOUNT_ANDON_EF46A;
-
-    if (!serviceAccountString) {
-        console.warn("FIREBASE_SERVICE_ACCOUNT_ANDON_EF46A is not set. Firebase Admin SDK will not be initialized. This is expected in client-side rendering but is an error on the server.");
-        return undefined;
-    }
-  
+function getAdminApp(): admin.app.App {
+  if (!admin.apps.length) {
     try {
-        // We need to parse the JSON string from the environment variable.
-        const serviceAccount = JSON.parse(serviceAccountString);
-        return admin.initializeApp({
-            credential: admin.credential.cert(serviceAccount),
-        });
-    } catch (error) {
-        console.error("Failed to parse service account JSON or initialize Firebase Admin SDK.", error);
-        // This is a critical failure. Throwing an error here will cause the server to fail
-        // starting up, which is better than it running in a broken state.
-        throw new Error("Could not initialize Firebase Admin SDK. Service account might be malformed.");
-    }
-}
+      // Try to initialize using the default credentials available in Firebase Hosting/Cloud Functions.
+      adminApp = admin.initializeApp();
+      console.log("✅ Initialized Firebase Admin with default credentials");
+    } catch (defaultInitError) {
+      console.warn(
+        "⚠️ Failed to initialize with default credentials. Trying manual service account..."
+      );
 
-function getAdminApp(): admin.app.App | undefined {
-  if (!adminApp) {
-    adminApp = initializeAdminApp();
+      // Fallback: for local dev or cross-project use, check if env variable is provided
+      const serviceAccountString = process.env.FIREBASE_SERVICE_ACCOUNT_ANDON_EF46A;
+
+      if (!serviceAccountString) {
+        console.error(
+          "❌ No service account found in environment variables. Firebase Admin cannot initialize."
+        );
+        throw new Error(
+          "Firebase Admin SDK failed to initialize — missing service account."
+        );
+      }
+
+      try {
+        const serviceAccount = JSON.parse(serviceAccountString);
+        adminApp = admin.initializeApp({
+          credential: admin.credential.cert(serviceAccount),
+        });
+        console.log("✅ Initialized Firebase Admin with manual service account");
+      } catch (manualError) {
+        console.error("❌ Invalid service account JSON.", manualError);
+        throw manualError;
+      }
+    }
+  } else {
+    adminApp = admin.app();
   }
+
   return adminApp;
 }
 
+// Initialize once and export reusable instances
 const app = getAdminApp();
 
-// Conditionally export the admin services. They will be undefined if initialization fails.
-export const adminAuth = app ? admin.auth(app) : undefined;
-export const adminDb = app ? admin.firestore(app) : undefined;
-export const adminStorage = app ? admin.storage(app) : undefined;
+export const adminAuth = admin.auth(app);
+export const adminDb = admin.firestore(app);
+export const adminStorage = admin.storage(app);
 
 export { getAdminApp };
