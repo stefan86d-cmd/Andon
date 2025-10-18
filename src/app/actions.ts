@@ -280,7 +280,7 @@ export async function reportIssue(issueData: Omit<Issue, 'id' | 'reportedAt' | '
     // Send email notifications
     const usersSnapshot = await db.collection('users').where('orgId', '==', issueData.orgId).get();
     const users = usersSnapshot.docs.map(doc => doc.data() as User);
-    const recipients = users.filter(user => (user.role === 'admin' || user.role === 'supervisor') && user.notificationPreferences.newIssue);
+    const recipients = users.filter(user => (user.role === 'admin' || user.role === 'supervisor') && user.notificationPreferences?.newIssue);
 
     const dashboardUrl = process.env.NEXT_PUBLIC_BASE_URL ? `${process.env.NEXT_PUBLIC_BASE_URL}/issues` : 'http://localhost:3000/issues';
 
@@ -337,7 +337,7 @@ export async function updateIssue(
     // If the issue is resolved, notify the original reporter
     if (data.status === 'resolved' && issue.reportedBy.email) {
       const reporter = await getUserByEmail(issue.reportedBy.email);
-      if (reporter && reporter.notificationPreferences.issueResolved) {
+      if (reporter && reporter.notificationPreferences?.issueResolved) {
          const dashboardUrl = process.env.NEXT_PUBLIC_BASE_URL ? `${process.env.NEXT_PUBLIC_BASE_URL}/issues` : 'http://localhost:3000/issues';
          await sendEmail({
            to: reporter.email,
