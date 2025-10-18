@@ -100,11 +100,22 @@ export function ResolveIssueDialog({ isOpen, onOpenChange, issue, onIssueUpdate 
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Resolve Issue: {issue.id}</DialogTitle>
+          <DialogTitle>Resolve Issue: {issue.location}</DialogTitle>
           <DialogDescription>
             {issue.title}
           </DialogDescription>
         </DialogHeader>
+
+        {(issue.itemNumber || (issue.quantity && issue.quantity > 0)) && (
+            <div className="space-y-2 rounded-md border bg-muted p-4">
+                <h4 className="font-medium text-sm">Item Details</h4>
+                <div className="text-sm text-muted-foreground grid grid-cols-2 gap-x-4 gap-y-1">
+                    {issue.itemNumber && <div>Item Number: <span className="font-semibold text-foreground">{issue.itemNumber}</span></div>}
+                    {issue.quantity && issue.quantity > 0 && <div>Quantity: <span className="font-semibold text-foreground">{issue.quantity}</span></div>}
+                </div>
+            </div>
+        )}
+
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
