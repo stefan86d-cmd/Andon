@@ -45,14 +45,11 @@ import {
   ArrowLeft,
   LifeBuoy,
   BadgeCheck,
-  Factory,
-  Zap,
 } from "lucide-react";
 import type { ProductionLine, Priority, IssueCategory } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { useUser } from "@/contexts/user-context";
 
-// ✅ Schema now includes all used fields
 const issueFormSchema = z.object({
   category: z.string().min(1, "Category is required."),
   subCategory: z.string().optional(),
@@ -168,7 +165,7 @@ export function ReportIssueDialog({
       location: "",
       priority: "medium",
       itemNumber: "",
-      quantity: undefined,
+      quantity: "" as any, // Use empty string for controlled input
       productionStopped: false,
     },
   });
@@ -195,7 +192,7 @@ export function ReportIssueDialog({
         location: currentLocation,
         priority: "medium",
         itemNumber: "",
-        quantity: undefined,
+        quantity: "" as any, // Use empty string for controlled input
         productionStopped: false,
       });
       setStep(1);
