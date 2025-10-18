@@ -6,7 +6,7 @@ import { IssuesDataTable } from "@/components/dashboard/issues-data-table";
 import { AppLayout } from "@/components/layout/app-layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Issue, ProductionLine, IssueCategory } from "@/lib/types";
-import { ListFilter } from "lucide-react";
+import { ListFilter, LayoutGrid, Rows } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -20,12 +20,15 @@ import { subHours } from "date-fns";
 import { useUser } from "@/contexts/user-context";
 import { getClientIssues, getClientProductionLines } from "@/lib/data";
 import { allCategories } from "@/lib/constants";
+import { IssuesGrid } from "@/components/dashboard/issues-grid";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 export default function IssuesPage() {
   const { currentUser } = useUser();
   const [issues, setIssues] = useState<Issue[]>([]);
   const [productionLines, setProductionLines] = useState<ProductionLine[]>([]);
   const [loading, setLoading] = useState(true);
+  const [view, setView] = useState<'list' | 'grid'>('list');
 
   const [selectedLines, setSelectedLines] = useState<string[]>([]);
   const [tempSelectedLines, setTempSelectedLines] = useState<string[]>([]);
@@ -124,6 +127,27 @@ export default function IssuesPage() {
     (issue) => issue.status === "resolved" && issue.resolvedAt && issue.resolvedAt > twentyFourHoursAgo
   );
 
+  const renderContent = (issues: Issue[], title: string, description: string) => {
+    if (view === 'list') {
+      return (
+        <IssuesDataTable
+          issues={issues}
+          title={title}
+          description={description}
+          loading={loading}
+        />
+      );
+    }
+    return (
+      <IssuesGrid
+        issues={issues}
+        title={title}
+        description={description}
+        loading={loading}
+      />
+    );
+  };
+
   return (
     <AppLayout>
       <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background">
@@ -138,7 +162,15 @@ export default function IssuesPage() {
                 <TabsTrigger value="active">Active</TabsTrigger>
                 <TabsTrigger value="resolved">Resolved</TabsTrigger>
               </TabsList>
-              <div className="absolute right-0 flex gap-2">
+              <div className="absolute right-0 flex gap-2 items-center">
+                 <ToggleGroup type="single" value={view} onValueChange={(value) => value && setView(value as 'list' | 'grid')} aria-label="View mode">
+                    <ToggleGroupItem value="list" aria-label="List view">
+                        <Rows className="h-4 w-4" />
+                    </ToggleGroupItem>
+                    <ToggleGroupItem value="grid" aria-label="Grid view">
+                        <LayoutGrid className="h-4 w-4" />
+                    </ToggleGroupItem>
+                </ToggleGroup>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="outline" size="sm" className="gap-1">
@@ -200,20 +232,18 @@ export default function IssuesPage() {
           )}
 
           <TabsContent value="active">
-            <IssuesDataTable
-              issues={activeIssues}
-              title="Active Issues"
-              description="A list of recently reported issues on the production line."
-              loading={loading}
-            />
+            {renderContent(
+              activeIssues,
+              "Active Issues",
+              "A list of recently reported issues on the production line."
+            )}
           </TabsContent>
           <TabsContent value="resolved">
-            <IssuesDataTable
-              issues={resolvedIssues}
-              title="Resolved Issues"
-              description="A list of issues resolved in the last 24 hours."
-              loading={loading}
-            />
+            {renderContent(
+              resolvedIssues,
+              "Resolved Issues",
+              "A list of issues resolved in the last 24 hours."
+            )}
           </TabsContent>
         </Tabs>
       </main>
