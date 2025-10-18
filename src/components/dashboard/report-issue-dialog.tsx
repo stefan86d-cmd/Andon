@@ -265,7 +265,14 @@ export function ReportIssueDialog({
   }
 
   const currentCategory = categories.find((c) => c.id === selectedCategory);
-  const showQualityFields = selectedCategory === 'quality';
+  
+  const watchedSubCategory = form.watch("subCategory");
+
+  const showExtraFields =
+    selectedCategory === "quality" ||
+    (selectedCategory === "logistics" &&
+      (watchedSubCategory === "material-shortage" ||
+        watchedSubCategory === "incorrect-material"));
 
 
   return (
@@ -344,7 +351,7 @@ export function ReportIssueDialog({
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               
-              {showQualityFields && (
+              {showExtraFields && (
                 <div className="grid grid-cols-2 gap-4">
                     <FormField
                     control={form.control}
