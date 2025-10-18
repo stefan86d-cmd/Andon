@@ -5,7 +5,6 @@ import React, { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -58,7 +57,6 @@ export function AddUserDialog({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, startTransition] = useTransition();
   const { currentUser } = useUser();
-  const router = useRouter();
 
   const form = useForm<UserFormValues>({
     resolver: zodResolver(userFormSchema),
@@ -93,7 +91,6 @@ export function AddUserDialog({ children }: { children: React.ReactNode }) {
             });
             form.reset();
             setOpen(false);
-            router.refresh();
         } else {
             toast({
               variant: "destructive",

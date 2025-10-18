@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useTransition } from "react";
@@ -17,7 +18,6 @@ import { toast } from "@/hooks/use-toast";
 import { LoaderCircle, Trash2 } from "lucide-react";
 import { deleteUser } from "@/app/actions";
 import type { User } from "@/lib/types";
-import { useRouter } from "next/navigation";
 
 interface DeleteUserDialogProps {
   user: User;
@@ -26,7 +26,6 @@ interface DeleteUserDialogProps {
 export function DeleteUserDialog({ user }: DeleteUserDialogProps) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, startSubmittingTransition] = useTransition();
-  const router = useRouter();
 
   const handleDelete = () => {
     startSubmittingTransition(async () => {
@@ -38,7 +37,6 @@ export function DeleteUserDialog({ user }: DeleteUserDialogProps) {
           description: `The user "${user.firstName} ${user.lastName}" has been deleted.`,
         });
         setOpen(false);
-        router.refresh();
       } else {
         toast({
           variant: "destructive",
