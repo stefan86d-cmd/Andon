@@ -239,6 +239,27 @@ export default function ReportsPage() {
       return { name: category.label, value: parseFloat(hours.toFixed(1)), fill: `url(#gradient-${category.id})`, color: category.color };
   }).filter(c => c.value > 0);
 
+  // 5. Item Volume by Item Number
+  const volumeByItem = filteredIssues.reduce((acc, issue) => {
+      if (issue.itemNumber && issue.quantity && issue.quantity > 0) {
+          if (!acc[issue.itemNumber]) {
+              acc[issue.itemNumber] = 0;
+          }
+          acc[issue.itemNumber] += issue.quantity;
+      }
+      return acc;
+  }, {} as Record<string, number>);
+
+  const itemVolumeData = Object.entries(volumeByItem).map(([itemName, totalQuantity], index) => {
+      const category = allCategories[index % allCategories.length];
+      return {
+          name: itemName,
+          value: totalQuantity,
+          fill: `url(#gradient-${category.id})`,
+          color: category.color,
+      };
+  }).sort((a, b) => b.value - a.value);
+
   const isAiEnabled = currentUser.plan === 'pro' || currentUser.plan === 'enterprise';
 
   return (
@@ -341,11 +362,12 @@ export default function ReportsPage() {
 
         <Tabs defaultValue="issues-by-category">
             <div className="flex justify-center">
-                <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 max-w-2xl">
+                <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5 max-w-4xl">
                     <TabsTrigger value="issues-by-category">By Category</TabsTrigger>
                     <TabsTrigger value="stops">Stops</TabsTrigger>
                     <TabsTrigger value="by-line">By Line</TabsTrigger>
                     <TabsTrigger value="trend">Trend</TabsTrigger>
+                    <TabsTrigger value="item-volume">Item Volume</TabsTrigger>
                 </TabsList>
             </div>
             <TabsContent value="issues-by-category" className="mt-4">
@@ -389,6 +411,25 @@ export default function ReportsPage() {
                     </CardHeader>
                     <CardContent>
                         <IssuesTrendChart data={issuesByDay} />
+                    </CardContent>
+                </Card>
+            </TabsContent>
+            <TabsContent value="item-volume" className="mt-4">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Total Reported Quantity by Item Number</CardTitle>
+                        <CardDescription>
+                            This chart shows the total quantity of items associated with reported issues.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                         {itemVolumeData.length > 0 ? (
+                            <FilteredBarChart data={itemVolumeData} />
+                         ) : (
+                            <div className="flex items-center justify-center h-80">
+                                <p className="text-muted-foreground">No item quantity data available for the selected filters.</p>
+                            </div>
+                         )}
                     </CardContent>
                 </Card>
             </TabsContent>
