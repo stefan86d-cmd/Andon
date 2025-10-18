@@ -4,6 +4,7 @@
 import { useEffect, useState } from "react";
 import { AppLayout } from "@/components/layout/app-layout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { Issue, IssueCategory, ProductionLine } from "@/lib/types";
 import { IssuesTrendChart } from "@/components/reports/issues-trend-chart";
 import { format, subDays, eachDayOfInterval, startOfDay, differenceInSeconds } from "date-fns";
@@ -239,26 +240,11 @@ export default function ReportsPage() {
       return { name: category.label, value: parseFloat(hours.toFixed(1)), fill: `url(#gradient-${category.id})`, color: category.color };
   }).filter(c => c.value > 0);
 
-  // 5. Item Volume by Item Number
-  const volumeByItem = filteredIssues.reduce((acc, issue) => {
-      if (issue.itemNumber && issue.quantity && issue.quantity > 0) {
-          if (!acc[issue.itemNumber]) {
-              acc[issue.itemNumber] = 0;
-          }
-          acc[issue.itemNumber] += issue.quantity;
-      }
-      return acc;
-  }, {} as Record<string, number>);
+  // 5. Item Volume Data (for Table)
+    const itemVolumeIssues = filteredIssues.filter(
+        issue => issue.itemNumber && issue.itemNumber.trim() !== ''
+    );
 
-  const itemVolumeData = Object.entries(volumeByItem).map(([itemName, totalQuantity], index) => {
-      const category = allCategories[index % allCategories.length];
-      return {
-          name: itemName,
-          value: totalQuantity,
-          fill: `url(#gradient-${category.id})`,
-          color: category.color,
-      };
-  }).sort((a, b) => b.value - a.value);
 
   const isAiEnabled = currentUser.plan === 'pro' || currentUser.plan === 'enterprise';
 
@@ -417,17 +403,36 @@ export default function ReportsPage() {
             <TabsContent value="item-volume" className="mt-4">
                 <Card>
                     <CardHeader>
-                        <CardTitle>Total Reported Quantity by Item Number</CardTitle>
+                        <CardTitle>Reported Issues by Item</CardTitle>
                         <CardDescription>
-                            This chart shows the total quantity of items associated with reported issues.
+                            A detailed list of all reported issues that include an item number.
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                         {itemVolumeData.length > 0 ? (
-                            <FilteredBarChart data={itemVolumeData} />
+                         {itemVolumeIssues.length > 0 ? (
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Item</TableHead>
+                                        <TableHead className="text-right">Pieces</TableHead>
+                                        <TableHead>Category</TableHead>
+                                        <TableHead>Sub-Category</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {itemVolumeIssues.map(issue => (
+                                        <TableRow key={issue.id}>
+                                            <TableCell className="font-medium">{issue.itemNumber}</TableCell>
+                                            <TableCell className="text-right">{issue.quantity || 0}</TableCell>
+                                            <TableCell className="capitalize">{issue.category}</TableCell>
+                                            <TableCell className="capitalize">{issue.subCategory?.replace(/-/g, ' ') || 'N/A'}</TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
                          ) : (
                             <div className="flex items-center justify-center h-80">
-                                <p className="text-muted-foreground">No item quantity data available for the selected filters.</p>
+                                <p className="text-muted-foreground">No item data available for the selected filters.</p>
                             </div>
                          )}
                     </CardContent>
