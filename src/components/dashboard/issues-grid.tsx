@@ -105,7 +105,14 @@ export function IssuesGrid({ issues, title, description, loading }: { issues: Is
         ) : issues.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {issues.map((issue) => (
-                <Card key={issue.id} onClick={() => canResolveIssues && setSelectedIssue(issue)} className={cn("flex flex-col", canResolveIssues && "cursor-pointer hover:bg-muted/50")}>
+                <Card 
+                    key={issue.id} 
+                    onClick={() => canResolveIssues && setSelectedIssue(issue)} 
+                    className={cn(
+                        "flex flex-col dark:bg-[--card-nested] dark:shadow-md", 
+                        canResolveIssues && "cursor-pointer hover:bg-muted/50 dark:hover:bg-card-nested/80"
+                    )}
+                >
                     <CardHeader>
                         <div className="flex items-center justify-between">
                             <CategoryDisplay category={issue.category} />
