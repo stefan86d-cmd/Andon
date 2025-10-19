@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { Suspense, useState, useEffect, useTransition } from 'react';
@@ -28,7 +27,7 @@ import { toast } from '@/hooks/use-toast';
 import { useUser } from '@/contexts/user-context';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
-import { sendWelcomeEmail } from '@/app/actions';
+import { sendWelcomeEmail, createPaymentIntent } from '@/app/actions';
 import { addMonths } from 'date-fns';
 
 
@@ -44,6 +43,31 @@ const profileFormSchema = z.object({
 
 type ProfileFormValues = z.infer<typeof profileFormSchema>;
 type Duration = '1' | '12' | '24' | '48';
+type Currency = 'usd' | 'eur' | 'gbp';
+
+
+const tiers: Record<Plan, { name: string; prices: Record<Duration, Record<Currency, number>> }> = {
+  starter: { 
+    name: "Starter", 
+    prices: { '1': { usd: 0, eur: 0, gbp: 0 }, '12': { usd: 0, eur: 0, gbp: 0 }, '24': { usd: 0, eur: 0, gbp: 0 }, '48': { usd: 0, eur: 0, gbp: 0 } } 
+  },
+  standard: { 
+    name: "Standard", 
+    prices: { '1': { usd: 39.99, eur: 36.99, gbp: 32.99 }, '12': { usd: 31.99, eur: 29.99, gbp: 26.99 }, '24': { usd: 27.99, eur: 25.99, gbp: 22.99 }, '48': { usd: 23.99, eur: 21.99, gbp: 19.99 } }
+  },
+  pro: { 
+    name: "Pro", 
+    prices: { '1': { usd: 59.99, eur: 54.99, gbp: 49.99 }, '12': { usd: 47.99, eur: 43.99, gbp: 39.99 }, '24': { usd: 41.99, eur: 38.99, gbp: 34.99 }, '48': { usd: 35.99, eur: 32.99, gbp: 29.99 } }
+  },
+  enterprise: { 
+    name: "Enterprise", 
+    prices: { '1': { usd: 149.99, eur: 139.99, gbp: 124.99 }, '12': { usd: 119.99, eur: 111.99, gbp: 99.99 }, '24': { usd: 104.99, eur: 97.99, gbp: 87.99 }, '48': { usd: 89.99, eur: 83.99, gbp: 74.99 } }
+  },
+  custom: {
+    name: "Custom",
+    prices: { '1': { usd: 0, eur: 0, gbp: 0 }, '12': { usd: 0, eur: 0, gbp: 0 }, '24': { usd: 0, eur: 0, gbp: 0 }, '48': { usd: 0, eur: 0, gbp: 0 } }
+  }
+};
 
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '');
@@ -54,48 +78,47 @@ function CheckoutForm({ onSuccessfulPayment, clientSecret }: { onSuccessfulPayme
     const elements = useElements();
     const [isProcessing, setIsProcessing] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const form = useFormContext<ProfileFormValues>();
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleFormSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        
+        // First, validate the profile form
+        const isProfileValid = await form.trigger();
+        if (!isProfileValid) {
+            toast({
+                title: "Incomplete Profile",
+                description: "Please fill out all required profile fields before proceeding.",
+                variant: "destructive"
+            });
+            return;
+        }
 
+        // Then, proceed with payment
         if (!stripe || !elements) {
             return;
         }
 
         setIsProcessing(true);
         
-        const { error } = await stripe.confirmPayment({
+        const { error, paymentIntent } = await stripe.confirmPayment({
             elements,
             confirmParams: {
-                // This is where the user will be redirected after payment.
-                return_url: `${window.location.origin}/dashboard`,
+                return_url: `${window.location.origin}/dashboard?payment_success=true`,
             },
-            redirect: 'if_required', // Important to handle success without redirecting immediately
+            redirect: 'if_required',
         });
 
         if (error) {
-            if (error.type === "card_error" || error.type === "validation_error") {
-                setErrorMessage(error.message || "An unexpected error occurred.");
-            } else {
-                setErrorMessage("An unexpected error occurred.");
-            }
+            setErrorMessage(error.message || "An unexpected error occurred.");
             setIsProcessing(false);
-        } else {
-            // Payment succeeded!
+        } else if (paymentIntent && paymentIntent.status === 'succeeded') {
             setErrorMessage(null);
             onSuccessfulPayment();
+        } else {
+             setIsProcessing(false);
         }
     };
-    
-    const form = useFormContext();
-
-    const handleFormSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        const isValid = await form.trigger();
-        if (isValid) {
-            await handleSubmit(e);
-        }
-    }
 
     return (
         <form id="payment-form" onSubmit={handleFormSubmit}>
@@ -121,8 +144,11 @@ function CompleteProfileContent() {
 
   const planFromUrl = searchParams.get('plan') as Plan | null;
   const durationFromUrl = searchParams.get('duration') as Duration | null;
+  const currencyFromUrl = searchParams.get('currency') as Currency | null;
+  
   const selectedPlan = planFromUrl || 'starter';
   const selectedDuration = durationFromUrl || '1';
+  const selectedCurrency = currencyFromUrl || 'usd';
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
@@ -147,13 +173,27 @@ function CompleteProfileContent() {
             phone: currentUser.phone || ""
         });
 
-        // Don't create a checkout session for free plans
         if (selectedPlan !== 'starter' && !clientSecret) {
-            // This is where you would call your backend to create a payment intent
-            // For now, we'll assume it's handled elsewhere or mocked
+            const tier = tiers[selectedPlan as Exclude<Plan, 'custom'>];
+            if (tier) {
+                const amount = tier.prices[selectedDuration][selectedCurrency];
+                
+                createPaymentIntent(amount, selectedCurrency).then(res => {
+                    if (res.clientSecret) {
+                        setClientSecret(res.clientSecret);
+                    } else {
+                        toast({
+                            title: "Payment Error",
+                            description: res.error || "Could not initialize payment. Please try again.",
+                            variant: "destructive"
+                        });
+                        router.push('/pricing');
+                    }
+                });
+            }
         }
     }
-  }, [currentUser, userLoading, router, form, selectedPlan, clientSecret]);
+  }, [currentUser, userLoading, router, form, selectedPlan, selectedDuration, selectedCurrency, clientSecret]);
   
   const handleProfileSave = async (data: ProfileFormValues) => {
     if (!currentUser || !currentUser.id) {
@@ -235,17 +275,14 @@ function CompleteProfileContent() {
 
 
   if (userLoading || !currentUser || (selectedPlan !== 'starter' && !clientSecret)) {
-    // If the plan is 'starter', we don't need a clientSecret, so don't show the loader
-    if (userLoading || !currentUser || (selectedPlan !== 'starter' && !clientSecret)) {
-       if (selectedPlan === 'starter' && currentUser) {
-            // Render the form for the starter plan without waiting for a client secret
-       } else {
-            return (
-                <div className="flex h-screen items-center justify-center">
-                    <LoaderCircle className="h-8 w-8 animate-spin" />
-                </div>
-            );
-       }
+    if (selectedPlan === 'starter' && currentUser) {
+        // Continue to render the form for the starter plan
+    } else {
+        return (
+            <div className="flex h-screen items-center justify-center">
+                <LoaderCircle className="h-8 w-8 animate-spin" />
+            </div>
+        );
     }
   }
 
@@ -373,5 +410,3 @@ export default function CompleteProfilePage() {
         </Suspense>
     )
 }
-
-    

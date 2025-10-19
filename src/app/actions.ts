@@ -1,4 +1,3 @@
-
 'use server';
 
 import {
@@ -12,8 +11,38 @@ import type { Issue, Plan, ProductionLine, Role, User } from '@/lib/types';
 import { handleFirestoreError } from '@/lib/firestore-helpers';
 import { sendEmail } from '@/lib/email';
 import { getAuth } from 'firebase/auth';
+import Stripe from 'stripe';
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: '2024-06-20',
+});
+
 
 const db = lazilyGetDb();
+
+// --- Stripe Actions ---
+
+export async function createPaymentIntent(
+  amount: number,
+  currency: string
+): Promise<{ clientSecret: string | null; error?: string }> {
+  if (!stripe) {
+    return { clientSecret: null, error: 'Stripe is not initialized.' };
+  }
+  try {
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: Math.round(amount * 100), // Stripe expects the amount in cents
+      currency: currency.toLowerCase(),
+      automatic_payment_methods: {
+        enabled: true,
+      },
+    });
+    return { clientSecret: paymentIntent.client_secret };
+  } catch (error: any) {
+    console.error('Error creating PaymentIntent:', error);
+    return { clientSecret: null, error: error.message };
+  }
+}
 
 // --- Data fetching actions ---
 
