@@ -22,10 +22,12 @@ import { Moon, Sun } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import type { Theme } from "@/lib/types";
+import { toast } from "@/hooks/use-toast";
 
 export function UserNav() {
-  const { currentUser, logout } = useUser();
-  const { setTheme } = useTheme()
+  const { currentUser, logout, updateCurrentUser } = useUser();
+  const { setTheme: setNextTheme } = useTheme();
   const router = useRouter();
 
   if (!currentUser) {
@@ -39,6 +41,15 @@ export function UserNav() {
 
   const getInitials = (firstName: string, lastName: string) => {
     return `${firstName?.[0] || ''}${lastName?.[0] || ''}`;
+  }
+
+  const handleThemeChange = (theme: Theme) => {
+    setNextTheme(theme);
+    updateCurrentUser({ theme });
+    toast({
+        title: "Theme Updated",
+        description: `Theme changed to ${theme}.`
+    });
   }
 
   return (
@@ -76,11 +87,14 @@ export function UserNav() {
           </DropdownMenuSubTrigger>
           <DropdownMenuPortal>
             <DropdownMenuSubContent>
-              <DropdownMenuItem onClick={() => setTheme("light")}>
+              <DropdownMenuItem onClick={() => handleThemeChange("light")}>
                 Light
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setTheme("dark")}>
+              <DropdownMenuItem onClick={() => handleThemeChange("dark")}>
                 Dark
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleThemeChange("system")}>
+                System
               </DropdownMenuItem>
             </DropdownMenuSubContent>
           </DropdownMenuPortal>
