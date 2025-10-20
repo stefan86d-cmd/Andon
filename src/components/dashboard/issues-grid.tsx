@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import React, { useState } from "react";
@@ -23,13 +22,13 @@ import { SafeHydrate } from "../layout/safe-hydrate";
 import { Skeleton } from "../ui/skeleton";
 import { Avatar, AvatarFallback } from "../ui/avatar";
 
-const categoryInfo: Record<IssueCategory, { label: string; icon: React.ElementType, textColor: string, borderColor: string }> = {
-    it: { label: 'IT & Network', icon: Monitor, textColor: 'text-blue-500', borderColor: 'border-blue-500' },
-    logistics: { label: 'Logistics', icon: Truck, textColor: 'text-orange-500', borderColor: 'border-orange-500' },
-    tool: { label: 'Tool & Equipment', icon: Wrench, textColor: 'text-gray-500', borderColor: 'border-gray-500' },
-    quality: { label: 'Quality', icon: BadgeCheck, textColor: 'text-green-500', borderColor: 'border-green-500' },
-    assistance: { label: 'Need Assistance', icon: LifeBuoy, textColor: 'text-red-500', borderColor: 'border-red-500' },
-    other: { label: 'Other', icon: HelpCircle, textColor: 'text-purple-500', borderColor: 'border-purple-500' },
+const categoryInfo: Record<IssueCategory, { label: string; icon: React.ElementType, textColor: string, bgColor: string }> = {
+    it: { label: 'IT & Network', icon: Monitor, textColor: 'text-blue-500', bgColor: 'bg-blue-500' },
+    logistics: { label: 'Logistics', icon: Truck, textColor: 'text-orange-500', bgColor: 'bg-orange-500' },
+    tool: { label: 'Tool & Equipment', icon: Wrench, textColor: 'text-gray-500', bgColor: 'bg-gray-500' },
+    quality: { label: 'Quality', icon: BadgeCheck, textColor: 'text-green-500', bgColor: 'bg-green-500' },
+    assistance: { label: 'Need Assistance', icon: LifeBuoy, textColor: 'text-red-500', bgColor: 'bg-red-500' },
+    other: { label: 'Other', icon: HelpCircle, textColor: 'text-purple-500', bgColor: 'bg-purple-500' },
 };
 
 const CategoryDisplay = ({ category }: { category: IssueCategory }) => {
@@ -113,11 +112,11 @@ export function IssuesGrid({ issues, title, description, loading, onIssueUpdate 
                         key={issue.id} 
                         onClick={() => canResolveIssues && setSelectedIssue(issue)} 
                         className={cn(
-                            "flex flex-col dark:bg-[--card-nested] dark:shadow-md border-2", 
-                            categoryStyle.borderColor,
+                            "flex flex-col overflow-hidden dark:bg-card-nested dark:shadow-md",
                             canResolveIssues && "cursor-pointer hover:bg-muted/50 dark:hover:bg-card-nested/80"
                         )}
                     >
+                        <div className={cn("h-2 w-full", categoryStyle.bgColor)}></div>
                         <CardHeader>
                             <div className="flex items-center justify-between">
                                 <CategoryDisplay category={issue.category} />
