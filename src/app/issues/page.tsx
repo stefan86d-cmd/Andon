@@ -46,28 +46,30 @@ export default function IssuesPage() {
     }
   }, [isMobile]);
 
+  const fetchData = async () => {
+      if (!currentUser?.orgId) return;
+      setLoading(true);
+      const [issuesData, linesData] = await Promise.all([
+          getClientIssues(currentUser.orgId!),
+          getClientProductionLines(currentUser.orgId!),
+      ]);
+      setIssues(issuesData);
+      setProductionLines(linesData);
+      setLoading(false);
+
+      if (issuesData.length > 0) {
+          const latestIssueTimestamp = new Date(issuesData[0].reportedAt).getTime();
+          const lastSeen = localStorage.getItem('lastSeenIssueTimestamp');
+          if (!lastSeen || latestIssueTimestamp > parseInt(lastSeen, 10)) {
+              localStorage.setItem('lastSeenIssueTimestamp', latestIssueTimestamp.toString());
+              window.dispatchEvent(new StorageEvent('storage', { key: 'lastSeenIssueTimestamp' }));
+          }
+      }
+  };
+
   useEffect(() => {
     if (!currentUser?.orgId) return;
 
-    const fetchData = async () => {
-        setLoading(true);
-        const [issuesData, linesData] = await Promise.all([
-            getClientIssues(currentUser.orgId!),
-            getClientProductionLines(currentUser.orgId!),
-        ]);
-        setIssues(issuesData);
-        setProductionLines(linesData);
-        setLoading(false);
-
-        if (issuesData.length > 0) {
-            const latestIssueTimestamp = new Date(issuesData[0].reportedAt).getTime();
-            const lastSeen = localStorage.getItem('lastSeenIssueTimestamp');
-            if (!lastSeen || latestIssueTimestamp > parseInt(lastSeen, 10)) {
-                localStorage.setItem('lastSeenIssueTimestamp', latestIssueTimestamp.toString());
-                window.dispatchEvent(new StorageEvent('storage', { key: 'lastSeenIssueTimestamp' }));
-            }
-        }
-    };
     fetchData();
 
     const handleStorageChange = (event: StorageEvent) => {
@@ -148,6 +150,7 @@ export default function IssuesPage() {
           title={title}
           description={description}
           loading={loading}
+          onIssueUpdate={fetchData}
         />
       );
     }
@@ -157,6 +160,7 @@ export default function IssuesPage() {
         title={title}
         description={description}
         loading={loading}
+        onIssueUpdate={fetchData}
       />
     );
   };

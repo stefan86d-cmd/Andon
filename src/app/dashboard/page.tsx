@@ -28,16 +28,17 @@ export default function Home() {
   const [recentIssues, setRecentIssues] = useState<Issue[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const fetchData = async () => {
+    if (!currentUser?.orgId) return;
+    setLoading(true);
+    const issuesData = await getClientIssues(currentUser.orgId!);
+    setAllIssues(issuesData);
+    setRecentIssues(issuesData.slice(0, 5));
+    setLoading(false);
+  };
+
   useEffect(() => {
     if (!currentUser?.orgId) return;
-
-    const fetchData = async () => {
-      setLoading(true);
-      const issuesData = await getClientIssues(currentUser.orgId!);
-      setAllIssues(issuesData);
-      setRecentIssues(issuesData.slice(0, 5));
-      setLoading(false);
-    };
 
     fetchData();
     const interval = setInterval(fetchData, 30000);
@@ -211,7 +212,11 @@ export default function Home() {
                 },
               ]}
             />
-            <IssuesDataTable issues={recentIssues} title="Recent Issues" />
+            <IssuesDataTable 
+                issues={recentIssues} 
+                title="Recent Issues" 
+                onIssueUpdate={fetchData} 
+            />
           </>
         )}
       </main>

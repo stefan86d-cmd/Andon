@@ -81,11 +81,10 @@ export function ResolveIssueDialog({ isOpen, onOpenChange, issue, onIssueUpdate 
         if (result.success) {
             toast({
                 title: "Issue Updated",
-                description: `The issue has been marked as ${data.status}.`,
+                description: `The issue has been marked as ${data.status.replace('_', ' ')}.`,
             });
             onIssueUpdate();
             onOpenChange(false);
-            form.reset();
         } else {
             toast({
                 title: "Update Failed",
@@ -95,6 +94,18 @@ export function ResolveIssueDialog({ isOpen, onOpenChange, issue, onIssueUpdate 
         }
     });
   }
+
+  // Reset form when the dialog opens or the issue changes
+  React.useEffect(() => {
+    if (isOpen) {
+      form.reset({
+        resolutionNotes: issue.resolutionNotes || "",
+        status: issue.status === 'resolved' ? 'resolved' : 'in_progress',
+        productionStopped: issue.productionStopped || false,
+      });
+    }
+  }, [isOpen, issue, form]);
+
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -141,7 +152,7 @@ export function ResolveIssueDialog({ isOpen, onOpenChange, issue, onIssueUpdate 
                     <FormLabel>Status</FormLabel>
                   <Select
                     onValueChange={field.onChange}
-                    defaultValue={field.value}
+                    value={field.value}
                   >
                     <FormControl>
                       <SelectTrigger>

@@ -89,13 +89,14 @@ const StatusDisplay = ({ status }: { status: Status }) => {
     );
 };
 
-export function IssuesDataTable({ issues, title, description, loading }: { issues: Issue[], title?: string, description?: string, loading?: boolean }) {
+export function IssuesDataTable({ issues, title, description, loading, onIssueUpdate }: { issues: Issue[], title?: string, description?: string, loading?: boolean, onIssueUpdate?: () => void }) {
   const { currentUser } = useUser();
   const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
   const router = useRouter();
 
   const handleIssueUpdate = () => {
     setSelectedIssue(null);
+    if (onIssueUpdate) onIssueUpdate();
   };
   
   const canResolveIssues = currentUser?.role === 'admin' || currentUser?.role === 'supervisor';

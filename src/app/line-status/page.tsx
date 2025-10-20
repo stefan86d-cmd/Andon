@@ -68,6 +68,8 @@ export default function LineStatusPage() {
   useEffect(() => {
     if (selectionConfirmed) {
       fetchIssuesForStation();
+      const interval = setInterval(fetchIssuesForStation, 30000);
+      return () => clearInterval(interval);
     }
   }, [selectionConfirmed, fetchIssuesForStation]);
 
@@ -172,6 +174,7 @@ export default function LineStatusPage() {
                     loading={issuesLoading}
                     title="Recent Issues at Your Station"
                     description="Issues reported on this workstation in the last 24 hours." 
+                    onIssueUpdate={fetchIssuesForStation}
                 />
             </div>
         )}

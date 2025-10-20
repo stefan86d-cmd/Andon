@@ -77,12 +77,13 @@ const getInitials = (name: string) => {
 }
 
 
-export function IssuesGrid({ issues, title, description, loading }: { issues: Issue[], title?: string, description?: string, loading?: boolean }) {
+export function IssuesGrid({ issues, title, description, loading, onIssueUpdate }: { issues: Issue[], title?: string, description?: string, loading?: boolean, onIssueUpdate?: () => void }) {
   const { currentUser } = useUser();
   const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
 
   const handleIssueUpdate = () => {
     setSelectedIssue(null);
+    if (onIssueUpdate) onIssueUpdate();
   };
   
   const canResolveIssues = currentUser?.role === 'admin' || currentUser?.role === 'supervisor';
