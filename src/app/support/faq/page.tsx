@@ -66,6 +66,14 @@ const faqs = [
     {
         question: "What issue categories can I report?",
         answer: "AndonPro comes with several predefined categories to help you classify issues effectively. These include: <ul class='list-disc pl-5 space-y-2 mt-2'><li>IT & Network</li><li>Logistics</li><li>Tool & Equipment</li><li>Quality Control</li><li>Need Assistance</li><li>Other</li></ul> We are constantly working on expanding our features and adding more customization options for future releases."
+    },
+    {
+        question: "Does AndonPro support dark and light modes?",
+        answer: "Yes, AndonPro supports both light and dark themes. You can switch between them, or set it to follow your system's preference. Your choice is saved to your user profile and can be changed at any time from the user menu in the top-right corner or in your account settings."
+    },
+    {
+        question: "How do I manage my notifications?",
+        answer: "You can control your notification preferences in the 'Settings' page. This includes enabling or disabling email alerts for new or resolved issues. You can also mute all notification sounds within the app from the bell icon in the header."
     }
 ]
 
