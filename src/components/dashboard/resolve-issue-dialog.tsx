@@ -65,7 +65,7 @@ export function ResolveIssueDialog({ isOpen, onOpenChange, issue, onIssueUpdate 
     resolver: zodResolver(resolveIssueFormSchema),
     defaultValues: {
       resolutionNotes: issue.resolutionNotes || "",
-      status: issue.status === 'resolved' ? 'resolved' : 'in_progress',
+      status: issue.status,
       productionStopped: issue.productionStopped || false,
     },
   });
@@ -100,7 +100,7 @@ export function ResolveIssueDialog({ isOpen, onOpenChange, issue, onIssueUpdate 
     if (isOpen) {
       form.reset({
         resolutionNotes: issue.resolutionNotes || "",
-        status: issue.status === 'resolved' ? 'resolved' : 'in_progress',
+        status: issue.status,
         productionStopped: issue.productionStopped || false,
       });
     }
