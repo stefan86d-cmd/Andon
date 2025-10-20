@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { useState } from "react";
@@ -131,6 +132,12 @@ export function IssuesGrid({ issues, title, description, loading, onIssueUpdate 
                             <div className="text-xs text-muted-foreground pt-2 space-x-4">
                                {issue.itemNumber && <span>Item: <span className="font-semibold text-foreground">{issue.itemNumber}</span></span>}
                                {issue.quantity && issue.quantity > 0 && <span>Qty: <span className="font-semibold text-foreground">{issue.quantity}</span></span>}
+                            </div>
+                        )}
+                         {issue.status === 'resolved' && issue.resolutionNotes && (
+                            <div className="pt-2">
+                                <p className="text-xs font-semibold text-foreground">Resolution Notes:</p>
+                                <p className="text-xs text-muted-foreground italic">"{issue.resolutionNotes}"</p>
                             </div>
                         )}
                       </CardContent>

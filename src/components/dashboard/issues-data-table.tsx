@@ -163,6 +163,12 @@ export function IssuesDataTable({ issues, title, description, loading, onIssueUp
                            {issue.quantity && issue.quantity > 0 && <span>Qty: <span className="font-semibold">{issue.quantity}</span></span>}
                         </div>
                     )}
+                    {issue.status === 'resolved' && issue.resolutionNotes && (
+                        <div className="text-xs text-muted-foreground mt-2 border-l-2 pl-2">
+                           <span className="italic">"{issue.resolutionNotes}"</span>
+                           {issue.resolvedBy && <span className="text-foreground font-semibold"> - {issue.resolvedBy.name}</span>}
+                        </div>
+                    )}
                   </TableCell>
                   <TableCell>
                     <Badge variant="outline" className={cn(`capitalize border-0 font-medium`, priorityColors[issue.priority])}>
