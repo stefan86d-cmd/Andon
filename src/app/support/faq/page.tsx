@@ -45,35 +45,81 @@ const supportImage = PlaceHolderImages.find(p => p.id === 'mega-menu-support');
 const faqs = [
     {
         question: "What is AndonPro?",
-        answer: "AndonPro is a modern, intuitive application designed to monitor and manage production line workflows. It allows operators to report issues in real-time from any workstation, which helps teams minimize downtime and improve overall efficiency. Supervisors and administrators get a live overview of the entire production line, can track key performance indicators, and use data-driven insights to make decisions."
+        answer: () => (
+            <p>
+                AndonPro is a modern, intuitive application designed to monitor and manage production line workflows. It allows operators to report issues in real-time from any workstation, which helps teams minimize downtime and improve overall efficiency. Supervisors and administrators get a live overview of the entire production line, can track key performance indicators, and use data-driven insights to make decisions.
+            </p>
+        )
     },
     {
         question: "What are the different user roles?",
-        answer: "AndonPro has three distinct user roles to ensure that team members have access to the features they need: <ul class='list-disc pl-5 space-y-2 mt-2'><li><strong>Admin:</strong> Has full control over the entire system, including user management, production line configuration, billing, and access to all reports and dashboards.</li><li><strong>Supervisor:</strong> Oversees production line operations. They can manage and resolve issues, monitor dashboards, and view reports, but cannot manage users or billing.</li><li><strong>Operator:</strong> Works on the production line. Their primary function is to report issues from their assigned workstation quickly and efficiently.</li></ul>"
+        answer: () => (
+            <>
+                <p>AndonPro has three distinct user roles to ensure that team members have access to the features they need:</p>
+                <ul className='list-disc pl-5 space-y-2 mt-2'>
+                    <li><strong>Admin:</strong> Has full control over the entire system, including user management, production line configuration, billing, and access to all reports and dashboards.</li>
+                    <li><strong>Supervisor:</strong> Oversees production line operations. They can manage and resolve issues, monitor dashboards, and view reports, but cannot manage users or billing.</li>
+                    <li><strong>Operator:</strong> Works on the production line. Their primary function is to report issues from their assigned workstation quickly and efficiently.</li>
+                </ul>
+            </>
+        )
     },
     {
         question: "How do I sign up for AndonPro?",
-        answer: "You can sign up using your existing Google or Microsoft account for a fast and secure registration process. Alternatively, you can register directly with your email address and create a new password. Simply choose your preferred option on the registration page to get started."
+        answer: () => (
+           <p>
+                You can sign up using your existing Google or Microsoft account for a fast and secure registration process. Alternatively, you can register directly with your email address and create a new password. Simply choose your preferred option on the registration page to get started.
+           </p>
+        )
     },
     {
         question: "What pricing tiers are available?",
-        answer: "We offer a range of pricing tiers to fit teams of all sizes. Our plans include a free **Starter** tier for small teams, a **Standard** tier for growing factories, a **Pro** tier with advanced features, an **Enterprise** plan for large-scale operations, and a **Custom** plan for unique requirements. You can find detailed information on our <a href='/pricing' class='text-primary underline'>Pricing Page</a>."
+        answer: () => (
+            <p>
+                We offer a range of pricing tiers to fit teams of all sizes. Our plans include a free <strong>Starter</strong> tier for small teams, a <strong>Standard</strong> tier for growing factories, a <strong>Pro</strong> tier with advanced features, an <strong>Enterprise</strong> plan for large-scale operations, and a <strong>Custom</strong> plan for unique requirements. You can find detailed information on our <Link href='/pricing' className='text-primary underline'>Pricing Page</Link>.
+            </p>
+        )
     },
     {
         question: "How customizable is the platform?",
-        answer: "AndonPro is highly customizable. Administrators can define their own production lines and add, edit, or remove the specific workstations within each line. This ensures that the application's structure perfectly mirrors your factory's layout and workflow."
+        answer: () => (
+            <p>
+                AndonPro is highly customizable. Administrators can define their own production lines and add, edit, or remove the specific workstations within each line. This ensures that the application's structure perfectly mirrors your factory's layout and workflow.
+            </p>
+        )
     },
     {
         question: "What issue categories can I report?",
-        answer: "AndonPro comes with several predefined categories to help you classify issues effectively. These include: <ul class='list-disc pl-5 space-y-2 mt-2'><li>IT & Network</li><li>Logistics</li><li>Tool & Equipment</li><li>Quality Control</li><li>Need Assistance</li><li>Other</li></ul> We are constantly working on expanding our features and adding more customization options for future releases."
+        answer: () => (
+            <>
+                <p>AndonPro comes with several predefined categories to help you classify issues effectively. These include:</p>
+                <ul className='list-disc pl-5 space-y-2 mt-2'>
+                    <li>IT & Network</li>
+                    <li>Logistics</li>
+                    <li>Tool & Equipment</li>
+                    <li>Quality Control</li>
+                    <li>Need Assistance</li>
+                    <li>Other</li>
+                </ul>
+                <p className="mt-2">We are constantly working on expanding our features and adding more customization options for future releases.</p>
+            </>
+        )
     },
     {
         question: "Does AndonPro support dark and light modes?",
-        answer: "Yes, AndonPro supports both light and dark themes. You can switch between them, or set it to follow your system's preference. Your choice is saved to your user profile and can be changed at any time from the user menu in the top-right corner or in your account settings."
+        answer: () => (
+            <p>
+                Yes, AndonPro supports both light and dark themes. You can switch between them, or set it to follow your system's preference. Your choice is saved to your user profile and can be changed at any time from the user menu in the top-right corner or in your account settings.
+            </p>
+        )
     },
     {
         question: "How do I manage my notifications?",
-        answer: "You can control your notification preferences in the 'Settings' page. This includes enabling or disabling email alerts for new or resolved issues. You can also mute all notification sounds within the app from the bell icon in the header."
+        answer: () => (
+            <p>
+                You can control your notification preferences in the 'Settings' page. This includes enabling or disabling email alerts for new or resolved issues. You can also mute all notification sounds within the app from the bell icon in the header.
+            </p>
+        )
     }
 ]
 
@@ -190,7 +236,7 @@ export default function FaqPage() {
                         <AccordionItem value={`item-${index + 1}`} key={index}>
                             <AccordionTrigger className="text-lg text-left">{faq.question}</AccordionTrigger>
                             <AccordionContent className="text-base text-muted-foreground leading-relaxed">
-                                <div dangerouslySetInnerHTML={{ __html: faq.answer }} />
+                                <faq.answer />
                             </AccordionContent>
                         </AccordionItem>
                     ))}
