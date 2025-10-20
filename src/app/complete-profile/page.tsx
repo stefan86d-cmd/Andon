@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { Suspense, useState, useEffect, useTransition } from 'react';
@@ -141,6 +142,11 @@ function CompleteProfileContent() {
   
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [isSubmitting, startTransition] = useTransition();
+  const [year, setYear] = useState(new Date().getFullYear());
+
+  useEffect(() => {
+    setYear(new Date().getFullYear());
+  }, []);
 
   const planFromUrl = searchParams.get('plan') as Plan | null;
   const durationFromUrl = searchParams.get('duration') as Duration | null;
@@ -391,7 +397,7 @@ function CompleteProfileContent() {
                 </Card>
             </div>
             <footer className="mt-8 text-center text-sm text-muted-foreground">
-                © {new Date().getFullYear()} AndonPro. All rights reserved.
+                © {year} AndonPro. All rights reserved.
             </footer>
         </div>
     </div>

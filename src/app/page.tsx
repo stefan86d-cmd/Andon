@@ -1,4 +1,6 @@
 
+"use client";
+
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
@@ -12,6 +14,7 @@ import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
+import { useState, useEffect } from 'react';
 
 const features = [
   {
@@ -66,6 +69,11 @@ const MobileNavLink = ({ href, children }: { href: string; children: React.React
 
 
 export default function HomePage() {
+  const [year, setYear] = useState(new Date().getFullYear());
+
+  useEffect(() => {
+    setYear(new Date().getFullYear());
+  }, []);
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
@@ -224,11 +232,11 @@ export default function HomePage() {
               <FooterLogo />
             </div>
             <div className="text-center md:text-right">
-              <p>&copy; {new Date().getFullYear()} AndonPro. All rights reserved.</p>
+              <p>&copy; {year} AndonPro. All rights reserved.</p>
               <nav className="flex justify-center md:justify-end space-x-4 mt-2">
                 <Link href="/about/our-story" className="text-sm hover:text-white">Our Story</Link>
                 <Link href="/pricing" className="text-sm hover:text-white">Pricing</Link>
-                <Link href="/support/contact" className="text-sm hover-text-white">Contact</Link>
+                <Link href="/support/contact" className="text-sm hover:text-white">Contact</Link>
               </nav>
             </div>
           </div>

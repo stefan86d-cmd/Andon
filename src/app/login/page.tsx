@@ -1,6 +1,7 @@
+
 "use client";
 
-import React, { useState, useTransition } from 'react';
+import React, { useState, useTransition, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import {
@@ -62,8 +63,13 @@ export default function LoginPage() {
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [isMicrosoftLoading, setIsMicrosoftLoading] = useState(false);
   const [isLoggingIn, startLoginTransition] = useTransition();
+  const [year, setYear] = useState(new Date().getFullYear());
   const router = useRouter();
   const { login, signInWithGoogle, signInWithMicrosoft } = useUser();
+
+  useEffect(() => {
+    setYear(new Date().getFullYear());
+  }, []);
 
   // --- Login handler ---
   const handleLogin = (e: React.FormEvent) => {
@@ -217,7 +223,7 @@ export default function LoginPage() {
         </div>
 
         <footer className="mt-8 text-center text-sm text-muted-foreground">
-          <p>© {new Date().getFullYear()} AndonPro. All rights reserved.</p>
+          <p>© {year} AndonPro. All rights reserved.</p>
           <p className="mt-2">
             <Link href="/" className="underline">
               Back to Home

@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { Suspense, useState, useTransition } from 'react';
+import React, { Suspense, useState, useTransition, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -73,6 +73,11 @@ function RegisterContent() {
   const [isLoading, startEmailRegisterTransition] = useTransition();
   const [isGoogleLoading, startGoogleRegisterTransition] = useTransition();
   const [isMicrosoftLoading, startMicrosoftRegisterTransition] = useTransition();
+  const [year, setYear] = useState(new Date().getFullYear());
+
+  useEffect(() => {
+    setYear(new Date().getFullYear());
+  }, []);
 
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerFormSchema),
@@ -192,7 +197,7 @@ function RegisterContent() {
                 </CardContent>
             </Card>
             <footer className="mt-8 text-center text-sm text-muted-foreground">
-                © {new Date().getFullYear()} AndonPro. All rights reserved.
+                © {year} AndonPro. All rights reserved.
             </footer>
         </div>
     </div>

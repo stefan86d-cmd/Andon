@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { Suspense, useState, useMemo, useTransition } from 'react';
+import React, { Suspense, useState, useMemo, useTransition, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import {
@@ -68,6 +68,11 @@ function CheckoutContent() {
   const searchParams = useSearchParams();
   const { currentUser, updateCurrentUser } = useUser();
   const [isSubmitting, startTransition] = useTransition();
+  const [year, setYear] = useState(new Date().getFullYear());
+
+  useEffect(() => {
+    setYear(new Date().getFullYear());
+  }, []);
 
   const isExistingUser = !!currentUser;
   
@@ -234,7 +239,7 @@ function CheckoutContent() {
                 </div>
             </div>
             <footer className="mt-8 text-center text-sm text-muted-foreground">
-                © {new Date().getFullYear()} AndonPro. All rights reserved.
+                © {year} AndonPro. All rights reserved.
             </footer>
         </div>
     </div>

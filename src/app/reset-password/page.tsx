@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState, useTransition, Suspense } from 'react';
+import React, { useState, useTransition, Suspense, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -184,6 +184,11 @@ function ResetPasswordContent() {
 
 
 export default function ResetPasswordPage() {
+    const [year, setYear] = useState(new Date().getFullYear());
+
+    useEffect(() => {
+        setYear(new Date().getFullYear());
+    }, []);
     return (
         <div className="bg-muted">
             <div className="container mx-auto flex min-h-screen flex-col items-center justify-center py-12">
@@ -196,7 +201,7 @@ export default function ResetPasswordPage() {
                 </Suspense>
             </div>
              <footer className="mt-8 text-center text-sm text-muted-foreground pb-8">
-                © {new Date().getFullYear()} AndonPro. All rights reserved.
+                © {year} AndonPro. All rights reserved.
             </footer>
         </div>
     )

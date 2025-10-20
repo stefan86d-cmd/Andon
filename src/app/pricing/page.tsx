@@ -8,7 +8,7 @@ import Link from "next/link";
 import { Logo } from "@/components/layout/logo";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MegaMenu } from "@/components/layout/mega-menu";
 import FooterLogo from "@/components/layout/footer-logo";
@@ -169,6 +169,11 @@ export default function PricingPage() {
     const [duration, setDuration] = useState<Duration>('12');
     const [currency, setCurrency] = useState<Currency>('usd');
     const { currentUser } = useUser();
+    const [year, setYear] = useState(new Date().getFullYear());
+
+    useEffect(() => {
+        setYear(new Date().getFullYear());
+    }, []);
     const currencySymbols = {
         usd: '$',
         eur: '€',
@@ -448,7 +453,7 @@ export default function PricingPage() {
               <FooterLogo />
             </div>
             <div className="text-center md:text-right">
-              <p>&copy; {new Date().getFullYear()} AndonPro. All rights reserved.</p>
+              <p>&copy; {year} AndonPro. All rights reserved.</p>
               <nav className="flex justify-center md:justify-end space-x-4 mt-2">
                 <Link href="/about/our-story" className="text-sm hover:text-white">Our Story</Link>
                 <Link href="/pricing" className="text-sm hover:text-white">Pricing</Link>

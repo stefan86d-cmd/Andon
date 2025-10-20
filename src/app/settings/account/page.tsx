@@ -61,6 +61,11 @@ export default function AccountSettingsPage() {
     
     // State for toggling profile edit mode
     const [isEditingProfile, setIsEditingProfile] = useState(false);
+    const [year, setYear] = useState(new Date().getFullYear());
+
+    useEffect(() => {
+        setYear(new Date().getFullYear());
+    }, []);
 
 
     const profileForm = useForm<ProfileFormValues>({
@@ -437,7 +442,7 @@ export default function AccountSettingsPage() {
                     </div>
                 </div>
                 <footer className="mt-8 text-center text-sm text-muted-foreground">
-                    © {new Date().getFullYear()} AndonPro. All rights reserved.
+                    © {year} AndonPro. All rights reserved.
                 </footer>
             </div>
         </div>

@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState, useTransition } from 'react';
+import React, { useState, useTransition, useEffect } from 'react';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -30,6 +30,11 @@ type FormValues = z.infer<typeof formSchema>;
 export default function ForgotPasswordPage() {
   const [isSubmitting, startTransition] = useTransition();
   const [submitted, setSubmitted] = useState(false);
+  const [year, setYear] = useState(new Date().getFullYear());
+
+  useEffect(() => {
+    setYear(new Date().getFullYear());
+  }, []);
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -111,7 +116,7 @@ export default function ForgotPasswordPage() {
                 </Card>
             </div>
             <footer className="mt-8 text-center text-sm text-muted-foreground">
-                © {new Date().getFullYear()} AndonPro. All rights reserved.
+                © {year} AndonPro. All rights reserved.
             </footer>
         </div>
     </div>

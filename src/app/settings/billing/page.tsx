@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { LoaderCircle } from "lucide-react";
 import { useUser } from "@/contexts/user-context";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import { toast } from "@/hooks/use-toast";
 import type { Plan } from "@/lib/types";
@@ -58,6 +58,11 @@ export default function BillingPage() {
 
     const [currency, setCurrency] = useState<Currency>('usd');
     const [newPlan, setNewPlan] = useState<Plan | undefined>(currentUser?.plan);
+    const [year, setYear] = useState(new Date().getFullYear());
+
+    useEffect(() => {
+        setYear(new Date().getFullYear());
+    }, []);
 
     if (!currentUser) {
         return (
@@ -174,12 +179,9 @@ export default function BillingPage() {
                     </div>
                 </div>
                 <footer className="mt-8 text-center text-sm text-muted-foreground">
-                    © {new Date().getFullYear()} AndonPro. All rights reserved.
+                    © {year} AndonPro. All rights reserved.
                 </footer>
             </div>
         </div>
     );
 }
-
-
-    
