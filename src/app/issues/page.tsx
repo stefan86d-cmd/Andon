@@ -170,20 +170,20 @@ export default function IssuesPage() {
       <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background">
         <div className="flex items-center justify-between mb-4">
           <h1 className="text-lg font-semibold md:text-2xl">Issue Tracker</h1>
+          {view && <ToggleGroup type="single" value={view} onValueChange={(value) => value && setView(value as 'list' | 'grid')} aria-label="View mode">
+              <ToggleGroupItem value="list" aria-label="List view">
+                  <Rows className="h-4 w-4" />
+              </ToggleGroupItem>
+              <ToggleGroupItem value="grid" aria-label="Grid view">
+                  <LayoutGrid className="h-4 w-4" />
+              </ToggleGroupItem>
+          </ToggleGroup>}
         </div>
         
         {currentUser?.role !== 'operator' && (
           <>
             <Card className="mb-4">
               <CardContent className="p-4 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4">
-                  {view && <ToggleGroup type="single" value={view} onValueChange={(value) => value && setView(value as 'list' | 'grid')} aria-label="View mode">
-                      <ToggleGroupItem value="list" aria-label="List view">
-                          <Rows className="h-4 w-4" />
-                      </ToggleGroupItem>
-                      <ToggleGroupItem value="grid" aria-label="Grid view">
-                          <LayoutGrid className="h-4 w-4" />
-                      </ToggleGroupItem>
-                  </ToggleGroup>}
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="outline" size="sm" className="gap-1 w-full sm:w-auto">
