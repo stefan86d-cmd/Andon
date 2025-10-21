@@ -34,7 +34,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
-import type { Issue } from "@/lib/types";
+import type { Issue, Status } from "@/lib/types";
 import { useUser } from "@/contexts/user-context";
 import { Checkbox } from "../ui/checkbox";
 import { updateIssue } from "@/app/actions";
@@ -65,7 +65,7 @@ export function ResolveIssueDialog({ isOpen, onOpenChange, issue, onIssueUpdate 
     resolver: zodResolver(resolveIssueFormSchema),
     defaultValues: {
       resolutionNotes: issue.resolutionNotes || "",
-      status: issue.status,
+      status: issue.status === "reported" ? "in_progress" : issue.status,
       productionStopped: issue.productionStopped || false,
     },
   });
@@ -88,7 +88,7 @@ export function ResolveIssueDialog({ isOpen, onOpenChange, issue, onIssueUpdate 
         } else {
             toast({
                 title: "Update Failed",
-                description: result.error,
+                description: "error" in result && typeof result.error === 'string' ? result.error : 'An unknown error occurred.',
                 variant: "destructive"
             });
         }
@@ -100,7 +100,7 @@ export function ResolveIssueDialog({ isOpen, onOpenChange, issue, onIssueUpdate 
     if (isOpen) {
       form.reset({
         resolutionNotes: issue.resolutionNotes || "",
-        status: issue.status,
+        status: issue.status === "reported" ? "in_progress" : issue.status,
         productionStopped: issue.productionStopped || false,
       });
     }
