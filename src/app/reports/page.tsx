@@ -417,6 +417,7 @@ export default function ReportsPage() {
                                         <TableHead className="text-right">Pieces</TableHead>
                                         <TableHead>Category</TableHead>
                                         <TableHead>Sub-Category</TableHead>
+                                        <TableHead>Date</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -426,6 +427,7 @@ export default function ReportsPage() {
                                             <TableCell className="text-right">{issue.quantity || 0}</TableCell>
                                             <TableCell className="capitalize">{issue.category}</TableCell>
                                             <TableCell className="capitalize">{issue.subCategory?.replace(/-/g, ' ') || 'N/A'}</TableCell>
+                                            <TableCell>{format(issue.reportedAt, 'PP')}</TableCell>
                                         </TableRow>
                                     ))}
                                 </TableBody>
