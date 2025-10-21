@@ -93,6 +93,10 @@ export function IssuesDataTable({ issues, title, description, loading, onIssueUp
   };
   
   const canResolveIssues = currentUser?.role === 'admin' || currentUser?.role === 'supervisor';
+  const formatSubCategory = (subCategory?: string) => {
+    if (!subCategory) return null;
+    return subCategory.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+  };
 
   return (
     <Card>
@@ -136,6 +140,9 @@ export function IssuesDataTable({ issues, title, description, loading, onIssueUp
                   <TableCell>
                     <div className="font-medium">{issue.location}</div>
                     <div className="text-sm text-muted-foreground">{issue.title}</div>
+                    {issue.subCategory && (
+                        <div className="text-xs text-muted-foreground capitalize">{formatSubCategory(issue.subCategory)}</div>
+                    )}
                   </TableCell>
                   <TableCell>
                     <Badge variant="outline" className={cn(`capitalize border-0 font-medium`, priorityColors[issue.priority])}>

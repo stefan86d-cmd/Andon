@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { useState } from "react";
@@ -87,6 +88,10 @@ export function IssuesGrid({ issues, title, description, loading, onIssueUpdate 
   };
   
   const canResolveIssues = currentUser?.role === 'admin' || currentUser?.role === 'supervisor';
+  const formatSubCategory = (subCategory?: string) => {
+    if (!subCategory) return null;
+    return subCategory.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+  };
 
   return (
     <Card>
@@ -126,6 +131,9 @@ export function IssuesGrid({ issues, title, description, loading, onIssueUpdate 
                       <CardContent className="flex-1 space-y-3">
                         <div className="font-medium">{issue.location}</div>
                         <p className="text-sm text-muted-foreground">{issue.title}</p>
+                        {issue.subCategory && (
+                            <div className="text-xs text-muted-foreground capitalize">{formatSubCategory(issue.subCategory)}</div>
+                        )}
                         
                          {(issue.itemNumber || (issue.quantity && issue.quantity > 0)) && (
                             <div className="text-xs text-muted-foreground pt-2 space-x-4">
