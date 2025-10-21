@@ -5,27 +5,13 @@
 import React from "react";
 import type { Issue, Priority, Status, User, IssueCategory } from "@/lib/types";
 import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+    CardFooter,
 } from "@/components/ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal, ArrowDownCircle, TriangleAlert, Flame, Siren, CircleDotDashed, LoaderCircle, CheckCircle2, Archive, Monitor, Truck, Wrench, BadgeCheck, LifeBuoy, HelpCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -36,7 +22,6 @@ import { useState } from "react";
 import { useUser } from "@/contexts/user-context";
 import { SafeHydrate } from "../layout/safe-hydrate";
 import { Skeleton } from "../ui/skeleton";
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { useRouter } from "next/navigation";
 
 const categoryInfo: Record<IssueCategory, { label: string; icon: React.ElementType, color: string }> = {
@@ -110,99 +95,60 @@ export function IssuesDataTable({ issues, title, description, loading, onIssueUp
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Category</TableHead>
-              <TableHead>Issue</TableHead>
-              <TableHead>Priority</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Reported By</TableHead>
-              <TableHead>Time</TableHead>
-              {canResolveIssues && (
-                <TableHead>
-                  <span className="sr-only">Actions</span>
-                </TableHead>
-              )}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
+        <div className="space-y-4">
             {loading ? (
                 Array.from({ length: 5 }).map((_, i) => (
-                    <TableRow key={i}>
-                        <TableCell><Skeleton className="h-6 w-28" /></TableCell>
-                        <TableCell><Skeleton className="h-6 w-3/4" /></TableCell>
-                        <TableCell><Skeleton className="h-6 w-20" /></TableCell>
-                        <TableCell><Skeleton className="h-6 w-20" /></TableCell>
-                        <TableCell><Skeleton className="h-6 w-24" /></TableCell>
-                        <TableCell><Skeleton className="h-6 w-20" /></TableCell>
-                        {canResolveIssues && <TableCell />}
-                    </TableRow>
+                    <Card key={i}><CardContent className="p-6"><Skeleton className="h-16" /></CardContent></Card>
                 ))
             ) : issues.length > 0 ? (
               issues.map((issue) => (
-                <TableRow key={issue.id} onClick={() => canResolveIssues && setSelectedIssue(issue)} className={cn(canResolveIssues && "cursor-pointer")}>
-                  <TableCell>
-                    <div>
-                      <CategoryDisplay category={issue.category} />
-                      {issue.subCategory && (
-                        <div className="text-xs text-muted-foreground capitalize pl-7 mt-1">
-                          {issue.subCategory.replace(/-/g, ' ')}
-                        </div>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="font-medium">{issue.location}</div>
-                    <div className="text-sm text-muted-foreground">
-                      {issue.title}
-                    </div>
-                     {(issue.itemNumber || (issue.quantity && issue.quantity > 0)) && (
-                        <div className="text-xs text-muted-foreground mt-1 space-x-2">
-                           {issue.itemNumber && <span>Item: <span className="font-semibold">{issue.itemNumber}</span></span>}
-                           {issue.quantity && issue.quantity > 0 && <span>Qty: <span className="font-semibold">{issue.quantity}</span></span>}
-                        </div>
-                    )}
-                    {issue.status === 'resolved' && issue.resolutionNotes && (
-                        <div className="text-xs text-muted-foreground mt-2 border-l-2 pl-2">
-                           <span className="italic">"{issue.resolutionNotes}"</span>
-                           {issue.resolvedBy && <span className="text-foreground font-semibold"> - {issue.resolvedBy.name}</span>}
-                        </div>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="outline" className={cn(`capitalize border-0 font-medium`, priorityColors[issue.priority])}>
-                        {React.createElement(priorityIcons[issue.priority], { className: "h-4 w-4 mr-1" })}
-                        {issue.priority}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <StatusDisplay status={issue.status} />
-                  </TableCell>
-                   <TableCell>
-                        <div className="font-medium">{issue.reportedBy.name}</div>
-                   </TableCell>
-                  <TableCell>
-                    <SafeHydrate>
-                        <span className="text-muted-foreground text-sm">{formatDistanceToNow(issue.reportedAt, { addSuffix: true })}</span>
-                    </SafeHydrate>
-                  </TableCell>
-                  {canResolveIssues && (
-                    <TableCell>
-                      {/* The entire row is clickable, so this is no longer needed */}
-                    </TableCell>
-                  )}
-                </TableRow>
+                <Card 
+                    key={issue.id} 
+                    onClick={() => canResolveIssues && setSelectedIssue(issue)} 
+                    className={cn("dark:bg-card-nested", canResolveIssues && "cursor-pointer hover:bg-muted/50 dark:hover:bg-card-nested/80")}
+                >
+                    <CardContent className="p-4 flex flex-col md:flex-row items-start md:items-center gap-4">
+                       <div className="flex-1 space-y-2">
+                           <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+                                <CategoryDisplay category={issue.category} />
+                                <Badge variant="outline" className={cn(`capitalize border-0 font-medium`, priorityColors[issue.priority])}>
+                                    {React.createElement(priorityIcons[issue.priority], { className: "h-4 w-4 mr-1" })}
+                                    {issue.priority}
+                                </Badge>
+                                <StatusDisplay status={issue.status} />
+                           </div>
+                           <div className="pt-1">
+                             <div className="font-medium">{issue.location}</div>
+                             <div className="text-sm text-muted-foreground">{issue.title}</div>
+                           </div>
+                           {(issue.itemNumber || (issue.quantity && issue.quantity > 0)) && (
+                                <div className="text-xs text-muted-foreground space-x-2">
+                                {issue.itemNumber && <span>Item: <span className="font-semibold">{issue.itemNumber}</span></span>}
+                                {issue.quantity && issue.quantity > 0 && <span>Qty: <span className="font-semibold">{issue.quantity}</span></span>}
+                                </div>
+                            )}
+                            {issue.status === 'resolved' && issue.resolutionNotes && (
+                                <div className="text-xs text-muted-foreground pt-1 border-l-2 pl-2">
+                                <span className="italic">"{issue.resolutionNotes}"</span>
+                                {issue.resolvedBy && <span className="text-foreground font-semibold"> - {issue.resolvedBy.name}</span>}
+                                </div>
+                            )}
+                       </div>
+                       <div className="w-full md:w-auto flex md:flex-col justify-between items-end text-sm text-muted-foreground text-right space-y-2">
+                            <div className="font-medium text-foreground">{issue.reportedBy.name}</div>
+                            <SafeHydrate>
+                                <span>{formatDistanceToNow(issue.reportedAt, { addSuffix: true })}</span>
+                            </SafeHydrate>
+                       </div>
+                    </CardContent>
+                </Card>
               ))
             ) : (
-                <TableRow>
-                    <TableCell colSpan={canResolveIssues ? 7 : 6} className="h-24 text-center">
-                        No issues found.
-                    </TableCell>
-                </TableRow>
+                <div className="h-48 flex items-center justify-center text-muted-foreground">
+                    No issues found.
+                </div>
             )}
-          </TableBody>
-        </Table>
+        </div>
       </CardContent>
        {selectedIssue && (
          <ResolveIssueDialog
