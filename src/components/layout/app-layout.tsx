@@ -29,14 +29,15 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
     // If user is logged in...
     if (currentUser) {
         // Sync the theme from the user's profile
-        if (currentUser.theme) {
+        if (currentUser.theme && theme !== currentUser.theme) {
             setTheme(currentUser.theme);
         }
 
       // and their profile is incomplete, force them to the profile completion page.
       if (!currentUser.role) {
+        const plan = searchParams.get('plan') || currentUser.plan || 'starter';
         if (!pathname.startsWith('/complete-profile')) {
-           router.replace(`/complete-profile?plan=${currentUser.plan || 'starter'}`);
+           router.replace(`/complete-profile?plan=${plan}`);
         }
         return; // Stop further checks until profile is complete
       } 
@@ -53,7 +54,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
       
       // If their profile is complete and they are on a public or auth page,
       // redirect them to their appropriate dashboard (if not an operator).
-      if ((isPublicPage || isAuthPage) && currentUser.role !== 'operator') {
+      if ((isPublicPage || isAuthPage) && currentUser.role !== 'operator' && !pathname.startsWith('/checkout/success')) {
         router.replace('/dashboard');
       }
     } 
@@ -82,7 +83,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
   }
 
   // Determine if the main app header should be shown.
-  const showHeader = currentUser && currentUser.role && !isAuthPage && !isPublicPage;
+  const showHeader = currentUser && currentUser.role && !isAuthPage && !isPublicPage && !pathname.startsWith('/checkout');
 
   if (showHeader) {
     return (
@@ -101,12 +102,19 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   return (
-    <Suspense fallback={
-        <div className="flex h-screen items-center justify-center">
-            <LoaderCircle className="h-8 w-8 animate-spin" />
-        </div>
-    }>
-      <AppLayoutContent>{children}</AppLayoutContent>
-    </Suspense>
+      <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+      >
+        <Suspense fallback={
+            <div className="flex h-screen items-center justify-center">
+                <LoaderCircle className="h-8 w-8 animate-spin" />
+            </div>
+        }>
+          <AppLayoutContent>{children}</AppLayoutContent>
+        </Suspense>
+      </ThemeProvider>
   )
 }

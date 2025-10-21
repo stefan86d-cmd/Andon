@@ -22,27 +22,76 @@ const db = lazilyGetDb();
 
 // --- Stripe Actions ---
 
-export async function createPaymentIntent(
-  amount: number,
-  currency: string
-): Promise<{ clientSecret: string | null; error?: string }> {
+export async function createCheckoutSession(
+  userId: string,
+  email: string,
+  plan: Plan,
+  duration: '1' | '12' | '24' | '48',
+  currency: 'usd' | 'eur' | 'gbp',
+  isNewUser: boolean
+): Promise<{ sessionId?: string; url?: string; error?: string }> {
   if (!stripe) {
-    return { clientSecret: null, error: 'Stripe is not initialized.' };
+    return { error: 'Stripe is not initialized.' };
   }
+  if (!process.env.NEXT_PUBLIC_BASE_URL) {
+      return { error: "Base URL is not configured."}
+  }
+
+  const priceIdMap = {
+      standard: process.env.STRIPE_PRICE_ID_STANDARD,
+      pro: process.env.STRIPE_PRICE_ID_PRO,
+      enterprise: process.env.STRIPE_PRICE_ID_ENTERPRISE,
+  };
+
+  const priceId = priceIdMap[plan as keyof typeof priceIdMap];
+
+  if (!priceId) {
+      return { error: `Price ID for plan '${plan}' is not configured.`};
+  }
+
+  const successUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`;
+  const cancelUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/pricing`;
+  
+  const metadata = {
+      userId,
+      plan,
+      duration,
+      isNewUser: String(isNewUser),
+  };
+
   try {
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount: Math.round(amount * 100), // Stripe expects the amount in cents
-      currency: currency.toLowerCase(),
-      automatic_payment_methods: {
-        enabled: true,
-      },
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: [{
+          price: priceId,
+          quantity: 1,
+      }],
+      mode: 'subscription',
+      success_url: successUrl,
+      cancel_url: cancelUrl,
+      customer_email: email,
+      metadata,
     });
-    return { clientSecret: paymentIntent.client_secret };
+    
+    return { sessionId: session.id, url: session.url! };
   } catch (error: any) {
-    console.error('Error creating PaymentIntent:', error);
-    return { clientSecret: null, error: error.message };
+    console.error("Error creating Stripe Checkout session:", error);
+    return { error: error.message };
   }
 }
+
+export async function getCheckoutSession(sessionId: string) {
+    if (!stripe) {
+        return { error: 'Stripe is not initialized.' };
+    }
+    try {
+        const session = await stripe.checkout.sessions.retrieve(sessionId);
+        return { session };
+    } catch (error: any) {
+        return { error: error.message };
+    }
+}
+
 
 // --- Data fetching actions ---
 

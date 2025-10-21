@@ -28,8 +28,10 @@ import { cn } from "@/lib/utils";
 import { Badge } from '@/components/ui/badge';
 import { useUser } from '@/contexts/user-context';
 import { toast } from '@/hooks/use-toast';
-import { updateUserPlan } from '@/app/actions';
-import { addMonths } from 'date-fns';
+import { createCheckoutSession } from '@/app/actions';
+import { loadStripe } from '@stripe/stripe-js';
+
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
 const tiers: Record<Plan, { name: string; prices: Record<Duration, Record<Currency, number>> }> = {
   starter: { 
@@ -66,7 +68,7 @@ const formatPrice = (price: number, currency: Currency) => {
 function CheckoutContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { currentUser, updateCurrentUser } = useUser();
+  const { currentUser } = useUser();
   const [isSubmitting, startTransition] = useTransition();
   const [year, setYear] = useState(new Date().getFullYear());
 
@@ -74,23 +76,23 @@ function CheckoutContent() {
     setYear(new Date().getFullYear());
   }, []);
 
-  const isExistingUser = !!currentUser;
+  const isNewUser = !currentUser;
   
   const [selectedPlan, setSelectedPlan] = useState<Plan>(searchParams.get('plan') as Plan || 'pro');
-  const [selectedDuration, setSelectedDuration] = useState<Duration>(isExistingUser ? '1' : (searchParams.get('duration') as Duration || '12'));
+  const [selectedDuration, setSelectedDuration] = useState<Duration>(isNewUser ? (searchParams.get('duration') as Duration || '12') : '1');
   const [selectedCurrency, setSelectedCurrency] = useState<Currency>(searchParams.get('currency') as Currency || 'usd');
 
   const selectedTier = tiers[selectedPlan];
-  const monthlyPrice = selectedTier.prices[isExistingUser ? '1' : selectedDuration][selectedCurrency];
+  const monthlyPrice = selectedTier.prices[isNewUser ? selectedDuration : '1'][selectedCurrency];
   const fullPrice = selectedTier.prices['1'][selectedCurrency];
-  const totalDue = monthlyPrice * parseInt(isExistingUser ? '1' : selectedDuration, 10);
-  const undiscountedTotal = fullPrice * parseInt(isExistingUser ? '1' : selectedDuration, 10);
+  const totalDue = monthlyPrice * parseInt(isNewUser ? selectedDuration : '1', 10);
+  const undiscountedTotal = fullPrice * parseInt(isNewUser ? selectedDuration : '1', 10);
 
 
   const discount = useMemo(() => {
-    if (isExistingUser || selectedDuration === '1') return 0;
+    if (!isNewUser || selectedDuration === '1') return 0;
     return undiscountedTotal - totalDue;
-  }, [selectedDuration, undiscountedTotal, totalDue, isExistingUser]);
+  }, [selectedDuration, undiscountedTotal, totalDue, isNewUser]);
 
   const renewalText = useMemo(() => {
       if (selectedPlan === 'starter') return "The Starter plan is always free.";
@@ -100,43 +102,39 @@ function CheckoutContent() {
   }, [fullPrice, selectedCurrency, selectedPlan]);
 
   const handleContinue = () => {
-    if (currentUser) {
-        startTransition(async () => {
-            if (selectedPlan === currentUser.plan) {
-                toast({ title: "No Change", description: "You are already on this plan." });
-                router.push('/settings/billing');
-                return;
-            }
-            
-            const newSubscriptionEndDate = addMonths(new Date(), 1);
-            const userUpdateData = { 
-                plan: selectedPlan,
-                subscriptionStartsAt: new Date(),
-                subscriptionEndsAt: newSubscriptionEndDate,
-            };
-
-            const result = await updateUserPlan(currentUser.id, selectedPlan, userUpdateData);
-            if (result.success) {
-                toast({
-                    title: "Plan Updated!",
-                    description: `Your plan has been successfully updated to ${selectedPlan}.`,
-                });
-                updateCurrentUser(userUpdateData); // Optimistically update local state
-                router.push('/dashboard');
-            } else {
-                toast({
-                    variant: "destructive",
-                    title: "Update Failed",
-                    description: "error" in result ? result.error : "Could not update your plan.",
-                });
-            }
-        });
-    } else {
-        router.push(`/register?plan=${selectedPlan}&duration=${selectedDuration}&currency=${selectedCurrency}`);
+    if (selectedPlan === 'starter') {
+        router.push(`/register?plan=starter`);
+        return;
     }
+    
+    startTransition(async () => {
+      if (!currentUser) {
+          router.push(`/register?plan=${selectedPlan}&duration=${selectedDuration}&currency=${selectedCurrency}`);
+          return;
+      }
+      
+      const result = await createCheckoutSession(
+          currentUser.id,
+          currentUser.email,
+          selectedPlan,
+          selectedDuration,
+          selectedCurrency,
+          false
+      );
+
+      if (result.url) {
+          router.push(result.url);
+      } else {
+          toast({
+              variant: "destructive",
+              title: "Checkout Error",
+              description: result.error || "Could not create a checkout session. Please try again.",
+          });
+      }
+    });
   };
 
-  const buttonText = currentUser ? "Confirm Plan Change" : "Continue";
+  const buttonText = isNewUser ? "Continue to Sign Up" : "Confirm Plan Change";
 
   return (
     <div className="bg-muted">
@@ -164,10 +162,12 @@ function CheckoutContent() {
                         <Select value={selectedPlan} onValueChange={(v) => setSelectedPlan(v as Plan)}>
                         <SelectTrigger><SelectValue placeholder="Select plan" /></SelectTrigger>
                         <SelectContent>
-                            {Object.keys(tiers).map(key => <SelectItem key={key} value={key} className="capitalize">{tiers[key as Plan].name}</SelectItem>)}
+                            {Object.entries(tiers).map(([key, tier]) => 
+                                tier.name !== 'Custom' && <SelectItem key={key} value={key} className="capitalize">{tier.name}</SelectItem>
+                            )}
                         </SelectContent>
                         </Select>
-                        <Select value={selectedDuration} onValueChange={(v) => setSelectedDuration(v as Duration)} disabled={isExistingUser}>
+                        <Select value={selectedDuration} onValueChange={(v) => setSelectedDuration(v as Duration)} disabled={!isNewUser}>
                         <SelectTrigger><SelectValue placeholder="Select duration" /></SelectTrigger>
                         <SelectContent>
                             <SelectItem value="1">1 Month</SelectItem>
@@ -187,7 +187,7 @@ function CheckoutContent() {
                         </SelectContent>
                         </Select>
                     </div>
-                    {!isExistingUser && (
+                    {isNewUser && (
                         <div className="flex gap-2 items-center">
                             {selectedDuration === '12' && <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~20%</Badge>}
                             {selectedDuration === '24' && <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~30%</Badge>}
@@ -208,7 +208,7 @@ function CheckoutContent() {
                     <CardContent className="space-y-4">
                     <div className="space-y-2">
                         <div className="flex justify-between"><span>Plan</span><span className="capitalize font-medium">{selectedPlan}</span></div>
-                        <div className="flex justify-between"><span>Plan Length</span><span>{isExistingUser ? '1 Month' : `${selectedDuration} Months`}</span></div>
+                        <div className="flex justify-between"><span>Plan Length</span><span>{isNewUser ? `${selectedDuration} Months` : 'Monthly'}</span></div>
                         {discount > 0 && 
                             <div className="flex justify-between bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300 p-2 rounded-md">
                                 <span>Discount</span>

@@ -4,7 +4,7 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 import { Inter } from 'next/font/google'
 import { UserProvider } from '@/contexts/user-context';
-import { ThemeProvider } from '@/components/layout/theme-provider';
+import { AppLayout } from '@/components/layout/app-layout';
 
 export const metadata: Metadata = {
   title: 'AndonPro',
@@ -30,17 +30,12 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} font-body antialiased`}>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <UserProvider>
+          <UserProvider>
+            <AppLayout>
               {children}
-              <Toaster />
-            </UserProvider>
-          </ThemeProvider>
+            </AppLayout>
+            <Toaster />
+          </UserProvider>
       </body>
     </html>
   );
