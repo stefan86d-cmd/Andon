@@ -15,7 +15,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { subHours } from "date-fns";
 import { useUser } from "@/contexts/user-context";
 import { getClientIssues, getClientProductionLines } from "@/lib/data";
@@ -23,7 +22,6 @@ import { allCategories } from "@/lib/constants";
 import { IssuesGrid } from "@/components/dashboard/issues-grid";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 export default function IssuesPage() {
   const { currentUser } = useUser();
@@ -181,77 +179,65 @@ export default function IssuesPage() {
       
       {currentUser?.role !== 'operator' && (
         <>
-          <Card className="mb-4">
-            <Accordion type="single" collapsible>
-              <AccordionItem value="filters" className="border-b-0">
-                <AccordionTrigger className="p-4 hover:no-underline [&[data-state=open]]:border-b">
-                  <div className="flex items-center gap-2 font-semibold">
-                    <ListFilter className="h-4 w-4" />
-                    Filters
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent>
-                  <div className="p-4 pt-0 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="sm" className="gap-1 w-full sm:w-auto">
-                          <ListFilter className="h-4 w-4" />
-                          <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                            Lines
-                          </span>
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="center" className="w-56">
-                        <DropdownMenuLabel>Filter by production line</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        {(productionLines || []).map((line) => (
-                          <DropdownMenuCheckboxItem
-                            key={line.id}
-                            checked={tempSelectedLines.includes(line.id)}
-                            onCheckedChange={() => handleLineFilterChange(line.id)}
-                            onSelect={(e) => e.preventDefault()}
-                          >
-                            {line.name}
-                          </DropdownMenuCheckboxItem>
-                        ))}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+          <div className="flex justify-center mb-4">
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm" className="gap-1 w-full sm:w-auto">
+                      <ListFilter className="h-4 w-4" />
+                      <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                        Lines
+                      </span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="center" className="w-56">
+                    <DropdownMenuLabel>Filter by production line</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    {(productionLines || []).map((line) => (
+                      <DropdownMenuCheckboxItem
+                        key={line.id}
+                        checked={tempSelectedLines.includes(line.id)}
+                        onCheckedChange={() => handleLineFilterChange(line.id)}
+                        onSelect={(e) => e.preventDefault()}
+                      >
+                        {line.name}
+                      </DropdownMenuCheckboxItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
 
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="sm" className="gap-1 w-full sm:w-auto">
-                          <ListFilter className="h-4 w-4" />
-                          <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                            Category
-                          </span>
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="center" className="w-56">
-                        <DropdownMenuLabel>Filter by category</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        {allCategories.map((category) => (
-                          <DropdownMenuCheckboxItem
-                            key={category.id}
-                            checked={tempSelectedCategories.includes(category.id)}
-                            onCheckedChange={() => handleCategoryFilterChange(category.id)}
-                            onSelect={(e) => e.preventDefault()}
-                          >
-                            {category.label}
-                          </DropdownMenuCheckboxItem>
-                        ))}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm" className="gap-1 w-full sm:w-auto">
+                      <ListFilter className="h-4 w-4" />
+                      <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                        Category
+                      </span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="center" className="w-56">
+                    <DropdownMenuLabel>Filter by category</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    {allCategories.map((category) => (
+                      <DropdownMenuCheckboxItem
+                        key={category.id}
+                        checked={tempSelectedCategories.includes(category.id)}
+                        onCheckedChange={() => handleCategoryFilterChange(category.id)}
+                        onSelect={(e) => e.preventDefault()}
+                      >
+                        {category.label}
+                      </DropdownMenuCheckboxItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
 
-                    <div className="pl-0 sm:pl-2 sm:border-l flex gap-2">
-                        <Button variant="outline" size="sm" onClick={handleFilterReset}>Reset</Button>
-                        <Button size="sm" onClick={handleFilterConfirm}>Confirm</Button>
-                    </div>
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-            </Accordion>
-          </Card>
-
+                <div className="pl-0 sm:pl-2 flex gap-2">
+                    <Button variant="outline" size="sm" onClick={handleFilterReset}>Reset</Button>
+                    <Button size="sm" onClick={handleFilterConfirm}>Confirm</Button>
+                </div>
+              </div>
+          </div>
+          
           <Tabs defaultValue="active">
             <div className="flex justify-center mb-4">
               <TabsList className="grid w-full grid-cols-2 max-w-sm">
