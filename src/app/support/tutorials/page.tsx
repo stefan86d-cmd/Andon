@@ -6,7 +6,7 @@ import { Logo } from "@/components/layout/logo";
 import { cn } from "@/lib/utils";
 import { MegaMenu } from "@/components/layout/mega-menu";
 import { buttonVariants } from "@/components/ui/button";
-import { Activity, Edit, PlusCircle, Users, CheckCircle, Menu, LayoutDashboard, Trash2, Factory } from "lucide-react";
+import { Activity, Edit, PlusCircle, Users, CheckCircle, Menu, LayoutDashboard, Trash2, Factory, Monitor, Truck } from "lucide-react";
 import FooterLogo from "@/components/layout/footer-logo";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -195,11 +195,11 @@ const operatorTutorials = [
                 <TutorialVisual>
                     <div className="grid grid-cols-2 gap-4 py-4">
                         <div className="flex flex-col items-center justify-center p-4 rounded-lg border bg-accent text-accent-foreground">
-                            <Users className="h-12 w-12 mb-2 text-primary" />
+                            <Monitor className="h-12 w-12 mb-2 text-primary" />
                             <p className="text-sm font-medium">IT & Network</p>
                         </div>
                          <div className="flex flex-col items-center justify-center p-4 rounded-lg border bg-card text-card-foreground">
-                            <Factory className="h-12 w-12 mb-2 text-primary" />
+                            <Truck className="h-12 w-12 mb-2 text-primary" />
                             <p className="text-sm font-medium">Logistics</p>
                         </div>
                     </div>
