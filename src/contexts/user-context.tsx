@@ -19,6 +19,7 @@ import { getClientInstances } from '@/firebase/client';
 import type { User } from '@/lib/types';
 import { toast } from '@/hooks/use-toast';
 import { getClientUserById } from '@/lib/data';
+import { useTheme } from 'next-themes';
 
 interface UserContextType {
   currentUser: User | null;
@@ -37,6 +38,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [auth, setAuth] = useState<Auth | null>(null);
+  const { setTheme } = useTheme();
 
   const handleAuthUser = useCallback(async (firebaseUser: FirebaseUser | null) => {
     if (firebaseUser) {
@@ -171,6 +173,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
      setLoading(true);
      await signOut(auth);
      setCurrentUser(null);
+     setTheme('light'); // Force light mode on logout
      setLoading(false);
   };
   

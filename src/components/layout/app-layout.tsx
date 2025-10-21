@@ -7,9 +7,11 @@ import { useUser } from "@/contexts/user-context";
 import { useRouter, usePathname } from "next/navigation";
 import { LoaderCircle } from "lucide-react";
 import { ThemeProvider } from "./theme-provider";
+import { useTheme } from "next-themes";
 
 function AppLayoutContent({ children }: { children: React.ReactNode }) {
   const { currentUser, loading } = useUser();
+  const { setTheme } = useTheme();
   const router = useRouter();
   const pathname = usePathname();
   
@@ -26,6 +28,11 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
 
     // If user is logged in...
     if (currentUser) {
+        // Sync the theme from the user's profile
+        if (currentUser.theme) {
+            setTheme(currentUser.theme);
+        }
+
       // and their profile is incomplete, force them to the profile completion page.
       if (!currentUser.role) {
         if (!pathname.startsWith('/complete-profile')) {
@@ -54,7 +61,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
     else if (!isPublicPage && !isAuthPage) {
       router.replace('/login');
     }
-  }, [currentUser, loading, router, pathname, isAuthPage, isPublicPage]);
+  }, [currentUser, loading, router, pathname, isAuthPage, isPublicPage, setTheme]);
 
   // --- Render Logic ---
 
@@ -72,19 +79,12 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
 
   if (showHeader) {
     return (
-      <ThemeProvider
-        attribute="class"
-        defaultTheme={currentUser.theme || "system"}
-        enableSystem
-        disableTransitionOnChange
-      >
         <div className="flex min-h-screen w-full flex-col">
           <Header />
           <div className="flex flex-col">
             {children}
           </div>
         </div>
-      </ThemeProvider>
     );
   }
 
