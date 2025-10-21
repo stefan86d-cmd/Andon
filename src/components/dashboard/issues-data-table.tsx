@@ -41,12 +41,20 @@ const categoryInfo: Record<IssueCategory, { label: string; icon: React.ElementTy
     other: { label: 'Other', icon: HelpCircle, textColor: 'text-purple-500', bgColor: 'bg-purple-500' },
 };
 
-const CategoryDisplay = ({ category }: { category: IssueCategory }) => {
+const CategoryDisplay = ({ category, subCategory }: { category: IssueCategory, subCategory?: string }) => {
     const { icon: Icon, label, textColor } = categoryInfo[category] || categoryInfo.other;
+    const formatSubCategory = (subCategory?: string) => {
+        if (!subCategory) return 'N/A';
+        return subCategory.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    };
+
     return (
-        <div className={cn("capitalize font-medium flex items-center", textColor)}>
-            <Icon className="mr-2 h-4 w-4" />
-            {label}
+        <div>
+            <div className={cn("capitalize font-medium flex items-center", textColor)}>
+                <Icon className="mr-2 h-4 w-4" />
+                {label}
+            </div>
+            {subCategory && <div className="text-xs text-muted-foreground ml-6 capitalize">{formatSubCategory(subCategory)}</div>}
         </div>
     );
 };
@@ -117,7 +125,6 @@ export function IssuesDataTable({ issues, title, description, loading, onIssueUp
           <TableHeader>
             <TableRow>
               <TableHead>Category</TableHead>
-              <TableHead>Sub-Category</TableHead>
               <TableHead>Location</TableHead>
               <TableHead>Issue</TableHead>
               <TableHead>Priority</TableHead>
@@ -130,7 +137,7 @@ export function IssuesDataTable({ issues, title, description, loading, onIssueUp
             {loading ? (
               Array.from({ length: 5 }).map((_, i) => (
                 <TableRow key={i}>
-                  <TableCell colSpan={8}>
+                  <TableCell colSpan={7}>
                     <Skeleton className="h-8" />
                   </TableCell>
                 </TableRow>
@@ -143,9 +150,8 @@ export function IssuesDataTable({ issues, title, description, loading, onIssueUp
                   className={cn(canResolveIssues && "cursor-pointer")}
                 >
                   <TableCell>
-                    <CategoryDisplay category={issue.category} />
+                    <CategoryDisplay category={issue.category} subCategory={issue.subCategory} />
                   </TableCell>
-                  <TableCell className="capitalize">{formatSubCategory(issue.subCategory)}</TableCell>
                   <TableCell className="font-medium">{issue.location}</TableCell>
                   <TableCell className="text-sm text-muted-foreground">{issue.title}</TableCell>
                   <TableCell>
@@ -169,7 +175,7 @@ export function IssuesDataTable({ issues, title, description, loading, onIssueUp
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={8} className="h-24 text-center">
+                <TableCell colSpan={7} className="h-24 text-center">
                   No issues found.
                 </TableCell>
               </TableRow>
