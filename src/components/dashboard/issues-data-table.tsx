@@ -24,19 +24,19 @@ import { SafeHydrate } from "../layout/safe-hydrate";
 import { Skeleton } from "../ui/skeleton";
 import { useRouter } from "next/navigation";
 
-const categoryInfo: Record<IssueCategory, { label: string; icon: React.ElementType, color: string }> = {
-    it: { label: 'IT & Network', icon: Monitor, color: 'text-blue-500' },
-    logistics: { label: 'Logistics', icon: Truck, color: 'text-orange-500' },
-    tool: { label: 'Tool & Equipment', icon: Wrench, color: 'text-gray-500' },
-    quality: { label: 'Quality', icon: BadgeCheck, color: 'text-green-500' },
-    assistance: { label: 'Need Assistance', icon: LifeBuoy, color: 'text-red-500' },
-    other: { label: 'Other', icon: HelpCircle, color: 'text-purple-500' },
+const categoryInfo: Record<IssueCategory, { label: string; icon: React.ElementType, textColor: string, bgColor: string }> = {
+    it: { label: 'IT & Network', icon: Monitor, textColor: 'text-blue-500', bgColor: 'bg-blue-500' },
+    logistics: { label: 'Logistics', icon: Truck, textColor: 'text-orange-500', bgColor: 'bg-orange-500' },
+    tool: { label: 'Tool & Equipment', icon: Wrench, textColor: 'text-gray-500', bgColor: 'bg-gray-500' },
+    quality: { label: 'Quality', icon: BadgeCheck, textColor: 'text-green-500', bgColor: 'bg-green-500' },
+    assistance: { label: 'Need Assistance', icon: LifeBuoy, textColor: 'text-red-500', bgColor: 'bg-red-500' },
+    other: { label: 'Other', icon: HelpCircle, textColor: 'text-purple-500', bgColor: 'bg-purple-500' },
 };
 
 const CategoryDisplay = ({ category }: { category: IssueCategory }) => {
-    const { icon: Icon, label, color } = categoryInfo[category] || categoryInfo.other;
+    const { icon: Icon, label, textColor } = categoryInfo[category] || categoryInfo.other;
     return (
-        <Badge variant="outline" className={cn("capitalize border-0 font-medium", color)}>
+        <Badge variant="outline" className={cn("capitalize border-0 font-medium", textColor)}>
             <Icon className="mr-2 h-4 w-4" />
             {label}
         </Badge>
@@ -101,12 +101,18 @@ export function IssuesDataTable({ issues, title, description, loading, onIssueUp
                     <Card key={i}><CardContent className="p-6"><Skeleton className="h-16" /></CardContent></Card>
                 ))
             ) : issues.length > 0 ? (
-              issues.map((issue) => (
+              issues.map((issue) => {
+                const categoryStyle = categoryInfo[issue.category] || categoryInfo.other;
+                return (
                 <Card 
                     key={issue.id} 
                     onClick={() => canResolveIssues && setSelectedIssue(issue)} 
-                    className={cn("dark:bg-card-nested", canResolveIssues && "cursor-pointer hover:bg-muted/50 dark:hover:bg-card-nested/80")}
+                    className={cn(
+                        "overflow-hidden dark:bg-card-nested", 
+                        canResolveIssues && "cursor-pointer hover:bg-muted/50 dark:hover:bg-card-nested/80"
+                    )}
                 >
+                    <div className={cn("h-2 w-full", categoryStyle.bgColor)}></div>
                     <CardContent className="p-4 flex flex-col md:flex-row items-start md:items-center gap-4">
                        <div className="flex-1 space-y-2">
                            <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
@@ -142,7 +148,7 @@ export function IssuesDataTable({ issues, title, description, loading, onIssueUp
                        </div>
                     </CardContent>
                 </Card>
-              ))
+              )})
             ) : (
                 <div className="h-48 flex items-center justify-center text-muted-foreground">
                     No issues found.
