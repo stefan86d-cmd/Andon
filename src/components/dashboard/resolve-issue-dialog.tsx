@@ -61,11 +61,25 @@ export function ResolveIssueDialog({ isOpen, onOpenChange, issue, onIssueUpdate 
   const { currentUser } = useUser();
   const router = useRouter();
 
+  const getInitialStatus = (status: Status): 'in_progress' | 'resolved' => {
+    switch (status) {
+      case 'reported':
+        return 'in_progress';
+      case 'in_progress':
+        return 'in_progress';
+      case 'resolved':
+      case 'archived':
+        return 'resolved';
+      default:
+        return 'in_progress';
+    }
+  };
+
   const form = useForm<ResolveIssueFormValues>({
     resolver: zodResolver(resolveIssueFormSchema),
     defaultValues: {
       resolutionNotes: issue.resolutionNotes || "",
-      status: issue.status === "reported" ? "in_progress" : issue.status,
+      status: getInitialStatus(issue.status),
       productionStopped: issue.productionStopped || false,
     },
   });
@@ -100,7 +114,7 @@ export function ResolveIssueDialog({ isOpen, onOpenChange, issue, onIssueUpdate 
     if (isOpen) {
       form.reset({
         resolutionNotes: issue.resolutionNotes || "",
-        status: issue.status === "reported" ? "in_progress" : issue.status,
+        status: getInitialStatus(issue.status),
         productionStopped: issue.productionStopped || false,
       });
     }
