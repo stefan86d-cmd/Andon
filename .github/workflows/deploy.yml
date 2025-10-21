@@ -9,7 +9,6 @@ on:
 
 jobs:
   build_and_deploy:
-    if: github.repository == 'stefan86d-cmd/Andon'
     runs-on: ubuntu-latest
     permissions:
       contents: 'read'
