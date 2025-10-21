@@ -2,7 +2,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AppLayout } from "@/components/layout/app-layout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { Issue, IssueCategory, ProductionLine } from "@/lib/types";
@@ -147,50 +146,44 @@ export default function ReportsPage() {
 
   if (!currentUser || (currentUser.role !== 'admin' && currentUser.role !== 'supervisor')) {
     return (
-      <AppLayout>
-        <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background">
-          <p>You do not have permission to view this page.</p>
-        </main>
-      </AppLayout>
+      <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background">
+        <p>You do not have permission to view this page.</p>
+      </main>
     );
   }
 
   if (loading) {
     return (
-      <AppLayout>
-        <main className="flex flex-1 items-center justify-center">
-            <LoaderCircle className="h-8 w-8 animate-spin" />
-        </main>
-      </AppLayout>
+      <main className="flex flex-1 items-center justify-center">
+          <LoaderCircle className="h-8 w-8 animate-spin" />
+      </main>
     );
   }
   
   // --- Feature Gate for Reports ---
   if (currentUser.plan === 'starter') {
     return (
-      <AppLayout>
-        <main className="flex flex-1 items-center justify-center">
-          <Card className="w-full max-w-md text-center">
-            <CardHeader>
-              <CardTitle className="flex items-center justify-center gap-2">
-                <Lock className="h-6 w-6" />
-                Advanced Reporting Locked
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <CardDescription>
-                The reports and analytics features are not available on the Starter plan.
-                Upgrade your plan to gain access to valuable insights.
-              </CardDescription>
-            </CardContent>
-            <CardContent>
-               <Button asChild>
-                <Link href="/settings/account">Upgrade Plan</Link>
-              </Button>
-            </CardContent>
-          </Card>
-        </main>
-      </AppLayout>
+      <main className="flex flex-1 items-center justify-center">
+        <Card className="w-full max-w-md text-center">
+          <CardHeader>
+            <CardTitle className="flex items-center justify-center gap-2">
+              <Lock className="h-6 w-6" />
+              Advanced Reporting Locked
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <CardDescription>
+              The reports and analytics features are not available on the Starter plan.
+              Upgrade your plan to gain access to valuable insights.
+            </CardDescription>
+          </CardContent>
+          <CardContent>
+             <Button asChild>
+              <Link href="/settings/account">Upgrade Plan</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </main>
     )
   }
   
@@ -254,208 +247,206 @@ export default function ReportsPage() {
   const isAiEnabled = currentUser.plan === 'pro' || currentUser.plan === 'enterprise';
 
   return (
-    <AppLayout>
-      <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background">
-        <ChartGradients />
-        <div className="flex items-center justify-between">
-          <h1 className="text-lg font-semibold md:text-2xl">Reports</h1>
-        </div>
-        
-        <Card>
-            <CardHeader className="flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                <div>
-                    <CardTitle>Filters & Export</CardTitle>
-                    <CardDescription>Select filters to refine the reports, then export the data.</CardDescription>
-                </div>
-                 <div className="flex flex-wrap items-center gap-2">
-                    <Popover>
-                        <PopoverTrigger asChild>
-                        <Button
-                            id="date"
-                            variant={"outline"}
-                            className={cn(
-                                "w-full sm:w-[260px] justify-start text-left font-normal",
-                                !date && "text-muted-foreground"
-                            )}
-                        >
-                            <CalendarIcon className="mr-2 h-4 w-4" />
-                            {date?.from ? (
-                            date.to ? (
-                                <>
-                                {format(date.from, "LLL dd, y")} -{" "}
-                                {format(date.to, "LLL dd, y")}
-                                </>
-                            ) : (
-                                format(date.from, "LLL dd, y")
-                            )
-                            ) : (
-                            <span>Pick a date</span>
-                            )}
-                        </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="end">
-                        <Calendar
-                            initialFocus
-                            mode="range"
-                            defaultMonth={date?.from}
-                            selected={date}
-                            onSelect={handleDateChange}
-                            numberOfMonths={2}
-                        />
-                        </PopoverContent>
-                    </Popover>
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="sm" className="gap-1">
-                            <ListFilter className="h-4 w-4" />
-                            <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                            Lines
-                            </span>
-                        </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-56">
-                        <DropdownMenuLabel>Filter by production line</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        {allLines.map((line) => (
-                            <DropdownMenuCheckboxItem
-                            key={line.id}
-                            checked={tempSelectedLines.includes(line.id)}
-                            onCheckedChange={() => handleLineFilterChange(line.id)}
-                            onSelect={(e) => e.preventDefault()}
-                            >
-                            {line.name}
-                            </DropdownMenuCheckboxItem>
-                        ))}
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+    <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background">
+      <ChartGradients />
+      <div className="flex items-center justify-between">
+        <h1 className="text-lg font-semibold md:text-2xl">Reports</h1>
+      </div>
+      
+      <Card>
+          <CardHeader className="flex-col md:flex-row items-start md:items-center justify-between gap-4">
+              <div>
+                  <CardTitle>Filters & Export</CardTitle>
+                  <CardDescription>Select filters to refine the reports, then export the data.</CardDescription>
+              </div>
+               <div className="flex flex-wrap items-center gap-2">
+                  <Popover>
+                      <PopoverTrigger asChild>
+                      <Button
+                          id="date"
+                          variant={"outline"}
+                          className={cn(
+                              "w-full sm:w-[260px] justify-start text-left font-normal",
+                              !date && "text-muted-foreground"
+                          )}
+                      >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {date?.from ? (
+                          date.to ? (
+                              <>
+                              {format(date.from, "LLL dd, y")} -{" "}
+                              {format(date.to, "LLL dd, y")}
+                              </>
+                          ) : (
+                              format(date.from, "LLL dd, y")
+                          )
+                          ) : (
+                          <span>Pick a date</span>
+                          )}
+                      </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="end">
+                      <Calendar
+                          initialFocus
+                          mode="range"
+                          defaultMonth={date?.from}
+                          selected={date}
+                          onSelect={handleDateChange}
+                          numberOfMonths={2}
+                      />
+                      </PopoverContent>
+                  </Popover>
+                  <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="sm" className="gap-1">
+                          <ListFilter className="h-4 w-4" />
+                          <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                          Lines
+                          </span>
+                      </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-56">
+                      <DropdownMenuLabel>Filter by production line</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      {allLines.map((line) => (
+                          <DropdownMenuCheckboxItem
+                          key={line.id}
+                          checked={tempSelectedLines.includes(line.id)}
+                          onCheckedChange={() => handleLineFilterChange(line.id)}
+                          onSelect={(e) => e.preventDefault()}
+                          >
+                          {line.name}
+                          </DropdownMenuCheckboxItem>
+                      ))}
+                      </DropdownMenuContent>
+                  </DropdownMenu>
 
-                    <div className="pl-2 border-l flex gap-2">
-                        <Button variant="outline" size="sm" onClick={handleFilterReset}>Reset</Button>
-                        <Button size="sm" onClick={handleFilterConfirm}>Apply</Button>
-                    </div>
+                  <div className="pl-2 border-l flex gap-2">
+                      <Button variant="outline" size="sm" onClick={handleFilterReset}>Reset</Button>
+                      <Button size="sm" onClick={handleFilterConfirm}>Apply</Button>
+                  </div>
 
-                    <div className="pl-2 border-l flex gap-2">
-                        <Button variant="secondary" asChild>
-                            <CSVLink
-                            data={csvData}
-                            headers={csvHeaders}
-                            filename={`andonpro_issues_export_${format(new Date(), 'yyyy-MM-dd')}.csv`}
-                            className="flex items-center gap-2"
-                            >
-                                <Download className="h-4 w-4" />
-                                <span className="sr-only sm:not-sr-only">Export CSV</span>
-                            </CSVLink>
-                        </Button>
-                    </div>
-                 </div>
-            </CardHeader>
-        </Card>
+                  <div className="pl-2 border-l flex gap-2">
+                      <Button variant="secondary" asChild>
+                          <CSVLink
+                          data={csvData}
+                          headers={csvHeaders}
+                          filename={`andonpro_issues_export_${format(new Date(), 'yyyy-MM-dd')}.csv`}
+                          className="flex items-center gap-2"
+                          >
+                              <Download className="h-4 w-4" />
+                              <span className="sr-only sm:not-sr-only">Export CSV</span>
+                          </CSVLink>
+                      </Button>
+                  </div>
+               </div>
+          </CardHeader>
+      </Card>
 
-        <Tabs defaultValue="issues-by-category">
-            <div className="flex justify-center">
-                <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5 max-w-4xl">
-                    <TabsTrigger value="issues-by-category">By Category</TabsTrigger>
-                    <TabsTrigger value="stops">Stops</TabsTrigger>
-                    <TabsTrigger value="by-line">By Line</TabsTrigger>
-                    <TabsTrigger value="trend">Trend</TabsTrigger>
-                    <TabsTrigger value="item-volume">Item Volume</TabsTrigger>
-                </TabsList>
-            </div>
-            <TabsContent value="issues-by-category" className="mt-4">
-                 <Card>
-                    <CardContent className="grid gap-6 md:grid-cols-2 p-6">
-                        <div>
-                            <h3 className="font-semibold mb-4 text-center">Volume by Category</h3>
-                            <FilteredBarChart data={issuesByCategory} />
-                        </div>
-                         <div>
-                            <h3 className="font-semibold mb-4 text-center">Share by Category (%)</h3>
-                            <PieChartWithPercentages data={issuesByCategoryWithPercentage} />
-                        </div>
-                    </CardContent>
-                </Card>
-            </TabsContent>
-            <TabsContent value="stops" className="mt-4">
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Production Stop Time by Category (Hours)</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <FilteredBarChart data={stopTimeByCategory} />
-                    </CardContent>
-                </Card>
-            </TabsContent>
-            <TabsContent value="by-line" className="mt-4">
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Total Issues by Production Line</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <FilteredBarChart data={issuesByLine} />
-                    </CardContent>
-                </Card>
-            </TabsContent>
-            <TabsContent value="trend" className="mt-4">
-                 <Card>
-                    <CardHeader>
-                        <CardTitle>Issues Trend</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <IssuesTrendChart data={issuesByDay} />
-                    </CardContent>
-                </Card>
-            </TabsContent>
-            <TabsContent value="item-volume" className="mt-4">
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Reported Issues by Item</CardTitle>
-                        <CardDescription>
-                            A detailed list of all reported issues that include an item number.
-                        </CardDescription>
-                         <div className="pt-2">
-                            <Input 
-                                placeholder="Search by item number..."
-                                value={itemSearchQuery}
-                                onChange={(e) => setItemSearchQuery(e.target.value)}
-                                className="max-w-sm"
-                            />
-                        </div>
-                    </CardHeader>
-                    <CardContent>
-                         {itemVolumeIssues.length > 0 ? (
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Item</TableHead>
-                                        <TableHead className="text-right">Pieces</TableHead>
-                                        <TableHead>Category</TableHead>
-                                        <TableHead>Sub-Category</TableHead>
-                                        <TableHead>Date</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {itemVolumeIssues.map(issue => (
-                                        <TableRow key={issue.id}>
-                                            <TableCell className="font-medium">{issue.itemNumber}</TableCell>
-                                            <TableCell className="text-right">{issue.quantity || 0}</TableCell>
-                                            <TableCell className="capitalize">{issue.category}</TableCell>
-                                            <TableCell className="capitalize">{issue.subCategory?.replace(/-/g, ' ') || 'N/A'}</TableCell>
-                                            <TableCell>{format(issue.reportedAt, 'PP')}</TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                         ) : (
-                            <div className="flex items-center justify-center h-80">
-                                <p className="text-muted-foreground">No item data available for the selected filters.</p>
-                            </div>
-                         )}
-                    </CardContent>
-                </Card>
-            </TabsContent>
-        </Tabs>
+      <Tabs defaultValue="issues-by-category">
+          <div className="flex justify-center">
+              <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5 max-w-4xl">
+                  <TabsTrigger value="issues-by-category">By Category</TabsTrigger>
+                  <TabsTrigger value="stops">Stops</TabsTrigger>
+                  <TabsTrigger value="by-line">By Line</TabsTrigger>
+                  <TabsTrigger value="trend">Trend</TabsTrigger>
+                  <TabsTrigger value="item-volume">Item Volume</TabsTrigger>
+              </TabsList>
+          </div>
+          <TabsContent value="issues-by-category" className="mt-4">
+               <Card>
+                  <CardContent className="grid gap-6 md:grid-cols-2 p-6">
+                      <div>
+                          <h3 className="font-semibold mb-4 text-center">Volume by Category</h3>
+                          <FilteredBarChart data={issuesByCategory} />
+                      </div>
+                       <div>
+                          <h3 className="font-semibold mb-4 text-center">Share by Category (%)</h3>
+                          <PieChartWithPercentages data={issuesByCategoryWithPercentage} />
+                      </div>
+                  </CardContent>
+              </Card>
+          </TabsContent>
+          <TabsContent value="stops" className="mt-4">
+              <Card>
+                  <CardHeader>
+                      <CardTitle>Production Stop Time by Category (Hours)</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                      <FilteredBarChart data={stopTimeByCategory} />
+                  </CardContent>
+              </Card>
+          </TabsContent>
+          <TabsContent value="by-line" className="mt-4">
+              <Card>
+                  <CardHeader>
+                      <CardTitle>Total Issues by Production Line</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                      <FilteredBarChart data={issuesByLine} />
+                  </CardContent>
+              </Card>
+          </TabsContent>
+          <TabsContent value="trend" className="mt-4">
+               <Card>
+                  <CardHeader>
+                      <CardTitle>Issues Trend</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                      <IssuesTrendChart data={issuesByDay} />
+                  </CardContent>
+              </Card>
+          </TabsContent>
+          <TabsContent value="item-volume" className="mt-4">
+              <Card>
+                  <CardHeader>
+                      <CardTitle>Reported Issues by Item</CardTitle>
+                      <CardDescription>
+                          A detailed list of all reported issues that include an item number.
+                      </CardDescription>
+                       <div className="pt-2">
+                          <Input 
+                              placeholder="Search by item number..."
+                              value={itemSearchQuery}
+                              onChange={(e) => setItemSearchQuery(e.target.value)}
+                              className="max-w-sm"
+                          />
+                      </div>
+                  </CardHeader>
+                  <CardContent>
+                       {itemVolumeIssues.length > 0 ? (
+                          <Table>
+                              <TableHeader>
+                                  <TableRow>
+                                      <TableHead>Item</TableHead>
+                                      <TableHead className="text-right">Pieces</TableHead>
+                                      <TableHead>Category</TableHead>
+                                      <TableHead>Sub-Category</TableHead>
+                                      <TableHead>Date</TableHead>
+                                  </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                  {itemVolumeIssues.map(issue => (
+                                      <TableRow key={issue.id}>
+                                          <TableCell className="font-medium">{issue.itemNumber}</TableCell>
+                                          <TableCell className="text-right">{issue.quantity || 0}</TableCell>
+                                          <TableCell className="capitalize">{issue.category}</TableCell>
+                                          <TableCell className="capitalize">{issue.subCategory?.replace(/-/g, ' ') || 'N/A'}</TableCell>
+                                          <TableCell>{format(issue.reportedAt, 'PP')}</TableCell>
+                                      </TableRow>
+                                  ))}
+                              </TableBody>
+                          </Table>
+                       ) : (
+                          <div className="flex items-center justify-center h-80">
+                              <p className="text-muted-foreground">No item data available for the selected filters.</p>
+                          </div>
+                       )}
+                  </CardContent>
+              </Card>
+          </TabsContent>
+      </Tabs>
 
-      </main>
-    </AppLayout>
+    </main>
   );
 }

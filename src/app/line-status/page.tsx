@@ -4,7 +4,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { IssuesDataTable } from "@/components/dashboard/issues-data-table";
 import { ReportIssueDialog } from "@/components/dashboard/report-issue-dialog";
-import { AppLayout } from "@/components/layout/app-layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -103,82 +102,80 @@ export default function LineStatusPage() {
   }
 
   return (
-    <AppLayout>
-      <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background">
-        
-        {!selectionConfirmed ? (
-             <Card>
-             <CardHeader>
-               <CardTitle>Select Your Workstation</CardTitle>
-               <CardDescription>Choose the production line and workstation you are currently at.</CardDescription>
-             </CardHeader>
-             <CardContent className="grid md:grid-cols-2 gap-4">
-               <div className="flex flex-col gap-2">
-                 <Select onValueChange={handleLineChange} value={selectedLineId}>
-                   <SelectTrigger>
-                     <SelectValue placeholder="Select Production Line" />
-                   </SelectTrigger>
-                   <SelectContent>
-                     {allLines.map((line) => (
-                       <SelectItem key={line.id} value={line.id}>
-                         {line.name}
-                       </SelectItem>
-                     ))}
-                   </SelectContent>
-                 </Select>
-               </div>
-               <div className="flex flex-col gap-2">
-                  <Select onValueChange={setSelectedWorkstation} value={selectedWorkstation} disabled={!selectedLine}>
-                   <SelectTrigger>
-                     <SelectValue placeholder="Select Workstation" />
-                   </SelectTrigger>
-                   <SelectContent>
-                      {selectedLine?.workstations.map((station) => (
-                        <SelectItem key={station} value={station}>
-                          {station}
-                        </SelectItem>
-                      ))}
-                   </SelectContent>
-                 </Select>
-               </div>
-             </CardContent>
-             <CardFooter>
-                <Button onClick={confirmSelection} disabled={!selectedLineId || !selectedWorkstation}>Confirm Selection</Button>
-             </CardFooter>
-           </Card>
-        ) : (
-            <div className="flex flex-col gap-4">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                    <div>
-                        <h1 className="text-lg font-semibold md:text-2xl">{selectedLine?.name}</h1>
-                        <p className="text-sm text-muted-foreground">{selectedWorkstation}</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <Button variant="outline" onClick={changeSelection}>Change Station</Button>
-                        <ReportIssueDialog
-                            key={`${selectedLineId}-${selectedWorkstation}`}
-                            productionLines={allLines}
-                            selectedLineId={selectedLineId}
-                            selectedWorkstation={selectedWorkstation}
-                            onIssueReported={fetchIssuesForStation}
-                        >
-                            <Button>
-                                <PlusCircle className="mr-2 h-4 w-4" />
-                                Report Issue
-                            </Button>
-                        </ReportIssueDialog>
-                    </div>
-                </div>
-                <IssuesDataTable 
-                    issues={userIssues} 
-                    loading={issuesLoading}
-                    title="Recent Issues at Your Station"
-                    description="Issues reported on this workstation in the last 24 hours." 
-                    onIssueUpdate={fetchIssuesForStation}
-                />
-            </div>
-        )}
-      </main>
-    </AppLayout>
+    <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background">
+      
+      {!selectionConfirmed ? (
+           <Card>
+           <CardHeader>
+             <CardTitle>Select Your Workstation</CardTitle>
+             <CardDescription>Choose the production line and workstation you are currently at.</CardDescription>
+           </CardHeader>
+           <CardContent className="grid md:grid-cols-2 gap-4">
+             <div className="flex flex-col gap-2">
+               <Select onValueChange={handleLineChange} value={selectedLineId}>
+                 <SelectTrigger>
+                   <SelectValue placeholder="Select Production Line" />
+                 </SelectTrigger>
+                 <SelectContent>
+                   {allLines.map((line) => (
+                     <SelectItem key={line.id} value={line.id}>
+                       {line.name}
+                     </SelectItem>
+                   ))}
+                 </SelectContent>
+               </Select>
+             </div>
+             <div className="flex flex-col gap-2">
+                <Select onValueChange={setSelectedWorkstation} value={selectedWorkstation} disabled={!selectedLine}>
+                 <SelectTrigger>
+                   <SelectValue placeholder="Select Workstation" />
+                 </SelectTrigger>
+                 <SelectContent>
+                    {selectedLine?.workstations.map((station) => (
+                      <SelectItem key={station} value={station}>
+                        {station}
+                      </SelectItem>
+                    ))}
+                 </SelectContent>
+               </Select>
+             </div>
+           </CardContent>
+           <CardFooter>
+              <Button onClick={confirmSelection} disabled={!selectedLineId || !selectedWorkstation}>Confirm Selection</Button>
+           </CardFooter>
+         </Card>
+      ) : (
+          <div className="flex flex-col gap-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <div>
+                      <h1 className="text-lg font-semibold md:text-2xl">{selectedLine?.name}</h1>
+                      <p className="text-sm text-muted-foreground">{selectedWorkstation}</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                      <Button variant="outline" onClick={changeSelection}>Change Station</Button>
+                      <ReportIssueDialog
+                          key={`${selectedLineId}-${selectedWorkstation}`}
+                          productionLines={allLines}
+                          selectedLineId={selectedLineId}
+                          selectedWorkstation={selectedWorkstation}
+                          onIssueReported={fetchIssuesForStation}
+                      >
+                          <Button>
+                              <PlusCircle className="mr-2 h-4 w-4" />
+                              Report Issue
+                          </Button>
+                      </ReportIssueDialog>
+                  </div>
+              </div>
+              <IssuesDataTable 
+                  issues={userIssues} 
+                  loading={issuesLoading}
+                  title="Recent Issues at Your Station"
+                  description="Issues reported on this workstation in the last 24 hours." 
+                  onIssueUpdate={fetchIssuesForStation}
+              />
+          </div>
+      )}
+    </main>
   );
 }

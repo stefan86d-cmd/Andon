@@ -1,7 +1,6 @@
 
 "use client"
 
-import { AppLayout } from "@/components/layout/app-layout";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -22,7 +21,7 @@ export default function SettingsPage() {
     const { theme, setTheme } = useTheme();
 
     if (!currentUser) {
-        return <AppLayout><div>Loading...</div></AppLayout>;
+        return <div>Loading...</div>;
     }
     
     const handleNotificationChange = (key: 'newIssue' | 'issueResolved' | 'muteSound', value: boolean) => {
@@ -51,143 +50,141 @@ export default function SettingsPage() {
         : "N/A";
 
     return (
-        <AppLayout>
-            <main className="flex min-h-[calc(100vh_-_theme(spacing.16))] flex-1 flex-col gap-4 bg-background p-4 md:gap-8 md:p-10">
-                <div className="mx-auto grid w-full max-w-6xl gap-2">
-                    <h1 className="text-3xl font-semibold">Settings</h1>
-                </div>
-                <div className="mx-auto grid w-full max-w-6xl items-start gap-6 lg:grid-cols-2">
-                    <div className="grid gap-6">
-                        <Card>
+        <main className="flex min-h-[calc(100vh_-_theme(spacing.16))] flex-1 flex-col gap-4 bg-background p-4 md:gap-8 md:p-10">
+            <div className="mx-auto grid w-full max-w-6xl gap-2">
+                <h1 className="text-3xl font-semibold">Settings</h1>
+            </div>
+            <div className="mx-auto grid w-full max-w-6xl items-start gap-6 lg:grid-cols-2">
+                <div className="grid gap-6">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>My Profile</CardTitle>
+                            <CardDescription>Your personal information is displayed below.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="flex items-center gap-4">
+                                <Avatar className="h-20 w-20 text-3xl border-2 border-primary">
+                                    <AvatarFallback>{getInitials(currentUser.firstName, currentUser.lastName)}</AvatarFallback>
+                                </Avatar>
+                                <div>
+                                    <p className="text-xl font-semibold">{currentUser.firstName} {currentUser.lastName}</p>
+                                    <p className="text-muted-foreground">{currentUser.email}</p>
+                                </div>
+                            </div>
+                        </CardContent>
+                         {canManageAccount && (
+                            <CardFooter>
+                                <Link href="/settings/account" className={cn(buttonVariants({ variant: "default" }))}>
+                                    Manage Account & Billing
+                                </Link>
+                            </CardFooter>
+                         )}
+                    </Card>
+
+                    {canManageAccount && (
+                         <Card>
                             <CardHeader>
-                                <CardTitle>My Profile</CardTitle>
-                                <CardDescription>Your personal information is displayed below.</CardDescription>
+                                <CardTitle>Subscription Plan</CardTitle>
+                                <CardDescription>Manage your billing and subscription details.</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-4">
-                                <div className="flex items-center gap-4">
-                                    <Avatar className="h-20 w-20 text-3xl border-2 border-primary">
-                                        <AvatarFallback>{getInitials(currentUser.firstName, currentUser.lastName)}</AvatarFallback>
-                                    </Avatar>
-                                    <div>
-                                        <p className="text-xl font-semibold">{currentUser.firstName} {currentUser.lastName}</p>
-                                        <p className="text-muted-foreground">{currentUser.email}</p>
-                                    </div>
+                                <div className="rounded-lg border bg-card-foreground/5 p-6">
+                                    <h3 className="text-lg font-semibold">Current Plan: {planName}</h3>
+                                    <p className="text-sm text-muted-foreground">Your workspace is on the {planName} plan.</p>
+                                    <p className="text-sm text-muted-foreground mt-2">
+                                        {currentUser.plan === 'starter' ? 'The Starter plan is always free.' : `Your plan renews on ${renewalDate}.`}
+                                    </p>
                                 </div>
                             </CardContent>
-                             {canManageAccount && (
-                                <CardFooter>
-                                    <Link href="/settings/account" className={cn(buttonVariants({ variant: "default" }))}>
-                                        Manage Account & Billing
-                                    </Link>
-                                </CardFooter>
-                             )}
+                            <CardFooter>
+                                 <Link href="/settings/billing" className={cn(buttonVariants({ variant: "outline" }))}>
+                                    View Billing Details
+                                </Link>
+                            </CardFooter>
                         </Card>
-
-                        {canManageAccount && (
-                             <Card>
-                                <CardHeader>
-                                    <CardTitle>Subscription Plan</CardTitle>
-                                    <CardDescription>Manage your billing and subscription details.</CardDescription>
-                                </CardHeader>
-                                <CardContent className="space-y-4">
-                                    <div className="rounded-lg border bg-card-foreground/5 p-6">
-                                        <h3 className="text-lg font-semibold">Current Plan: {planName}</h3>
-                                        <p className="text-sm text-muted-foreground">Your workspace is on the {planName} plan.</p>
-                                        <p className="text-sm text-muted-foreground mt-2">
-                                            {currentUser.plan === 'starter' ? 'The Starter plan is always free.' : `Your plan renews on ${renewalDate}.`}
-                                        </p>
-                                    </div>
-                                </CardContent>
-                                <CardFooter>
-                                     <Link href="/settings/billing" className={cn(buttonVariants({ variant: "outline" }))}>
-                                        View Billing Details
-                                    </Link>
-                                </CardFooter>
-                            </Card>
-                        )}
-                    </div>
-                     <div className="grid gap-6">
-                        {hasNotificationsCard && (
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>Notifications</CardTitle>
-                                    <CardDescription>Manage how you receive notifications.</CardDescription>
-                                </CardHeader>
-                                <CardContent className="space-y-6">
-                                <div className="space-y-2">
-                                        <h3 className="text-lg font-medium">By Email</h3>
-                                        <div className="space-y-4">
-                                            <div className="flex items-center justify-between rounded-lg border p-4">
-                                                <div className="space-y-0.5">
-                                                    <Label htmlFor="new-issue-reported" className="text-base">New Issue Reported</Label>
-                                                    <p className="text-sm text-muted-foreground">Receive an email when a new issue is reported on any line.</p>
-                                                </div>
-                                                <Switch 
-                                                    id="new-issue-reported" 
-                                                    checked={currentUser.notificationPreferences?.newIssue ?? true}
-                                                    onCheckedChange={(checked) => handleNotificationChange('newIssue', checked)}
-                                                />
-                                            </div>
-                                            <div className="flex items-center justify-between rounded-lg border p-4">
-                                                <div className="space-y-0.5">
-                                                    <Label htmlFor="issue-resolved" className="text-base">Issue Resolved</Label>
-                                                    <p className="text-sm text-muted-foreground">Receive an email when an issue is marked as resolved.</p>
-                                                </div>
-                                                <Switch 
-                                                    id="issue-resolved" 
-                                                    checked={currentUser.notificationPreferences?.issueResolved ?? false}
-                                                    onCheckedChange={(checked) => handleNotificationChange('issueResolved', checked)}
-                                                />
-                                            </div>
-                                        </div>
-                                </div>
-                                <div className="space-y-2">
-                                        <h3 className="text-lg font-medium">Sound</h3>
-                                        <div className="space-y-4">
-                                            <div className="flex items-center justify-between rounded-lg border p-4">
-                                                <div className="space-y-0.5">
-                                                    <Label htmlFor="mute-sound" className="text-base">Mute Sound</Label>
-                                                    <p className="text-sm text-muted-foreground">Mute all notification sounds within the app.</p>
-                                                </div>
-                                                <Switch 
-                                                    id="mute-sound" 
-                                                    checked={currentUser.notificationPreferences?.muteSound ?? true}
-                                                    onCheckedChange={(checked) => handleNotificationChange('muteSound', checked)}
-                                                />
-                                            </div>
-                                        </div>
-                                </div>
-                                </CardContent>
-                            </Card>
-                        )}
+                    )}
+                </div>
+                 <div className="grid gap-6">
+                    {hasNotificationsCard && (
                         <Card>
                             <CardHeader>
-                                <CardTitle>Appearance</CardTitle>
-                                <CardDescription>Customize the look and feel of the application.</CardDescription>
+                                <CardTitle>Notifications</CardTitle>
+                                <CardDescription>Manage how you receive notifications.</CardDescription>
                             </CardHeader>
-                            <CardContent>
-                                <RadioGroup
-                                    defaultValue={currentUser.theme || 'system'}
-                                    onValueChange={(value: Theme) => handleThemeChange(value)}
-                                >
-                                    <div className="flex items-center space-x-2">
-                                        <RadioGroupItem value="light" id="theme-light" />
-                                        <Label htmlFor="theme-light">Light</Label>
+                            <CardContent className="space-y-6">
+                            <div className="space-y-2">
+                                    <h3 className="text-lg font-medium">By Email</h3>
+                                    <div className="space-y-4">
+                                        <div className="flex items-center justify-between rounded-lg border p-4">
+                                            <div className="space-y-0.5">
+                                                <Label htmlFor="new-issue-reported" className="text-base">New Issue Reported</Label>
+                                                <p className="text-sm text-muted-foreground">Receive an email when a new issue is reported on any line.</p>
+                                            </div>
+                                            <Switch 
+                                                id="new-issue-reported" 
+                                                checked={currentUser.notificationPreferences?.newIssue ?? true}
+                                                onCheckedChange={(checked) => handleNotificationChange('newIssue', checked)}
+                                            />
+                                        </div>
+                                        <div className="flex items-center justify-between rounded-lg border p-4">
+                                            <div className="space-y-0.5">
+                                                <Label htmlFor="issue-resolved" className="text-base">Issue Resolved</Label>
+                                                <p className="text-sm text-muted-foreground">Receive an email when an issue is marked as resolved.</p>
+                                            </div>
+                                            <Switch 
+                                                id="issue-resolved" 
+                                                checked={currentUser.notificationPreferences?.issueResolved ?? false}
+                                                onCheckedChange={(checked) => handleNotificationChange('issueResolved', checked)}
+                                            />
+                                        </div>
                                     </div>
-                                    <div className="flex items-center space-x-2">
-                                        <RadioGroupItem value="dark" id="theme-dark" />
-                                        <Label htmlFor="theme-dark">Dark</Label>
+                            </div>
+                            <div className="space-y-2">
+                                    <h3 className="text-lg font-medium">Sound</h3>
+                                    <div className="space-y-4">
+                                        <div className="flex items-center justify-between rounded-lg border p-4">
+                                            <div className="space-y-0.5">
+                                                <Label htmlFor="mute-sound" className="text-base">Mute Sound</Label>
+                                                <p className="text-sm text-muted-foreground">Mute all notification sounds within the app.</p>
+                                            </div>
+                                            <Switch 
+                                                id="mute-sound" 
+                                                checked={currentUser.notificationPreferences?.muteSound ?? true}
+                                                onCheckedChange={(checked) => handleNotificationChange('muteSound', checked)}
+                                            />
+                                        </div>
                                     </div>
-                                    <div className="flex items-center space-x-2">
-                                        <RadioGroupItem value="system" id="theme-system" />
-                                        <Label htmlFor="theme-system">System</Label>
-                                    </div>
-                                </RadioGroup>
+                            </div>
                             </CardContent>
                         </Card>
-                    </div>
+                    )}
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Appearance</CardTitle>
+                            <CardDescription>Customize the look and feel of the application.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <RadioGroup
+                                defaultValue={currentUser.theme || 'system'}
+                                onValueChange={(value: Theme) => handleThemeChange(value)}
+                            >
+                                <div className="flex items-center space-x-2">
+                                    <RadioGroupItem value="light" id="theme-light" />
+                                    <Label htmlFor="theme-light">Light</Label>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                    <RadioGroupItem value="dark" id="theme-dark" />
+                                    <Label htmlFor="theme-dark">Dark</Label>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                    <RadioGroupItem value="system" id="theme-system" />
+                                    <Label htmlFor="theme-system">System</Label>
+                                </div>
+                            </RadioGroup>
+                        </CardContent>
+                    </Card>
                 </div>
-            </main>
-        </AppLayout>
+            </div>
+        </main>
     );
 }

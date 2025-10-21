@@ -4,7 +4,6 @@
 import { useEffect, useState } from "react";
 import { IssuesDataTable } from "@/components/dashboard/issues-data-table";
 import { StatsCards } from "@/components/dashboard/stats-cards";
-import { AppLayout } from "@/components/layout/app-layout";
 import { getClientIssues } from "@/lib/data";
 import { subHours, intervalToDuration, differenceInSeconds, max } from "date-fns";
 import { useUser } from "@/contexts/user-context";
@@ -63,11 +62,9 @@ export default function Home() {
   // ✅ Permission check
   if (!currentUser || (currentUser.role !== "admin" && currentUser.role !== "supervisor")) {
     return (
-      <AppLayout>
-        <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background">
-          <p>You do not have permission to view this page.</p>
-        </main>
-      </AppLayout>
+      <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background">
+        <p>You do not have permission to view this page.</p>
+      </main>
     );
   }
 
@@ -200,70 +197,68 @@ export default function Home() {
 
 
   return (
-    <AppLayout>
-      <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background">
-        <div className="flex items-center justify-between">
-          <h1 className="text-lg font-semibold md:text-2xl">Dashboard</h1>
-            {view && !loading && (
-              <ToggleGroup type="single" value={view} onValueChange={(value) => value && setView(value as 'list' | 'grid')} aria-label="View mode">
-                  <ToggleGroupItem value="list" aria-label="List view">
-                      <Rows className="h-4 w-4" />
-                  </ToggleGroupItem>
-                  <ToggleGroupItem value="grid" aria-label="Grid view">
-                      <LayoutGrid className="h-4 w-4" />
-                  </ToggleGroupItem>
-              </ToggleGroup>
-            )}
-        </div>
+    <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background">
+      <div className="flex items-center justify-between">
+        <h1 className="text-lg font-semibold md:text-2xl">Dashboard</h1>
+          {view && !loading && (
+            <ToggleGroup type="single" value={view} onValueChange={(value) => value && setView(value as 'list' | 'grid')} aria-label="View mode">
+                <ToggleGroupItem value="list" aria-label="List view">
+                    <Rows className="h-4 w-4" />
+                </ToggleGroupItem>
+                <ToggleGroupItem value="grid" aria-label="Grid view">
+                    <LayoutGrid className="h-4 w-4" />
+                </ToggleGroupItem>
+            </ToggleGroup>
+          )}
+      </div>
 
-        {loading ? (
-          <div className="space-y-6">
-            <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
-              <Skeleton className="h-28" />
-              <Skeleton className="h-28" />
-              <Skeleton className="h-28" />
-              <Skeleton className="h-28" />
-            </div>
-            <Skeleton className="h-96" />
+      {loading ? (
+        <div className="space-y-6">
+          <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
+            <Skeleton className="h-28" />
+            <Skeleton className="h-28" />
+            <Skeleton className="h-28" />
+            <Skeleton className="h-28" />
           </div>
-        ) : (
-          <>
-            <StatsCards
-              stats={[
-                {
-                  title: "Open Issues",
-                  value: stats.openIssues.toString(),
-                  change: "+5",
-                  changeType: "increase",
-                  description: "since last hour",
-                },
-                {
-                  title: "Avg. Resolution Time",
-                  value: stats.avgResolutionTime,
-                  change: "-12%",
-                  changeType: "decrease",
-                  description: "this week",
-                },
-                {
-                  title: "Production Stop Time",
-                  value: stats.productionStopTime,
-                  change: "+15m",
-                  changeType: "increase",
-                  description: "in last 24 hours",
-                },
-                {
-                  title: "Critical Alerts",
-                  value: stats.criticalAlerts.toString(),
-                  change: "+1",
-                  changeType: "increase",
-                  description: "in last 24 hours",
-                },
-              ]}
-            />
-            {renderRecentIssues()}
-          </>
-        )}
-      </main>
-    </AppLayout>
+          <Skeleton className="h-96" />
+        </div>
+      ) : (
+        <>
+          <StatsCards
+            stats={[
+              {
+                title: "Open Issues",
+                value: stats.openIssues.toString(),
+                change: "+5",
+                changeType: "increase",
+                description: "since last hour",
+              },
+              {
+                title: "Avg. Resolution Time",
+                value: stats.avgResolutionTime,
+                change: "-12%",
+                changeType: "decrease",
+                description: "this week",
+              },
+              {
+                title: "Production Stop Time",
+                value: stats.productionStopTime,
+                change: "+15m",
+                changeType: "increase",
+                description: "in last 24 hours",
+              },
+              {
+                title: "Critical Alerts",
+                value: stats.criticalAlerts.toString(),
+                change: "+1",
+                changeType: "increase",
+                description: "in last 24 hours",
+              },
+            ]}
+          />
+          {renderRecentIssues()}
+        </>
+      )}
+    </main>
   );
 }

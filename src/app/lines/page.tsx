@@ -2,7 +2,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { AppLayout } from "@/components/layout/app-layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { PlusCircle, LoaderCircle, Factory, Edit, Lock } from "lucide-react";
@@ -54,21 +53,17 @@ export default function LinesPage() {
 
   if (!currentUser || loading) {
     return (
-        <AppLayout>
-            <main className="flex flex-1 items-center justify-center">
-                <LoaderCircle className="h-8 w-8 animate-spin" />
-            </main>
-        </AppLayout>
+      <main className="flex flex-1 items-center justify-center">
+          <LoaderCircle className="h-8 w-8 animate-spin" />
+      </main>
     );
   }
 
   if (currentUser.role !== 'admin') {
     return (
-      <AppLayout>
-        <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background">
-          <p>You do not have permission to view this page.</p>
-        </main>
-      </AppLayout>
+      <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background">
+        <p>You do not have permission to view this page.</p>
+      </main>
     );
   }
 
@@ -80,67 +75,65 @@ export default function LinesPage() {
   const canAddLine = allLines.length < lineLimit;
 
   return (
-    <AppLayout>
-      <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-lg font-semibold md:text-2xl">Production Lines</h1>
-            <p className="text-sm text-muted-foreground">
-              You have created {allLines.length} of {lineLimit === Infinity ? 'unlimited' : lineLimit} production lines on the {currentUser.plan} plan.
-            </p>
-          </div>
-          {canAddLine ? (
-            <AddProductionLineDialog>
-              <Button>
-                <PlusCircle className="mr-2 h-4 w-4" />
-                Add Line
-              </Button>
-            </AddProductionLineDialog>
-          ) : (
-             <Button asChild>
-              <Link href="/settings/account">
-                <Lock className="mr-2 h-4 w-4" />
-                Upgrade to Add More
-              </Link>
+    <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-lg font-semibold md:text-2xl">Production Lines</h1>
+          <p className="text-sm text-muted-foreground">
+            You have created {allLines.length} of {lineLimit === Infinity ? 'unlimited' : lineLimit} production lines on the {currentUser.plan} plan.
+          </p>
+        </div>
+        {canAddLine ? (
+          <AddProductionLineDialog>
+            <Button>
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Add Line
             </Button>
-          )}
-        </div>
-        
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {allLines.map((line) => (
-            <Card key={line.id}>
-              <CardHeader className="flex flex-row items-start justify-between">
-                <div>
-                    <CardTitle>{line.name}</CardTitle>
-                    <CardDescription>{line.workstations.length} workstations</CardDescription>
-                </div>
-                <Factory className="h-8 w-8 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                    {line.workstations.length > 0 ? (
-                        line.workstations.map((ws, index) => (
-                           <div key={index} className="text-sm text-muted-foreground">{ws}</div>
-                        ))
-                    ) : (
-                        <p className="text-sm text-muted-foreground">No workstations added yet.</p>
-                    )}
-                </div>
-              </CardContent>
-              <CardFooter className="flex justify-end gap-2 border-t pt-6">
-                <EditProductionLineDialog productionLine={line}>
-                    <Button variant="outline" size="sm">
-                        <Edit className="h-4 w-4" />
-                        <span className="sr-only sm:not-sr-only sm:ml-2">Edit</span>
-                    </Button>
-                </EditProductionLineDialog>
-                <DeleteProductionLineDialog productionLine={line} />
-              </CardFooter>
-            </Card>
-          ))}
-        </div>
-      </main>
-    </AppLayout>
+          </AddProductionLineDialog>
+        ) : (
+           <Button asChild>
+            <Link href="/settings/account">
+              <Lock className="mr-2 h-4 w-4" />
+              Upgrade to Add More
+            </Link>
+          </Button>
+        )}
+      </div>
+      
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {allLines.map((line) => (
+          <Card key={line.id}>
+            <CardHeader className="flex flex-row items-start justify-between">
+              <div>
+                  <CardTitle>{line.name}</CardTitle>
+                  <CardDescription>{line.workstations.length} workstations</CardDescription>
+              </div>
+              <Factory className="h-8 w-8 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                  {line.workstations.length > 0 ? (
+                      line.workstations.map((ws, index) => (
+                         <div key={index} className="text-sm text-muted-foreground">{ws}</div>
+                      ))
+                  ) : (
+                      <p className="text-sm text-muted-foreground">No workstations added yet.</p>
+                  )}
+              </div>
+            </CardContent>
+            <CardFooter className="flex justify-end gap-2 border-t pt-6">
+              <EditProductionLineDialog productionLine={line}>
+                  <Button variant="outline" size="sm">
+                      <Edit className="h-4 w-4" />
+                      <span className="sr-only sm:not-sr-only sm:ml-2">Edit</span>
+                  </Button>
+              </EditProductionLineDialog>
+              <DeleteProductionLineDialog productionLine={line} />
+            </CardFooter>
+          </Card>
+        ))}
+      </div>
+    </main>
   );
 }
 
