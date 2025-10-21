@@ -30,6 +30,7 @@ import { cn } from "@/lib/utils";
 import { allCategories } from "@/lib/constants";
 import { CSVLink } from "react-csv";
 import { getClientIssues, getClientProductionLines } from "@/lib/data";
+import { Input } from "@/components/ui/input";
 
 const ChartGradients = () => (
     <svg width="0" height="0" className="absolute">
@@ -60,6 +61,7 @@ export default function ReportsPage() {
   });
   const [selectedLines, setSelectedLines] = useState<string[]>([]);
   const [tempSelectedLines, setTempSelectedLines] = useState<string[]>([]);
+  const [itemSearchQuery, setItemSearchQuery] = useState<string>("");
   
   useEffect(() => {
     if (!currentUser?.orgId) return;
@@ -241,9 +243,12 @@ export default function ReportsPage() {
   }).filter(c => c.value > 0);
 
   // 5. Item Volume Data (for Table)
-    const itemVolumeIssues = filteredIssues.filter(
-        issue => issue.itemNumber && issue.itemNumber.trim() !== ''
-    );
+  const itemVolumeIssues = filteredIssues.filter(
+    issue =>
+      issue.itemNumber &&
+      issue.itemNumber.trim() !== '' &&
+      issue.itemNumber.toLowerCase().includes(itemSearchQuery.toLowerCase())
+  );
 
 
   const isAiEnabled = currentUser.plan === 'pro' || currentUser.plan === 'enterprise';
@@ -407,6 +412,14 @@ export default function ReportsPage() {
                         <CardDescription>
                             A detailed list of all reported issues that include an item number.
                         </CardDescription>
+                         <div className="pt-2">
+                            <Input 
+                                placeholder="Search by item number..."
+                                value={itemSearchQuery}
+                                onChange={(e) => setItemSearchQuery(e.target.value)}
+                                className="max-w-sm"
+                            />
+                        </div>
                     </CardHeader>
                     <CardContent>
                          {itemVolumeIssues.length > 0 ? (
