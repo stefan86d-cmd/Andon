@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useTransition } from "react";
@@ -17,7 +18,6 @@ import { toast } from "@/hooks/use-toast";
 import { LoaderCircle, Trash2 } from "lucide-react";
 import { deleteProductionLine } from "@/app/actions";
 import type { ProductionLine } from "@/lib/types";
-import { useRouter } from "next/navigation";
 
 interface DeleteProductionLineDialogProps {
   productionLine: ProductionLine;
@@ -28,7 +28,6 @@ export function DeleteProductionLineDialog({
 }: DeleteProductionLineDialogProps) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, startSubmittingTransition] = useTransition();
-  const router = useRouter();
 
   const handleDelete = () => {
     startSubmittingTransition(async () => {
@@ -40,7 +39,7 @@ export function DeleteProductionLineDialog({
           description: `The line "${productionLine.name}" has been deleted.`,
         });
         setOpen(false);
-        router.refresh();
+        // No need for router.refresh() due to onSnapshot listener
       } else {
         toast({
           variant: "destructive",

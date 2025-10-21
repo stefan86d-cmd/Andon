@@ -41,7 +41,6 @@ export function AddProductionLineDialog({ children }: { children: React.ReactNod
   const [open, setOpen] = useState(false);
   const [isSubmitting, startSubmittingTransition] = useTransition();
   const { currentUser } = useUser();
-  const router = useRouter();
 
   const form = useForm<LineFormValues>({
     resolver: zodResolver(lineFormSchema),
@@ -68,7 +67,7 @@ export function AddProductionLineDialog({ children }: { children: React.ReactNod
                 description: `The line "${data.name}" has been created.`,
             });
             setOpen(false);
-            router.refresh();
+            // No need for router.refresh() due to onSnapshot listener
         } else {
             const errorMsg =
               typeof result.error === "string"

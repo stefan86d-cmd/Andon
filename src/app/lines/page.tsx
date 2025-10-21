@@ -8,12 +8,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { PlusCircle, LoaderCircle, Factory, Edit, Lock } from "lucide-react";
 import type { ProductionLine } from "@/lib/types";
 import { useUser } from "@/contexts/user-context";
-import { getClientProductionLines } from "@/lib/data";
 import { AddProductionLineDialog } from "@/components/lines/add-production-line-dialog";
 import { EditProductionLineDialog } from "@/components/lines/edit-production-line-dialog";
 import { DeleteProductionLineDialog } from "@/components/lines/delete-production-line-dialog";
 import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
+import { getClientInstances } from "@/firebase/client";
+import { collection, query, where, onSnapshot } from "firebase/firestore";
 
 const planLimits = {
   starter: { lines: 1 },
@@ -29,14 +30,26 @@ export default function LinesPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!currentUser?.orgId) return;
-    const fetchLines = async () => {
-      setLoading(true);
-      const linesData = await getClientProductionLines(currentUser.orgId!);
-      setProductionLines(linesData);
-      setLoading(false);
+    if (!currentUser?.orgId) {
+        setLoading(false);
+        return;
     };
-    fetchLines();
+
+    setLoading(true);
+    const { db } = getClientInstances();
+    const linesCollection = collection(db, "productionLines");
+    const q = query(linesCollection, where("orgId", "==", currentUser.orgId));
+    
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+        const linesData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as ProductionLine));
+        setProductionLines(linesData);
+        setLoading(false);
+    }, (error) => {
+        console.error("Error fetching production lines:", error);
+        setLoading(false);
+    });
+
+    return () => unsubscribe();
   }, [currentUser?.orgId]);
 
   if (!currentUser || loading) {
