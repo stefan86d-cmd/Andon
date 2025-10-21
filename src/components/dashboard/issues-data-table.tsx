@@ -98,15 +98,21 @@ export function IssuesDataTable({ issues, title, description, loading, onIssueUp
     return subCategory.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   };
 
+  const CardComponent = title ? Card : 'div';
+  const CardHeaderComponent = title ? CardHeader : 'div';
+  const CardTitleComponent = title ? CardTitle : 'div';
+  const CardDescriptionComponent = title ? CardDescription : 'div';
+  const CardContentComponent = title ? CardContent : 'div';
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{title || (currentUser?.role === 'admin' ? 'Recent Issues' : 'Recent Issues on Your Line')}</CardTitle>
-        <CardDescription>
-          {description || (currentUser?.role === 'admin' ? 'A list of recently reported issues on the production line.' : 'Issues reported on your selected line within the last 24 hours.')}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
+    <CardComponent>
+      {title && (
+        <CardHeaderComponent>
+          <CardTitleComponent>{title}</CardTitleComponent>
+          {description && <CardDescriptionComponent>{description}</CardDescriptionComponent>}
+        </CardHeaderComponent>
+      )}
+      <CardContentComponent className={!title ? 'p-0' : ''}>
         <Table>
           <TableHeader>
             <TableRow>
@@ -170,7 +176,7 @@ export function IssuesDataTable({ issues, title, description, loading, onIssueUp
             )}
           </TableBody>
         </Table>
-      </CardContent>
+      </CardContentComponent>
        {selectedIssue && (
          <ResolveIssueDialog
           isOpen={!!selectedIssue}
@@ -179,6 +185,6 @@ export function IssuesDataTable({ issues, title, description, loading, onIssueUp
           onIssueUpdate={handleIssueUpdate}
         />
       )}
-    </Card>
+    </CardComponent>
   );
 }

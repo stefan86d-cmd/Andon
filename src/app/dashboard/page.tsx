@@ -10,6 +10,10 @@ import { subHours, intervalToDuration, differenceInSeconds, max } from "date-fns
 import { useUser } from "@/contexts/user-context";
 import type { Issue } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { LayoutGrid, Rows } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { IssuesGrid } from "@/components/dashboard/issues-grid";
 
 // ✅ Define Duration type since date-fns v3 removed its export
 type Duration = {
@@ -24,9 +28,20 @@ type Duration = {
 
 export default function Home() {
   const { currentUser } = useUser();
+  const isMobile = useIsMobile();
   const [allIssues, setAllIssues] = useState<Issue[]>([]);
   const [recentIssues, setRecentIssues] = useState<Issue[]>([]);
   const [loading, setLoading] = useState(true);
+  const [view, setView] = useState<'list' | 'grid'>();
+
+  useEffect(() => {
+    if (isMobile) {
+      setView('grid');
+    } else {
+      setView('list');
+    }
+  }, [isMobile]);
+
 
   const fetchData = async () => {
     if (!currentUser?.orgId) return;
@@ -161,11 +176,44 @@ export default function Home() {
     ).length,
   };
 
+  const renderRecentIssues = () => {
+    if (!view) return null; // Don't render until view is determined
+
+    if (view === 'grid') {
+        return (
+            <IssuesGrid 
+                issues={recentIssues}
+                title="Recent Issues"
+                onIssueUpdate={fetchData}
+            />
+        );
+    }
+    
+    return (
+        <IssuesDataTable 
+            issues={recentIssues} 
+            title="Recent Issues" 
+            onIssueUpdate={fetchData} 
+        />
+    );
+  };
+
+
   return (
     <AppLayout>
       <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background">
         <div className="flex items-center justify-between">
           <h1 className="text-lg font-semibold md:text-2xl">Dashboard</h1>
+            {view && !loading && (
+              <ToggleGroup type="single" value={view} onValueChange={(value) => value && setView(value as 'list' | 'grid')} aria-label="View mode">
+                  <ToggleGroupItem value="list" aria-label="List view">
+                      <Rows className="h-4 w-4" />
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="grid" aria-label="Grid view">
+                      <LayoutGrid className="h-4 w-4" />
+                  </ToggleGroupItem>
+              </ToggleGroup>
+            )}
         </div>
 
         {loading ? (
@@ -212,11 +260,7 @@ export default function Home() {
                 },
               ]}
             />
-            <IssuesDataTable 
-                issues={recentIssues} 
-                title="Recent Issues" 
-                onIssueUpdate={fetchData} 
-            />
+            {renderRecentIssues()}
           </>
         )}
       </main>
