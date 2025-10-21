@@ -106,8 +106,8 @@ export function IssuesDataTable({ issues, title, description, loading, onIssueUp
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Issue</TableHead>
               <TableHead>Category</TableHead>
+              <TableHead>Issue</TableHead>
               <TableHead>Priority</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Reported By</TableHead>
@@ -131,11 +131,11 @@ export function IssuesDataTable({ issues, title, description, loading, onIssueUp
                   className={cn(canResolveIssues && "cursor-pointer")}
                 >
                   <TableCell>
-                    <div className="font-medium">{issue.location}</div>
-                    <div className="text-sm text-muted-foreground">{issue.title}</div>
+                    <CategoryDisplay category={issue.category} />
                   </TableCell>
                   <TableCell>
-                    <CategoryDisplay category={issue.category} />
+                    <div className="font-medium">{issue.location}</div>
+                    <div className="text-sm text-muted-foreground">{issue.title}</div>
                   </TableCell>
                   <TableCell>
                     <Badge variant="outline" className={cn(`capitalize border-0 font-medium`, priorityColors[issue.priority])}>
