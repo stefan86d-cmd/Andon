@@ -11,7 +11,7 @@ import { useTheme } from "next-themes";
 
 function AppLayoutContent({ children }: { children: React.ReactNode }) {
   const { currentUser, loading } = useUser();
-  const { setTheme } = useTheme();
+  const { setTheme, theme } = useTheme();
   const router = useRouter();
   const pathname = usePathname();
   
@@ -57,11 +57,18 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
         router.replace('/dashboard');
       }
     } 
-    // If user is not logged in, block access to protected pages.
-    else if (!isPublicPage && !isAuthPage) {
-      router.replace('/login');
+    // If user is not logged in...
+    else {
+      // Force light mode on all public and auth pages if not already set
+      if (theme !== 'light') {
+        setTheme('light');
+      }
+      // and block access to protected pages.
+      if (!isPublicPage && !isAuthPage) {
+        router.replace('/login');
+      }
     }
-  }, [currentUser, loading, router, pathname, isAuthPage, isPublicPage, setTheme]);
+  }, [currentUser, loading, router, pathname, isAuthPage, isPublicPage, setTheme, theme]);
 
   // --- Render Logic ---
 
