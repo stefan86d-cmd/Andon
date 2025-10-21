@@ -323,7 +323,7 @@ export default function TutorialsPage() {
             <div className="container max-w-4xl mx-auto space-y-12">
                 <div>
                     <h2 className="text-2xl font-semibold mb-6 text-center">For Admins & Supervisors</h2>
-                    <Accordion type="single" collapsible className="w-full" defaultValue="item-0">
+                    <Accordion type="single" collapsible className="w-full">
                         {adminTutorials.map((tutorial, index) => (
                             <AccordionItem value={`item-${index}`} key={index}>
                                 <AccordionTrigger className="text-lg">
@@ -343,7 +343,7 @@ export default function TutorialsPage() {
                 </div>
                 <div>
                      <h2 className="text-2xl font-semibold mb-6 text-center">For Operators</h2>
-                     <Accordion type="single" collapsible className="w-full" defaultValue="item-0">
+                     <Accordion type="single" collapsible className="w-full">
                         {operatorTutorials.map((tutorial, index) => (
                             <AccordionItem value={`item-${index}`} key={index}>
                                 <AccordionTrigger className="text-lg">
