@@ -129,8 +129,8 @@ export function IssuesGrid({ issues, title, description, loading, onIssueUpdate 
                             </div>
                         </CardHeader>
                       <CardContent className="flex-1 space-y-3">
-                        <div className="font-medium">{issue.location}</div>
-                        <p className="text-sm text-muted-foreground">{issue.title}</p>
+                        <div className="font-semibold">{issue.title}</div>
+                        <p className="text-sm text-muted-foreground">{issue.location}</p>
                         {issue.subCategory && (
                             <div className="text-xs text-muted-foreground capitalize">{formatSubCategory(issue.subCategory)}</div>
                         )}

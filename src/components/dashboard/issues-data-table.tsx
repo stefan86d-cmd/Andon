@@ -44,7 +44,7 @@ const categoryInfo: Record<IssueCategory, { label: string; icon: React.ElementTy
 const CategoryDisplay = ({ category, subCategory }: { category: IssueCategory, subCategory?: string }) => {
     const { icon: Icon, label, textColor } = categoryInfo[category] || categoryInfo.other;
     const formatSubCategory = (subCategory?: string) => {
-        if (!subCategory) return 'N/A';
+        if (!subCategory) return null;
         return subCategory.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
     };
 
@@ -101,10 +101,6 @@ export function IssuesDataTable({ issues, title, description, loading, onIssueUp
   };
   
   const canResolveIssues = currentUser?.role === 'admin' || currentUser?.role === 'supervisor';
-  const formatSubCategory = (subCategory?: string) => {
-    if (!subCategory) return 'N/A';
-    return subCategory.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-  };
 
   const CardComponent = title ? Card : 'div';
   const CardHeaderComponent = title ? CardHeader : 'div';
@@ -125,7 +121,6 @@ export function IssuesDataTable({ issues, title, description, loading, onIssueUp
           <TableHeader>
             <TableRow>
               <TableHead>Category</TableHead>
-              <TableHead>Location</TableHead>
               <TableHead>Issue</TableHead>
               <TableHead>Priority</TableHead>
               <TableHead>Status</TableHead>
@@ -137,7 +132,7 @@ export function IssuesDataTable({ issues, title, description, loading, onIssueUp
             {loading ? (
               Array.from({ length: 5 }).map((_, i) => (
                 <TableRow key={i}>
-                  <TableCell colSpan={7}>
+                  <TableCell colSpan={6}>
                     <Skeleton className="h-8" />
                   </TableCell>
                 </TableRow>
@@ -152,8 +147,16 @@ export function IssuesDataTable({ issues, title, description, loading, onIssueUp
                   <TableCell>
                     <CategoryDisplay category={issue.category} subCategory={issue.subCategory} />
                   </TableCell>
-                  <TableCell className="font-medium">{issue.location}</TableCell>
-                  <TableCell className="text-sm text-muted-foreground">{issue.title}</TableCell>
+                  <TableCell>
+                    <div className="font-medium">{issue.title}</div>
+                    <div className="text-sm text-muted-foreground">{issue.location}</div>
+                    {(issue.itemNumber || (issue.quantity && issue.quantity > 0)) && (
+                        <div className="text-xs text-muted-foreground pt-1 space-x-4">
+                           {issue.itemNumber && <span>Item: <span className="font-semibold text-foreground">{issue.itemNumber}</span></span>}
+                           {issue.quantity && issue.quantity > 0 && <span>Qty: <span className="font-semibold text-foreground">{issue.quantity}</span></span>}
+                        </div>
+                    )}
+                  </TableCell>
                   <TableCell>
                     <Badge variant="outline" className={cn(`capitalize border-0 font-medium`, priorityColors[issue.priority])}>
                         {React.createElement(priorityIcons[issue.priority], { className: "h-4 w-4 mr-1" })}
@@ -175,7 +178,7 @@ export function IssuesDataTable({ issues, title, description, loading, onIssueUp
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={7} className="h-24 text-center">
+                <TableCell colSpan={6} className="h-24 text-center">
                   No issues found.
                 </TableCell>
               </TableRow>

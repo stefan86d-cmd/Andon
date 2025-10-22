@@ -53,14 +53,13 @@ import { useUser } from "@/contexts/user-context";
 const issueFormSchema = z.object({
   category: z.string().min(1, "Category is required."),
   subCategory: z.string().optional(),
-  description: z.string().optional(),
-  location: z.string().optional(),
-  priority: z.enum(["low", "medium", "high", "critical"]),
+  title: z.string().min(1, "A short title for the issue is required."),
   itemNumber: z.string().optional(),
   quantity: z.coerce.number().optional(),
+  location: z.string().optional(),
+  priority: z.enum(["low", "medium", "high", "critical"]),
   productionLineId: z.string().optional(),
   productionStopped: z.boolean().default(false),
-  title: z.string().optional(),
 });
 
 type IssueFormValues = z.infer<typeof issueFormSchema>;
@@ -161,11 +160,11 @@ export function ReportIssueDialog({
     defaultValues: {
       category: "",
       subCategory: "",
-      description: "",
+      title: "",
+      itemNumber: "",
+      quantity: "" as any,
       location: "",
       priority: "medium",
-      itemNumber: "",
-      quantity: "" as any, // Use empty string for controlled input
       productionStopped: false,
     },
   });
@@ -188,11 +187,11 @@ export function ReportIssueDialog({
       form.reset({
         category: "",
         subCategory: "",
-        description: "",
+        title: "",
+        itemNumber: "",
+        quantity: "" as any,
         location: currentLocation,
         priority: "medium",
-        itemNumber: "",
-        quantity: "" as any, // Use empty string for controlled input
         productionStopped: false,
       });
       setStep(1);
@@ -211,13 +210,6 @@ export function ReportIssueDialog({
     }
 
     startSubmittingTransition(async () => {
-      const categoryInfo = categories.find((c) => c.id === data.category);
-      const subCategoryInfo = categoryInfo?.subCategories.find(
-        (sc) => sc.id === data.subCategory
-      );
-
-      const title = data.description || subCategoryInfo?.label || categoryInfo?.label || "Untitled Issue";
-
       const lineId = selectedLineId || currentUser?.productionLineId;
       if (!lineId || !currentUser?.orgId) {
         toast({
@@ -229,7 +221,7 @@ export function ReportIssueDialog({
       }
 
       const issueData = {
-        title,
+        title: data.title,
         location: data.location || getLocation(),
         productionLineId: lineId,
         orgId: currentUser.orgId,
@@ -269,6 +261,16 @@ export function ReportIssueDialog({
   const showExtraFields =
     selectedCategory === "quality" || selectedCategory === "logistics";
 
+  const handleBack = () => {
+    if (step > 1) {
+        if (step === 2 && currentCategory && currentCategory.subCategories.length === 0) {
+            setStep(1);
+        } else {
+            setStep(step - 1);
+        }
+    }
+  }
+
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -280,7 +282,7 @@ export function ReportIssueDialog({
               variant="ghost"
               size="sm"
               className="absolute left-4 top-4 w-auto px-2 justify-start"
-              onClick={() => setStep(step - 1)}
+              onClick={handleBack}
             >
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back
@@ -289,18 +291,15 @@ export function ReportIssueDialog({
           <DialogTitle className="pt-8 text-center">
             {step === 1
               ? "Report a New Issue"
-              : currentCategory?.label || "Provide Details"}
+              : "Provide Details"}
           </DialogTitle>
           <DialogDescription className="text-center">
             {step === 1
-              ? "Select a category"
-              : step === 2
-              ? "Select a sub-category"
-              : "Provide issue details"}
+              ? "Select a category that best describes the issue"
+              : "Add more details about the issue below"}
           </DialogDescription>
         </DialogHeader>
 
-        {/* Category Selection */}
         {step === 1 && (
           <div className="grid grid-cols-2 gap-4 py-4">
             {categories.map((category) => {
@@ -311,7 +310,7 @@ export function ReportIssueDialog({
                   onClick={() => {
                     setSelectedCategory(category.id);
                     form.setValue("category", category.id);
-                    setStep(category.subCategories.length > 0 ? 2 : 3);
+                    setStep(2);
                   }}
                   className="flex flex-col items-center justify-center text-center p-4 hover:bg-accent hover:text-accent-foreground cursor-pointer"
                 >
@@ -323,29 +322,49 @@ export function ReportIssueDialog({
           </div>
         )}
 
-        {/* Subcategory Selection */}
-        {step === 2 && currentCategory && (
-          <div className="grid grid-cols-2 gap-4 py-4">
-            {currentCategory.subCategories.map((subCategory) => (
-              <Card
-                key={subCategory.id}
-                onClick={() => {
-                  form.setValue("subCategory", subCategory.id);
-                  setStep(3);
-                }}
-                className="flex flex-col items-center justify-center text-center p-4 hover:bg-accent hover:text-accent-foreground cursor-pointer"
-              >
-                <p className="text-sm font-medium">{subCategory.label}</p>
-              </Card>
-            ))}
-          </div>
-        )}
-
-        {/* Details Form */}
-        {step === 3 && (
+        {step === 2 && (
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-4">
               
+              <FormField
+                control={form.control}
+                name="title"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Issue Title</FormLabel>
+                    <FormControl>
+                      <Input {...field} placeholder="e.g., Conveyor belt jammed" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              {currentCategory?.subCategories && currentCategory.subCategories.length > 0 && (
+                 <FormField
+                    control={form.control}
+                    name="subCategory"
+                    render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Sub-Category</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select a sub-category" />
+                            </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                                {currentCategory.subCategories.map(sc => (
+                                    <SelectItem key={sc.id} value={sc.id}>{sc.label}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        <FormMessage />
+                    </FormItem>
+                    )}
+                />
+              )}
+
               {showExtraFields && (
                 <div className="grid grid-cols-2 gap-4">
                     <FormField
@@ -353,7 +372,7 @@ export function ReportIssueDialog({
                     name="itemNumber"
                     render={({ field }) => (
                         <FormItem>
-                        <FormLabel>Item Number</FormLabel>
+                        <FormLabel>Item Number (Optional)</FormLabel>
                         <FormControl>
                             <Input {...field} />
                         </FormControl>
@@ -366,7 +385,7 @@ export function ReportIssueDialog({
                     name="quantity"
                     render={({ field }) => (
                         <FormItem>
-                        <FormLabel>Quantity/Pieces</FormLabel>
+                        <FormLabel>Quantity (Optional)</FormLabel>
                         <FormControl>
                             <Input type="number" {...field} />
                         </FormControl>
@@ -376,48 +395,6 @@ export function ReportIssueDialog({
                     />
                 </div>
               )}
-              
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Description</FormLabel>
-                    <FormControl>
-                      <Textarea {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="priority"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Priority</FormLabel>
-                    <div className="flex gap-2">
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="low">Low</SelectItem>
-                          <SelectItem value="medium">Medium</SelectItem>
-                          <SelectItem value="high">High</SelectItem>
-                          <SelectItem value="critical">Critical</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </FormItem>
-                )}
-              />
 
               <DialogFooter>
                 <Button type="submit" disabled={isSubmitting}>
