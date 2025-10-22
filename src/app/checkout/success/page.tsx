@@ -23,6 +23,8 @@ function SuccessContent() {
     
     const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
     const [errorMessage, setErrorMessage] = useState('');
+    const [orderFulfilled, setOrderFulfilled] = useState(false);
+
 
     useEffect(() => {
         if (!sessionId) {
@@ -31,38 +33,43 @@ function SuccessContent() {
             return;
         }
         
+        // Wait until user loading is complete
         if (userLoading) {
-            return; // Wait for user to be loaded
+            return;
         }
-        
+
+        // If user is not found after loading, show error.
+        // This can happen if the user closes the browser before Firebase auth completes.
         if (!currentUser) {
-             setErrorMessage("User not authenticated.");
-             setStatus('error');
-             router.push('/login');
-             return;
+            setErrorMessage("User not authenticated. Please log in to see your updated plan.");
+            setStatus('error');
+            return;
+        }
+
+        if (orderFulfilled) {
+            return;
         }
 
         const fulfillOrder = async () => {
-            const { session, error } = await getCheckoutSession(sessionId);
-
-            if (error || !session) {
-                setErrorMessage(error || 'Failed to retrieve checkout session.');
-                setStatus('error');
-                return;
-            }
-
-            const plan = session.metadata?.plan as Plan;
-            const duration = parseInt(session.metadata?.duration || '1', 10);
-            const isNewUser = session.metadata?.isNewUser === 'true';
-
-            if (!plan) {
-                setErrorMessage('Plan information is missing from the session.');
-                setStatus('error');
-                return;
-            }
-            
             try {
-                // Update user profile with subscription details
+                const { session, error } = await getCheckoutSession(sessionId);
+
+                if (error || !session) {
+                    setErrorMessage(error || 'Failed to retrieve checkout session.');
+                    setStatus('error');
+                    return;
+                }
+
+                const plan = session.metadata?.plan as Plan;
+                const duration = parseInt(session.metadata?.duration || '1', 10);
+                const isNewUser = session.metadata?.isNewUser === 'true';
+
+                if (!plan) {
+                    setErrorMessage('Plan information is missing from the session.');
+                    setStatus('error');
+                    return;
+                }
+                
                 const now = new Date();
                 const subscriptionEndDate = addMonths(now, duration);
                 
@@ -73,16 +80,15 @@ function SuccessContent() {
                     subscriptionEndsAt: subscriptionEndDate,
                 };
                 
+                // Update Firestore and then local state
                 await updateUserPlan(currentUser.id, plan, planUpdateData);
+                updateCurrentUser(planUpdateData);
                 
-                // If it's a brand new user, also send the welcome email
                 if (isNewUser) {
                     await sendWelcomeEmail(currentUser.id);
                 }
 
-                // Optimistically update local user state
-                updateCurrentUser(planUpdateData);
-
+                setOrderFulfilled(true);
                 setStatus('success');
 
             } catch (e: any) {
@@ -93,7 +99,17 @@ function SuccessContent() {
 
         fulfillOrder();
 
-    }, [sessionId, currentUser, userLoading, router, updateCurrentUser]);
+    }, [sessionId, currentUser, userLoading, router, updateCurrentUser, orderFulfilled]);
+
+    useEffect(() => {
+        if (status === 'success') {
+            const timer = setTimeout(() => {
+                // Force a full redirect to ensure the app state (especially user context) is re-evaluated.
+                window.location.href = '/dashboard';
+            }, 3000); // 3-second delay
+            return () => clearTimeout(timer);
+        }
+    }, [status, router]);
 
     if (status === 'loading') {
         return (
@@ -114,7 +130,9 @@ function SuccessContent() {
                 </CardHeader>
                 <CardFooter>
                     <Button asChild className="w-full">
-                        <Link href="/settings/billing">Go to Billing</Link>
+                        <Link href={currentUser ? "/settings/billing" : "/login"}>
+                            {currentUser ? "Go to Billing" : "Go to Login"}
+                        </Link>
                     </Button>
                 </CardFooter>
             </Card>
