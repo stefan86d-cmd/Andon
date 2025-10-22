@@ -249,12 +249,13 @@ export async function updateUserPlan(userId: string, newPlan: Plan, planData: Pa
     }
     const user = userSnap.data() as User;
 
-    const updateData: any = { ...planData };
+    const updateData: any = { ...planData, plan: newPlan };
     
     // For starter plan, remove subscription dates
     if (newPlan === 'starter') {
         updateData.subscriptionId = FieldValue.delete();
         updateData.subscriptionEndsAt = FieldValue.delete();
+        updateData.subscriptionStartsAt = FieldValue.delete();
     }
     
     await userRef.update(updateData);
