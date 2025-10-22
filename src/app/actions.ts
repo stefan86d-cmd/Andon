@@ -49,6 +49,15 @@ export async function createCheckoutSession(
       return { error: `Price ID for plan '${plan}' is not configured.`};
   }
 
+  // Map durations to Stripe Coupon IDs (which you must create in your Stripe dashboard)
+  const couponIdMap = {
+      '12': process.env.STRIPE_COUPON_ID_12_MONTHS, // e.g., 20% off
+      '24': process.env.STRIPE_COUPON_ID_24_MONTHS, // e.g., 30% off
+      '48': process.env.STRIPE_COUPON_ID_48_MONTHS, // e.g., 40% off
+  };
+  
+  const couponId = duration !== '1' ? couponIdMap[duration as keyof typeof couponIdMap] : undefined;
+
   const successUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`;
   const cancelUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/pricing`;
   
@@ -71,6 +80,8 @@ export async function createCheckoutSession(
       cancel_url: cancelUrl,
       customer_email: email,
       metadata,
+      // Apply the coupon if one is selected for a longer duration
+      discounts: couponId ? [{ coupon: couponId }] : [],
     });
     
     return { sessionId: session.id, url: session.url! };
