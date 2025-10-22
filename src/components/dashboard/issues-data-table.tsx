@@ -3,7 +3,7 @@
 "use client";
 
 import React from "react";
-import type { Issue, Priority, Status, User, IssueCategory } from "@/lib/types";
+import type { Issue, Priority, Status, User, IssueCategory, ProductionLine } from "@/lib/types";
 import {
     Card,
     CardContent,
@@ -21,7 +21,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, ArrowDownCircle, TriangleAlert, Flame, Siren, CircleDotDashed, LoaderCircle, CheckCircle2, Archive, Monitor, Truck, Wrench, BadgeCheck, LifeBuoy, HelpCircle } from "lucide-react";
+import { MoreHorizontal, ArrowDownCircle, TriangleAlert, Flame, Siren, CircleDotDashed, LoaderCircle, CheckCircle2, Archive, Monitor, Truck, Wrench, BadgeCheck, LifeBuoy, HelpCircle, Factory } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -90,7 +90,7 @@ const StatusDisplay = ({ status }: { status: Status }) => {
     );
 };
 
-export function IssuesDataTable({ issues, title, description, loading, onIssueUpdate }: { issues: Issue[], title?: string, description?: string, loading?: boolean, onIssueUpdate?: () => void }) {
+export function IssuesDataTable({ issues, title, description, loading, onIssueUpdate, productionLines }: { issues: Issue[], title?: string, description?: string, loading?: boolean, onIssueUpdate?: () => void, productionLines: ProductionLine[] }) {
   const { currentUser } = useUser();
   const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
   const router = useRouter();
@@ -107,6 +107,10 @@ export function IssuesDataTable({ issues, title, description, loading, onIssueUp
   const CardTitleComponent = title ? CardTitle : 'div';
   const CardDescriptionComponent = title ? CardDescription : 'div';
   const CardContentComponent = title ? CardContent : 'div';
+  
+  const getLineName = (lineId: string) => {
+    return productionLines.find(line => line.id === lineId)?.name || 'N/A';
+  }
 
   return (
     <CardComponent>
@@ -122,6 +126,7 @@ export function IssuesDataTable({ issues, title, description, loading, onIssueUp
             <TableRow>
               <TableHead>Category</TableHead>
               <TableHead>Issue</TableHead>
+              <TableHead>Line</TableHead>
               <TableHead>Priority</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Reported By</TableHead>
@@ -132,7 +137,7 @@ export function IssuesDataTable({ issues, title, description, loading, onIssueUp
             {loading ? (
               Array.from({ length: 5 }).map((_, i) => (
                 <TableRow key={i}>
-                  <TableCell colSpan={6}>
+                  <TableCell colSpan={7}>
                     <Skeleton className="h-8" />
                   </TableCell>
                 </TableRow>
@@ -157,6 +162,12 @@ export function IssuesDataTable({ issues, title, description, loading, onIssueUp
                         </div>
                     )}
                   </TableCell>
+                   <TableCell>
+                    <div className="flex items-center gap-2">
+                      <Factory className="h-4 w-4 text-muted-foreground"/>
+                      <span>{getLineName(issue.productionLineId)}</span>
+                    </div>
+                  </TableCell>
                   <TableCell>
                     <Badge variant="outline" className={cn(`capitalize border-0 font-medium`, priorityColors[issue.priority])}>
                         {React.createElement(priorityIcons[issue.priority], { className: "h-4 w-4 mr-1" })}
@@ -178,7 +189,7 @@ export function IssuesDataTable({ issues, title, description, loading, onIssueUp
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={6} className="h-24 text-center">
+                <TableCell colSpan={7} className="h-24 text-center">
                   No issues found.
                 </TableCell>
               </TableRow>

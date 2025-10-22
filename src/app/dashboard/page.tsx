@@ -4,10 +4,10 @@
 import { useEffect, useState } from "react";
 import { IssuesDataTable } from "@/components/dashboard/issues-data-table";
 import { StatsCards } from "@/components/dashboard/stats-cards";
-import { getClientIssues } from "@/lib/data";
+import { getClientIssues, getClientProductionLines } from "@/lib/data";
 import { subHours, intervalToDuration, differenceInSeconds, max } from "date-fns";
 import { useUser } from "@/contexts/user-context";
-import type { Issue } from "@/lib/types";
+import type { Issue, ProductionLine } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { LayoutGrid, Rows } from "lucide-react";
@@ -30,6 +30,7 @@ export default function Home() {
   const isMobile = useIsMobile();
   const [allIssues, setAllIssues] = useState<Issue[]>([]);
   const [recentIssues, setRecentIssues] = useState<Issue[]>([]);
+  const [productionLines, setProductionLines] = useState<ProductionLine[]>([]);
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<'list' | 'grid'>();
 
@@ -45,9 +46,13 @@ export default function Home() {
   const fetchData = async () => {
     if (!currentUser?.orgId) return;
     setLoading(true);
-    const issuesData = await getClientIssues(currentUser.orgId!);
+    const [issuesData, linesData] = await Promise.all([
+      getClientIssues(currentUser.orgId),
+      getClientProductionLines(currentUser.orgId),
+    ]);
     setAllIssues(issuesData);
     setRecentIssues(issuesData.slice(0, 5));
+    setProductionLines(linesData);
     setLoading(false);
   };
 
@@ -191,6 +196,7 @@ export default function Home() {
             issues={recentIssues} 
             title="Recent Issues" 
             onIssueUpdate={fetchData} 
+            productionLines={productionLines}
         />
     );
   };

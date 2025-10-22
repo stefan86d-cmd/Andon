@@ -149,6 +149,7 @@ export default function IssuesPage() {
           description={description}
           loading={loading}
           onIssueUpdate={fetchData}
+          productionLines={productionLines}
         />
       );
     }

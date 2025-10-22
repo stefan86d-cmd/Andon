@@ -131,6 +131,7 @@ export default function LineStatusPage() {
             title={title}
             description={description} 
             onIssueUpdate={fetchIssuesForStation}
+            productionLines={productionLines}
         />
     );
   };
