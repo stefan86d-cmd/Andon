@@ -126,7 +126,7 @@ export function IssuesDataTable({ issues, title, description, loading, onIssueUp
             <TableRow>
               <TableHead>Category</TableHead>
               <TableHead>Issue</TableHead>
-              <TableHead>Line</TableHead>
+              <TableHead>Location</TableHead>
               <TableHead>Priority</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Reported By</TableHead>
@@ -154,7 +154,6 @@ export function IssuesDataTable({ issues, title, description, loading, onIssueUp
                   </TableCell>
                   <TableCell>
                     <div className="font-medium">{issue.title}</div>
-                    <div className="text-sm text-muted-foreground">{issue.location}</div>
                     {(issue.itemNumber || (issue.quantity && issue.quantity > 0)) && (
                         <div className="text-xs text-muted-foreground pt-1 space-x-4">
                            {issue.itemNumber && <span>Item: <span className="font-semibold text-foreground">{issue.itemNumber}</span></span>}
@@ -165,7 +164,7 @@ export function IssuesDataTable({ issues, title, description, loading, onIssueUp
                    <TableCell>
                     <div className="flex items-center gap-2">
                       <Factory className="h-4 w-4 text-muted-foreground"/>
-                      <span>{getLineName(issue.productionLineId)}</span>
+                      <span>{issue.location}</span>
                     </div>
                   </TableCell>
                   <TableCell>
