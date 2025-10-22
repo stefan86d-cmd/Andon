@@ -53,9 +53,12 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
           return;
       }
       
-      // If their profile is complete and they are on a public or auth page,
-      // redirect them to their appropriate dashboard (if not an operator).
-      if ((isPublicPage || isAuthPage) && currentUser.role !== 'operator' && !pathname.startsWith('/checkout/success')) {
+      // If profile is complete, redirect from auth/public pages to dashboard,
+      // but allow access to checkout and profile completion flows.
+      if ((isPublicPage || isAuthPage) && 
+          currentUser.role !== 'operator' && 
+          !pathname.startsWith('/checkout') && 
+          !pathname.startsWith('/complete-profile')) {
         router.replace('/dashboard');
       }
     } 
