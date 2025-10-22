@@ -57,7 +57,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
           country: "",
           phone: "",
           orgId: firebaseUser.uid, // The new user's ID becomes their organization ID
-          notificationPreferences: { newIssue: true, issueResolved: true, muteSound: true },
+          notificationPreferences: { newIssue: false, issueResolved: false, muteSound: true },
           theme: 'system',
         });
       }
@@ -112,7 +112,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
         email: firebaseUser.email || "",
         role: "" as any, // Indicates incomplete profile
         orgId: firebaseUser.uid, // The new user's ID becomes their organization ID
-        notificationPreferences: { newIssue: true, issueResolved: true, muteSound: true }, // Default notification prefs
+        notificationPreferences: { newIssue: false, issueResolved: false, muteSound: true }, // Default notification prefs
         theme: 'system', // Default theme
       };
       

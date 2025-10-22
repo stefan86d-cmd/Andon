@@ -188,7 +188,7 @@ export async function addUser(userData: {
       address: '',
       country: '',
       orgId,
-      notificationPreferences: { newIssue: true, issueResolved: true, muteSound: true },
+      notificationPreferences: { newIssue: false, issueResolved: false, muteSound: true },
       theme: 'system',
     };
 
