@@ -99,7 +99,7 @@ export default function SettingsPage() {
                             <CardFooter>
                                  <Link href="/settings/billing" className={cn(buttonVariants({ variant: "outline" }))}>
                                     View Billing Details
-                                </Link>
+                                 </Link>
                             </CardFooter>
                         </Card>
                     )}
@@ -115,7 +115,7 @@ export default function SettingsPage() {
                             <div className="space-y-2">
                                     <h3 className="text-lg font-medium">By Email</h3>
                                     <div className="space-y-4">
-                                        <div className="flex items-center justify-between rounded-lg border p-4">
+                                        <div className="flex items-center justify-between rounded-lg border p-4 dark:border-background">
                                             <div className="space-y-0.5">
                                                 <Label htmlFor="new-issue-reported" className="text-base">New Issue Reported</Label>
                                                 <p className="text-sm text-muted-foreground">Receive an email when a new issue is reported on any line.</p>
@@ -126,7 +126,7 @@ export default function SettingsPage() {
                                                 onCheckedChange={(checked) => handleNotificationChange('newIssue', checked)}
                                             />
                                         </div>
-                                        <div className="flex items-center justify-between rounded-lg border p-4">
+                                        <div className="flex items-center justify-between rounded-lg border p-4 dark:border-background">
                                             <div className="space-y-0.5">
                                                 <Label htmlFor="issue-resolved" className="text-base">Issue Resolved</Label>
                                                 <p className="text-sm text-muted-foreground">Receive an email when an issue is marked as resolved.</p>
@@ -142,7 +142,7 @@ export default function SettingsPage() {
                             <div className="space-y-2">
                                     <h3 className="text-lg font-medium">Sound</h3>
                                     <div className="space-y-4">
-                                        <div className="flex items-center justify-between rounded-lg border p-4">
+                                        <div className="flex items-center justify-between rounded-lg border p-4 dark:border-background">
                                             <div className="space-y-0.5">
                                                 <Label htmlFor="mute-sound" className="text-base">Mute Sound</Label>
                                                 <p className="text-sm text-muted-foreground">Mute all notification sounds within the app.</p>
