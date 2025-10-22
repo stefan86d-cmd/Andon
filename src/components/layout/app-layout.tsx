@@ -4,7 +4,7 @@
 import React, { Suspense, useEffect } from "react";
 import { Header } from "@/components/layout/header";
 import { useUser } from "@/contexts/user-context";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { LoaderCircle } from "lucide-react";
 import { ThemeProvider } from "./theme-provider";
 import { useTheme } from "next-themes";
@@ -14,6 +14,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
   const { setTheme, theme } = useTheme();
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   
   const authPages = ['/login', '/register', '/complete-profile', '/forgot-password', '/reset-password', '/checkout'];
   const isAuthPage = authPages.some(page => pathname.startsWith(page));
@@ -69,7 +70,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
         router.replace('/login');
       }
     }
-  }, [currentUser, loading, router, pathname, isAuthPage, isPublicPage, setTheme, theme]);
+  }, [currentUser, loading, router, pathname, isAuthPage, isPublicPage, setTheme, theme, searchParams]);
 
   // --- Render Logic ---
 
