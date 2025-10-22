@@ -353,12 +353,17 @@ export async function reportIssue(issueData: Omit<Issue, 'id' | 'reportedAt' | '
     const reporter = await getUserByEmail(userEmail);
     if (!reporter) return { success: false, error: 'Reporting user not found.' };
 
-    const newIssue = {
+    const newIssue: any = {
       ...issueData,
       status: 'reported' as const,
       reportedAt: FieldValue.serverTimestamp(),
       reportedBy: { name: `${reporter.firstName} ${reporter.lastName}`, email: reporter.email },
     };
+    
+    // If subCategory is an empty string, remove it before saving
+    if (newIssue.subCategory === '') {
+        delete newIssue.subCategory;
+    }
 
     const docRef = await db.collection('issues').add(newIssue);
     const issueId = docRef.id;
