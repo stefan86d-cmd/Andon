@@ -14,7 +14,7 @@ import {
     OAuthProvider,
     Auth
 } from 'firebase/auth';
-import { doc, setDoc, Timestamp } from 'firebase/firestore';
+import { doc, setDoc, Timestamp, FieldValue } from 'firebase/firestore';
 import { getClientInstances } from '@/firebase/client';
 import type { User } from '@/lib/types';
 import { toast } from '@/hooks/use-toast';
@@ -193,6 +193,9 @@ export function UserProvider({ children }: { children: ReactNode }) {
             }
             if (dataToSave.subscriptionEndsAt instanceof Date) {
                 dataToSave.subscriptionEndsAt = Timestamp.fromDate(dataToSave.subscriptionEndsAt);
+            }
+            if (dataToSave.subscriptionEndsAt instanceof FieldValue) {
+                // Keep FieldValue as is
             }
 
             await setDoc(userDocRef, dataToSave, { merge: true });

@@ -26,7 +26,7 @@ import type { Plan, Role } from '@/lib/types';
 import { toast } from '@/hooks/use-toast';
 import { useUser } from '@/contexts/user-context';
 import { createCheckoutSession, sendWelcomeEmail } from '@/app/actions';
-import { addMonths } from 'date-fns';
+import { FieldValue } from 'firebase/firestore';
 
 const profileFormSchema = z.object({
   firstName: z.string().min(1, "First name is required."),
@@ -113,7 +113,7 @@ function CompleteProfileContent() {
         // Don't set subscription dates for free plan, or for paid plans before payment
         if (selectedPlan === 'starter') {
             userProfileData.subscriptionStartsAt = new Date();
-            userProfileData.subscriptionEndsAt = undefined;
+            userProfileData.subscriptionEndsAt = FieldValue.delete();
         }
 
         await updateCurrentUser(userProfileData);
