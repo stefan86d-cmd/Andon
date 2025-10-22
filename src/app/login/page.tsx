@@ -16,7 +16,7 @@ import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/layout/logo";
 import { useUser } from '@/contexts/user-context';
 import { toast } from '@/hooks/use-toast';
-import { LoaderCircle, Database } from 'lucide-react';
+import { LoaderCircle } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
 
@@ -45,27 +45,15 @@ function GoogleIcon() {
   );
 }
 
-function MicrosoftIcon() {
-  return (
-    <svg viewBox="0 0 21 21" className="h-5 w-5 mr-2">
-      <path fill="#f25022" d="M1 1h9v9H1z" />
-      <path fill="#00a4ef" d="M1 11h9v9H1z" />
-      <path fill="#7fba00" d="M11 1h9v9h-9z" />
-      <path fill="#ffb900" d="M11 11h9v9h-9z" />
-    </svg>
-  );
-}
-
 // --- Page Component ---
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
-  const [isMicrosoftLoading, setIsMicrosoftLoading] = useState(false);
   const [isLoggingIn, startLoginTransition] = useTransition();
   const [year, setYear] = useState(new Date().getFullYear());
   const router = useRouter();
-  const { login, signInWithGoogle, signInWithMicrosoft } = useUser();
+  const { login, signInWithGoogle } = useUser();
 
   useEffect(() => {
     setYear(new Date().getFullYear());
@@ -106,17 +94,6 @@ export default function LoginPage() {
     setIsGoogleLoading(false);
   };
 
-  // --- Microsoft login ---
-  const handleMicrosoftSignIn = async () => {
-    setIsMicrosoftLoading(true);
-    await signInWithMicrosoft();
-    toast({
-      title: "Login Successful",
-      description: "Welcome! You're signed in with Microsoft.",
-    });
-    setIsMicrosoftLoading(false);
-  };
-
   return (
     <div className="bg-muted">
       <div className="container mx-auto flex min-h-screen flex-col items-center justify-center py-12">
@@ -141,7 +118,7 @@ export default function LoginPage() {
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      disabled={isLoggingIn || isGoogleLoading || isMicrosoftLoading}
+                      disabled={isLoggingIn || isGoogleLoading}
                     />
                   </div>
 
@@ -153,14 +130,14 @@ export default function LoginPage() {
                       required
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      disabled={isLoggingIn || isGoogleLoading || isMicrosoftLoading}
+                      disabled={isLoggingIn || isGoogleLoading}
                     />
                   </div>
 
                   <Button
                     type="submit"
                     className="w-full"
-                    disabled={isLoggingIn || isGoogleLoading || isMicrosoftLoading}
+                    disabled={isLoggingIn || isGoogleLoading}
                   >
                     {isLoggingIn && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
                     Login
@@ -186,7 +163,7 @@ export default function LoginPage() {
                   variant="outline"
                   className="w-full"
                   onClick={handleGoogleSignIn}
-                  disabled={isLoggingIn || isGoogleLoading || isMicrosoftLoading}
+                  disabled={isLoggingIn || isGoogleLoading}
                 >
                   {isGoogleLoading ? (
                     <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
@@ -194,20 +171,6 @@ export default function LoginPage() {
                     <GoogleIcon />
                   )}
                   Sign in with Google
-                </Button>
-
-                <Button
-                  variant="outline"
-                  className="w-full"
-                  onClick={handleMicrosoftSignIn}
-                  disabled={isLoggingIn || isGoogleLoading || isMicrosoftLoading}
-                >
-                  {isMicrosoftLoading ? (
-                    <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
-                  ) : (
-                    <MicrosoftIcon />
-                  )}
-                  Sign in with Microsoft
                 </Button>
               </div>
 

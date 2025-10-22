@@ -54,25 +54,13 @@ function GoogleIcon() {
   );
 }
 
-function MicrosoftIcon() {
-    return (
-        <svg viewBox="0 0 21 21" className="h-5 w-5 mr-2">
-            <path fill="#f25022" d="M1 1h9v9H1z" />
-            <path fill="#00a4ef" d="M1 11h9v9H1z" />
-            <path fill="#7fba00" d="M11 1h9v9h-9z" />
-            <path fill="#ffb900" d="M11 11h9v9h-9z" />
-        </svg>
-    )
-}
-
 function RegisterContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { registerWithEmail, signInWithGoogle, signInWithMicrosoft } = useUser();
+  const { registerWithEmail, signInWithGoogle } = useUser();
 
   const [isLoading, startEmailRegisterTransition] = useTransition();
   const [isGoogleLoading, startGoogleRegisterTransition] = useTransition();
-  const [isMicrosoftLoading, startMicrosoftRegisterTransition] = useTransition();
   const [year, setYear] = useState(new Date().getFullYear());
 
   useEffect(() => {
@@ -113,16 +101,7 @@ function RegisterContent() {
     });
   }
 
-  const handleMicrosoftSignIn = () => {
-    startMicrosoftRegisterTransition(async () => {
-        const success = await signInWithMicrosoft();
-        if (success) {
-            router.push(getRedirectUrl());
-        }
-    });
-  }
-  
-  const isAnyLoading = isLoading || isGoogleLoading || isMicrosoftLoading;
+  const isAnyLoading = isLoading || isGoogleLoading;
 
   return (
     <div className="bg-muted">
@@ -138,14 +117,10 @@ function RegisterContent() {
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <div className="grid grid-cols-2 gap-4 mb-4">
+                    <div className="grid grid-cols-1 gap-4 mb-4">
                         <Button variant="outline" onClick={handleGoogleSignIn} disabled={isAnyLoading}>
                             {isGoogleLoading ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : <GoogleIcon />}
-                            Google
-                        </Button>
-                        <Button variant="outline" onClick={handleMicrosoftSignIn} disabled={isAnyLoading}>
-                            {isMicrosoftLoading ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : <MicrosoftIcon />}
-                            Microsoft
+                            Sign up with Google
                         </Button>
                     </div>
 

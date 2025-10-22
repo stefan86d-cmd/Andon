@@ -11,7 +11,6 @@ import {
     signInWithPopup,
     signOut,
     User as FirebaseUser,
-    OAuthProvider,
     Auth
 } from 'firebase/auth';
 import { doc, setDoc, Timestamp, FieldValue } from 'firebase/firestore';
@@ -27,7 +26,6 @@ interface UserContextType {
   login: (email: string, password: string) => Promise<boolean>;
   registerWithEmail: (email: string, password: string) => Promise<boolean>;
   signInWithGoogle: () => Promise<boolean>;
-  signInWithMicrosoft: () => Promise<boolean>;
   logout: () => void;
   updateCurrentUser: (user: Partial<User>) => Promise<void>;
 }
@@ -140,7 +138,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
     }
   };
   
-  const socialSignIn = async (provider: GoogleAuthProvider | OAuthProvider): Promise<boolean> => {
+  const socialSignIn = async (provider: GoogleAuthProvider): Promise<boolean> => {
       if (!auth) return false;
       setLoading(true);
       try {
@@ -162,11 +160,6 @@ export function UserProvider({ children }: { children: ReactNode }) {
     const provider = new GoogleAuthProvider();
     return socialSignIn(provider);
   }
-
-  const signInWithMicrosoft = async (): Promise<boolean> => {
-    const provider = new OAuthProvider('microsoft.com');
-    return socialSignIn(provider);
-  };
 
   const logout = async () => {
      if (!auth) return;
@@ -222,7 +215,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   }, [currentUser]);
 
   return (
-    <UserContext.Provider value={{ currentUser, loading, login, registerWithEmail, signInWithGoogle, signInWithMicrosoft, logout, updateCurrentUser }}>
+    <UserContext.Provider value={{ currentUser, loading, login, registerWithEmail, signInWithGoogle, logout, updateCurrentUser }}>
       {children}
     </UserContext.Provider>
   );
