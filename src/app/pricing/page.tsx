@@ -330,7 +330,9 @@ export default function PricingPage() {
                         const totalDiscountedPrice = monthlyPrice * parseInt(duration, 10);
                         const totalRegularPrice = fullMonthlyPrice * parseInt(duration, 10);
                         const isProBestValue = tier.name === "Pro";
-                        const linkHref = `/checkout?plan=${tier.id.toLowerCase()}&duration=${duration}&currency=${currency}`;
+                        const linkHref = tier.id === 'starter'
+                            ? `/register?plan=starter`
+                            : `/checkout?plan=${tier.id.toLowerCase()}&duration=${duration}&currency=${currency}`;
                         
                         let ctaText = tier.cta;
                         if (!currentUser && (tier.name === "Standard" || tier.name === "Pro")) {
