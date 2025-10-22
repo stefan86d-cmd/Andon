@@ -241,8 +241,16 @@ export async function updateUserPlan(userId: string, newPlan: Plan, planData: Pa
         return { success: false, error: 'User not found.' };
     }
     const user = userSnap.data() as User;
+
+    const updateData: any = { ...planData };
     
-    await userRef.update(planData);
+    // For starter plan, remove subscription dates
+    if (newPlan === 'starter') {
+        updateData.subscriptionId = FieldValue.delete();
+        updateData.subscriptionEndsAt = FieldValue.delete();
+    }
+    
+    await userRef.update(updateData);
 
     await sendEmail({
         to: user.email,

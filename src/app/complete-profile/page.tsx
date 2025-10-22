@@ -25,8 +25,7 @@ import { countries } from '@/lib/countries';
 import type { Plan, Role } from '@/lib/types';
 import { toast } from '@/hooks/use-toast';
 import { useUser } from '@/contexts/user-context';
-import { createCheckoutSession, sendWelcomeEmail } from '@/app/actions';
-import { FieldValue } from 'firebase/firestore';
+import { createCheckoutSession, sendWelcomeEmail, updateUserPlan } from '@/app/actions';
 
 const profileFormSchema = z.object({
   firstName: z.string().min(1, "First name is required."),
@@ -96,7 +95,7 @@ function CompleteProfileContent() {
     try {
         const userRole: Role = "admin"; // First user is always an admin
         
-        const userProfileData: any = {
+        const userProfileData = {
             firstName: data.firstName,
             lastName: data.lastName,
             email: currentUser.email,
@@ -110,12 +109,6 @@ function CompleteProfileContent() {
             orgId: currentUser.id, // The first admin's ID becomes the org ID
         };
         
-        // Don't set subscription dates for free plan, or for paid plans before payment
-        if (selectedPlan === 'starter') {
-            userProfileData.subscriptionStartsAt = new Date();
-            userProfileData.subscriptionEndsAt = FieldValue.delete();
-        }
-
         await updateCurrentUser(userProfileData);
 
         return true;
@@ -144,6 +137,7 @@ function CompleteProfileContent() {
         if (!profileSaved) return;
 
         if (selectedPlan === 'starter') {
+            await updateUserPlan(currentUser!.id, 'starter', { subscriptionStartsAt: new Date() });
             await sendWelcomeEmail(currentUser!.id);
             toast({
                 title: "Registration Complete!",
