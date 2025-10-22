@@ -26,6 +26,8 @@ import type { Plan, Role } from '@/lib/types';
 import { toast } from '@/hooks/use-toast';
 import { useUser } from '@/contexts/user-context';
 import { createCheckoutSession, sendWelcomeEmail, updateUserPlan } from '@/app/actions';
+import { EmbeddedCheckoutForm } from '@/components/checkout/embedded-checkout-form';
+
 
 const profileFormSchema = z.object({
   firstName: z.string().min(1, "First name is required."),
@@ -48,6 +50,8 @@ function CompleteProfileContent() {
   
   const [isSubmitting, startTransition] = useTransition();
   const [year, setYear] = useState(new Date().getFullYear());
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
+
 
   useEffect(() => {
     setYear(new Date().getFullYear());
@@ -154,8 +158,8 @@ function CompleteProfileContent() {
                 true
             );
 
-            if (result.url) {
-                router.push(result.url);
+            if (result.clientSecret) {
+                setClientSecret(result.clientSecret);
             } else {
                 toast({
                     variant: "destructive",
@@ -173,6 +177,23 @@ function CompleteProfileContent() {
             <LoaderCircle className="h-8 w-8 animate-spin" />
         </div>
     );
+  }
+
+  if (clientSecret) {
+      return (
+           <div className="bg-muted">
+                <div className="container mx-auto flex min-h-screen flex-col items-center justify-center py-12">
+                    <div className="w-full max-w-lg">
+                        <div className="flex justify-center mb-8">
+                            <Link href="/">
+                                <Logo />
+                            </Link>
+                        </div>
+                        <EmbeddedCheckoutForm clientSecret={clientSecret} />
+                    </div>
+                </div>
+           </div>
+      )
   }
 
   return (

@@ -13,7 +13,7 @@ import { sendEmail } from '@/lib/email';
 import { getAuth } from 'firebase/auth';
 import Stripe from 'stripe';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+const stripe = new Stripe(process.env.NEXT_STRIPE_SECRET_KEY!, {
   apiVersion: '2024-06-20',
 });
 
@@ -29,7 +29,7 @@ export async function createCheckoutSession(
   duration: '1' | '12' | '24' | '48',
   currency: 'usd' | 'eur' | 'gbp',
   isNewUser: boolean
-): Promise<{ sessionId?: string; url?: string; error?: string }> {
+): Promise<{ clientSecret?: string; error?: string }> {
   if (!stripe) {
     return { error: 'Stripe is not initialized.' };
   }
@@ -49,17 +49,15 @@ export async function createCheckoutSession(
       return { error: `Price ID for plan '${plan}' is not configured.`};
   }
 
-  // Map durations to Stripe Coupon IDs (which you must create in your Stripe dashboard)
   const couponIdMap = {
-      '12': process.env.STRIPE_COUPON_ID_12_MONTHS, // e.g., 20% off
-      '24': process.env.STRIPE_COUPON_ID_24_MONTHS, // e.g., 30% off
-      '48': process.env.STRIPE_COUPON_ID_48_MONTHS, // e.g., 40% off
+      '12': process.env.STRIPE_COUPON_ID_12_MONTHS, 
+      '24': process.env.STRIPE_COUPON_ID_24_MONTHS, 
+      '48': process.env.STRIPE_COUPON_ID_48_MONTHS, 
   };
   
   const couponId = duration !== '1' ? couponIdMap[duration as keyof typeof couponIdMap] : undefined;
 
   const successUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`;
-  const cancelUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/pricing`;
   
   const metadata = {
       userId,
@@ -70,21 +68,20 @@ export async function createCheckoutSession(
 
   try {
     const session = await stripe.checkout.sessions.create({
+      ui_mode: 'embedded',
       payment_method_types: ['card'],
       line_items: [{
           price: priceId,
           quantity: 1,
       }],
       mode: 'subscription',
-      success_url: successUrl,
-      cancel_url: cancelUrl,
       customer_email: email,
       metadata,
-      // Apply the coupon if one is selected for a longer duration
       discounts: couponId ? [{ coupon: couponId }] : [],
+      return_url: successUrl,
     });
     
-    return { sessionId: session.id, url: session.url! };
+    return { clientSecret: session.client_secret! };
   } catch (error: any) {
     console.error("Error creating Stripe Checkout session:", error);
     return { error: error.message };

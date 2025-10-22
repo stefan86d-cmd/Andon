@@ -29,9 +29,7 @@ import { Badge } from '@/components/ui/badge';
 import { useUser } from '@/contexts/user-context';
 import { toast } from '@/hooks/use-toast';
 import { createCheckoutSession } from '@/app/actions';
-import { loadStripe } from '@stripe/stripe-js';
-
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
+import { EmbeddedCheckoutForm } from '@/components/checkout/embedded-checkout-form';
 
 const tiers: Record<Plan, { name: string; prices: Record<Duration, Record<Currency, number>> }> = {
   starter: { 
@@ -71,6 +69,7 @@ function CheckoutContent() {
   const { currentUser } = useUser();
   const [isSubmitting, startTransition] = useTransition();
   const [year, setYear] = useState(new Date().getFullYear());
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
 
   useEffect(() => {
     setYear(new Date().getFullYear());
@@ -122,8 +121,8 @@ function CheckoutContent() {
           false
       );
 
-      if (result.url) {
-          router.push(result.url);
+      if (result.clientSecret) {
+          setClientSecret(result.clientSecret);
       } else {
           toast({
               variant: "destructive",
@@ -135,6 +134,23 @@ function CheckoutContent() {
   };
 
   const buttonText = isNewUser ? "Continue to Sign Up" : "Confirm Plan Change";
+
+  if (clientSecret) {
+      return (
+           <div className="bg-muted">
+                <div className="container mx-auto flex min-h-screen flex-col items-center justify-center py-12">
+                    <div className="w-full max-w-lg">
+                        <div className="flex justify-center mb-8">
+                            <Link href="/">
+                                <Logo />
+                            </Link>
+                        </div>
+                        <EmbeddedCheckoutForm clientSecret={clientSecret} />
+                    </div>
+                </div>
+           </div>
+      )
+  }
 
   return (
     <div className="bg-muted">
