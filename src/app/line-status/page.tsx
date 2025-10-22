@@ -13,14 +13,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { PlusCircle, LoaderCircle } from "lucide-react";
+import { PlusCircle, LoaderCircle, LayoutGrid, Rows } from "lucide-react";
 import type { Issue, ProductionLine } from "@/lib/types";
 import { subHours } from "date-fns";
 import { useUser } from "@/contexts/user-context";
 import { getClientProductionLines, getClientIssues } from "@/lib/data";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { IssuesGrid } from "@/components/dashboard/issues-grid";
 
 export default function LineStatusPage() {
   const { currentUser } = useUser();
+  const isMobile = useIsMobile();
   const [selectedLineId, setSelectedLineId] = useState<string | undefined>(undefined);
   const [selectedWorkstation, setSelectedWorkstation] = useState<string | undefined>();
   const [selectionConfirmed, setSelectionConfirmed] = useState(false);
@@ -28,6 +32,15 @@ export default function LineStatusPage() {
   const [issues, setIssues] = useState<Issue[]>([]);
   const [linesLoading, setLinesLoading] = useState(true);
   const [issuesLoading, setIssuesLoading] = useState(false);
+  const [view, setView] = useState<'list' | 'grid'>();
+
+  useEffect(() => {
+    if (isMobile) {
+      setView('grid');
+    } else {
+      setView('list');
+    }
+  }, [isMobile]);
 
   useEffect(() => {
     if (!currentUser?.orgId) return;
@@ -92,6 +105,35 @@ export default function LineStatusPage() {
   }
   
   const userIssues = issues || [];
+
+  const renderContent = () => {
+    if (!view) return null; // Don't render until view is determined
+
+    const title = "Recent Issues at Your Station";
+    const description = "Issues reported on this workstation in the last 24 hours.";
+
+    if (view === 'grid') {
+        return (
+            <IssuesGrid 
+                issues={userIssues}
+                loading={issuesLoading}
+                title={title}
+                description={description}
+                onIssueUpdate={fetchIssuesForStation}
+            />
+        );
+    }
+    
+    return (
+        <IssuesDataTable 
+            issues={userIssues} 
+            loading={issuesLoading}
+            title={title}
+            description={description} 
+            onIssueUpdate={fetchIssuesForStation}
+        />
+    );
+  };
   
   if (!currentUser || loading) {
     return (
@@ -151,8 +193,8 @@ export default function LineStatusPage() {
                       <h1 className="text-lg font-semibold md:text-2xl">{selectedLine?.name}</h1>
                       <p className="text-sm text-muted-foreground">{selectedWorkstation}</p>
                   </div>
-                  <div className="flex items-center gap-2">
-                      <Button variant="outline" onClick={changeSelection}>Change Station</Button>
+                  <div className="flex items-center gap-2 w-full sm:w-auto">
+                      <Button variant="outline" onClick={changeSelection} className="flex-1 sm:flex-initial">Change Station</Button>
                       <ReportIssueDialog
                           key={`${selectedLineId}-${selectedWorkstation}`}
                           productionLines={allLines}
@@ -160,20 +202,26 @@ export default function LineStatusPage() {
                           selectedWorkstation={selectedWorkstation}
                           onIssueReported={fetchIssuesForStation}
                       >
-                          <Button>
+                          <Button className="flex-1 sm:flex-initial">
                               <PlusCircle className="mr-2 h-4 w-4" />
                               Report Issue
                           </Button>
                       </ReportIssueDialog>
                   </div>
               </div>
-              <IssuesDataTable 
-                  issues={userIssues} 
-                  loading={issuesLoading}
-                  title="Recent Issues at Your Station"
-                  description="Issues reported on this workstation in the last 24 hours." 
-                  onIssueUpdate={fetchIssuesForStation}
-              />
+              <div className="flex items-center justify-end">
+                {view && !issuesLoading && (
+                    <ToggleGroup type="single" value={view} onValueChange={(value) => value && setView(value as 'list' | 'grid')} aria-label="View mode">
+                        <ToggleGroupItem value="list" aria-label="List view">
+                            <Rows className="h-4 w-4" />
+                        </ToggleGroupItem>
+                        <ToggleGroupItem value="grid" aria-label="Grid view">
+                            <LayoutGrid className="h-4 w-4" />
+                        </ToggleGroupItem>
+                    </ToggleGroup>
+                )}
+              </div>
+              {renderContent()}
           </div>
       )}
     </main>
