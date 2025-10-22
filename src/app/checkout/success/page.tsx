@@ -109,7 +109,7 @@ function SuccessContent() {
             <Card>
                 <CardHeader className="items-center">
                      <XCircle className="h-12 w-12 text-destructive mb-4" />
-                    <CardTitle>Payment Error</CardTitle>
+                    <CardTitle>Checkout Error</CardTitle>
                     <CardDescription>{errorMessage}</CardDescription>
                 </CardHeader>
                 <CardFooter>
