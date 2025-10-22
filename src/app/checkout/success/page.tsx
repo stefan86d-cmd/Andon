@@ -33,13 +33,10 @@ function SuccessContent() {
             return;
         }
         
-        // Wait until user loading is complete
         if (userLoading) {
             return;
         }
 
-        // If user is not found after loading, show error.
-        // This can happen if the user closes the browser before Firebase auth completes.
         if (!currentUser) {
             setErrorMessage("User not authenticated. Please log in to see your updated plan.");
             setStatus('error');
@@ -75,14 +72,13 @@ function SuccessContent() {
                 
                 const planUpdateData = {
                     plan,
-                    subscriptionId: session.subscription,
+                    subscriptionId: session.subscription as string,
                     subscriptionStartsAt: now,
                     subscriptionEndsAt: subscriptionEndDate,
                 };
                 
-                // Update Firestore and then local state
                 await updateUserPlan(currentUser.id, plan, planUpdateData);
-                updateCurrentUser(planUpdateData);
+                await updateCurrentUser(planUpdateData);
                 
                 if (isNewUser) {
                     await sendWelcomeEmail(currentUser.id);
@@ -92,6 +88,7 @@ function SuccessContent() {
                 setStatus('success');
 
             } catch (e: any) {
+                console.error("Fulfill order error:", e);
                 setErrorMessage('Failed to update your plan in our system. Please contact support.');
                 setStatus('error');
             }

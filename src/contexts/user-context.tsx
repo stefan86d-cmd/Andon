@@ -100,28 +100,11 @@ export function UserProvider({ children }: { children: ReactNode }) {
   
   const registerWithEmail = async (email: string, password: string): Promise<boolean> => {
     if (!auth) return false;
-    const { db } = getClientInstances();
     setLoading(true);
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const firebaseUser = userCredential.user;
-
-      // Immediately create a basic user profile in Firestore
-      const newUser: Partial<User> = {
-        id: firebaseUser.uid,
-        email: firebaseUser.email || "",
-        role: "" as any, // Indicates incomplete profile
-        orgId: firebaseUser.uid, // The new user's ID becomes their organization ID
-        notificationPreferences: { newIssue: false, issueResolved: false, muteSound: true }, // Default notification prefs
-        theme: 'system', // Default theme
-      };
-      
-      const userDocRef = doc(db, "users", firebaseUser.uid);
-      await setDoc(userDocRef, newUser, { merge: true });
-
       // Manually trigger user update to avoid race conditions with the auth listener
-      await handleAuthUser(firebaseUser);
-      
+      await handleAuthUser(userCredential.user);
       return true;
     } catch (error: any) {
       let message = "An unknown error occurred.";
@@ -142,8 +125,9 @@ export function UserProvider({ children }: { children: ReactNode }) {
       if (!auth) return false;
       setLoading(true);
       try {
-          await signInWithPopup(auth, provider);
-          // onAuthStateChanged will handle the rest
+          const result = await signInWithPopup(auth, provider);
+          // Manually trigger user update to avoid race conditions with the auth listener
+          await handleAuthUser(result.user);
           return true;
       } catch (error: any) {
           toast({

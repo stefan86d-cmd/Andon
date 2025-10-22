@@ -1,3 +1,4 @@
+
 'use server';
 
 import {
@@ -176,14 +177,12 @@ export async function addUser(userData: {
       displayName: `${firstName} ${lastName}`,
     });
 
-    const newUser: Omit<User, 'id'> = {
+    const newUser: Omit<User, 'id'|'subscriptionStartsAt'|'subscriptionEndsAt'|'address'|'city'|'postalCode'|'country'|'phone'> = {
       firstName,
       lastName,
       email,
       role,
       plan,
-      address: '',
-      country: '',
       orgId,
       notificationPreferences: { newIssue: false, issueResolved: false, muteSound: true },
       theme: 'system',

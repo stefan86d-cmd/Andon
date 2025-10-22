@@ -11,6 +11,8 @@ export type User = {
   role: Role;
   plan: Plan;
   address: string;
+  city: string;
+  postalCode: string;
   country: string;
   phone?: string;
   productionLineId?: string;
@@ -18,6 +20,7 @@ export type User = {
   customUserLimit?: number;
   customLineLimit?: number;
   customWorkstationLimit?: number;
+  subscriptionId?: string;
   subscriptionStartsAt?: Date;
   subscriptionEndsAt?: Date;
   notificationPreferences: {

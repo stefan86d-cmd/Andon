@@ -138,7 +138,7 @@ function CompleteProfileContent() {
         const profileData = form.getValues();
         const profileSaved = await handleProfileSave(profileData);
         
-        if (!profileSaved) return;
+        if (!profileSaved || !currentUser) return;
 
         if (selectedPlan === 'starter') {
             await updateUserPlan(currentUser!.id, 'starter', { subscriptionStartsAt: new Date() });
