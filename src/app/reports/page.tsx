@@ -25,11 +25,19 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { allCategories } from "@/lib/constants";
 import { CSVLink } from "react-csv";
 import { getClientIssues, getClientProductionLines } from "@/lib/data";
 import { Input } from "@/components/ui/input";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const ChartGradients = () => (
     <svg width="0" height="0" className="absolute">
@@ -44,15 +52,23 @@ const ChartGradients = () => (
     </svg>
 );
 
+const reportTabs = [
+    { value: 'issues-by-category', label: 'By Category' },
+    { value: 'stops', label: 'Stops' },
+    { value: 'by-line', label: 'By Line' },
+    { value: 'trend', label: 'Trend' },
+    { value: 'item-volume', label: 'Item Volume' },
+];
+
 
 export default function ReportsPage() {
   const { currentUser } = useUser();
+  const isMobile = useIsMobile();
   
   const [issues, setIssues] = useState<Issue[]>([]);
   const [productionLines, setProductionLines] = useState<ProductionLine[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isAiLoading, setIsAiLoading] = useState(false);
-  const [aiAnalysis, setAiAnalysis] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState('issues-by-category');
 
   const [date, setDate] = useState<DateRange | undefined>({
     from: subDays(new Date(), 29),
@@ -91,18 +107,15 @@ export default function ReportsPage() {
 
   const handleFilterConfirm = () => {
     setSelectedLines(tempSelectedLines);
-    setAiAnalysis(null);
   };
   
   const handleFilterReset = () => {
     setTempSelectedLines([]);
     setSelectedLines([]);
-    setAiAnalysis(null);
   };
   
   const handleDateChange = (newDate: DateRange | undefined) => {
       setDate(newDate);
-      setAiAnalysis(null);
   }
 
   const allIssues = issues || [];
@@ -244,7 +257,109 @@ export default function ReportsPage() {
   );
 
 
-  const isAiEnabled = currentUser.plan === 'pro' || currentUser.plan === 'enterprise';
+  const renderActiveTabContent = () => {
+    switch (activeTab) {
+        case 'issues-by-category':
+            return (
+                <Card>
+                  <CardContent className="grid gap-6 md:grid-cols-2 p-6">
+                      <div>
+                          <h3 className="font-semibold mb-4 text-center">Volume by Category</h3>
+                          <FilteredBarChart data={issuesByCategory} />
+                      </div>
+                       <div>
+                          <h3 className="font-semibold mb-4 text-center">Share by Category (%)</h3>
+                          <PieChartWithPercentages data={issuesByCategoryWithPercentage} />
+                      </div>
+                  </CardContent>
+              </Card>
+            );
+        case 'stops':
+             return (
+                <Card>
+                  <CardHeader>
+                      <CardTitle>Production Stop Time by Category (Hours)</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                      <FilteredBarChart data={stopTimeByCategory} />
+                  </CardContent>
+              </Card>
+             );
+        case 'by-line':
+            return (
+                <Card>
+                  <CardHeader>
+                      <CardTitle>Total Issues by Production Line</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                      <FilteredBarChart data={issuesByLine} />
+                  </CardContent>
+              </Card>
+            );
+        case 'trend':
+            return (
+                 <Card>
+                  <CardHeader>
+                      <CardTitle>Issues Trend</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                      <IssuesTrendChart data={issuesByDay} />
+                  </CardContent>
+              </Card>
+            );
+        case 'item-volume':
+            return (
+                 <Card>
+                  <CardHeader>
+                      <CardTitle>Reported Issues by Item</CardTitle>
+                      <CardDescription>
+                          A detailed list of all reported issues that include an item number.
+                      </CardDescription>
+                       <div className="pt-2">
+                          <Input 
+                              placeholder="Search by item number..."
+                              value={itemSearchQuery}
+                              onChange={(e) => setItemSearchQuery(e.target.value)}
+                              className="max-w-sm"
+                          />
+                      </div>
+                  </CardHeader>
+                  <CardContent>
+                       {itemVolumeIssues.length > 0 ? (
+                          <Table>
+                              <TableHeader>
+                                  <TableRow>
+                                      <TableHead>Item</TableHead>
+                                      <TableHead className="text-right">Pieces</TableHead>
+                                      <TableHead>Category</TableHead>
+                                      <TableHead>Sub-Category</TableHead>
+                                      <TableHead>Date</TableHead>
+                                  </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                  {itemVolumeIssues.map(issue => (
+                                      <TableRow key={issue.id}>
+                                          <TableCell className="font-medium">{issue.itemNumber}</TableCell>
+                                          <TableCell className="text-right">{issue.quantity || 0}</TableCell>
+                                          <TableCell className="capitalize">{issue.category}</TableCell>
+                                          <TableCell className="capitalize">{issue.subCategory?.replace(/-/g, ' ') || 'N/A'}</TableCell>
+                                          <TableCell>{format(issue.reportedAt, 'PP')}</TableCell>
+                                      </TableRow>
+                                  ))}
+                              </TableBody>
+                          </Table>
+                       ) : (
+                          <div className="flex items-center justify-center h-80">
+                              <p className="text-muted-foreground">No item data available for the selected filters.</p>
+                          </div>
+                       )}
+                  </CardContent>
+              </Card>
+            );
+        default:
+            return null;
+    }
+  }
 
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background">
@@ -343,110 +458,37 @@ export default function ReportsPage() {
           </CardHeader>
       </Card>
 
-      <Tabs defaultValue="issues-by-category">
-          <div className="flex justify-center">
+      <div className="mt-4">
+        {isMobile ? (
+          <Select value={activeTab} onValueChange={setActiveTab}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select a report" />
+            </SelectTrigger>
+            <SelectContent>
+              {reportTabs.map(tab => (
+                <SelectItem key={tab.value} value={tab.value}>{tab.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        ) : (
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <div className="flex justify-center">
               <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5 max-w-4xl">
-                  <TabsTrigger value="issues-by-category">By Category</TabsTrigger>
-                  <TabsTrigger value="stops">Stops</TabsTrigger>
-                  <TabsTrigger value="by-line">By Line</TabsTrigger>
-                  <TabsTrigger value="trend">Trend</TabsTrigger>
-                  <TabsTrigger value="item-volume">Item Volume</TabsTrigger>
+                {reportTabs.map(tab => (
+                  <TabsTrigger key={tab.value} value={tab.value}>{tab.label}</TabsTrigger>
+                ))}
               </TabsList>
-          </div>
-          <TabsContent value="issues-by-category" className="mt-4">
-               <Card>
-                  <CardContent className="grid gap-6 md:grid-cols-2 p-6">
-                      <div>
-                          <h3 className="font-semibold mb-4 text-center">Volume by Category</h3>
-                          <FilteredBarChart data={issuesByCategory} />
-                      </div>
-                       <div>
-                          <h3 className="font-semibold mb-4 text-center">Share by Category (%)</h3>
-                          <PieChartWithPercentages data={issuesByCategoryWithPercentage} />
-                      </div>
-                  </CardContent>
-              </Card>
-          </TabsContent>
-          <TabsContent value="stops" className="mt-4">
-              <Card>
-                  <CardHeader>
-                      <CardTitle>Production Stop Time by Category (Hours)</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                      <FilteredBarChart data={stopTimeByCategory} />
-                  </CardContent>
-              </Card>
-          </TabsContent>
-          <TabsContent value="by-line" className="mt-4">
-              <Card>
-                  <CardHeader>
-                      <CardTitle>Total Issues by Production Line</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                      <FilteredBarChart data={issuesByLine} />
-                  </CardContent>
-              </Card>
-          </TabsContent>
-          <TabsContent value="trend" className="mt-4">
-               <Card>
-                  <CardHeader>
-                      <CardTitle>Issues Trend</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                      <IssuesTrendChart data={issuesByDay} />
-                  </CardContent>
-              </Card>
-          </TabsContent>
-          <TabsContent value="item-volume" className="mt-4">
-              <Card>
-                  <CardHeader>
-                      <CardTitle>Reported Issues by Item</CardTitle>
-                      <CardDescription>
-                          A detailed list of all reported issues that include an item number.
-                      </CardDescription>
-                       <div className="pt-2">
-                          <Input 
-                              placeholder="Search by item number..."
-                              value={itemSearchQuery}
-                              onChange={(e) => setItemSearchQuery(e.target.value)}
-                              className="max-w-sm"
-                          />
-                      </div>
-                  </CardHeader>
-                  <CardContent>
-                       {itemVolumeIssues.length > 0 ? (
-                          <Table>
-                              <TableHeader>
-                                  <TableRow>
-                                      <TableHead>Item</TableHead>
-                                      <TableHead className="text-right">Pieces</TableHead>
-                                      <TableHead>Category</TableHead>
-                                      <TableHead>Sub-Category</TableHead>
-                                      <TableHead>Date</TableHead>
-                                  </TableRow>
-                              </TableHeader>
-                              <TableBody>
-                                  {itemVolumeIssues.map(issue => (
-                                      <TableRow key={issue.id}>
-                                          <TableCell className="font-medium">{issue.itemNumber}</TableCell>
-                                          <TableCell className="text-right">{issue.quantity || 0}</TableCell>
-                                          <TableCell className="capitalize">{issue.category}</TableCell>
-                                          <TableCell className="capitalize">{issue.subCategory?.replace(/-/g, ' ') || 'N/A'}</TableCell>
-                                          <TableCell>{format(issue.reportedAt, 'PP')}</TableCell>
-                                      </TableRow>
-                                  ))}
-                              </TableBody>
-                          </Table>
-                       ) : (
-                          <div className="flex items-center justify-center h-80">
-                              <p className="text-muted-foreground">No item data available for the selected filters.</p>
-                          </div>
-                       )}
-                  </CardContent>
-              </Card>
-          </TabsContent>
-      </Tabs>
+            </div>
+          </Tabs>
+        )}
+      </div>
+
+      <div className="mt-4">
+        {renderActiveTabContent()}
+      </div>
 
     </main>
   );
 }
+
+    
