@@ -68,7 +68,7 @@ const faqs = [
         question: "How do I sign up for AndonPro?",
         answer: () => (
            <p>
-                You can sign up using your existing Google or Microsoft account for a fast and secure registration process. Alternatively, you can register directly with your email address and create a new password. Simply choose your preferred option on the registration page to get started.
+                You can sign up using your existing Google account for a fast and secure registration process. Alternatively, you can register directly with your email address and create a new password. Simply choose your preferred option on the registration page to get started.
            </p>
         )
     },
