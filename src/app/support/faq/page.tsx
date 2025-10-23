@@ -73,6 +73,14 @@ const faqs = [
         )
     },
     {
+        question: "How is payment handled?",
+        answer: () => (
+            <p>
+                We use <a href="https://stripe.com" target="_blank" rel="noopener noreferrer" className="text-primary underline">Stripe</a> to handle all payment processing. Stripe is a certified PCI Service Provider Level 1, the most stringent level of certification available in the payments industry. This ensures that your payment information is handled securely and safely. We do not store your credit card information on our servers.
+            </p>
+        )
+    },
+    {
         question: "What pricing tiers are available?",
         answer: () => (
             <p>
@@ -263,3 +271,5 @@ export default function FaqPage() {
     </div>
   );
 }
+
+    
