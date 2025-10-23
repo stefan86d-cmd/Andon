@@ -333,7 +333,7 @@ export function ReportIssueDialog({
                   <FormItem>
                     <FormLabel>Issue Title</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="e.g., Conveyor belt jammed" />
+                      <Input {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
