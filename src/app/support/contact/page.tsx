@@ -179,16 +179,6 @@ export default function ContactPage() {
                                     <a href="mailto:sales@andonpro.com" className="text-primary hover:underline">sales@andonpro.com</a>
                                 </div>
                             </div>
-                            <div className="flex items-start gap-4">
-                                <Building className="h-6 w-6 text-primary mt-1" />
-                                <div>
-                                    <h3 className="font-semibold">Our Office</h3>
-                                    <p className="text-muted-foreground">
-                                        Mannerheimintie 123<br />
-                                        00100 Helsinki, Finland
-                                    </p>
-                                </div>
-                            </div>
                         </div>
                     </div>
                     <div>
