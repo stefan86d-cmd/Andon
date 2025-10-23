@@ -395,9 +395,9 @@ export default function PricingPage() {
                                                 Renews at {currencySymbols[currency]}{formatPrice(fullMonthlyPrice, currency)}/mo. Cancel anytime.
                                             </p>
                                         )}
-                                         {(tier.name === 'Starter' && duration !== '1') && (
+                                         {tier.name === 'Starter' && (
                                             <p className="text-xs text-muted-foreground mt-3 text-center h-8">
-                                                &nbsp;
+                                                No credit card required.
                                             </p>
                                          )}
                                     </CardFooter>
