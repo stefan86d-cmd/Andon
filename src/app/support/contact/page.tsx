@@ -50,10 +50,22 @@ const MobileNavLink = ({ href, children }: { href: string; children: React.React
 
 export default function ContactPage() {
     const [year, setYear] = useState(new Date().getFullYear());
+    const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
+    const [message, setMessage] = useState('');
 
     useEffect(() => {
         setYear(new Date().getFullYear());
     }, []);
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        // Here you would typically handle the form submission,
+        // e.g., send the data to a server or an email service.
+        console.log({ name, email, message });
+        alert("Thank you for your message! (Form submission is not yet implemented)");
+    };
+
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -185,18 +197,18 @@ export default function ContactPage() {
                                 <CardTitle>Send us a Message</CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <form className="space-y-4">
+                                <form onSubmit={handleSubmit} className="space-y-4">
                                     <div className="space-y-2">
                                         <Label htmlFor="name">Name</Label>
-                                        <Input id="name" />
+                                        <Input id="name" value={name} onChange={(e) => setName(e.target.value)} />
                                     </div>
                                     <div className="space-y-2">
                                         <Label htmlFor="email">Email</Label>
-                                        <Input id="email" type="email" />
+                                        <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
                                     </div>
                                     <div className="space-y-2">
                                         <Label htmlFor="message">Message</Label>
-                                        <Textarea id="message" />
+                                        <Textarea id="message" value={message} onChange={(e) => setMessage(e.target.value)} />
                                     </div>
                                     <Button type="submit" className="w-full">Send Message</Button>
                                 </form>
