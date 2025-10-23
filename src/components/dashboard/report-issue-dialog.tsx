@@ -162,7 +162,7 @@ export function ReportIssueDialog({
       subCategory: "",
       title: "",
       itemNumber: "",
-      quantity: "" as any,
+      quantity: undefined,
       location: "",
       priority: "medium",
       productionStopped: false,
@@ -189,7 +189,7 @@ export function ReportIssueDialog({
         subCategory: "",
         title: "",
         itemNumber: "",
-        quantity: "" as any,
+        quantity: undefined,
         location: currentLocation,
         priority: "medium",
         productionStopped: false,
@@ -229,7 +229,7 @@ export function ReportIssueDialog({
         category: data.category as IssueCategory,
         subCategory: data.subCategory || "",
         itemNumber: data.itemNumber || "",
-        quantity: data.quantity || 0,
+        quantity: data.quantity || undefined,
         productionStopped: data.productionStopped ?? false,
       };
 

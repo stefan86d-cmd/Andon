@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -340,7 +341,7 @@ export default function ReportsPage() {
                                   {itemVolumeIssues.map(issue => (
                                       <TableRow key={issue.id}>
                                           <TableCell className="font-medium">{issue.itemNumber}</TableCell>
-                                          <TableCell className="text-right">{issue.quantity || 0}</TableCell>
+                                          <TableCell className="text-right">{issue.quantity || ''}</TableCell>
                                           <TableCell className="capitalize">{issue.category}</TableCell>
                                           <TableCell className="capitalize">{issue.subCategory?.replace(/-/g, ' ') || 'N/A'}</TableCell>
                                           <TableCell>{format(issue.reportedAt, 'PP')}</TableCell>
@@ -490,5 +491,3 @@ export default function ReportsPage() {
     </main>
   );
 }
-
-    
