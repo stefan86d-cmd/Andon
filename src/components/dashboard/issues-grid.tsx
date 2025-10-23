@@ -143,7 +143,6 @@ export function IssuesGrid({ issues, title, description, loading, onIssueUpdate 
                         )}
                          {issue.status === 'resolved' && issue.resolutionNotes && (
                             <div className="pt-2">
-                                <p className="text-xs font-semibold text-foreground">Resolution Notes:</p>
                                 <p className="text-xs text-muted-foreground italic">"{issue.resolutionNotes}"</p>
                             </div>
                         )}

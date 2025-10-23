@@ -160,6 +160,11 @@ export function IssuesDataTable({ issues, title, description, loading, onIssueUp
                            {issue.quantity && issue.quantity > 0 && <span>Qty: <span className="font-semibold text-foreground">{issue.quantity}</span></span>}
                         </div>
                     )}
+                    {issue.status === 'resolved' && issue.resolutionNotes && (
+                        <div className="pt-2">
+                            <p className="text-xs text-muted-foreground italic">"{issue.resolutionNotes}"</p>
+                        </div>
+                    )}
                   </TableCell>
                    <TableCell>
                     <div className="flex items-center gap-2">
