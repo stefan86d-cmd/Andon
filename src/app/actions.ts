@@ -284,7 +284,7 @@ export async function sendWelcomeEmail(userId: string) {
         }
         
         const planName = user.plan.charAt(0).toUpperCase() + user.plan.slice(1);
-        const loginUrl = process.env.NEXT_PUBLIC_BASE_URL ? `${process.env.NEXT_PUBLIC_BASE_URL}/login` : 'http://localhost:3000/login';
+        const loginUrl = process.env.NEXT_PUBLIC_BASE_URL ? `${process.env.NEXT_PUBLIC_BASE_URL}/dashboard` : 'http://localhost:3000/dashboard';
 
         await sendEmail({
             to: user.email,
@@ -293,7 +293,7 @@ export async function sendWelcomeEmail(userId: string) {
                    <p>Hi ${user.firstName},</p>
                    <p>Your account has been successfully created. You are on the <strong>${planName}</strong> plan.</p>
                    <p>You can now log in to your dashboard and start exploring the features:</p>
-                   <a href="${loginUrl}" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: #ffffff; background-color: #2962FF; text-decoration: none; border-radius: 5px;">Log In Now</a>
+                   <a href="${loginUrl}" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: #ffffff; background-color: #2962FF; text-decoration: none; border-radius: 5px;">Go to Dashboard</a>
                    <p>Thank you for joining AndonPro!</p>`
         });
         return { success: true };

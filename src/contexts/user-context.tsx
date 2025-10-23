@@ -37,6 +37,25 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [auth, setAuth] = useState<Auth | null>(null);
   const { setTheme } = useTheme();
+  
+  const createTemporaryUser = (firebaseUser: FirebaseUser): User => {
+    return {
+        id: firebaseUser.uid,
+        email: firebaseUser.email || "",
+        firstName: firebaseUser.displayName?.split(' ')[0] || "",
+        lastName: firebaseUser.displayName?.split(' ')[1] || "",
+        role: "" as any, // This indicates an incomplete profile
+        plan: "starter", // Default plan
+        address: "",
+        city: "",
+        postalCode: "",
+        country: "",
+        phone: "",
+        orgId: firebaseUser.uid, // The new user's ID becomes their organization ID
+        notificationPreferences: { newIssue: false, issueResolved: false, muteSound: true },
+        theme: 'system',
+    };
+  };
 
   const handleAuthUser = useCallback(async (firebaseUser: FirebaseUser | null) => {
     if (firebaseUser) {
@@ -46,22 +65,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
       } else {
         // This is a new user who just signed up, but their profile isn't in Firestore yet.
         // We create a temporary user object. The full profile will be created in /complete-profile
-        setCurrentUser({
-          id: firebaseUser.uid,
-          email: firebaseUser.email || "",
-          firstName: firebaseUser.displayName?.split(' ')[0] || "",
-          lastName: firebaseUser.displayName?.split(' ')[1] || "",
-          role: "" as any, // This indicates an incomplete profile
-          plan: "starter", // Default plan
-          address: "",
-          city: "",
-          postalCode: "",
-          country: "",
-          phone: "",
-          orgId: firebaseUser.uid, // The new user's ID becomes their organization ID
-          notificationPreferences: { newIssue: false, issueResolved: false, muteSound: true },
-          theme: 'system',
-        });
+        setCurrentUser(createTemporaryUser(firebaseUser));
       }
     } else {
       setCurrentUser(null);
@@ -70,7 +74,6 @@ export function UserProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    // getClientInstances ensures Firebase is initialized on the client
     const { auth: authInstance } = getClientInstances();
     setAuth(authInstance);
 
@@ -105,8 +108,9 @@ export function UserProvider({ children }: { children: ReactNode }) {
     setLoading(true);
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      // Manually trigger user update to avoid race conditions with the auth listener
-      await handleAuthUser(userCredential.user);
+      // Immediately set a temporary user object to maintain the session state
+      setCurrentUser(createTemporaryUser(userCredential.user));
+      setLoading(false);
       return true;
     } catch (error: any) {
       let message = "An unknown error occurred.";
@@ -128,8 +132,14 @@ export function UserProvider({ children }: { children: ReactNode }) {
       setLoading(true);
       try {
           const result = await signInWithPopup(auth, provider);
-          // Manually trigger user update to avoid race conditions with the auth listener
-          await handleAuthUser(result.user);
+          const userProfile = await getClientUserById(result.user.uid);
+          if (userProfile) {
+            setCurrentUser(userProfile);
+          } else {
+             // Immediately set a temporary user object to maintain the session state
+            setCurrentUser(createTemporaryUser(result.user));
+          }
+          setLoading(false);
           return true;
       } catch (error: any) {
           toast({

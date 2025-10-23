@@ -86,8 +86,6 @@ function RegisterContent() {
         const success = await registerWithEmail(data.email, data.password);
         if (success) {
             router.push(getRedirectUrl());
-        } else {
-            // Error is handled by the context's toast
         }
     });
   };

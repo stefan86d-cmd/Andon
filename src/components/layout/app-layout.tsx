@@ -16,11 +16,15 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   
-  const authPages = ['/login', '/register', '/complete-profile', '/forgot-password', '/reset-password', '/checkout'];
+  const authPages = ['/login', '/register', '/forgot-password', '/reset-password'];
   const isAuthPage = authPages.some(page => pathname.startsWith(page));
   
   const publicPages = ['/', '/pricing', '/about', '/services', '/support', '/terms'];
   const isPublicPage = publicPages.some(page => pathname === '/' || (page !== '/' && pathname.startsWith(page)));
+  
+  const unauthedFlowPages = ['/complete-profile', '/checkout', '/checkout/success'];
+  const isUnauthedFlowPage = unauthedFlowPages.some(page => pathname.startsWith(page));
+
 
   useEffect(() => {
     if (loading) {
@@ -36,8 +40,8 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
 
       // and their profile is incomplete, force them to the profile completion page.
       if (!currentUser.role) {
-        const plan = searchParams.get('plan') || currentUser.plan || 'starter';
         if (!pathname.startsWith('/complete-profile')) {
+           const plan = searchParams.get('plan') || currentUser.plan || 'starter';
            router.replace(`/complete-profile?plan=${plan}`);
         }
         return; // Stop further checks until profile is complete
@@ -53,12 +57,8 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
           return;
       }
       
-      // If profile is complete, redirect from auth/public pages to dashboard,
-      // but allow access to checkout and profile completion flows.
-      if ((isPublicPage || isAuthPage) && 
-          currentUser.role !== 'operator' && 
-          !pathname.startsWith('/checkout') && 
-          !pathname.startsWith('/complete-profile')) {
+      // If profile is complete, redirect from auth/public pages to dashboard.
+      if ((isPublicPage || isAuthPage) && currentUser.role !== 'operator') {
         router.replace('/dashboard');
       }
     } 
@@ -69,11 +69,11 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
         setTheme('light');
       }
       // and block access to protected pages.
-      if (!isPublicPage && !isAuthPage) {
+      if (!isPublicPage && !isAuthPage && !isUnauthedFlowPage) {
         router.replace('/login');
       }
     }
-  }, [currentUser, loading, router, pathname, isAuthPage, isPublicPage, setTheme, theme, searchParams]);
+  }, [currentUser, loading, router, pathname, isAuthPage, isPublicPage, isUnauthedFlowPage, setTheme, theme, searchParams]);
 
   // --- Render Logic ---
 
@@ -87,7 +87,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
   }
 
   // Determine if the main app header should be shown.
-  const showHeader = currentUser && currentUser.role && !isAuthPage && !isPublicPage && !pathname.startsWith('/checkout');
+  const showHeader = currentUser && currentUser.role && !isAuthPage && !isPublicPage && !isUnauthedFlowPage;
 
   if (showHeader) {
     return (

@@ -19,7 +19,7 @@ function SuccessContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const sessionId = searchParams.get('session_id');
-    const { currentUser, updateCurrentUser, loading: userLoading } = useUser();
+    const { currentUser, loading: userLoading, updateCurrentUser } = useUser();
     
     const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
     const [errorMessage, setErrorMessage] = useState('');
@@ -39,11 +39,12 @@ function SuccessContent() {
         }
 
         if (!currentUser) {
-            setErrorMessage("User not authenticated. Please log in to see your updated plan.");
-            setStatus('error');
+            // This might happen if the user's session is lost or they navigate here directly
+            // without being logged in. Redirect to login to re-establish session.
+            router.replace(`/login?redirect=/checkout/success?session_id=${sessionId}`);
             return;
         }
-
+        
         if (orderFulfilled) {
             return;
         }
@@ -54,6 +55,12 @@ function SuccessContent() {
 
                 if (error || !session) {
                     setErrorMessage(error || 'Failed to retrieve checkout session.');
+                    setStatus('error');
+                    return;
+                }
+                
+                if (!session.metadata?.userId || session.metadata.userId !== currentUser.id) {
+                    setErrorMessage('Session user ID does not match the logged-in user.');
                     setStatus('error');
                     return;
                 }
@@ -78,7 +85,7 @@ function SuccessContent() {
                     subscriptionEndsAt: subscriptionEndDate,
                 };
                 
-                await updateUserPlan(currentUser.id, plan, planUpdateData);
+                // This updates the user in both Firestore and the local context
                 await updateCurrentUser(planUpdateData);
 
                 setPlanDetails({ plan, startDate: now, endDate: subscriptionEndDate });
@@ -104,7 +111,9 @@ function SuccessContent() {
     useEffect(() => {
         if (status === 'success') {
             const timer = setTimeout(() => {
-                window.location.href = '/dashboard';
+                router.push('/dashboard');
+                // Force a reload to ensure all user context and layout is fresh
+                setTimeout(() => window.location.reload(), 500);
             }, 5000); // 5-second delay
             return () => clearTimeout(timer);
         }

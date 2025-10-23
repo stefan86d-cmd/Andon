@@ -25,7 +25,7 @@ import { countries } from '@/lib/countries';
 import type { Plan, Role } from '@/lib/types';
 import { toast } from '@/hooks/use-toast';
 import { useUser } from '@/contexts/user-context';
-import { createCheckoutSession, sendWelcomeEmail, updateUserPlan } from '@/app/actions';
+import { createCheckoutSession, sendWelcomeEmail } from '@/app/actions';
 import { EmbeddedCheckoutForm } from '@/components/checkout/embedded-checkout-form';
 
 
@@ -104,13 +104,13 @@ function CompleteProfileContent() {
             lastName: data.lastName,
             email: currentUser.email,
             role: userRole,
-            plan: selectedPlan,
             address: data.address,
             city: data.city,
             postalCode: data.postalCode,
             country: data.country,
             phone: data.phone,
             orgId: currentUser.id, // The first admin's ID becomes the org ID
+            plan: selectedPlan,
         };
         
         await updateCurrentUser(userProfileData);
@@ -141,7 +141,7 @@ function CompleteProfileContent() {
         if (!profileSaved || !currentUser) return;
 
         if (selectedPlan === 'starter') {
-            await updateUserPlan(currentUser!.id, 'starter', { subscriptionStartsAt: new Date() });
+            await updateCurrentUser({ subscriptionStartsAt: new Date() });
             await sendWelcomeEmail(currentUser!.id);
             toast({
                 title: "Registration Complete!",
