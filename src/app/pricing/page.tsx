@@ -104,7 +104,9 @@ const tiers = [
       { text: "Advanced Reporting & Analytics" },
       { text: "24/7 Priority Support" },
     ],
-    cta: "Choose Plan",
+    cta: "Sign up as Premium",
+    badge: "Premium",
+    premium: true,
   },
 ];
 
@@ -335,7 +337,7 @@ export default function PricingPage() {
                             : `/checkout?plan=${tier.id.toLowerCase()}&duration=${duration}&currency=${currency}`;
                         
                         let ctaText = tier.cta;
-                        if (!currentUser && (tier.name === "Standard" || tier.name === "Pro")) {
+                        if (!currentUser && (tier.name === "Standard" || tier.name === "Pro" || tier.name === "Enterprise")) {
                             ctaText = "Choose Plan";
                         }
                         
@@ -343,10 +345,13 @@ export default function PricingPage() {
                             <div key={tier.name} className="relative">
                                 {tier.badge && (
                                     <div className="absolute -top-5 left-1/2 -translate-x-1/2">
-                                        <Badge variant={tier.badgeVariant || 'default'} className="text-sm">{tier.badge}</Badge>
+                                        <Badge variant={tier.badgeVariant || (tier.premium ? "secondary" : "default")} className={cn("text-sm", tier.premium && "text-foreground border-border")}>{tier.badge}</Badge>
                                     </div>
                                 )}
-                                <Card className={`flex flex-col h-full ${tier.popular ? (isProBestValue ? 'border-destructive shadow-lg' : 'border-primary shadow-lg') : ''}`}>
+                                <Card className={cn("flex flex-col h-full", 
+                                    tier.popular && (isProBestValue ? 'border-destructive shadow-lg' : 'border-primary shadow-lg'),
+                                    tier.premium && "border-2 border-gray-300 dark:border-gray-700 shadow-lg"
+                                )}>
                                     <CardHeader className="text-center">
                                         <CardTitle className="text-2xl">{tier.name}</CardTitle>
                                         <div className="flex items-baseline justify-center gap-1 h-10">
