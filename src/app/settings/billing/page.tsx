@@ -166,7 +166,7 @@ export default function BillingPage() {
                             <div>
                                 <h3 className="text-sm font-semibold mb-2">Cancel Subscription</h3>
                                 <p className="text-sm text-muted-foreground mb-4">
-                                    If you cancel, you will lose access to your plan's features at the end of your billing period.
+                                    If you cancel, you will lose access to your plan's features at the end of your billing period on {renewalDate}.
                                 </p>
                                 <CancelSubscriptionDialog onConfirm={handleCancelConfirm}>
                                     <Button variant="destructive" className="w-full sm:w-auto" disabled={currentUser.plan === 'starter'}>Cancel Subscription</Button>

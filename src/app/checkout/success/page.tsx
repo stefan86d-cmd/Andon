@@ -10,9 +10,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/layout/logo';
 import { toast } from '@/hooks/use-toast';
-import { addMonths } from 'date-fns';
+import { addMonths, format } from 'date-fns';
 import Link from 'next/link';
-import type { Plan } from '@/lib/types';
+import type { Plan, User } from '@/lib/types';
 
 
 function SuccessContent() {
@@ -24,6 +24,7 @@ function SuccessContent() {
     const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
     const [errorMessage, setErrorMessage] = useState('');
     const [orderFulfilled, setOrderFulfilled] = useState(false);
+    const [planDetails, setPlanDetails] = useState<{ plan: Plan, startDate: Date, endDate: Date } | null>(null);
 
 
     useEffect(() => {
@@ -34,7 +35,7 @@ function SuccessContent() {
         }
         
         if (userLoading) {
-            return;
+            return; // Wait for user to be loaded
         }
 
         if (!currentUser) {
@@ -70,7 +71,7 @@ function SuccessContent() {
                 const now = new Date();
                 const subscriptionEndDate = addMonths(now, duration);
                 
-                const planUpdateData = {
+                const planUpdateData: Partial<User> = {
                     plan,
                     subscriptionId: session.subscription as string,
                     subscriptionStartsAt: now,
@@ -79,6 +80,8 @@ function SuccessContent() {
                 
                 await updateUserPlan(currentUser.id, plan, planUpdateData);
                 await updateCurrentUser(planUpdateData);
+
+                setPlanDetails({ plan, startDate: now, endDate: subscriptionEndDate });
                 
                 if (isNewUser) {
                     await sendWelcomeEmail(currentUser.id);
@@ -101,9 +104,8 @@ function SuccessContent() {
     useEffect(() => {
         if (status === 'success') {
             const timer = setTimeout(() => {
-                // Force a full redirect to ensure the app state (especially user context) is re-evaluated.
                 window.location.href = '/dashboard';
-            }, 3000); // 3-second delay
+            }, 5000); // 5-second delay
             return () => clearTimeout(timer);
         }
     }, [status, router]);
@@ -144,7 +146,13 @@ function SuccessContent() {
                 <CardDescription>Your subscription has been activated. Welcome aboard!</CardDescription>
             </CardHeader>
             <CardContent>
-                <p className="text-sm text-muted-foreground">You will be redirected to your dashboard shortly.</p>
+                 {planDetails && (
+                    <div className="text-sm text-muted-foreground space-y-2 text-left bg-muted p-4 rounded-md">
+                        <p><strong>Plan:</strong> <span className="capitalize">{planDetails.plan}</span></p>
+                        <p><strong>Subscription Active:</strong> {format(planDetails.startDate, "MMMM d, yyyy")} - {format(planDetails.endDate, "MMMM d, yyyy")}</p>
+                    </div>
+                )}
+                <p className="text-sm text-muted-foreground mt-4">You will be redirected to your dashboard shortly.</p>
             </CardContent>
             <CardFooter>
                 <Button asChild className="w-full">

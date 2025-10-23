@@ -54,6 +54,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
           role: "" as any, // This indicates an incomplete profile
           plan: "starter", // Default plan
           address: "",
+          city: "",
+          postalCode: "",
           country: "",
           phone: "",
           orgId: firebaseUser.uid, // The new user's ID becomes their organization ID
@@ -157,27 +159,34 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const updateCurrentUser = useCallback(async (userData: Partial<User>) => {
     const { db } = getClientInstances();
     if (currentUser) {
-        const updatedUser = { ...currentUser, ...userData };
+        // Create a merged object for local state update
+        const updatedUserLocal: User = { ...currentUser, ...userData };
         
         try {
             if (!db) throw new Error("Firestore is not initialized");
             const userDocRef = doc(db, "users", currentUser.id);
 
-            // Convert Date objects to Firestore Timestamps for serialization
-            const dataToSave: any = { ...userData };
+            // Prepare data for Firestore, converting dates to Timestamps
+            const dataToSave: { [key: string]: any } = { ...userData };
             if (dataToSave.subscriptionStartsAt instanceof Date) {
                 dataToSave.subscriptionStartsAt = Timestamp.fromDate(dataToSave.subscriptionStartsAt);
             }
             if (dataToSave.subscriptionEndsAt instanceof Date) {
                 dataToSave.subscriptionEndsAt = Timestamp.fromDate(dataToSave.subscriptionEndsAt);
             }
-            if (dataToSave.subscriptionEndsAt instanceof FieldValue) {
-                // Keep FieldValue as is
-            }
 
             await setDoc(userDocRef, dataToSave, { merge: true });
+            
             // After successful DB write, update local state
-            setCurrentUser(updatedUser);
+            // Convert Timestamps back to dates for the local state if they exist
+            const finalUserObject = {
+              ...updatedUserLocal,
+              subscriptionStartsAt: updatedUserLocal.subscriptionStartsAt instanceof Timestamp ? updatedUserLocal.subscriptionStartsAt.toDate() : updatedUserLocal.subscriptionStartsAt,
+              subscriptionEndsAt: updatedUserLocal.subscriptionEndsAt instanceof Timestamp ? updatedUserLocal.subscriptionEndsAt.toDate() : updatedUserLocal.subscriptionEndsAt,
+            };
+
+            setCurrentUser(finalUserObject as User);
+
         } catch (error) {
              toast({
               variant: "destructive",

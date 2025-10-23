@@ -64,8 +64,8 @@ export async function getClientUserById(uid: string): Promise<User | null> {
         const user: User = {
           id: userDoc.id,
           ...data,
-          subscriptionStartsAt: data.subscriptionStartsAt instanceof Timestamp ? data.subscriptionStartsAt.toDate() : undefined,
-          subscriptionEndsAt: data.subscriptionEndsAt instanceof Timestamp ? data.subscriptionEndsAt.toDate() : undefined,
+          subscriptionStartsAt: data.subscriptionStartsAt instanceof Timestamp ? data.subscriptionStartsAt.toDate() : data.subscriptionStartsAt,
+          subscriptionEndsAt: data.subscriptionEndsAt instanceof Timestamp ? data.subscriptionEndsAt.toDate() : data.subscriptionEndsAt,
         } as User;
 
         return user;

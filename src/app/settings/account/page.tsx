@@ -93,16 +93,16 @@ export default function AccountSettingsPage() {
     useEffect(() => {
         if (currentUser) {
             profileForm.reset({
-                firstName: currentUser.firstName,
-                lastName: currentUser.lastName,
-                address: currentUser.address,
-                city: "Anytown", // Mock data doesn't have this, so we use a placeholder
-                postalCode: "12345", // Mock data doesn't have this, so we use a placeholder
-                country: currentUser.country,
-                phone: currentUser.phone,
+                firstName: currentUser.firstName || "",
+                lastName: currentUser.lastName || "",
+                address: currentUser.address || "",
+                city: currentUser.city || "",
+                postalCode: currentUser.postalCode || "",
+                country: currentUser.country || "",
+                phone: currentUser.phone || "",
             });
         }
-    }, [currentUser, profileForm]);
+    }, [currentUser, profileForm, isEditingProfile]);
 
     if (!currentUser) {
         return (
@@ -113,14 +113,18 @@ export default function AccountSettingsPage() {
     }
     
     const onProfileSubmit = (data: ProfileFormValues) => {
-        startProfileTransition(() => {
-            updateCurrentUser(data);
-            toast({
-                title: "Profile Updated",
-                description: "Your information has been updated successfully.",
-            });
-            setIsEditingProfile(false); // Go back to read-only view
-            router.refresh();
+        startProfileTransition(async () => {
+            try {
+                await updateCurrentUser(data);
+                toast({
+                    title: "Profile Updated",
+                    description: "Your information has been updated successfully.",
+                });
+                setIsEditingProfile(false); // Go back to read-only view
+                router.refresh();
+            } catch (error) {
+                // Error toast is handled in the context
+            }
         });
     }
 
