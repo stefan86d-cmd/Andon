@@ -150,7 +150,7 @@ function CompleteProfileContent() {
             const result = await createCheckoutSession(
                 currentUser!.id,
                 currentUser!.email,
-                selectedPlan,
+                selectedPlan as Exclude<Plan, 'starter' | 'custom'>,
                 selectedDuration,
                 selectedCurrency,
                 true

@@ -33,21 +33,21 @@ export async function createCheckoutSession(
     const priceIdMap: Record<Exclude<Plan, 'starter' | 'custom'>, Record<string, string | undefined>> = {
       standard: {
         '1': process.env.STRIPE_PRICE_ID_STANDARD,
-        '12': process.env.STRIPE_PRICE_ID_STANDARD_12_MONTHS,
-        '24': process.env.STRIPE_PRICE_ID_STANDARD_24_MONTHS,
-        '48': process.env.STRIPE_PRICE_ID_STANDARD_48_MONTHS,
+        '12': process.env.STRIPE_PRICE_ID_STANDARD_12,
+        '24': process.env.STRIPE_PRICE_ID_STANDARD_24,
+        '48': process.env.STRIPE_PRICE_ID_STANDARD_48,
       },
       pro: {
         '1': process.env.STRIPE_PRICE_ID_PRO,
-        '12': process.env.STRIPE_PRICE_ID_PRO_12_MONTHS,
-        '24': process.env.STRIPE_PRICE_ID_PRO_24_MONTHS,
-        '48': process.env.STRIPE_PRICE_ID_PRO_48_MONTHS,
+        '12': process.env.STRIPE_PRICE_ID_PRO_12,
+        '24': process.env.STRIPE_PRICE_ID_PRO_24,
+        '48': process.env.STRIPE_PRICE_ID_PRO_48,
       },
       enterprise: {
         '1': process.env.STRIPE_PRICE_ID_ENTERPRISE,
-        '12': process.env.STRIPE_PRICE_ID_ENTERPRISE_12_MONTHS,
-        '24': process.env.STRIPE_PRICE_ID_ENTERPRISE_24_MONTHS,
-        '48': process.env.STRIPE_PRICE_ID_ENTERPRISE_48_MONTHS,
+        '12': process.env.STRIPE_PRICE_ID_ENTERPRISE_12,
+        '24': process.env.STRIPE_PRICE_ID_ENTERPRISE_24,
+        '48': process.env.STRIPE_PRICE_ID_ENTERPRISE_48,
       },
     };
 
@@ -65,10 +65,10 @@ export async function createCheckoutSession(
     const successUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`;
     const cancelUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/checkout`;
 
+    let session: Stripe.Checkout.Session;
 
-    // --- MONTHLY SUBSCRIPTION ---
     if (duration === '1') {
-      const session = await stripe.checkout.sessions.create({
+      session = await stripe.checkout.sessions.create({
         payment_method_types: ['card'],
         mode: 'subscription',
         customer_email: email,
@@ -77,39 +77,37 @@ export async function createCheckoutSession(
         success_url: successUrl,
         cancel_url: cancelUrl,
       });
-      return { sessionUrl: session.url! };
+    } else {
+      const customers = await stripe.customers.list({ email, limit: 1 });
+      const customer = customers.data.length ? customers.data[0] : await stripe.customers.create({ email });
+
+      const schedule = await stripe.subscriptionSchedules.create({
+        customer: customer.id,
+        start_date: 'now',
+        end_behavior: 'release',
+        metadata,
+        phases: [
+          {
+            items: [{ price: initialPriceId, quantity: 1 }],
+            iterations: parseInt(duration, 10) / 12,
+          },
+          {
+            items: [{ price: monthlyPriceId, quantity: 1 }],
+            iterations: 9999,
+          },
+        ],
+      });
+      
+      session = await stripe.checkout.sessions.create({
+          payment_method_types: ['card'],
+          mode: 'subscription',
+          customer: customer.id,
+          subscription: schedule.id,
+          success_url: successUrl,
+          cancel_url: cancelUrl,
+          metadata
+      });
     }
-
-    // --- MULTI-MONTH PREPAY SUBSCRIPTION ---
-    const customers = await stripe.customers.list({ email, limit: 1 });
-    const customer = customers.data.length ? customers.data[0] : await stripe.customers.create({ email });
-
-    const schedule = await stripe.subscriptionSchedules.create({
-      customer: customer.id,
-      start_date: 'now',
-      end_behavior: 'release',
-      metadata,
-      phases: [
-        {
-          items: [{ price: initialPriceId, quantity: 1 }],
-          iterations: parseInt(duration, 10) / 12,
-        },
-        {
-          items: [{ price: monthlyPriceId, quantity: 1 }],
-          iterations: 9999,
-        },
-      ],
-    });
-
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      mode: 'subscription',
-      customer: customer.id,
-      line_items: [{ price: initialPriceId, quantity: 1 }],
-      subscription_data: { metadata },
-      success_url: successUrl,
-      cancel_url: cancelUrl,
-    });
     
     return { sessionUrl: session.url! };
 
