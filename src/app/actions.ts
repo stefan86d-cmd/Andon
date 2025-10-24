@@ -82,49 +82,55 @@ export async function createCheckoutSession(
 
   try {
     let session;
-    // If it's a monthly plan, create a simple subscription
     if (duration === '1') {
-        session = await stripe.checkout.sessions.create({
-            ui_mode: 'embedded',
-            payment_method_types: ['card'],
-            line_items: [{ price: monthlyPriceId, quantity: 1 }],
-            mode: 'subscription',
-            customer_email: email,
-            metadata,
-            return_url: successUrl,
-        });
+      // Simple monthly subscription
+      session = await stripe.checkout.sessions.create({
+        ui_mode: 'embedded',
+        payment_method_types: ['card'],
+        line_items: [{ price: monthlyPriceId, quantity: 1 }],
+        mode: 'subscription',
+        customer_email: email,
+        metadata,
+        return_url: successUrl,
+      });
     } else {
-        // For annual plans, create a subscription schedule
-        const iterations = parseInt(duration, 10) / 12;
-        const schedule = await stripe.subscriptionSchedules.create({
-            customer_email: email,
-            start_date: 'now',
-            end_behavior: 'release',
-            phases: [
-                {
-                    items: [{ price: initialPriceId, quantity: 1 }],
-                    iterations: iterations, // e.g., for 24 months, this is 2 yearly cycles
-                },
-                {
-                    items: [{ price: monthlyPriceId, quantity: 1 }],
-                    // This phase starts after the first one and runs indefinitely
-                },
-            ],
-            metadata,
-        });
-
-        session = await stripe.checkout.sessions.create({
-            ui_mode: 'embedded',
-            payment_method_types: ['card'],
-            mode: 'subscription',
-            line_items: [{ price: initialPriceId, quantity: 1 }], // Show the initial price in checkout
-            customer_email: email,
-            metadata,
-            return_url: successUrl,
-            subscription_data: {
-                schedule: schedule.id,
-            }
-        });
+      // Find or create Stripe customer
+      const customers = await stripe.customers.list({ email });
+      let customer = customers.data.length ? customers.data[0] : null;
+      if (!customer) {
+        customer = await stripe.customers.create({ email });
+      }
+    
+      // Create a schedule that starts with discounted prepay phase
+      const schedule = await stripe.subscriptionSchedules.create({
+        customer: customer.id,
+        start_date: 'now',
+        end_behavior: 'release',
+        phases: [
+          {
+            items: [{ price: initialPriceId, quantity: 1 }],
+            iterations: parseInt(duration, 10) / 12, // 1 for 12mo, 2 for 24mo, etc.
+          },
+          {
+            items: [{ price: monthlyPriceId, quantity: 1 }],
+          },
+        ],
+        metadata,
+      });
+    
+      // Attach checkout session to the schedule
+      session = await stripe.checkout.sessions.create({
+        ui_mode: 'embedded',
+        payment_method_types: ['card'],
+        mode: 'subscription',
+        line_items: [{ price: initialPriceId, quantity: 1 }],
+        customer: customer.id,
+        metadata,
+        return_url: successUrl,
+        subscription_data: {
+          schedule: schedule.id
+        },
+      });
     }
     
     return { clientSecret: session.client_secret! };
