@@ -16,7 +16,7 @@ import { CancelSubscriptionDialog } from "@/components/settings/cancel-subscript
 import { Logo } from "@/components/layout/logo";
 import { useRouter } from "next/navigation";
 import { format, isValid } from "date-fns";
-import { createCheckoutSession } from "@/app/actions";
+import { createCheckoutSession, getOrCreateStripeCustomer } from "@/app/actions";
 
 
 const tiers: Record<Exclude<Plan, 'custom'>, { name: string; prices: Record<Duration, Record<Currency, number>> }> & { custom?: any } = {
@@ -88,17 +88,26 @@ export default function BillingPage() {
         startTransition(async () => {
             try {
                 if (!currentUser?.email) throw new Error("User email not found.");
+                
+                const customer = await getOrCreateStripeCustomer(currentUser.email);
 
+                const successUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`;
+                const cancelUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/settings/billing`;
+                const metadata = { userId: currentUser.id, plan: newPlan, duration: selectedDuration, isNewUser: 'false' };
+                
                 const result = await createCheckoutSession({
-                    email: currentUser.email,
+                    customerId: customer.id,
                     plan: newPlan,
                     duration: selectedDuration,
+                    metadata,
+                    successUrl,
+                    cancelUrl,
                 });
 
                 if (result.url) {
                     router.push(result.url);
                 } else {
-                    throw new Error(result.error || "Could not create a checkout session.");
+                    throw new Error("Could not create a checkout session.");
                 }
             } catch (err: any) {
                 toast({
@@ -236,3 +245,5 @@ export default function BillingPage() {
         </div>
     );
 }
+
+    

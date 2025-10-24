@@ -61,7 +61,6 @@ function CompleteProfileContent() {
   
   const selectedPlan = planFromUrl || 'starter';
   const selectedDuration = durationFromUrl || '1';
-  const selectedCurrency = currencyFromUrl;
   
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
@@ -153,34 +152,8 @@ function CompleteProfileContent() {
         } else {
            try {
                 if (!currentUser?.email) throw new Error("User email is not available.");
-
-                const priceIdMap: Record<Exclude<Plan, 'starter' | 'custom'>, Record<string, string | undefined>> = {
-                    standard: {
-                        '1': process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_STANDARD,
-                        '12': process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_STANDARD_12,
-                        '24': process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_STANDARD_24,
-                        '48': process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_STANDARD_48,
-                    },
-                    pro: {
-                        '1': process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_PRO,
-                        '12': process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_PRO_12,
-                        '24': process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_PRO_24,
-                        '48': process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_PRO_48,
-                    },
-                    enterprise: {
-                        '1': process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_ENTERPRISE,
-                        '12': process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_ENTERPRISE_12,
-                        '24': process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_ENTERPRISE_24,
-                        '48': process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_ENTERPRISE_48,
-                    },
-                };
                 
                 const customer = await getOrCreateStripeCustomer(currentUser.email);
-                const priceId = priceIdMap[selectedPlan as Exclude<Plan, 'starter'|'custom'>][selectedDuration];
-
-                if (!priceId) {
-                    throw new Error("Price ID not found for the selected plan and duration.");
-                }
 
                 const successUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`;
                 const cancelUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/checkout`;
@@ -188,7 +161,7 @@ function CompleteProfileContent() {
 
                 const result = await createCheckoutSession({
                     customerId: customer.id,
-                    priceId,
+                    plan: selectedPlan,
                     duration: selectedDuration,
                     metadata,
                     successUrl,

@@ -17,20 +17,47 @@ const stripe = new Stripe(process.env.NEXT_STRIPE_SECRET_KEY!, {
 
 export async function createCheckoutSession({
   customerId,
-  priceId,
+  plan,
   duration,
   metadata,
   successUrl,
   cancelUrl,
 }: {
   customerId: string;
-  priceId: string;
+  plan: Plan;
   duration: '1' | '12' | '24' | '48';
   metadata?: Record<string, string>;
   successUrl: string;
   cancelUrl: string;
 }) {
   try {
+      const priceIdMap: Record<Exclude<Plan, 'starter' | 'custom'>, Record<string, string | undefined>> = {
+          standard: {
+            '1': process.env.STRIPE_PRICE_ID_STANDARD,
+            '12': process.env.STRIPE_PRICE_ID_STANDARD_12,
+            '24': process.env.STRIPE_PRICE_ID_STANDARD_24,
+            '48': process.env.STRIPE_PRICE_ID_STANDARD_48,
+          },
+          pro: {
+            '1': process.env.STRIPE_PRICE_ID_PRO,
+            '12': process.env.STRIPE_PRICE_ID_PRO_12,
+            '24': process.env.STRIPE_PRICE_ID_PRO_24,
+            '48': process.env.STRIPE_PRICE_ID_PRO_48,
+          },
+          enterprise: {
+            '1': process.env.STRIPE_PRICE_ID_ENTERPRISE,
+            '12': process.env.STRIPE_PRICE_ID_ENTERPRISE_12,
+            '24': process.env.STRIPE_PRICE_ID_ENTERPRISE_24,
+            '48': process.env.STRIPE_PRICE_ID_ENTERPRISE_48,
+          },
+      };
+
+      const priceId = plan !== 'starter' && plan !== 'custom' ? priceIdMap[plan][duration] : undefined;
+
+      if (!priceId) {
+        throw new Error("Price ID not found for the selected plan and duration.");
+      }
+
     // For monthly plans, create a recurring subscription
     if (duration === '1') {
       const session = await stripe.checkout.sessions.create({
@@ -63,9 +90,9 @@ export async function createCheckoutSession({
                 },
             ],
             allow_promotion_codes: true,
+            metadata,
             success_url: successUrl,
             cancel_url: cancelUrl,
-            metadata, // Attach metadata directly to the session for one-time payments
         });
         return { url: session.url };
     }
@@ -407,3 +434,5 @@ export async function deleteProductionLine(lineId: string) {
     return handleFirestoreError(err);
   }
 }
+
+    
