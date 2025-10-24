@@ -169,9 +169,6 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const updateCurrentUser = useCallback(async (userData: Partial<User>) => {
     const { db } = getClientInstances();
     if (currentUser) {
-        // Create a merged object for local state update
-        const updatedUserLocal: User = { ...currentUser, ...userData };
-        
         try {
             if (!db) throw new Error("Firestore is not initialized");
             const userDocRef = doc(db, "users", currentUser.id);
@@ -185,17 +182,17 @@ export function UserProvider({ children }: { children: ReactNode }) {
                 dataToSave.subscriptionEndsAt = Timestamp.fromDate(dataToSave.subscriptionEndsAt);
             }
 
+            // 1. Save data to Firestore first.
             await setDoc(userDocRef, dataToSave, { merge: true });
             
-            // After successful DB write, update local state
-            // Convert Timestamps back to dates for the local state if they exist
-            const finalUserObject = {
-              ...updatedUserLocal,
-              subscriptionStartsAt: updatedUserLocal.subscriptionStartsAt instanceof Timestamp ? updatedUserLocal.subscriptionStartsAt.toDate() : updatedUserLocal.subscriptionStartsAt,
-              subscriptionEndsAt: updatedUserLocal.subscriptionEndsAt instanceof Timestamp ? updatedUserLocal.subscriptionEndsAt.toDate() : updatedUserLocal.subscriptionEndsAt,
-            };
-
-            setCurrentUser(finalUserObject as User);
+            // 2. Fetch the updated user profile from Firestore to get the correct data types.
+            const updatedProfile = await getClientUserById(currentUser.id);
+            if (updatedProfile) {
+              // 3. Update the local state with the definitive data from the database.
+              setCurrentUser(updatedProfile);
+            } else {
+              throw new Error("Could not re-fetch user profile after update.");
+            }
 
         } catch (error) {
              toast({
