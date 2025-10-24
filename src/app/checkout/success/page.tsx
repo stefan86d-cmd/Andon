@@ -10,9 +10,10 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/layout/logo';
 import { toast } from '@/hooks/use-toast';
-import { addMonths, format } from 'date-fns';
+import { addMonths, fromUnixTime, format } from 'date-fns';
 import Link from 'next/link';
 import type { Plan, User } from '@/lib/types';
+import type { Stripe } from 'stripe';
 
 
 function SuccessContent() {
@@ -51,23 +52,22 @@ function SuccessContent() {
 
         const fulfillOrder = async () => {
             try {
-                const { session, error } = await getCheckoutSession(sessionId);
+                const { session: checkoutSession, error } = await getCheckoutSession(sessionId);
 
-                if (error || !session) {
+                if (error || !checkoutSession) {
                     setErrorMessage(error || 'Failed to retrieve checkout session.');
                     setStatus('error');
                     return;
                 }
                 
-                if (!session.metadata?.userId || session.metadata.userId !== currentUser.id) {
+                if (!checkoutSession.metadata?.userId || checkoutSession.metadata.userId !== currentUser.id) {
                     setErrorMessage('Session user ID does not match the logged-in user.');
                     setStatus('error');
                     return;
                 }
 
-                const plan = session.metadata?.plan as Plan;
-                const duration = parseInt(session.metadata?.duration || '1', 10);
-                const isNewUser = session.metadata?.isNewUser === 'true';
+                const plan = checkoutSession.metadata?.plan as Plan;
+                const isNewUser = checkoutSession.metadata?.isNewUser === 'true';
 
                 if (!plan) {
                     setErrorMessage('Plan information is missing from the session.');
@@ -75,14 +75,21 @@ function SuccessContent() {
                     return;
                 }
                 
-                const now = new Date();
-                const subscriptionEndDate = addMonths(now, duration);
-                
+                const subscription = checkoutSession.subscription as Stripe.Subscription;
+                if (!subscription) {
+                    setErrorMessage('Subscription details not found in session.');
+                    setStatus('error');
+                    return;
+                }
+
+                const startDate = fromUnixTime(subscription.current_period_start);
+                const endDate = fromUnixTime(subscription.current_period_end);
+
                 const planUpdateData: Partial<User> = {
                     plan,
-                    subscriptionId: session.subscription as string,
-                    subscriptionStartsAt: now,
-                    subscriptionEndsAt: subscriptionEndDate,
+                    subscriptionId: subscription.id,
+                    subscriptionStartsAt: startDate,
+                    subscriptionEndsAt: endDate,
                 };
                 
                 // Use the server action to update the plan in Firestore
@@ -95,7 +102,7 @@ function SuccessContent() {
                 // Then, update the local context
                 await updateCurrentUser(planUpdateData);
 
-                setPlanDetails({ plan, startDate: now, endDate: subscriptionEndDate });
+                setPlanDetails({ plan, startDate, endDate });
                 
                 if (isNewUser) {
                     await sendWelcomeEmail(currentUser.id);

@@ -39,25 +39,38 @@ export async function createCheckoutSession(
   }
 
   const priceIdMap = {
-      standard: process.env.STRIPE_PRICE_ID_STANDARD,
-      pro: process.env.STRIPE_PRICE_ID_PRO,
-      enterprise: process.env.STRIPE_PRICE_ID_ENTERPRISE,
+      standard: {
+          '1': process.env.STRIPE_PRICE_ID_STANDARD,
+          '12': process.env.STRIPE_PRICE_ID_STANDARD_12_MONTHS,
+          '24': process.env.STRIPE_PRICE_ID_STANDARD_24_MONTHS,
+          '48': process.env.STRIPE_PRICE_ID_STANDARD_48_MONTHS,
+      },
+      pro: {
+          '1': process.env.STRIPE_PRICE_ID_PRO,
+          '12': process.env.STRIPE_PRICE_ID_PRO_12_MONTHS,
+          '24': process.env.STRIPE_PRICE_ID_PRO_24_MONTHS,
+          '48': process.env.STRIPE_PRICE_ID_PRO_48_MONTHS,
+      },
+      enterprise: {
+          '1': process.env.STRIPE_PRICE_ID_ENTERPRISE,
+          '12': process.env.STRIPE_PRICE_ID_ENTERPRISE_12_MONTHS,
+          '24': process.env.STRIPE_PRICE_ID_ENTERPRISE_24_MONTHS,
+          '48': process.env.STRIPE_PRICE_ID_ENTERPRISE_48_MONTHS,
+      },
   };
 
-  const priceId = priceIdMap[plan as keyof typeof priceIdMap];
-
-  if (!priceId) {
-      return { error: `Price ID for plan '${plan}' is not configured.`};
+  const planPrices = priceIdMap[plan as keyof typeof priceIdMap];
+  if (!planPrices) {
+      return { error: `Price IDs for plan '${plan}' are not configured.`};
   }
 
-  const couponIdMap = {
-      '12': process.env.STRIPE_COUPON_ID_12_MONTHS, 
-      '24': process.env.STRIPE_COUPON_ID_24_MONTHS, 
-      '48': process.env.STRIPE_COUPON_ID_48_MONTHS, 
-  };
-  
-  const couponId = duration !== '1' ? couponIdMap[duration as keyof typeof couponIdMap] : undefined;
+  const initialPriceId = planPrices[duration as keyof typeof planPrices];
+  const monthlyPriceId = planPrices['1'];
 
+  if (!initialPriceId || !monthlyPriceId) {
+      return { error: `A price ID for plan '${plan}' and duration '${duration}' is not configured.`};
+  }
+  
   const successUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`;
   
   const metadata = {
@@ -68,19 +81,49 @@ export async function createCheckoutSession(
   };
 
   try {
-    const session = await stripe.checkout.sessions.create({
-      ui_mode: 'embedded',
-      payment_method_types: ['card'],
-      line_items: [{
-          price: priceId,
-          quantity: 1,
-      }],
-      mode: 'subscription',
-      customer_email: email,
-      metadata,
-      discounts: couponId ? [{ coupon: couponId }] : [],
-      return_url: successUrl,
-    });
+    let session;
+    // If it's a monthly plan, create a simple subscription
+    if (duration === '1') {
+        session = await stripe.checkout.sessions.create({
+            ui_mode: 'embedded',
+            payment_method_types: ['card'],
+            line_items: [{ price: monthlyPriceId, quantity: 1 }],
+            mode: 'subscription',
+            customer_email: email,
+            metadata,
+            return_url: successUrl,
+        });
+    } else {
+        // For annual plans, create a subscription schedule
+        const iterations = parseInt(duration, 10) / 12;
+        const schedule = await stripe.subscriptionSchedules.create({
+            customer_email: email,
+            start_date: 'now',
+            end_behavior: 'release',
+            phases: [
+                {
+                    items: [{ price: initialPriceId, quantity: 1 }],
+                    iterations: iterations, // e.g., for 24 months, this is 2 yearly cycles
+                },
+                {
+                    items: [{ price: monthlyPriceId, quantity: 1 }],
+                    // This phase starts after the first one and runs indefinitely
+                },
+            ],
+            metadata,
+        });
+
+        session = await stripe.checkout.sessions.create({
+            ui_mode: 'embedded',
+            payment_method_types: ['card'],
+            mode: 'subscription',
+            subscription_schedule: schedule.id,
+            line_items: [{ price: initialPriceId, quantity: 1 }], // Show the initial price in checkout
+            customer_email: email,
+            metadata,
+            return_url: successUrl,
+        });
+    }
     
     return { clientSecret: session.client_secret! };
   } catch (error: any) {
@@ -94,7 +137,9 @@ export async function getCheckoutSession(sessionId: string) {
         return { error: 'Stripe is not initialized.' };
     }
     try {
-        const session = await stripe.checkout.sessions.retrieve(sessionId);
+        const session = await stripe.checkout.sessions.retrieve(sessionId, {
+            expand: ['subscription'],
+        });
         return { session };
     } catch (error: any) {
         return { error: error.message };
