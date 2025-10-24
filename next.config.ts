@@ -7,7 +7,7 @@ const nextConfig: NextConfig = {
     },
   },
   images: {
-    unoptimized: false,
+    unoptimized: true,
     remotePatterns: [
       { protocol: "https", hostname: "placehold.co", pathname: "/**" },
       { protocol: "https", hostname: "images.unsplash.com", pathname: "/**" },
