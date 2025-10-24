@@ -179,7 +179,7 @@ function CompleteProfileContent() {
                 const cancelUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/checkout/cancel`;
                 const metadata = { userId: currentUser.id, plan: selectedPlan, duration: selectedDuration, isNewUser: 'true' };
                 
-                const { url, error } = await createCheckoutSession({
+                const { url } = await createCheckoutSession({
                     customerId: customer.id,
                     priceId,
                     metadata,
@@ -190,7 +190,7 @@ function CompleteProfileContent() {
                 if (url) {
                     router.push(url);
                 } else {
-                    throw new Error(error || "Could not create a checkout session.");
+                    throw new Error("Could not create a checkout session.");
                 }
             } catch(err: any) {
                  toast({
@@ -325,3 +325,5 @@ export default function CompleteProfilePage() {
         </Suspense>
     )
 }
+
+    

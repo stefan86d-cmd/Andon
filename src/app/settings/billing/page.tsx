@@ -119,7 +119,7 @@ export default function BillingPage() {
                 const cancelUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/settings/billing`;
                 const metadata = { userId: currentUser.id, plan: newPlan, duration: selectedDuration, isNewUser: String(isStarterPlan) };
                 
-                const { url, error } = await createCheckoutSession({
+                const { url } = await createCheckoutSession({
                     customerId: customer.id,
                     priceId,
                     metadata,
@@ -130,7 +130,7 @@ export default function BillingPage() {
                 if (url) {
                     router.push(url);
                 } else {
-                    throw new Error(error || "Could not create a checkout session.");
+                    throw new Error("Could not create a checkout session.");
                 }
             } catch (err: any) {
                 toast({
@@ -268,3 +268,5 @@ export default function BillingPage() {
         </div>
     );
 }
+
+    
