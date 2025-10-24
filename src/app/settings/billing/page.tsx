@@ -58,6 +58,7 @@ export default function BillingPage() {
 
     const [currency, setCurrency] = useState<Currency>('usd');
     const [newPlan, setNewPlan] = useState<Plan | undefined>(currentUser?.plan);
+    const [duration, setDuration] = useState<Duration>('12');
     const [year, setYear] = useState(new Date().getFullYear());
 
     useEffect(() => {
@@ -71,14 +72,17 @@ export default function BillingPage() {
             </div>
         );
     }
+
+    const isStarterPlan = currentUser.plan === 'starter';
     
     const handlePlanChange = () => {
         if (!newPlan) {
             toast({ title: "No Plan Selected", description: "Please choose a plan to continue." });
             return;
         }
-        // For existing users, duration is always 1 month (no discount)
-        router.push(`/checkout?plan=${newPlan}&duration=1&currency=${currency}`);
+        
+        const selectedDuration = isStarterPlan ? duration : '1';
+        router.push(`/checkout?plan=${newPlan}&duration=${selectedDuration}&currency=${currency}`);
     }
 
     const handleCancelConfirm = () => {
@@ -92,7 +96,7 @@ export default function BillingPage() {
     const availablePlans = Object.keys(tiers).filter(p => p !== 'starter' && p !== 'custom') as Plan[];
 
     const selectedTier = newPlan ? tiers[newPlan] : null;
-    const monthlyPrice = selectedTier ? selectedTier.prices['1'][currency] : 0;
+    const monthlyPrice = selectedTier ? selectedTier.prices[isStarterPlan ? duration : '1'][currency] : 0;
     
     const renewalDate = currentUser.subscriptionEndsAt 
         ? format(new Date(currentUser.subscriptionEndsAt), "MMMM d, yyyy")
@@ -131,18 +135,39 @@ export default function BillingPage() {
                                             ))}
                                         </SelectContent>
                                     </Select>
-                                    <Select value={currency} onValueChange={(value) => setCurrency(value as any)}>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Currency" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="usd">USD</SelectItem>
-                                            <SelectItem value="eur">EUR</SelectItem>
-                                            <SelectItem value="gbp">GBP</SelectItem>
-                                        </SelectContent>
-                                    </Select>
+                                    {isStarterPlan ? (
+                                        <Select value={duration} onValueChange={(value) => setDuration(value as Duration)}>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Select duration" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="1">1 Month</SelectItem>
+                                                <SelectItem value="12">12 Months</SelectItem>
+                                                <SelectItem value="24">24 Months</SelectItem>
+                                                <SelectItem value="48">48 Months</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    ) : (
+                                        <Select value={currency} onValueChange={(value) => setCurrency(value as any)}>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Currency" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="usd">USD</SelectItem>
+                                                <SelectItem value="eur">EUR</SelectItem>
+                                                <SelectItem value="gbp">GBP</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    )}
                                 </div>
-                                 <p className="text-sm text-muted-foreground">Plan changes will be billed monthly.</p>
+                                {isStarterPlan && (
+                                     <div className="flex gap-2 items-center pt-2">
+                                        {duration === '12' && <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~20%</Badge>}
+                                        {duration === '24' && <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~30%</Badge>}
+                                        {duration === '48' && <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~40%</Badge>}
+                                     </div>
+                                )}
+                                 <p className="text-sm text-muted-foreground">Plan changes will be billed based on selection.</p>
                             </div>
 
                              {selectedTier && newPlan !== currentUser.plan && (

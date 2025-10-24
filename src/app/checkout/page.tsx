@@ -76,22 +76,24 @@ function CheckoutContent() {
   }, []);
 
   const isNewUser = !currentUser;
+  const isStarterUpgrade = currentUser?.plan === 'starter';
+  const showDurationOptions = isNewUser || isStarterUpgrade;
   
   const [selectedPlan, setSelectedPlan] = useState<Plan>(searchParams.get('plan') as Plan || 'pro');
-  const [selectedDuration, setSelectedDuration] = useState<Duration>(isNewUser ? (searchParams.get('duration') as Duration || '12') : '1');
+  const [selectedDuration, setSelectedDuration] = useState<Duration>(showDurationOptions ? (searchParams.get('duration') as Duration || '12') : '1');
   const [selectedCurrency, setSelectedCurrency] = useState<Currency>(searchParams.get('currency') as Currency || 'usd');
 
   const selectedTier = tiers[selectedPlan];
-  const monthlyPrice = selectedTier.prices[isNewUser ? selectedDuration : '1'][selectedCurrency];
+  const monthlyPrice = selectedTier.prices[showDurationOptions ? selectedDuration : '1'][selectedCurrency];
   const fullPrice = selectedTier.prices['1'][selectedCurrency];
-  const totalDue = monthlyPrice * parseInt(isNewUser ? selectedDuration : '1', 10);
-  const undiscountedTotal = fullPrice * parseInt(isNewUser ? selectedDuration : '1', 10);
+  const totalDue = monthlyPrice * parseInt(showDurationOptions ? selectedDuration : '1', 10);
+  const undiscountedTotal = fullPrice * parseInt(showDurationOptions ? selectedDuration : '1', 10);
 
 
   const discount = useMemo(() => {
-    if (!isNewUser || selectedDuration === '1') return 0;
+    if (!showDurationOptions || selectedDuration === '1') return 0;
     return undiscountedTotal - totalDue;
-  }, [selectedDuration, undiscountedTotal, totalDue, isNewUser]);
+  }, [selectedDuration, undiscountedTotal, totalDue, showDurationOptions]);
 
   const renewalText = useMemo(() => {
       if (selectedPlan === 'starter') return "The Starter plan is always free.";
@@ -183,7 +185,7 @@ function CheckoutContent() {
                             )}
                         </SelectContent>
                         </Select>
-                        <Select value={selectedDuration} onValueChange={(v) => setSelectedDuration(v as Duration)} disabled={!isNewUser}>
+                        <Select value={selectedDuration} onValueChange={(v) => setSelectedDuration(v as Duration)} disabled={!showDurationOptions}>
                         <SelectTrigger><SelectValue placeholder="Select duration" /></SelectTrigger>
                         <SelectContent>
                             <SelectItem value="1">1 Month</SelectItem>
@@ -203,7 +205,7 @@ function CheckoutContent() {
                         </SelectContent>
                         </Select>
                     </div>
-                    {isNewUser && (
+                    {showDurationOptions && (
                         <div className="flex gap-2 items-center">
                             {selectedDuration === '12' && <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~20%</Badge>}
                             {selectedDuration === '24' && <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~30%</Badge>}
@@ -224,7 +226,7 @@ function CheckoutContent() {
                     <CardContent className="space-y-4">
                     <div className="space-y-2">
                         <div className="flex justify-between"><span>Plan</span><span className="capitalize font-medium">{selectedPlan}</span></div>
-                        <div className="flex justify-between"><span>Plan Length</span><span>{isNewUser ? `${selectedDuration} Months` : 'Monthly'}</span></div>
+                        <div className="flex justify-between"><span>Plan Length</span><span>{showDurationOptions ? `${selectedDuration} Months` : 'Monthly'}</span></div>
                         {discount > 0 && 
                             <div className="flex justify-between bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300 p-2 rounded-md">
                                 <span>Discount</span>
