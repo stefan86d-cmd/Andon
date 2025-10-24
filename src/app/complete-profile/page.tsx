@@ -25,7 +25,7 @@ import { countries } from '@/lib/countries';
 import type { Plan, Role } from '@/lib/types';
 import { toast } from '@/hooks/use-toast';
 import { useUser } from '@/contexts/user-context';
-import { createCheckoutSession, sendWelcomeEmail } from '@/app/actions';
+import { createCheckoutSession, sendWelcomeEmail, getOrCreateStripeCustomer } from '@/app/actions';
 
 
 const profileFormSchema = z.object({
@@ -41,6 +41,27 @@ const profileFormSchema = z.object({
 type ProfileFormValues = z.infer<typeof profileFormSchema>;
 type Duration = '1' | '12' | '24' | '48';
 type Currency = 'usd' | 'eur' | 'gbp';
+
+const priceIdMap: Record<Exclude<Plan, 'starter' | 'custom'>, Record<string, string | undefined>> = {
+  standard: {
+    '1': process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_STANDARD,
+    '12': process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_STANDARD_12,
+    '24': process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_STANDARD_24,
+    '48': process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_STANDARD_48,
+  },
+  pro: {
+    '1': process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_PRO,
+    '12': process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_PRO_12,
+    '24': process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_PRO_24,
+    '48': process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_PRO_48,
+  },
+  enterprise: {
+    '1': process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_ENTERPRISE,
+    '12': process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_ENTERPRISE_12,
+    '24': process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_ENTERPRISE_24,
+    '48': process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_ENTERPRISE_48,
+  },
+};
 
 function CompleteProfileContent() {
   const router = useRouter();
@@ -61,8 +82,7 @@ function CompleteProfileContent() {
   
   const selectedPlan = planFromUrl || 'starter';
   const selectedDuration = durationFromUrl || '1';
-  const selectedCurrency = currencyFromUrl || 'usd';
-
+  
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
     defaultValues: {
@@ -147,22 +167,36 @@ function CompleteProfileContent() {
             });
             router.push('/dashboard');
         } else {
-            const result = await createCheckoutSession(
-                currentUser!.id,
-                currentUser!.email,
-                selectedPlan as Exclude<Plan, 'starter' | 'custom'>,
-                selectedDuration,
-                selectedCurrency,
-                true
-            );
+           try {
+                const customer = await getOrCreateStripeCustomer(currentUser.email);
+                const priceId = priceIdMap[selectedPlan as Exclude<Plan, 'starter' | 'custom'>][selectedDuration];
 
-            if (result.sessionUrl) {
-                router.push(result.sessionUrl);
-            } else {
-                toast({
+                if (!priceId) {
+                    throw new Error("Price ID not found for the selected plan and duration.");
+                }
+
+                const successUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`;
+                const cancelUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/checkout/cancel`;
+                const metadata = { userId: currentUser.id, plan: selectedPlan, duration: selectedDuration, isNewUser: 'true' };
+                
+                const { url, error } = await createCheckoutSession({
+                    customerId: customer.id,
+                    priceId,
+                    metadata,
+                    successUrl,
+                    cancelUrl
+                });
+
+                if (url) {
+                    router.push(url);
+                } else {
+                    throw new Error(error || "Could not create a checkout session.");
+                }
+            } catch(err: any) {
+                 toast({
                     variant: "destructive",
                     title: "Checkout Error",
-                    description: result.error || "Could not create a checkout session. Please try again.",
+                    description: err.message || "Could not create a checkout session. Please try again.",
                 });
             }
         }

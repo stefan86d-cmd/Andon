@@ -17,103 +17,44 @@ const db = lazilyGetDb();
 
 // --- Stripe Actions ---
 
-export async function createCheckoutSession(
-  userId: string,
-  email: string,
-  plan: Exclude<Plan, 'starter' | 'custom'>,
-  duration: '1' | '12' | '24' | '48',
-  currency: 'usd' | 'eur' | 'gbp',
-  isNewUser: boolean
-): Promise<{ sessionUrl?: string; error?: string }> {
-  if (!process.env.NEXT_PUBLIC_BASE_URL) {
-    return { error: 'Base URL is not configured.' };
-  }
-
+export async function createCheckoutSession({
+  customerId,
+  priceId,
+  metadata,
+  successUrl,
+  cancelUrl,
+}: {
+  customerId: string;
+  priceId: string;
+  metadata?: Record<string, string>;
+  successUrl: string;
+  cancelUrl: string;
+}) {
   try {
-    const priceIdMap: Record<Exclude<Plan, 'starter' | 'custom'>, Record<string, string | undefined>> = {
-      standard: {
-        '1': process.env.STRIPE_PRICE_ID_STANDARD,
-        '12': process.env.STRIPE_PRICE_ID_STANDARD_12,
-        '24': process.env.STRIPE_PRICE_ID_STANDARD_24,
-        '48': process.env.STRIPE_PRICE_ID_STANDARD_48,
-      },
-      pro: {
-        '1': process.env.STRIPE_PRICE_ID_PRO,
-        '12': process.env.STRIPE_PRICE_ID_PRO_12,
-        '24': process.env.STRIPE_PRICE_ID_PRO_24,
-        '48': process.env.STRIPE_PRICE_ID_PRO_48,
-      },
-      enterprise: {
-        '1': process.env.STRIPE_PRICE_ID_ENTERPRISE,
-        '12': process.env.STRIPE_PRICE_ID_ENTERPRISE_12,
-        '24': process.env.STRIPE_PRICE_ID_ENTERPRISE_24,
-        '48': process.env.STRIPE_PRICE_ID_ENTERPRISE_48,
-      },
-    };
-
-    const planPrices = priceIdMap[plan];
-    if (!planPrices) return { error: `Plan ${plan} not configured` };
-
-    const monthlyPriceId = planPrices['1'];
-    const initialPriceId = planPrices[duration];
-
-    if (!monthlyPriceId || !initialPriceId) {
-      return { error: `Stripe price not configured for plan ${plan} duration ${duration}` };
-    }
-
-    const metadata = { userId, plan, duration, isNewUser: String(isNewUser) };
-    const successUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`;
-    const cancelUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/checkout`;
-
-    let session: Stripe.Checkout.Session;
-
-    if (duration === '1') {
-      session = await stripe.checkout.sessions.create({
-        payment_method_types: ['card'],
-        mode: 'subscription',
-        customer_email: email,
-        line_items: [{ price: monthlyPriceId, quantity: 1 }],
-        subscription_data: { metadata },
-        success_url: successUrl,
-        cancel_url: cancelUrl,
-      });
-    } else {
-      const customers = await stripe.customers.list({ email, limit: 1 });
-      const customer = customers.data.length ? customers.data[0] : await stripe.customers.create({ email });
-
-      const schedule = await stripe.subscriptionSchedules.create({
-        customer: customer.id,
-        start_date: 'now',
-        end_behavior: 'release',
+    const session = await stripe.checkout.sessions.create({
+      customer: customerId,
+      mode: 'subscription',
+      line_items: [
+        {
+          price: priceId,
+          quantity: 1,
+        },
+      ],
+      allow_promotion_codes: true, // if you want coupons or discounts
+      subscription_data: {
+        trial_settings: {
+          end_behavior: { missing_payment_method: 'cancel' },
+        },
         metadata,
-        phases: [
-          {
-            items: [{ price: initialPriceId, quantity: 1 }],
-            iterations: parseInt(duration, 10) / 12,
-          },
-          {
-            items: [{ price: monthlyPriceId, quantity: 1 }],
-            iterations: 9999,
-          },
-        ],
-      });
-      
-      session = await stripe.checkout.sessions.create({
-          payment_method_types: ['card'],
-          mode: 'subscription',
-          customer: customer.id,
-          subscription: schedule.id,
-          success_url: successUrl,
-          cancel_url: cancelUrl,
-          metadata
-      });
-    }
-    
-    return { sessionUrl: session.url! };
+      },
+      success_url: successUrl,
+      cancel_url: cancelUrl,
+    });
 
-  } catch (err: any) {
-    console.error(err);
-    return { error: err.message };
+    return { url: session.url };
+  } catch (error: any) {
+    console.error('Stripe session error:', error);
+    throw new Error(error.message);
   }
 }
 
@@ -124,6 +65,14 @@ export async function getCheckoutSession(sessionId: string) {
   } catch (err: any) {
     return { error: err.message };
   }
+}
+
+export async function getOrCreateStripeCustomer(email: string): Promise<Stripe.Customer> {
+    const customers = await stripe.customers.list({ email, limit: 1 });
+    if (customers.data.length > 0 && customers.data[0]) {
+        return customers.data[0];
+    }
+    return await stripe.customers.create({ email });
 }
 
 // --- Data Fetching ---
@@ -425,5 +374,3 @@ export async function deleteProductionLine(lineId: string) {
     return handleFirestoreError(err);
   }
 }
-
-    
