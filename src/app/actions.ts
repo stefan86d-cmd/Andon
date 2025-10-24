@@ -387,26 +387,3 @@ export async function deleteProductionLine(lineId: string) {
     return handleFirestoreError(err);
   }
 }
-
-export const priceIdMap: Record<Exclude<Plan, 'starter' | 'custom'>, Record<string, string | undefined>> = {
-  standard: {
-    '1': process.env.STRIPE_PRICE_ID_STANDARD,
-    '12': process.env.STRIPE_PRICE_ID_STANDARD_12,
-    '24': process.env.STRIPE_PRICE_ID_STANDARD_24,
-    '48': process.env.STRIPE_PRICE_ID_STANDARD_48,
-  },
-  pro: {
-    '1': process.env.STRIPE_PRICE_ID_PRO,
-    '12': process.env.STRIPE_PRICE_ID_PRO_12,
-    '24': process.env.STRIPE_PRICE_ID_PRO_24,
-    '48': process.env.STRIPE_PRICE_ID_PRO_48,
-  },
-  enterprise: {
-    '1': process.env.STRIPE_PRICE_ID_ENTERPRISE,
-    '12': process.env.STRIPE_PRICE_ID_ENTERPRISE_12,
-    '24': process.env.STRIPE_PRICE_ID_ENTERPRISE_24,
-    '48': process.env.STRIPE_PRICE_ID_ENTERPRISE_48,
-  },
-};
-
-    

@@ -16,7 +16,7 @@ import { CancelSubscriptionDialog } from "@/components/settings/cancel-subscript
 import { Logo } from "@/components/layout/logo";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
-import { createCheckoutSession, getOrCreateStripeCustomer, priceIdMap } from "@/app/actions";
+import { createCheckoutSession, getOrCreateStripeCustomer } from "@/app/actions";
 
 
 const tiers: Record<Exclude<Plan, 'custom'>, { name: string; prices: Record<Duration, Record<Currency, number>> }> & { custom?: any } = {
@@ -88,6 +88,28 @@ export default function BillingPage() {
         startTransition(async () => {
             try {
                 const customer = await getOrCreateStripeCustomer(currentUser.email);
+                
+                const priceIdMap: Record<Exclude<Plan, 'starter' | 'custom'>, Record<string, string | undefined>> = {
+                    standard: {
+                        '1': process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_STANDARD,
+                        '12': process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_STANDARD_12,
+                        '24': process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_STANDARD_24,
+                        '48': process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_STANDARD_48,
+                    },
+                    pro: {
+                        '1': process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_PRO,
+                        '12': process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_PRO_12,
+                        '24': process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_PRO_24,
+                        '48': process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_PRO_48,
+                    },
+                    enterprise: {
+                        '1': process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_ENTERPRISE,
+                        '12': process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_ENTERPRISE_12,
+                        '24': process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_ENTERPRISE_24,
+                        '48': process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_ENTERPRISE_48,
+                    },
+                };
+
                 const priceId = priceIdMap[newPlan as Exclude<Plan, 'starter' | 'custom'>][selectedDuration];
 
                 if (!priceId) {
@@ -98,7 +120,7 @@ export default function BillingPage() {
                 const cancelUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/settings/billing`;
                 const metadata = { userId: currentUser.id, plan: newPlan, duration: selectedDuration, isNewUser: String(isStarterPlan) };
                 
-                const { url } = await createCheckoutSession({
+                const result = await createCheckoutSession({
                     customerId: customer.id,
                     priceId,
                     metadata,
@@ -106,8 +128,8 @@ export default function BillingPage() {
                     cancelUrl
                 });
 
-                if (url) {
-                    router.push(url);
+                if (result.url) {
+                    router.push(result.url);
                 } else {
                     throw new Error("Could not create a checkout session.");
                 }
@@ -247,5 +269,3 @@ export default function BillingPage() {
         </div>
     );
 }
-
-    
