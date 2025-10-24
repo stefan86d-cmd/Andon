@@ -102,13 +102,13 @@ export async function createCheckoutSession(
     });
 
     const session = await stripe.checkout.sessions.create({
-        payment_method_types: ['card'],
-        mode: 'subscription',
-        customer: customer.id,
-        subscription: schedule.subscription as string,
-        success_url: successUrl,
-        cancel_url: cancelUrl,
-        metadata,
+      payment_method_types: ['card'],
+      mode: 'subscription',
+      customer: customer.id,
+      line_items: [{ price: initialPriceId, quantity: 1 }],
+      subscription_data: { metadata },
+      success_url: successUrl,
+      cancel_url: cancelUrl,
     });
     
     return { sessionUrl: session.url! };
@@ -154,12 +154,19 @@ export async function getAllUsers(orgId: string): Promise<User[]> {
 
 export async function getUserByEmail(email: string): Promise<User | null> {
   if (!db) return null;
+
   try {
     const snapshot = await db.collection('users').where('email', '==', email).get();
+
     if (snapshot.empty) return null;
-    return { id: snapshot.docs[0].id, ...snapshot.docs[0].data() } as User;
+
+    const doc = snapshot.docs[0];
+    const data = doc.data() as Omit<User, 'id'>; // assert type for Firestore data
+
+    return { id: doc.id, ...data };
   } catch (error) {
-    return handleFirestoreError(error);
+    console.error('Error fetching user by email:', error);
+    return null; // return null instead of handleFirestoreError to match return type
   }
 }
 
@@ -204,6 +211,10 @@ export async function addUser(userData: {
       orgId,
       notificationPreferences: { newIssue: false, issueResolved: false, muteSound: true },
       theme: 'system',
+      address: '',
+      city: '',
+      postalCode: '',
+      country: ''
     };
 
     await db.collection('users').doc(userRecord.uid).set(newUser);

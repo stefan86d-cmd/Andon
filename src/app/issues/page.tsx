@@ -48,8 +48,8 @@ export default function IssuesPage() {
       if (!currentUser?.orgId) return;
       setLoading(true);
       const [issuesData, linesData] = await Promise.all([
-          getClientIssues(currentUser.orgId!),
-          getClientProductionLines(currentUser.orgId!),
+          getClientIssues(currentUser.orgId),
+          getClientProductionLines(currentUser.orgId),
       ]);
       setIssues(issuesData);
       setProductionLines(linesData);

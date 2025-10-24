@@ -9,7 +9,6 @@ import { AppLayout } from '@/components/layout/app-layout';
 export const metadata: Metadata = {
   title: 'AndonPro',
   description: 'Monitor workflow and resolve issues on your production line.',
-  manifest: '/manifest.json',
   icons: {
     icon: '/favicon.ico',
   },
