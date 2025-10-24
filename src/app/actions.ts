@@ -13,8 +13,6 @@ const stripe = new Stripe(process.env.NEXT_STRIPE_SECRET_KEY!, {
   apiVersion: '2024-06-20',
 });
 
-const db = lazilyGetDb();
-
 // --- Stripe Actions ---
 
 export async function createCheckoutSession({
@@ -67,12 +65,13 @@ export async function getCheckoutSession(sessionId: string) {
   }
 }
 
-export async function getOrCreateStripeCustomer(email: string): Promise<Stripe.Customer> {
+export async function getOrCreateStripeCustomer(email: string): Promise<{ id: string }> {
     const customers = await stripe.customers.list({ email, limit: 1 });
     if (customers.data.length > 0 && customers.data[0]) {
-        return customers.data[0];
+        return { id: customers.data[0].id };
     }
-    return await stripe.customers.create({ email });
+    const newCustomer = await stripe.customers.create({ email });
+    return { id: newCustomer.id };
 }
 
 // --- Data Fetching ---
