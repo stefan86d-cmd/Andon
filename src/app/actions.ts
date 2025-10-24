@@ -77,6 +77,7 @@ export async function getOrCreateStripeCustomer(email: string): Promise<{ id: st
 // --- Data Fetching ---
 
 export async function getProductionLines(orgId: string): Promise<ProductionLine[]> {
+  const db = lazilyGetDb();
   if (!db) return [];
   try {
     const snapshot = await db.collection('productionLines').where('orgId', '==', orgId).get();
@@ -88,6 +89,7 @@ export async function getProductionLines(orgId: string): Promise<ProductionLine[
 }
 
 export async function getAllUsers(orgId: string): Promise<User[]> {
+  const db = lazilyGetDb();
   if (!db) return [];
   try {
     const snapshot = await db.collection('users').where('orgId', '==', orgId).get();
@@ -99,6 +101,7 @@ export async function getAllUsers(orgId: string): Promise<User[]> {
 }
 
 export async function getUserByEmail(email: string): Promise<User | null> {
+  const db = lazilyGetDb();
   if (!db) return null;
 
   try {
@@ -117,6 +120,7 @@ export async function getUserByEmail(email: string): Promise<User | null> {
 }
 
 export async function getUserById(uid: string): Promise<User | null> {
+  const db = lazilyGetDb();
   if (!db) return null;
   try {
     const docSnap = await db.collection('users').doc(uid).get();
@@ -138,6 +142,7 @@ export async function addUser(userData: {
   plan: Plan;
   orgId: string;
 }) {
+  const db = lazilyGetDb();
   if (!db || !adminAuth) return handleFirestoreError(new Error('Admin SDK not initialized'));
 
   try {
@@ -175,6 +180,7 @@ export async function addUser(userData: {
 }
 
 export async function editUser(userId: string, data: { firstName: string; lastName: string; email: string; role: Role }) {
+  const db = lazilyGetDb();
   if (!db || !adminAuth) return handleFirestoreError(new Error('Admin SDK not initialized'));
   try {
     await db.collection('users').doc(userId).update(data);
@@ -187,6 +193,7 @@ export async function editUser(userId: string, data: { firstName: string; lastNa
 }
 
 export async function deleteUser(userId: string) {
+  const db = lazilyGetDb();
   if (!db) return handleFirestoreError(new Error('Firestore not initialized'));
   try {
     await db.collection('users').doc(userId).delete();
@@ -197,6 +204,7 @@ export async function deleteUser(userId: string) {
 }
 
 export async function updateUserPlan(userId: string, newPlan: Plan, planData: Partial<User>) {
+  const db = lazilyGetDb();
   if (!db) return handleFirestoreError(new Error('Firestore not initialized'));
   try {
     const userRef = db.collection('users').doc(userId);
@@ -222,6 +230,7 @@ export async function updateUserPlan(userId: string, newPlan: Plan, planData: Pa
 }
 
 export async function sendWelcomeEmail(userId: string) {
+    const db = lazilyGetDb();
     if (!db) return handleFirestoreError(new Error('Firestore not initialized'));
     try {
         const user = await getUserById(userId);
@@ -280,6 +289,7 @@ export async function changePassword(email: string, currentPass: string, newPass
 // --- Issue Actions ---
 
 export async function reportIssue(issueData: Omit<Issue, 'id' | 'reportedAt' | 'reportedBy' | 'status'>, userEmail: string) {
+  const db = lazilyGetDb();
   if (!db) return handleFirestoreError(new Error('Firestore not initialized'));
   try {
     const reporter = await getUserByEmail(userEmail);
@@ -307,6 +317,7 @@ export async function reportIssue(issueData: Omit<Issue, 'id' | 'reportedAt' | '
 }
 
 export async function updateIssue(issueId: string, data: { resolutionNotes?: string; status: 'in_progress' | 'resolved'; productionStopped: boolean }, userEmail: string) {
+  const db = lazilyGetDb();
   if (!db) return handleFirestoreError(new Error('Firestore not initialized'));
   try {
     const resolver = await getUserByEmail(userEmail);
@@ -343,6 +354,7 @@ export async function updateIssue(issueId: string, data: { resolutionNotes?: str
 // --- Production Line Actions ---
 
 export async function createProductionLine(name: string, orgId: string) {
+  const db = lazilyGetDb();
   if (!db) return handleFirestoreError(new Error('Firestore not initialized'));
   try {
     const snapshot = await db.collection('productionLines').where('name', '==', name).where('orgId', '==', orgId).get();
@@ -355,6 +367,7 @@ export async function createProductionLine(name: string, orgId: string) {
 }
 
 export async function editProductionLine(lineId: string, data: { name: string; workstations: { value: string }[] }) {
+  const db = lazilyGetDb();
   if (!db) return handleFirestoreError(new Error('Firestore not initialized'));
   try {
     await db.collection('productionLines').doc(lineId).update({ name: data.name, workstations: data.workstations.map(ws => ws.value) });
@@ -365,6 +378,7 @@ export async function editProductionLine(lineId: string, data: { name: string; w
 }
 
 export async function deleteProductionLine(lineId: string) {
+  const db = lazilyGetDb();
   if (!db) return handleFirestoreError(new Error('Firestore not initialized'));
   try {
     await db.collection('productionLines').doc(lineId).delete();
