@@ -72,6 +72,7 @@ export async function createCheckoutSession(
 
     const metadata = { userId, plan, duration, isNewUser: String(isNewUser) };
     const successUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`;
+    const returnUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`;
 
     let session;
     // --- MONTHLY SUBSCRIPTION ---
@@ -83,7 +84,7 @@ export async function createCheckoutSession(
         mode: 'subscription',
         customer_email: email,
         metadata,
-        return_url: successUrl,
+        return_url: returnUrl,
         subscription_data: { metadata }
       });
     } else {
@@ -106,6 +107,7 @@ export async function createCheckoutSession(
           },
           {
             items: [{ price: monthlyPriceId, quantity: 1 }],
+            iterations: Infinity,
           },
         ],
       });
@@ -115,8 +117,8 @@ export async function createCheckoutSession(
         payment_method_types: ['card'],
         mode: 'subscription',
         customer: customer.id,
-        subscription_data: { schedule: schedule.id },
-        return_url: successUrl,
+        subscription: schedule.id,
+        return_url: returnUrl,
         metadata,
       });
     }
