@@ -1,13 +1,10 @@
-
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  output: "export",
   experimental: {
     serverActions: {
-      bodySizeLimit: '4.5mb',
+      bodySizeLimit: "4.5mb",
     },
-    
   },
   images: {
     unoptimized: false,
