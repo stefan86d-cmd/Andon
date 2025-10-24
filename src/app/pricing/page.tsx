@@ -359,12 +359,10 @@ export default function PricingPage() {
                                             <span className="text-4xl font-bold">
                                                 {tier.name === 'Starter'
                                                     ? 'Free'
-                                                    : duration === '1'
-                                                        ? `${currencySymbols[currency]}${formatPrice(monthlyPrice, currency)}`
-                                                        : `${currencySymbols[currency]}${formatPrice(totalBilledPrice, currency)}`
+                                                    : `${currencySymbols[currency]}${formatPrice(monthlyPrice, currency)}`
                                                 }
                                             </span>
-                                            {tier.pricePeriod && typeof monthlyPrice === 'number' && monthlyPrice > 0 && duration === '1' && <span className="text-muted-foreground">{tier.pricePeriod}</span>}
+                                            {tier.pricePeriod && typeof monthlyPrice === 'number' && monthlyPrice > 0 && <span className="text-muted-foreground">{tier.pricePeriod}</span>}
                                         
                                         </div>
                                         <CardDescription>{tier.description}</CardDescription>
@@ -477,5 +475,3 @@ export default function PricingPage() {
     </div>
   );
 }
-
-    
