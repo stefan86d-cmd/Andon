@@ -26,7 +26,7 @@ const db = lazilyGetDb();
 export async function createCheckoutSession(
   userId: string,
   email: string,
-  plan: Plan,
+  plan: Exclude<Plan, 'starter' | 'custom'>,
   duration: '1' | '12' | '24' | '48',
   currency: 'usd' | 'eur' | 'gbp',
   isNewUser: boolean
@@ -38,52 +38,44 @@ export async function createCheckoutSession(
       return { error: "Base URL is not configured."}
   }
 
-  const priceIdMap = {
+  try {
+    const priceIdMap: Record<Exclude<Plan, 'starter' | 'custom'>, Record<string, string | undefined>> = {
       standard: {
-          '1': process.env.STRIPE_PRICE_ID_STANDARD,
-          '12': process.env.STRIPE_PRICE_ID_STANDARD_12_MONTHS,
-          '24': process.env.STRIPE_PRICE_ID_STANDARD_24_MONTHS,
-          '48': process.env.STRIPE_PRICE_ID_STANDARD_48_MONTHS,
+        '1': process.env.STRIPE_PRICE_ID_STANDARD,
+        '12': process.env.STRIPE_PRICE_ID_STANDARD_12_MONTHS,
+        '24': process.env.STRIPE_PRICE_ID_STANDARD_24_MONTHS,
+        '48': process.env.STRIPE_PRICE_ID_STANDARD_48_MONTHS,
       },
       pro: {
-          '1': process.env.STRIPE_PRICE_ID_PRO,
-          '12': process.env.STRIPE_PRICE_ID_PRO_12_MONTHS,
-          '24': process.env.STRIPE_PRICE_ID_PRO_24_MONTHS,
-          '48': process.env.STRIPE_PRICE_ID_PRO_48_MONTHS,
+        '1': process.env.STRIPE_PRICE_ID_PRO,
+        '12': process.env.STRIPE_PRICE_ID_PRO_12_MONTHS,
+        '24': process.env.STRIPE_PRICE_ID_PRO_24_MONTHS,
+        '48': process.env.STRIPE_PRICE_ID_PRO_48_MONTHS,
       },
       enterprise: {
-          '1': process.env.STRIPE_PRICE_ID_ENTERPRISE,
-          '12': process.env.STRIPE_PRICE_ID_ENTERPRISE_12_MONTHS,
-          '24': process.env.STRIPE_PRICE_ID_ENTERPRISE_24_MONTHS,
-          '48': process.env.STRIPE_PRICE_ID_ENTERPRISE_48_MONTHS,
+        '1': process.env.STRIPE_PRICE_ID_ENTERPRISE,
+        '12': process.env.STRIPE_PRICE_ID_ENTERPRISE_12_MONTHS,
+        '24': process.env.STRIPE_PRICE_ID_ENTERPRISE_24_MONTHS,
+        '48': process.env.STRIPE_PRICE_ID_ENTERPRISE_48_MONTHS,
       },
-  };
+    };
 
-  const planPrices = priceIdMap[plan as keyof typeof priceIdMap];
-  if (!planPrices) {
-      return { error: `Price IDs for plan '${plan}' are not configured.`};
-  }
+    const planPrices = priceIdMap[plan];
+    if (!planPrices) return { error: `Plan ${plan} not configured` };
+    
+    const monthlyPriceId = planPrices['1'];
+    const initialPriceId = planPrices[duration];
+    
+    if (!monthlyPriceId || !initialPriceId) {
+      return { error: `Stripe price not configured for plan ${plan} duration ${duration}` };
+    }
 
-  const initialPriceId = planPrices[duration as keyof typeof planPrices];
-  const monthlyPriceId = planPrices['1'];
+    const metadata = { userId, plan, duration, isNewUser: String(isNewUser) };
+    const successUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`;
 
-  if (!initialPriceId || !monthlyPriceId) {
-      return { error: `A price ID for plan '${plan}' and duration '${duration}' is not configured.`};
-  }
-  
-  const successUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`;
-  
-  const metadata = {
-      userId,
-      plan,
-      duration,
-      isNewUser: String(isNewUser),
-  };
-
-  try {
     let session;
+    // --- MONTHLY SUBSCRIPTION ---
     if (duration === '1') {
-      // Simple monthly subscription
       session = await stripe.checkout.sessions.create({
         ui_mode: 'embedded',
         payment_method_types: ['card'],
@@ -92,50 +84,46 @@ export async function createCheckoutSession(
         customer_email: email,
         metadata,
         return_url: successUrl,
+        subscription_data: { metadata }
       });
     } else {
-      // Find or create Stripe customer
-      const customers = await stripe.customers.list({ email });
-      let customer = customers.data.length ? customers.data[0] : null;
+      // --- MULTI-MONTH PREPAY SUBSCRIPTION ---
+      const customers = await stripe.customers.list({ email, limit: 1 });
+      let customer = customers.data.length > 0 ? customers.data[0] : null;
       if (!customer) {
         customer = await stripe.customers.create({ email });
       }
-    
-      // Create a schedule that starts with discounted prepay phase
+
       const schedule = await stripe.subscriptionSchedules.create({
         customer: customer.id,
         start_date: 'now',
         end_behavior: 'release',
+        metadata,
         phases: [
           {
             items: [{ price: initialPriceId, quantity: 1 }],
-            iterations: parseInt(duration, 10) / 12, // 1 for 12mo, 2 for 24mo, etc.
+            iterations: parseInt(duration, 10) / 12,
           },
           {
             items: [{ price: monthlyPriceId, quantity: 1 }],
           },
         ],
-        metadata,
       });
-    
-      // Attach checkout session to the schedule
+      
       session = await stripe.checkout.sessions.create({
         ui_mode: 'embedded',
         payment_method_types: ['card'],
         mode: 'subscription',
-        line_items: [{ price: initialPriceId, quantity: 1 }],
         customer: customer.id,
-        metadata,
+        subscription_data: { schedule: schedule.id },
         return_url: successUrl,
-        subscription_data: {
-          schedule: schedule.id
-        },
+        metadata,
       });
     }
-    
+
     return { clientSecret: session.client_secret! };
   } catch (error: any) {
-    console.error("Error creating Stripe Checkout session:", error);
+    console.error('Stripe checkout session error:', error);
     return { error: error.message };
   }
 }
@@ -146,7 +134,7 @@ export async function getCheckoutSession(sessionId: string) {
     }
     try {
         const session = await stripe.checkout.sessions.retrieve(sessionId, {
-            expand: ['subscription'],
+            expand: ['subscription', 'subscription.schedule'],
         });
         return { session };
     } catch (error: any) {
