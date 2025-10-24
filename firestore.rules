@@ -2,78 +2,75 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-  
-    // Helper Functions
-    function isSignedIn() {
-      return request.auth != null;
+
+    // 🔒 Helper function: Checks if a user belongs to the same organization
+    function isUserInOrg(orgId) {
+      return request.auth != null &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.orgId == orgId;
+    }
+    
+    // 🔒 Helper function: Checks if the user is an admin in their organization
+    function isAdmin() {
+      return request.auth != null &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // 🔒 Helper function: Checks if the user is a supervisor or admin
+    function isSupervisorOrAdmin() {
+      return request.auth != null &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'supervisor'];
     }
 
-    function isUser(userId) {
-      return isSignedIn() && request.auth.uid == userId;
-    }
-    
-    function getUserData(userId) {
-      return get(/databases/$(database)/documents/users/$(userId)).data;
-    }
-    
-    function isOrgMember(orgId) {
-      let userOrgId = getUserData(request.auth.uid).orgId;
-      return isSignedIn() && userOrgId == orgId;
-    }
-    
-    function isOrgAdmin(orgId) {
-       let userRole = getUserData(request.auth.uid).role;
-       return isOrgMember(orgId) && userRole == 'admin';
-    }
-    
-    function isOrgSupervisor(orgId) {
-       let userRole = getUserData(request.auth.uid).role;
-       return isOrgMember(orgId) && (userRole == 'admin' || userRole == 'supervisor');
-    }
-
-    // --- Collection Rules ---
-
-    // USERS collection
+    // ===== USERS COLLECTION =====
     match /users/{userId} {
-      // A user can read their own data.
-      // An admin can read any user data within their own organization.
-      allow read: if isUser(userId) || isOrgAdmin(resource.data.orgId);
-      
-      // A user can create their own initial document.
-      // An admin can create new users for their organization.
-      allow create: if isUser(userId) || isOrgAdmin(request.resource.data.orgId);
-      
-      // A user can update their own data.
-      // An admin can update any user within their organization.
-      // Prevent users from changing their own role or orgId.
-      allow update: if (isUser(userId) && request.resource.data.role == resource.data.role && request.resource.data.orgId == resource.data.orgId) || isOrgAdmin(resource.data.orgId);
+      // Allow a user to create their own user document
+      // This is crucial for the sign-up process.
+      allow create: if request.auth != null && request.auth.uid == userId;
 
-      // An admin can delete a user from their org, but not themselves.
-      allow delete: if isOrgAdmin(resource.data.orgId) && request.auth.uid != userId;
+      // Allow users to read or update only their own profile
+      allow read, update: if request.auth != null && request.auth.uid == userId;
+      
+      // Admins can manage users within their own organization
+      allow list, delete: if isAdmin() && isUserInOrg(get(/databases/$(database)/documents/users/$(userId)).data.orgId);
     }
 
-    // PRODUCTIONLINES collection
+    // ===== PRODUCTION LINES =====
     match /productionLines/{lineId} {
-      // Any member of the organization can read the production lines.
-      allow read: if isSignedIn() && isOrgMember(resource.data.orgId);
-      
-      // Only admins can create, update, or delete production lines.
-      allow write: if isSignedIn() && isOrgAdmin(request.resource.data.orgId);
+      // Only admins can create, edit, or delete production lines
+      allow create, update, delete: if isAdmin() &&
+                                     request.resource.data.orgId != null &&
+                                     isUserInOrg(request.resource.data.orgId);
+
+      // Anyone in the organization can read the production line data
+      allow read: if request.auth != null &&
+                   resource.data.orgId != null &&
+                   isUserInOrg(resource.data.orgId);
     }
-    
-    // ISSUES collection
+
+    // ===== ISSUES =====
     match /issues/{issueId} {
-      // Any member of the organization can read issues.
-      allow read: if isSignedIn() && isOrgMember(resource.data.orgId);
+      // Any authenticated user in the organization can create an issue
+      allow create: if request.auth != null &&
+                      request.resource.data.orgId != null &&
+                      isUserInOrg(request.resource.data.orgId);
+
+      // Any authenticated user in the organization can read issues
+      allow read: if request.auth != null &&
+                   resource.data.orgId != null &&
+                   isUserInOrg(resource.data.orgId);
+                   
+      // Only admins or supervisors can update an issue
+      allow update: if isSupervisorOrAdmin() &&
+                       resource.data.orgId != null &&
+                       isUserInOrg(resource.data.orgId);
       
-      // Any member of the organization can create an issue.
-      allow create: if isSignedIn() && isOrgMember(request.resource.data.orgId);
-      
-      // Only admins or supervisors can update an issue.
-      allow update: if isSignedIn() && isOrgSupervisor(resource.data.orgId);
-      
-      // Only admins can delete issues (optional, good for cleanup).
-      allow delete: if isSignedIn() && isOrgAdmin(resource.data.orgId);
+      // Prevent deletion of issues to maintain a historical record
+      allow delete: if false;
+    }
+
+    // ===== FALLBACK (for unlisted collections) =====
+    match /{document=**} {
+      allow read, write: if false; // everything else is denied explicitly
     }
   }
 }
