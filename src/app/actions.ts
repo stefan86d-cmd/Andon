@@ -18,47 +18,67 @@ const stripe = new Stripe(process.env.NEXT_STRIPE_SECRET_KEY!, {
 export async function createCheckoutSession({
   customerId,
   priceId,
+  duration,
   metadata,
   successUrl,
   cancelUrl,
 }: {
   customerId: string;
   priceId: string;
+  duration: '1' | '12' | '24' | '48';
   metadata?: Record<string, string>;
   successUrl: string;
   cancelUrl: string;
 }) {
   try {
-    const session = await stripe.checkout.sessions.create({
-      customer: customerId,
-      mode: 'subscription',
-      line_items: [
-        {
-          price: priceId,
-          quantity: 1,
+    // For monthly plans, create a recurring subscription
+    if (duration === '1') {
+      const session = await stripe.checkout.sessions.create({
+        customer: customerId,
+        mode: 'subscription',
+        line_items: [
+          {
+            price: priceId,
+            quantity: 1,
+          },
+        ],
+        allow_promotion_codes: true,
+        subscription_data: {
+          metadata,
         },
-      ],
-      allow_promotion_codes: true, // if you want coupons or discounts
-      subscription_data: {
-        trial_settings: {
-          end_behavior: { missing_payment_method: 'cancel' },
-        },
-        metadata,
-      },
-      success_url: successUrl,
-      cancel_url: cancelUrl,
-    });
-
-    return { url: session.url };
+        success_url: successUrl,
+        cancel_url: cancelUrl,
+      });
+      return { url: session.url };
+    } 
+    // For multi-month plans, create a one-time payment
+    else {
+        const session = await stripe.checkout.sessions.create({
+            customer: customerId,
+            mode: 'payment',
+            line_items: [
+                {
+                    price: priceId,
+                    quantity: 1,
+                },
+            ],
+            allow_promotion_codes: true,
+            success_url: successUrl,
+            cancel_url: cancelUrl,
+            metadata, // Attach metadata directly to the session for one-time payments
+        });
+        return { url: session.url };
+    }
   } catch (error: any) {
     console.error('Stripe session error:', error);
     throw new Error(error.message);
   }
 }
 
+
 export async function getCheckoutSession(sessionId: string) {
   try {
-    const session = await stripe.checkout.sessions.retrieve(sessionId, { expand: ['subscription'] });
+    const session = await stripe.checkout.sessions.retrieve(sessionId, { expand: ['subscription', 'line_items'] });
     return { session };
   } catch (err: any) {
     return { error: err.message };

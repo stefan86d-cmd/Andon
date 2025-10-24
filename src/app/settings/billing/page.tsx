@@ -123,6 +123,7 @@ export default function BillingPage() {
                 const result = await createCheckoutSession({
                     customerId: customer.id,
                     priceId,
+                    duration: selectedDuration,
                     metadata,
                     successUrl,
                     cancelUrl

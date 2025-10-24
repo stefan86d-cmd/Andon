@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/layout/logo';
 import { toast } from '@/hooks/use-toast';
-import { addMonths, fromUnixTime, format } from 'date-fns';
+import { addMonths, fromUnixTime, format, add } from 'date-fns';
 import Link from 'next/link';
 import type { Plan, User } from '@/lib/types';
 import type { Stripe } from 'stripe';
@@ -68,6 +68,7 @@ function SuccessContent() {
 
                 const plan = checkoutSession.metadata?.plan as Plan;
                 const isNewUser = checkoutSession.metadata?.isNewUser === 'true';
+                const duration = parseInt(checkoutSession.metadata?.duration || '1', 10);
 
                 if (!plan) {
                     setErrorMessage('Plan information is missing from the session.');
@@ -76,18 +77,26 @@ function SuccessContent() {
                 }
                 
                 const subscription = checkoutSession.subscription as Stripe.Subscription;
-                if (!subscription) {
-                    setErrorMessage('Subscription details not found in session.');
-                    setStatus('error');
-                    return;
-                }
+                
+                let startDate, endDate, subscriptionId;
 
-                const startDate = fromUnixTime(subscription.current_period_start);
-                const endDate = fromUnixTime(subscription.current_period_end);
+                if (checkoutSession.mode === 'subscription' && subscription) {
+                    startDate = fromUnixTime(subscription.current_period_start);
+                    endDate = fromUnixTime(subscription.current_period_end);
+                    subscriptionId = subscription.id;
+                } else if (checkoutSession.mode === 'payment') {
+                    startDate = new Date();
+                    endDate = add(startDate, { months: duration });
+                    subscriptionId = checkoutSession.id; // Use session ID for one-time payments as a reference
+                } else {
+                     setErrorMessage('Invalid session mode or missing subscription details.');
+                     setStatus('error');
+                     return;
+                }
 
                 const planUpdateData: Partial<User> = {
                     plan,
-                    subscriptionId: subscription.id,
+                    subscriptionId,
                     subscriptionStartsAt: startDate,
                     subscriptionEndsAt: endDate,
                 };
