@@ -85,7 +85,14 @@ function SuccessContent() {
                     subscriptionEndsAt: subscriptionEndDate,
                 };
                 
-                // This updates the user in both Firestore and the local context
+                // Use the server action to update the plan in Firestore
+                const updateResult = await updateUserPlan(currentUser.id, plan, planUpdateData);
+
+                if (!updateResult.success) {
+                    throw new Error(updateResult.error || "Failed to update user plan.");
+                }
+                
+                // Then, update the local context
                 await updateCurrentUser(planUpdateData);
 
                 setPlanDetails({ plan, startDate: now, endDate: subscriptionEndDate });
