@@ -330,8 +330,7 @@ export default function PricingPage() {
                     {tiers.map((tier) => {
                         const monthlyPrice = tier.prices[duration][currency];
                         const fullMonthlyPrice = tier.prices['1'][currency];
-                        const totalDiscountedPrice = monthlyPrice * parseInt(duration, 10);
-                        const totalRegularPrice = fullMonthlyPrice * parseInt(duration, 10);
+                        const totalBilledPrice = monthlyPrice * parseInt(duration, 10);
                         const isProBestValue = tier.name === "Pro";
                         const linkHref = tier.id === 'starter'
                             ? `/register?plan=starter`
@@ -360,10 +359,12 @@ export default function PricingPage() {
                                             <span className="text-4xl font-bold">
                                                 {tier.name === 'Starter'
                                                     ? 'Free'
-                                                    : `${currencySymbols[currency]}${formatPrice(monthlyPrice, currency)}`
+                                                    : duration === '1'
+                                                        ? `${currencySymbols[currency]}${formatPrice(monthlyPrice, currency)}`
+                                                        : `${currencySymbols[currency]}${formatPrice(totalBilledPrice, currency)}`
                                                 }
                                             </span>
-                                            {tier.pricePeriod && typeof monthlyPrice === 'number' && monthlyPrice > 0 && <span className="text-muted-foreground">{tier.pricePeriod}</span>}
+                                            {tier.pricePeriod && typeof monthlyPrice === 'number' && monthlyPrice > 0 && duration === '1' && <span className="text-muted-foreground">{tier.pricePeriod}</span>}
                                         
                                         </div>
                                         <CardDescription>{tier.description}</CardDescription>
@@ -388,7 +389,7 @@ export default function PricingPage() {
                                         </Link>
                                          {tier.name !== 'Starter' && duration !== '1' && (
                                             <p className="text-xs text-muted-foreground mt-3 text-center">
-                                                Get {duration} months for {currencySymbols[currency]}{formatPrice(totalDiscountedPrice, currency)} (regular price {currencySymbols[currency]}{formatPrice(totalRegularPrice, currency)}). Renews at {currencySymbols[currency]}{formatPrice(fullMonthlyPrice, currency)}/mo.
+                                                Billed as one payment of {currencySymbols[currency]}{formatPrice(totalBilledPrice, currency)}. That&apos;s only {currencySymbols[currency]}{formatPrice(monthlyPrice, currency)}/mo (regularly {currencySymbols[currency]}{formatPrice(fullMonthlyPrice, currency)}/mo).
                                             </p>
                                         )}
                                          {tier.name !== 'Starter' && duration === '1' && (
@@ -476,5 +477,3 @@ export default function PricingPage() {
     </div>
   );
 }
-
-    
