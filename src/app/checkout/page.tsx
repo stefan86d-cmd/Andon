@@ -27,7 +27,7 @@ import type { Plan } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { useUser } from '@/contexts/user-context';
 import { toast } from '@/hooks/use-toast';
-import { createCheckoutSession, getOrCreateStripeCustomer } from '@/app/actions';
+import { createCheckoutSession, getOrCreateStripeCustomer, priceIdMap } from '@/app/actions';
 
 const tiers: Record<Plan, { name: string; prices: Record<Duration, Record<Currency, number>> }> = {
   starter: { 
@@ -50,27 +50,6 @@ const tiers: Record<Plan, { name: string; prices: Record<Duration, Record<Curren
     name: "Custom",
     prices: { '1': { usd: 0, eur: 0, gbp: 0 }, '12': { usd: 0, eur: 0, gbp: 0 }, '24': { usd: 0, eur: 0, gbp: 0 }, '48': { usd: 0, eur: 0, gbp: 0 } }
   }
-};
-
-const priceIdMap: Record<Exclude<Plan, 'starter' | 'custom'>, Record<string, string | undefined>> = {
-  standard: {
-    '1': process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_STANDARD,
-    '12': process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_STANDARD_12,
-    '24': process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_STANDARD_24,
-    '48': process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_STANDARD_48,
-  },
-  pro: {
-    '1': process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_PRO,
-    '12': process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_PRO_12,
-    '24': process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_PRO_24,
-    '48': process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_PRO_48,
-  },
-  enterprise: {
-    '1': process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_ENTERPRISE,
-    '12': process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_ENTERPRISE_12,
-    '24': process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_ENTERPRISE_24,
-    '48': process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_ENTERPRISE_48,
-  },
 };
 
 const currencySymbols = { usd: '$', eur: '€', gbp: '£' };

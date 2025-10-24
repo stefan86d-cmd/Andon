@@ -25,7 +25,7 @@ import { countries } from '@/lib/countries';
 import type { Plan, Role } from '@/lib/types';
 import { toast } from '@/hooks/use-toast';
 import { useUser } from '@/contexts/user-context';
-import { createCheckoutSession, sendWelcomeEmail, getOrCreateStripeCustomer } from '@/app/actions';
+import { createCheckoutSession, sendWelcomeEmail, getOrCreateStripeCustomer, priceIdMap } from '@/app/actions';
 
 
 const profileFormSchema = z.object({
@@ -42,27 +42,6 @@ type ProfileFormValues = z.infer<typeof profileFormSchema>;
 type Duration = '1' | '12' | '24' | '48';
 type Currency = 'usd' | 'eur' | 'gbp';
 
-const priceIdMap: Record<Exclude<Plan, 'starter' | 'custom'>, Record<string, string | undefined>> = {
-  standard: {
-    '1': process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_STANDARD,
-    '12': process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_STANDARD_12,
-    '24': process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_STANDARD_24,
-    '48': process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_STANDARD_48,
-  },
-  pro: {
-    '1': process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_PRO,
-    '12': process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_PRO_12,
-    '24': process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_PRO_24,
-    '48': process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_PRO_48,
-  },
-  enterprise: {
-    '1': process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_ENTERPRISE,
-    '12': process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_ENTERPRISE_12,
-    '24': process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_ENTERPRISE_24,
-    '48': process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_ENTERPRISE_48,
-  },
-};
-
 function CompleteProfileContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -78,7 +57,6 @@ function CompleteProfileContent() {
 
   const planFromUrl = searchParams.get('plan') as Plan | null;
   const durationFromUrl = searchParams.get('duration') as Duration | null;
-  const currencyFromUrl = searchParams.get('currency') as Currency | null;
   
   const selectedPlan = planFromUrl || 'starter';
   const selectedDuration = durationFromUrl || '1';
