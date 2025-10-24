@@ -24,7 +24,7 @@ export async function createCheckoutSession(
   duration: '1' | '12' | '24' | '48',
   currency: 'usd' | 'eur' | 'gbp',
   isNewUser: boolean
-): Promise<{ clientSecret?: string; error?: string }> {
+): Promise<{ sessionUrl?: string; error?: string }> {
   if (!process.env.NEXT_PUBLIC_BASE_URL) {
     return { error: 'Base URL is not configured.' };
   }
@@ -62,22 +62,22 @@ export async function createCheckoutSession(
     }
 
     const metadata = { userId, plan, duration, isNewUser: String(isNewUser) };
-    const returnUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`;
+    const successUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`;
+    const cancelUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/checkout`;
+
 
     // --- MONTHLY SUBSCRIPTION ---
     if (duration === '1') {
       const session = await stripe.checkout.sessions.create({
-        ui_mode: 'embedded',
         payment_method_types: ['card'],
-        customer_email: email,
         mode: 'subscription',
-        subscription_data: {
-          items: [{ price: monthlyPriceId, quantity: 1 }],
-          metadata,
-        },
-        return_url: returnUrl,
+        customer_email: email,
+        line_items: [{ price: monthlyPriceId, quantity: 1 }],
+        subscription_data: { metadata },
+        success_url: successUrl,
+        cancel_url: cancelUrl,
       });
-      return { clientSecret: session.client_secret! };
+      return { sessionUrl: session.url! };
     }
 
     // --- MULTI-MONTH PREPAY SUBSCRIPTION ---
@@ -102,15 +102,16 @@ export async function createCheckoutSession(
     });
 
     const session = await stripe.checkout.sessions.create({
-      ui_mode: 'embedded',
+      payment_method_types: ['card'],
       mode: 'subscription',
       customer: customer.id,
+      subscription_data: { metadata },
+      success_url: successUrl,
+      cancel_url: cancelUrl,
       subscription: schedule.subscription as string,
-      return_url: returnUrl,
-      metadata,
     });
     
-    return { clientSecret: session.client_secret! };
+    return { sessionUrl: session.url! };
 
   } catch (err: any) {
     console.error(err);
@@ -415,5 +416,3 @@ export async function deleteProductionLine(lineId: string) {
     return handleFirestoreError(err);
   }
 }
-
-    

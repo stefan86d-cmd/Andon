@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Logo } from "@/components/layout/logo";
-import { LoaderCircle, Globe, Badge as BadgeIcon } from 'lucide-react';
+import { LoaderCircle, Globe } from 'lucide-react';
 import Link from 'next/link';
 import {
   Select,
@@ -24,12 +24,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { Plan } from '@/lib/types';
-import { cn } from "@/lib/utils";
 import { Badge } from '@/components/ui/badge';
 import { useUser } from '@/contexts/user-context';
 import { toast } from '@/hooks/use-toast';
 import { createCheckoutSession } from '@/app/actions';
-import { EmbeddedCheckoutForm } from '@/components/checkout/embedded-checkout-form';
 
 const tiers: Record<Plan, { name: string; prices: Record<Duration, Record<Currency, number>> }> = {
   starter: { 
@@ -69,7 +67,6 @@ function CheckoutContent() {
   const { currentUser } = useUser();
   const [isSubmitting, startTransition] = useTransition();
   const [year, setYear] = useState(new Date().getFullYear());
-  const [clientSecret, setClientSecret] = useState<string | null>(null);
 
   useEffect(() => {
     setYear(new Date().getFullYear());
@@ -117,14 +114,14 @@ function CheckoutContent() {
       const result = await createCheckoutSession(
           currentUser.id,
           currentUser.email,
-          selectedPlan,
+          selectedPlan as Exclude<Plan, 'starter' | 'custom'>,
           selectedDuration,
           selectedCurrency,
           false
       );
 
-      if (result.clientSecret) {
-          setClientSecret(result.clientSecret);
+      if (result.sessionUrl) {
+          router.push(result.sessionUrl);
       } else {
           toast({
               variant: "destructive",
@@ -136,23 +133,6 @@ function CheckoutContent() {
   };
 
   const buttonText = isNewUser ? "Continue to Sign Up" : "Confirm Plan Change";
-
-  if (clientSecret) {
-      return (
-           <div className="bg-muted">
-                <div className="container mx-auto flex min-h-screen flex-col items-center justify-center py-12">
-                    <div className="w-full max-w-lg">
-                        <div className="flex justify-center mb-8">
-                            <Link href="/">
-                                <Logo />
-                            </Link>
-                        </div>
-                        <EmbeddedCheckoutForm clientSecret={clientSecret} />
-                    </div>
-                </div>
-           </div>
-      )
-  }
 
   return (
     <div className="bg-muted">
