@@ -121,7 +121,8 @@ const guarantees = [
     {
         icon: Headset,
         title: "24/7 Support",
-        description: "Our support team is available around the clock to help you with any issues."
+        description: "Our support team is available around the clock to help you with any issues.",
+        note: "Available on the Enterprise plan."
     },
     {
         icon: Shield,
@@ -445,6 +446,9 @@ export default function PricingPage() {
                                 </div>
                                 <h3 className="font-semibold text-lg">{guarantee.title}</h3>
                                 <p className="text-muted-foreground mt-2 text-sm">{guarantee.description}</p>
+                                {guarantee.note && (
+                                    <p className="text-xs text-muted-foreground mt-1">({guarantee.note})</p>
+                                )}
                             </div>
                         )
                     })}
@@ -472,3 +476,5 @@ export default function PricingPage() {
     </div>
   );
 }
+
+    
