@@ -15,8 +15,8 @@ import { Separator } from "@/components/ui/separator";
 import { CancelSubscriptionDialog } from "@/components/settings/cancel-subscription-dialog";
 import { Logo } from "@/components/layout/logo";
 import { useRouter } from "next/navigation";
-import { format } from "date-fns";
-import { createCheckoutSession, getOrCreateStripeCustomer } from "@/app/actions";
+import { format, isValid } from "date-fns";
+import { createCheckoutSession } from "@/app/actions";
 
 
 const tiers: Record<Exclude<Plan, 'custom'>, { name: string; prices: Record<Duration, Record<Currency, number>> }> & { custom?: any } = {
@@ -83,56 +83,22 @@ export default function BillingPage() {
             return;
         }
 
-        const selectedDuration = isStarterPlan ? duration : '1'; // Only allow duration change for starter plan upgrades
+        const selectedDuration = isStarterPlan ? duration : '1';
         
         startTransition(async () => {
             try {
-                const customer = await getOrCreateStripeCustomer(currentUser.email);
-                
-                const priceIdMap: Record<Exclude<Plan, 'starter' | 'custom'>, Record<string, string | undefined>> = {
-                    standard: {
-                        '1': process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_STANDARD,
-                        '12': process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_STANDARD_12,
-                        '24': process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_STANDARD_24,
-                        '48': process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_STANDARD_48,
-                    },
-                    pro: {
-                        '1': process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_PRO,
-                        '12': process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_PRO_12,
-                        '24': process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_PRO_24,
-                        '48': process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_PRO_48,
-                    },
-                    enterprise: {
-                        '1': process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_ENTERPRISE,
-                        '12': process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_ENTERPRISE_12,
-                        '24': process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_ENTERPRISE_24,
-                        '48': process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_ENTERPRISE_48,
-                    },
-                };
+                if (!currentUser?.email) throw new Error("User email not found.");
 
-                const priceId = priceIdMap[newPlan as Exclude<Plan, 'starter' | 'custom'>][selectedDuration];
-
-                if (!priceId) {
-                    throw new Error("Price ID not found for the selected plan and duration.");
-                }
-
-                const successUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`;
-                const cancelUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/settings/billing`;
-                const metadata = { userId: currentUser.id, plan: newPlan, duration: selectedDuration, isNewUser: String(isStarterPlan) };
-                
                 const result = await createCheckoutSession({
-                    customerId: customer.id,
-                    priceId,
+                    email: currentUser.email,
+                    plan: newPlan,
                     duration: selectedDuration,
-                    metadata,
-                    successUrl,
-                    cancelUrl
                 });
 
                 if (result.url) {
                     router.push(result.url);
                 } else {
-                    throw new Error("Could not create a checkout session.");
+                    throw new Error(result.error || "Could not create a checkout session.");
                 }
             } catch (err: any) {
                 toast({
@@ -157,7 +123,7 @@ export default function BillingPage() {
     const selectedTier = newPlan ? tiers[newPlan] : null;
     const monthlyPrice = selectedTier ? selectedTier.prices[isStarterPlan ? duration : '1'][currency] : 0;
     
-    const renewalDate = currentUser.subscriptionEndsAt 
+    const renewalDate = currentUser.subscriptionEndsAt && isValid(new Date(currentUser.subscriptionEndsAt))
         ? format(new Date(currentUser.subscriptionEndsAt), "MMMM d, yyyy")
         : "N/A";
    

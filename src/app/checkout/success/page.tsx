@@ -135,8 +135,6 @@ function SuccessContent() {
         if (status === 'success') {
             const timer = setTimeout(() => {
                 router.push('/dashboard');
-                // Force a reload to ensure all user context and layout is fresh
-                setTimeout(() => window.location.reload(), 500);
             }, 5000); // 5-second delay
             return () => clearTimeout(timer);
         }

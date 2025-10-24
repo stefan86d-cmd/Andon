@@ -22,7 +22,7 @@ import type { Plan } from "@/lib/types";
 import { Logo } from "@/components/layout/logo";
 import { countries } from "@/lib/countries";
 import { useRouter } from "next/navigation";
-import { format } from "date-fns";
+import { format, isValid } from "date-fns";
 import {
   Accordion,
   AccordionContent,
@@ -130,6 +130,7 @@ export default function AccountSettingsPage() {
 
     const onPasswordSubmit = (data: PasswordFormValues) => {
         startPasswordTransition(async () => {
+            if (!currentUser?.email) return;
             const result = await changePassword(currentUser.email, data.currentPassword, data.newPassword);
     
             if (result.success) {
@@ -166,7 +167,7 @@ export default function AccountSettingsPage() {
     
     const planName = currentUser.plan.charAt(0).toUpperCase() + currentUser.plan.slice(1);
 
-    const renewalDate = currentUser.subscriptionEndsAt 
+    const renewalDate = currentUser.subscriptionEndsAt && isValid(new Date(currentUser.subscriptionEndsAt))
         ? format(new Date(currentUser.subscriptionEndsAt), "MMMM d, yyyy")
         : "N/A";
 
