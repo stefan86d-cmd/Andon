@@ -169,7 +169,7 @@ const MobileNavLink = ({ href, children }: { href: string; children: React.React
 
 
 export default function PricingPage() {
-    const [duration, setDuration] = useState<Duration>('12');
+    const [duration, setDuration] = useState<Duration>('1');
     const [currency, setCurrency] = useState<Currency>('usd');
     const { currentUser } = useUser();
     const [year, setYear] = useState(new Date().getFullYear());
@@ -477,3 +477,5 @@ export default function PricingPage() {
     </div>
   );
 }
+
+    
