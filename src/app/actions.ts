@@ -102,13 +102,13 @@ export async function createCheckoutSession(
     });
 
     const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      mode: 'subscription',
-      customer: customer.id,
-      subscription_data: { metadata },
-      success_url: successUrl,
-      cancel_url: cancelUrl,
-      subscription: schedule.subscription as string,
+        payment_method_types: ['card'],
+        mode: 'subscription',
+        customer: customer.id,
+        subscription: schedule.subscription as string,
+        success_url: successUrl,
+        cancel_url: cancelUrl,
+        metadata,
     });
     
     return { sessionUrl: session.url! };
