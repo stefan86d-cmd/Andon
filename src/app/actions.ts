@@ -117,11 +117,13 @@ export async function createCheckoutSession(
             ui_mode: 'embedded',
             payment_method_types: ['card'],
             mode: 'subscription',
-            subscription_schedule: schedule.id,
             line_items: [{ price: initialPriceId, quantity: 1 }], // Show the initial price in checkout
             customer_email: email,
             metadata,
             return_url: successUrl,
+            subscription_data: {
+                schedule: schedule.id,
+            }
         });
     }
     
