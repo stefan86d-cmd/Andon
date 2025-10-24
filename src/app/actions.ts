@@ -1,23 +1,17 @@
 
 'use server';
 
-import {
-  FieldValue,
-  getFirestore,
-  Timestamp,
-} from 'firebase-admin/firestore';
+import { FieldValue } from 'firebase-admin/firestore';
 import { db as lazilyGetDb } from '@/firebase/server';
 import { adminAuth } from '@/firebase/admin';
 import type { Issue, Plan, ProductionLine, Role, User } from '@/lib/types';
 import { handleFirestoreError } from '@/lib/firestore-helpers';
 import { sendEmail } from '@/lib/email';
-import { getAuth } from 'firebase/auth';
 import Stripe from 'stripe';
 
 const stripe = new Stripe(process.env.NEXT_STRIPE_SECRET_KEY!, {
   apiVersion: '2024-06-20',
 });
-
 
 const db = lazilyGetDb();
 
@@ -31,11 +25,8 @@ export async function createCheckoutSession(
   currency: 'usd' | 'eur' | 'gbp',
   isNewUser: boolean
 ): Promise<{ clientSecret?: string; error?: string }> {
-  if (!stripe) {
-    return { error: 'Stripe is not initialized.' };
-  }
   if (!process.env.NEXT_PUBLIC_BASE_URL) {
-      return { error: "Base URL is not configured."}
+    return { error: 'Base URL is not configured.' };
   }
 
   try {
@@ -62,90 +53,81 @@ export async function createCheckoutSession(
 
     const planPrices = priceIdMap[plan];
     if (!planPrices) return { error: `Plan ${plan} not configured` };
-    
+
     const monthlyPriceId = planPrices['1'];
     const initialPriceId = planPrices[duration];
-    
+
     if (!monthlyPriceId || !initialPriceId) {
       return { error: `Stripe price not configured for plan ${plan} duration ${duration}` };
     }
 
     const metadata = { userId, plan, duration, isNewUser: String(isNewUser) };
-    const successUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`;
     const returnUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`;
 
-    let session;
     // --- MONTHLY SUBSCRIPTION ---
     if (duration === '1') {
-      session = await stripe.checkout.sessions.create({
+      const session = await stripe.checkout.sessions.create({
         ui_mode: 'embedded',
         payment_method_types: ['card'],
-        line_items: [{ price: monthlyPriceId, quantity: 1 }],
-        mode: 'subscription',
         customer_email: email,
-        metadata,
-        return_url: returnUrl,
-        subscription_data: { metadata }
-      });
-    } else {
-      // --- MULTI-MONTH PREPAY SUBSCRIPTION ---
-      const customers = await stripe.customers.list({ email, limit: 1 });
-      let customer = customers.data.length > 0 ? customers.data[0] : null;
-      if (!customer) {
-        customer = await stripe.customers.create({ email });
-      }
-
-      const schedule = await stripe.subscriptionSchedules.create({
-        customer: customer.id,
-        start_date: 'now',
-        end_behavior: 'release',
-        metadata,
-        phases: [
-          {
-            items: [{ price: initialPriceId, quantity: 1 }],
-            iterations: parseInt(duration, 10) / 12,
-          },
-          {
-            items: [{ price: monthlyPriceId, quantity: 1 }],
-            iterations: Infinity,
-          },
-        ],
-      });
-      
-      session = await stripe.checkout.sessions.create({
-        ui_mode: 'embedded',
-        payment_method_types: ['card'],
         mode: 'subscription',
-        customer: customer.id,
-        subscription: schedule.id,
+        subscription_data: {
+          items: [{ price: monthlyPriceId, quantity: 1 }],
+          metadata,
+        },
         return_url: returnUrl,
-        metadata,
       });
+      return { clientSecret: session.client_secret! };
     }
 
+    // --- MULTI-MONTH PREPAY SUBSCRIPTION ---
+    const customers = await stripe.customers.list({ email, limit: 1 });
+    const customer = customers.data.length ? customers.data[0] : await stripe.customers.create({ email });
+
+    const schedule = await stripe.subscriptionSchedules.create({
+      customer: customer.id,
+      start_date: 'now',
+      end_behavior: 'release',
+      metadata,
+      phases: [
+        {
+          items: [{ price: initialPriceId, quantity: 1 }],
+          iterations: parseInt(duration, 10) / 12,
+        },
+        {
+          items: [{ price: monthlyPriceId, quantity: 1 }],
+          iterations: 9999,
+        },
+      ],
+    });
+
+    const session = await stripe.checkout.sessions.create({
+      ui_mode: 'embedded',
+      mode: 'subscription',
+      customer: customer.id,
+      subscription: schedule.subscription as string,
+      return_url: returnUrl,
+      metadata,
+    });
+    
     return { clientSecret: session.client_secret! };
-  } catch (error: any) {
-    console.error('Stripe checkout session error:', error);
-    return { error: error.message };
+
+  } catch (err: any) {
+    console.error(err);
+    return { error: err.message };
   }
 }
 
 export async function getCheckoutSession(sessionId: string) {
-    if (!stripe) {
-        return { error: 'Stripe is not initialized.' };
-    }
-    try {
-        const session = await stripe.checkout.sessions.retrieve(sessionId, {
-            expand: ['subscription', 'subscription.schedule'],
-        });
-        return { session };
-    } catch (error: any) {
-        return { error: error.message };
-    }
+  try {
+    const session = await stripe.checkout.sessions.retrieve(sessionId, { expand: ['subscription'] });
+    return { session };
+  } catch (err: any) {
+    return { error: err.message };
+  }
 }
 
-
-// --- Data fetching actions ---
+// --- Data Fetching ---
 
 export async function getProductionLines(orgId: string): Promise<ProductionLine[]> {
   if (!db) return [];
@@ -153,7 +135,7 @@ export async function getProductionLines(orgId: string): Promise<ProductionLine[
     const snapshot = await db.collection('productionLines').where('orgId', '==', orgId).get();
     return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as ProductionLine));
   } catch (error) {
-    console.error('Error fetching production lines:', error);
+    console.error(error);
     return [];
   }
 }
@@ -164,7 +146,7 @@ export async function getAllUsers(orgId: string): Promise<User[]> {
     const snapshot = await db.collection('users').where('orgId', '==', orgId).get();
     return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
   } catch (error) {
-    console.error('Error fetching all users:', error);
+    console.error(error);
     return [];
   }
 }
@@ -174,23 +156,20 @@ export async function getUserByEmail(email: string): Promise<User | null> {
   try {
     const snapshot = await db.collection('users').where('email', '==', email).get();
     if (snapshot.empty) return null;
-    const doc = snapshot.docs[0];
-    return { id: doc.id, ...doc.data() } as User;
+    return { id: snapshot.docs[0].id, ...snapshot.docs[0].data() } as User;
   } catch (error) {
-    handleFirestoreError(error);
-    return null;
+    return handleFirestoreError(error);
   }
 }
 
 export async function getUserById(uid: string): Promise<User | null> {
   if (!db) return null;
   try {
-    const docRef = db.collection('users').doc(uid);
-    const docSnap = await docRef.get();
+    const docSnap = await db.collection('users').doc(uid).get();
     if (!docSnap.exists) return null;
     return { id: docSnap.id, ...docSnap.data() } as User;
   } catch (error) {
-    console.error(`Error fetching user by ID ${uid}:`, error);
+    console.error(error);
     return null;
   }
 }
@@ -206,21 +185,16 @@ export async function addUser(userData: {
   orgId: string;
 }) {
   if (!db || !adminAuth) return handleFirestoreError(new Error('Admin SDK not initialized'));
+
   try {
     const { email, firstName, lastName, role, plan, orgId } = userData;
 
-    const existingUser = await getUserByEmail(email);
-    if (existingUser) return { success: false, error: 'A user with this email already exists.' };
+    if (await getUserByEmail(email)) return { success: false, error: 'Email already exists' };
 
-    const randomPassword = Math.random().toString(36).slice(-8);
+    const password = Math.random().toString(36).slice(-8);
+    const userRecord = await adminAuth.createUser({ email, password, displayName: `${firstName} ${lastName}` });
 
-    const userRecord = await adminAuth.createUser({
-      email,
-      password: randomPassword,
-      displayName: `${firstName} ${lastName}`,
-    });
-
-    const newUser: Omit<User, 'id'|'subscriptionStartsAt'|'subscriptionEndsAt'|'address'|'city'|'postalCode'|'country'|'phone'> = {
+    const newUser: Omit<User, 'id'> = {
       firstName,
       lastName,
       email,
@@ -234,41 +208,23 @@ export async function addUser(userData: {
     await db.collection('users').doc(userRecord.uid).set(newUser);
 
     const resetLink = await adminAuth.generatePasswordResetLink(email);
-    await sendEmail({
-      to: email,
-      subject: "You're invited to AndonPro!",
-      html: `<h1>Welcome to AndonPro</h1>
-             <p>You have been invited to join your team on AndonPro.</p>
-             <p>To get started, please set your password by clicking the link below:</p>
-             <a href="${resetLink}">Set Your Password</a>
-             <p>This link will expire in 24 hours.</p>`,
-    });
+    await sendEmail({ to: email, subject: "Welcome to AndonPro!", html: `<p>Set your password: <a href="${resetLink}">Click here</a></p>` });
 
     return { success: true, userId: userRecord.uid };
-  } catch (error: any) {
-    if (error.code === 'auth/email-already-exists') {
-      return { success: false, error: 'A user with this email already exists in Firebase Authentication.' };
-    }
-    return handleFirestoreError(error);
+  } catch (err: any) {
+    return handleFirestoreError(err);
   }
 }
 
-export async function editUser(
-  userId: string,
-  userData: { firstName: string; lastName: string; email: string; role: Role }
-) {
+export async function editUser(userId: string, data: { firstName: string; lastName: string; email: string; role: Role }) {
   if (!db || !adminAuth) return handleFirestoreError(new Error('Admin SDK not initialized'));
   try {
-    await db.collection('users').doc(userId).update(userData);
-
+    await db.collection('users').doc(userId).update(data);
     const authUser = await adminAuth.getUser(userId);
-    if (authUser.email !== userData.email) {
-      await adminAuth.updateUser(userId, { email: userData.email });
-    }
-
+    if (authUser.email !== data.email) await adminAuth.updateUser(userId, { email: data.email });
     return { success: true };
-  } catch (error) {
-    return handleFirestoreError(error);
+  } catch (err) {
+    return handleFirestoreError(err);
   }
 }
 
@@ -277,8 +233,8 @@ export async function deleteUser(userId: string) {
   try {
     await db.collection('users').doc(userId).delete();
     return { success: true };
-  } catch (error) {
-    return handleFirestoreError(error);
+  } catch (err) {
+    return handleFirestoreError(err);
   }
 }
 
@@ -287,34 +243,23 @@ export async function updateUserPlan(userId: string, newPlan: Plan, planData: Pa
   try {
     const userRef = db.collection('users').doc(userId);
     const userSnap = await userRef.get();
-    if (!userSnap.exists) {
-        return { success: false, error: 'User not found.' };
-    }
-    const user = userSnap.data() as User;
+    if (!userSnap.exists) return { success: false, error: 'User not found' };
 
     const updateData: any = { ...planData, plan: newPlan };
-    
-    // For starter plan, remove subscription dates
     if (newPlan === 'starter') {
-        updateData.subscriptionId = FieldValue.delete();
-        updateData.subscriptionEndsAt = FieldValue.delete();
-        updateData.subscriptionStartsAt = FieldValue.delete();
+      updateData.subscriptionId = FieldValue.delete();
+      updateData.subscriptionStartsAt = FieldValue.delete();
+      updateData.subscriptionEndsAt = FieldValue.delete();
     }
-    
+
     await userRef.update(updateData);
 
-    await sendEmail({
-        to: user.email,
-        subject: "Your AndonPro Plan Has Been Changed",
-        html: `<h1>Subscription Update</h1>
-               <p>Hello ${user.firstName},</p>
-               <p>This email confirms that your AndonPro plan has been successfully changed to the <strong>${newPlan.charAt(0).toUpperCase() + newPlan.slice(1)}</strong> plan.</p>
-               <p>Thank you for using AndonPro!</p>`
-    });
+    const user = userSnap.data() as User;
+    await sendEmail({ to: user.email, subject: "Plan Changed", html: `<p>Your plan has been updated to ${newPlan}</p>` });
 
     return { success: true };
-  } catch (error) {
-    return handleFirestoreError(error);
+  } catch (err) {
+    return handleFirestoreError(err);
   }
 }
 
@@ -322,78 +267,56 @@ export async function sendWelcomeEmail(userId: string) {
     if (!db) return handleFirestoreError(new Error('Firestore not initialized'));
     try {
         const user = await getUserById(userId);
-        if (!user) {
-            return { success: false, error: "User not found for welcome email."};
-        }
-        
-        const planName = user.plan.charAt(0).toUpperCase() + user.plan.slice(1);
-        const loginUrl = process.env.NEXT_PUBLIC_BASE_URL ? `${process.env.NEXT_PUBLIC_BASE_URL}/dashboard` : 'http://localhost:3000/dashboard';
+        if (!user) return { success: false, error: "User not found" };
 
         await sendEmail({
             to: user.email,
-            subject: `Welcome to AndonPro, ${user.firstName}!`,
-            html: `<h1>Welcome to AndonPro!</h1>
-                   <p>Hi ${user.firstName},</p>
-                   <p>Your account has been successfully created. You are on the <strong>${planName}</strong> plan.</p>
-                   <p>You can now log in to your dashboard and start exploring the features:</p>
-                   <a href="${loginUrl}" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: #ffffff; background-color: #2962FF; text-decoration: none; border-radius: 5px;">Go to Dashboard</a>
-                   <p>Thank you for joining AndonPro!</p>`
+            subject: "Welcome to AndonPro!",
+            html: `<h1>Welcome, ${user.firstName}!</h1><p>Your account is ready. <a href="${process.env.NEXT_PUBLIC_BASE_URL}/dashboard">Go to your dashboard</a>.</p>`
         });
         return { success: true };
-    } catch(error) {
-        return handleFirestoreError(error);
+    } catch (err: any) {
+        return handleFirestoreError(err);
     }
 }
 
-
-// --- Password Actions ---
-
 export async function requestPasswordReset(email: string) {
-  if (!adminAuth) {
-    console.error('Password reset request failed: adminAuth not available.');
-    // Still return success to prevent email enumeration
-    return { success: true, message: 'If this email is registered, you will receive a password reset link.' };
-  }
-  try {
-    const user = await getUserByEmail(email);
-    const resetLink = user ? await adminAuth.generatePasswordResetLink(email) : null;
-
-    if (user && resetLink) {
-      await sendEmail({
-        to: email,
-        subject: 'Reset Your AndonPro Password',
-        html: `<p>Click the following link to reset your password:</p><a href="${resetLink}">Reset Password</a>`,
-      });
+    if (!adminAuth) return { success: false, message: 'Password reset service is unavailable.' };
+    try {
+        // We generate the link regardless of whether the user exists to prevent email enumeration
+        const link = await adminAuth.generatePasswordResetLink(email);
+        await sendEmail({ to: email, subject: "Reset your password", html: `<p>Reset your password here: <a href="${link}">${link}</a></p>` });
+    } catch (error) {
+        // Do not expose specific errors to the client
+        console.error("Password reset error:", error);
     }
-
-    return { success: true, message: 'If this email is registered, you will receive a password reset link.' };
-  } catch (error) {
-    console.error('Password reset request failed:', error);
-    return { success: true, message: 'If this email is registered, you will receive a password reset link.' };
-  }
+    // Always return a generic success message
+    return { success: true, message: "If an account exists for this email, a password reset link has been sent." };
 }
 
 export async function sendPasswordChangedEmail(email: string) {
     try {
         await sendEmail({
             to: email,
-            subject: 'Your AndonPro Password Has Been Changed',
-            html: `<p>This is a confirmation that the password for your AndonPro account has been changed.</p>
-                   <p>If you did not make this change, please contact our support team immediately.</p>`
+            subject: "Your Password Has Been Changed",
+            html: "<p>Your password for AndonPro has been successfully changed. If you did not make this change, please contact our support team immediately.</p>",
         });
         return { success: true };
-    } catch (error) {
-        console.error('Password change confirmation email failed:', error);
-        // Don't block the user flow for this
-        return { success: true }; 
+    } catch (err) {
+        return handleFirestoreError(err);
     }
 }
 
 
-export async function changePassword(email: string, currentPassword?: string, newPassword?: string) {
-  if (!currentPassword || !newPassword) return { success: false, error: 'Passwords not provided.' };
-  console.log(`Password change requested for ${email}. Re-authentication must happen client-side.`);
-  return { success: true };
+export async function changePassword(email: string, currentPass: string, newPass: string) {
+    if (!adminAuth) return { success: false, error: "Authentication service unavailable." };
+    try {
+        // This is a placeholder for a more secure verification method
+        // In a real app, you would re-authenticate the user on the client before calling this
+        return { success: true };
+    } catch (error) {
+        return handleFirestoreError(error);
+    }
 }
 
 // --- Issue Actions ---
@@ -402,73 +325,41 @@ export async function reportIssue(issueData: Omit<Issue, 'id' | 'reportedAt' | '
   if (!db) return handleFirestoreError(new Error('Firestore not initialized'));
   try {
     const reporter = await getUserByEmail(userEmail);
-    if (!reporter) return { success: false, error: 'Reporting user not found.' };
+    if (!reporter) return { success: false, error: 'Reporting user not found' };
 
-    const newIssue: any = {
-      ...issueData,
-      status: 'reported' as const,
-      reportedAt: FieldValue.serverTimestamp(),
-      reportedBy: { name: `${reporter.firstName} ${reporter.lastName}`, email: reporter.email },
-    };
-    
-    // If subCategory is an empty string, remove it before saving
-    if (newIssue.subCategory === '') {
-        delete newIssue.subCategory;
-    }
+    const newIssue = { ...issueData, status: 'reported', reportedAt: FieldValue.serverTimestamp(), reportedBy: { name: `${reporter.firstName} ${reporter.lastName}`, email: reporter.email } };
+    if (newIssue.subCategory === '') delete newIssue.subCategory;
 
     const docRef = await db.collection('issues').add(newIssue);
     const issueId = docRef.id;
 
-    // Send email notifications
+    // Notify admins/supervisors
     const usersSnapshot = await db.collection('users').where('orgId', '==', issueData.orgId).get();
-    const users = usersSnapshot.docs.map(doc => doc.data() as User);
-    const recipients = users.filter(user => (user.role === 'admin' || user.role === 'supervisor') && user.notificationPreferences?.newIssue);
-
-    const dashboardUrl = process.env.NEXT_PUBLIC_BASE_URL ? `${process.env.NEXT_PUBLIC_BASE_URL}/issues` : 'http://localhost:3000/issues';
+    const recipients = usersSnapshot.docs.map(d => d.data() as User).filter(u => ['admin', 'supervisor'].includes(u.role) && u.notificationPreferences?.newIssue);
+    const dashboardUrl = `${process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000'}/issues`;
 
     for (const user of recipients) {
-        await sendEmail({
-            to: user.email,
-            subject: `New Issue Reported: ${issueData.title}`,
-            html: `<h1>New Issue Reported</h1>
-                   <p>A new issue has been reported on the production line.</p>
-                   <ul>
-                     <li><strong>Title:</strong> ${issueData.title}</li>
-                     <li><strong>Location:</strong> ${issueData.location}</li>
-                     <li><strong>Priority:</strong> ${issueData.priority}</li>
-                     <li><strong>Reported By:</strong> ${reporter.firstName} ${reporter.lastName}</li>
-                   </ul>
-                   <a href="${dashboardUrl}">View Issue Details</a>`
-        });
+      await sendEmail({ to: user.email, subject: `New Issue: ${issueData.title}`, html: `<p>View issue: <a href="${dashboardUrl}">${issueData.title}</a></p>` });
     }
 
     return { success: true, issueId };
-  } catch (error) {
-    return handleFirestoreError(error);
+  } catch (err) {
+    return handleFirestoreError(err);
   }
 }
 
-export async function updateIssue(
-  issueId: string,
-  data: { resolutionNotes?: string; status: 'in_progress' | 'resolved'; productionStopped: boolean },
-  userEmail: string
-) {
+export async function updateIssue(issueId: string, data: { resolutionNotes?: string; status: 'in_progress' | 'resolved'; productionStopped: boolean }, userEmail: string) {
   if (!db) return handleFirestoreError(new Error('Firestore not initialized'));
   try {
     const resolver = await getUserByEmail(userEmail);
-    if (!resolver) return { success: false, error: 'Resolving user not found.' };
+    if (!resolver) return { success: false, error: 'Resolving user not found' };
 
     const issueRef = db.collection('issues').doc(issueId);
     const issueSnap = await issueRef.get();
-    if (!issueSnap.exists) return { success: false, error: 'Issue not found.'};
+    if (!issueSnap.exists) return { success: false, error: 'Issue not found' };
     const issue = issueSnap.data() as Issue;
 
-    const updateData: any = {
-      resolutionNotes: data.resolutionNotes,
-      status: data.status,
-      productionStopped: data.productionStopped,
-    };
-
+    const updateData: any = { ...data };
     if (data.status === 'resolved') {
       updateData.resolvedAt = FieldValue.serverTimestamp();
       updateData.resolvedBy = { name: `${resolver.firstName} ${resolver.lastName}`, email: resolver.email };
@@ -476,31 +367,18 @@ export async function updateIssue(
 
     await issueRef.update(updateData);
 
-    // If the issue is resolved, notify the original reporter
-    if (data.status === 'resolved' && issue.reportedBy.email) {
+    // Notify reporter if resolved
+    if (data.status === 'resolved') {
       const reporter = await getUserByEmail(issue.reportedBy.email);
       if (reporter && reporter.notificationPreferences?.issueResolved) {
-         const dashboardUrl = process.env.NEXT_PUBLIC_BASE_URL ? `${process.env.NEXT_PUBLIC_BASE_URL}/issues` : 'http://localhost:3000/issues';
-         await sendEmail({
-           to: reporter.email,
-           subject: `Your Reported Issue Has Been Resolved: ${issue.title}`,
-           html: `<h1>Issue Resolved</h1>
-                  <p>The issue you reported has been resolved.</p>
-                  <ul>
-                    <li><strong>Title:</strong> ${issue.title}</li>
-                    <li><strong>Location:</strong> ${issue.location}</li>
-                    <li><strong>Resolved By:</strong> ${resolver.firstName} ${resolver.lastName}</li>
-                    <li><strong>Resolution Notes:</strong> ${data.resolutionNotes || 'N/A'}</li>
-                  </ul>
-                  <a href="${dashboardUrl}">View Details</a>`
-         });
+        const dashboardUrl = `${process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000'}/issues`;
+        await sendEmail({ to: reporter.email, subject: `Your issue resolved: ${issue.title}`, html: `<p>View issue: <a href="${dashboardUrl}">${issue.title}</a></p>` });
       }
     }
 
-
     return { success: true };
-  } catch (error) {
-    return handleFirestoreError(error);
+  } catch (err) {
+    return handleFirestoreError(err);
   }
 }
 
@@ -510,23 +388,21 @@ export async function createProductionLine(name: string, orgId: string) {
   if (!db) return handleFirestoreError(new Error('Firestore not initialized'));
   try {
     const snapshot = await db.collection('productionLines').where('name', '==', name).where('orgId', '==', orgId).get();
-    if (!snapshot.empty) return { success: false, error: 'A production line with this name already exists.' };
-
+    if (!snapshot.empty) return { success: false, error: 'Production line exists' };
     const docRef = await db.collection('productionLines').add({ name, workstations: [], orgId });
     return { success: true, id: docRef.id };
-  } catch (error) {
-    return handleFirestoreError(error);
+  } catch (err) {
+    return handleFirestoreError(err);
   }
 }
 
 export async function editProductionLine(lineId: string, data: { name: string; workstations: { value: string }[] }) {
   if (!db) return handleFirestoreError(new Error('Firestore not initialized'));
   try {
-    const workstationNames = data.workstations.map(ws => ws.value);
-    await db.collection('productionLines').doc(lineId).update({ name: data.name, workstations: workstationNames });
+    await db.collection('productionLines').doc(lineId).update({ name: data.name, workstations: data.workstations.map(ws => ws.value) });
     return { success: true };
-  } catch (error) {
-    return handleFirestoreError(error);
+  } catch (err) {
+    return handleFirestoreError(err);
   }
 }
 
@@ -535,7 +411,9 @@ export async function deleteProductionLine(lineId: string) {
   try {
     await db.collection('productionLines').doc(lineId).delete();
     return { success: true };
-  } catch (error) {
-    return handleFirestoreError(error);
+  } catch (err) {
+    return handleFirestoreError(err);
   }
 }
+
+    
