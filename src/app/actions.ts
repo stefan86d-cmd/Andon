@@ -5,12 +5,15 @@ import type { Issue, Plan, ProductionLine, Role, User } from '@/lib/types';
 import { handleFirestoreError } from '@/lib/firestore-helpers';
 import { sendEmail } from '@/lib/email';
 import Stripe from 'stripe';
+import { db as dbFn } from '@/firebase/server';
+import { adminAuth } from '@/firebase/admin';
+import { FieldValue } from 'firebase-admin/firestore';
+
+// ---------------- Stripe Actions ----------------
 
 const stripe = new Stripe(process.env.NEXT_STRIPE_SECRET_KEY!, {
   apiVersion: '2024-06-20',
 });
-
-// ---------------- Stripe Actions ----------------
 
 export async function createCheckoutSession({
   customerId,
@@ -24,10 +27,16 @@ export async function createCheckoutSession({
   plan: Plan;
   duration: '1' | '12' | '24' | '48';
   metadata?: Record<string, string>;
-  successUrl: string;
-  cancelUrl: string;
+  successUrl?: string;
+  cancelUrl?: string;
 }) {
   try {
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000';
+
+    const success_url = successUrl ?? `${baseUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`;
+    const cancel_url = cancelUrl ?? `${baseUrl}/settings/billing`;
+
+    // Map plans and durations to Stripe Price IDs
     const priceIdMap: Record<Exclude<Plan, 'starter' | 'custom'>, Record<string, string | undefined>> = {
       standard: {
         '1': process.env.STRIPE_PRICE_ID_STANDARD,
@@ -50,61 +59,71 @@ export async function createCheckoutSession({
     };
 
     const priceId = plan !== 'starter' && plan !== 'custom' ? priceIdMap[plan][duration] : undefined;
-    if (!priceId) throw new Error("Price ID not found for the selected plan and duration.");
+    if (!priceId) throw new Error('❌ Price ID not found for selected plan/duration.');
 
+    // ---- Create session based on duration ----
+    let session;
     if (duration === '1') {
-      // Monthly subscription
-      const session = await stripe.checkout.sessions.create({
-        customer: customerId,
+      // Monthly recurring subscription
+      session = await stripe.checkout.sessions.create({
         mode: 'subscription',
+        customer: customerId,
         line_items: [{ price: priceId, quantity: 1 }],
         allow_promotion_codes: true,
-        subscription_data: { metadata },
-        success_url: successUrl,
-        cancel_url: cancelUrl,
+        subscription_data: {
+          metadata,
+        },
+        success_url: success_url,
+        cancel_url: cancel_url,
       });
-      return { url: session.url };
     } else {
-      // Multi-month one-time payment
-      const session = await stripe.checkout.sessions.create({
-        customer: customerId,
+      // One-time prepay for multiple months
+      session = await stripe.checkout.sessions.create({
         mode: 'payment',
+        customer: customerId,
         line_items: [{ price: priceId, quantity: 1 }],
         allow_promotion_codes: true,
         payment_intent_data: {
-          metadata: metadata
+          metadata,
         },
-        success_url: successUrl,
-        cancel_url: cancelUrl,
+        success_url: success_url,
+        cancel_url: cancel_url,
       });
-      return { url: session.url };
     }
+
+    console.log('✅ Stripe session created:', session.id);
+    return { url: session.url };
   } catch (error: any) {
-    console.error('Stripe session error:', error);
-    throw new Error(error.message);
+    console.error('❌ Stripe session error:', error);
+    throw new Error(error.message || 'Failed to create Stripe checkout session.');
   }
 }
 
 export async function getCheckoutSession(sessionId: string) {
   try {
-    const session = await stripe.checkout.sessions.retrieve(sessionId, { expand: ['subscription', 'payment_intent', 'line_items'] });
+    const session = await stripe.checkout.sessions.retrieve(sessionId, {
+      expand: ['subscription', 'payment_intent', 'line_items'],
+    });
     return { session };
-  } catch (err: any) {
-    return { error: err.message };
+  } catch (error: any) {
+    console.error('❌ Stripe getCheckoutSession error:', error);
+    return { error: error.message };
   }
 }
 
 export async function getOrCreateStripeCustomer(email: string): Promise<{ id: string }> {
-  const customers = await stripe.customers.list({ email, limit: 1 });
-  if (customers.data.length > 0 && customers.data[0]) return { id: customers.data[0].id };
+  const existing = await stripe.customers.list({ email, limit: 1 });
+  if (existing.data.length > 0 && existing.data[0]) {
+    return { id: existing.data[0].id };
+  }
   const newCustomer = await stripe.customers.create({ email });
   return { id: newCustomer.id };
 }
 
+
 // ---------------- User / Firestore Actions ----------------
 
 export async function getUserByEmail(email: string): Promise<User | null> {
-  const { db: dbFn } = await import('@/firebase/server');
   const db = dbFn();
   if (!db) return null;
   try {
@@ -119,7 +138,6 @@ export async function getUserByEmail(email: string): Promise<User | null> {
 }
 
 export async function getUserById(uid: string): Promise<User | null> {
-  const { db: dbFn } = await import('@/firebase/server');
   const db = dbFn();
   if (!db) return null;
   try {
@@ -140,9 +158,7 @@ export async function addUser(userData: {
   plan: Plan;
   orgId: string;
 }) {
-  const { db: dbFn } = await import('@/firebase/server');
   const db = dbFn();
-  const { adminAuth } = await import('@/firebase/admin');
   if (!db || !adminAuth) return handleFirestoreError(new Error('Admin SDK not initialized'));
   try {
     const { email, firstName, lastName, role, plan, orgId } = userData;
@@ -176,9 +192,7 @@ export async function addUser(userData: {
 }
 
 export async function editUser(userId: string, data: { firstName: string; lastName: string; email: string; role: Role }) {
-  const { db: dbFn } = await import('@/firebase/server');
   const db = dbFn();
-  const { adminAuth } = await import('@/firebase/admin');
   if (!db || !adminAuth) return handleFirestoreError(new Error('Admin SDK not initialized'));
   try {
     await db.collection('users').doc(userId).update(data);
@@ -191,13 +205,11 @@ export async function editUser(userId: string, data: { firstName: string; lastNa
 }
 
 export async function deleteUser(userId: string) {
-  const { db: dbFn } = await import('@/firebase/server');
   const db = dbFn();
   if (!db) return handleFirestoreError(new Error('Firestore not initialized'));
   try {
     await db.collection('users').doc(userId).delete();
     // Also delete from Firebase Auth
-    const { adminAuth } = await import('@/firebase/admin');
     await adminAuth.deleteUser(userId);
     return { success: true };
   } catch (err) {
@@ -206,9 +218,7 @@ export async function deleteUser(userId: string) {
 }
 
 export async function updateUserPlan(userId: string, newPlan: Plan, planData: Partial<User>) {
-  const { db: dbFn } = await import('@/firebase/server');
   const db = dbFn();
-  const { FieldValue } = await import('firebase-admin/firestore');
   if (!db) return handleFirestoreError(new Error('Firestore not initialized'));
   try {
     const userRef = db.collection('users').doc(userId);
@@ -232,7 +242,6 @@ export async function updateUserPlan(userId: string, newPlan: Plan, planData: Pa
 }
 
 export async function sendWelcomeEmail(userId: string) {
-  const { db: dbFn } = await import('@/firebase/server');
   const db = dbFn();
   if (!db) return handleFirestoreError(new Error('Firestore not initialized'));
   try {
@@ -251,7 +260,6 @@ export async function sendWelcomeEmail(userId: string) {
 }
 
 export async function requestPasswordReset(email: string) {
-  const { adminAuth } = await import('@/firebase/admin');
   if (!adminAuth) return { success: false, message: 'Password reset service is unavailable.' };
   try {
     const link = await adminAuth.generatePasswordResetLink(email);
@@ -276,7 +284,6 @@ export async function sendPasswordChangedEmail(email: string) {
 }
 
 export async function changePassword(email: string, currentPass: string, newPass: string) {
-  const { adminAuth } = await import('@/firebase/admin');
   if (!adminAuth) return { success: false, error: "Authentication service unavailable." };
   try {
     // This is a placeholder. Real password change logic would involve re-authenticating the user.
@@ -290,9 +297,7 @@ export async function changePassword(email: string, currentPass: string, newPass
 // ---------------- Issue Actions ----------------
 
 export async function reportIssue(issueData: Omit<Issue, 'id' | 'reportedAt' | 'reportedBy' | 'status'>, userEmail: string) {
-  const { db: dbFn } = await import('@/firebase/server');
   const db = dbFn();
-  const { FieldValue } = await import('firebase-admin/firestore');
   if (!db) return handleFirestoreError(new Error('Firestore not initialized'));
   try {
     const reporter = await getUserByEmail(userEmail);
@@ -319,9 +324,7 @@ export async function reportIssue(issueData: Omit<Issue, 'id' | 'reportedAt' | '
 }
 
 export async function updateIssue(issueId: string, data: { resolutionNotes?: string; status: 'in_progress' | 'resolved'; productionStopped: boolean }, userEmail: string) {
-  const { db: dbFn } = await import('@/firebase/server');
   const db = dbFn();
-  const { FieldValue } = await import('firebase-admin/firestore');
   if (!db) return handleFirestoreError(new Error('Firestore not initialized'));
   try {
     const resolver = await getUserByEmail(userEmail);
@@ -357,7 +360,6 @@ export async function updateIssue(issueId: string, data: { resolutionNotes?: str
 // ---------------- Production Line Actions ----------------
 
 export async function getProductionLines(orgId: string): Promise<ProductionLine[]> {
-  const { db: dbFn } = await import('@/firebase/server');
   const db = dbFn();
   if (!db) return [];
   try {
@@ -370,7 +372,6 @@ export async function getProductionLines(orgId: string): Promise<ProductionLine[
 }
 
 export async function createProductionLine(name: string, orgId: string) {
-  const { db: dbFn } = await import('@/firebase/server');
   const db = dbFn();
   if (!db) return handleFirestoreError(new Error('Firestore not initialized'));
   try {
@@ -384,7 +385,6 @@ export async function createProductionLine(name: string, orgId: string) {
 }
 
 export async function editProductionLine(lineId: string, data: { name: string; workstations: { value: string }[] }) {
-  const { db: dbFn } = await import('@/firebase/server');
   const db = dbFn();
   if (!db) return handleFirestoreError(new Error('Firestore not initialized'));
   try {
@@ -396,7 +396,6 @@ export async function editProductionLine(lineId: string, data: { name: string; w
 }
 
 export async function deleteProductionLine(lineId: string) {
-  const { db: dbFn } = await import('@/firebase/server');
   const db = dbFn();
   if (!db) return handleFirestoreError(new Error('Firestore not initialized'));
   try {
@@ -410,7 +409,6 @@ export async function deleteProductionLine(lineId: string) {
 // ---------------- Users List ----------------
 
 export async function getAllUsers(orgId: string): Promise<User[]> {
-  const { db: dbFn } = await import('@/firebase/server');
   const db = dbFn();
   if (!db) return [];
   try {
