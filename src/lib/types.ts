@@ -21,6 +21,7 @@ export type User = {
   customLineLimit?: number;
   customWorkstationLimit?: number;
   subscriptionId?: string;
+  stripeCustomerId?: string;
   subscriptionStartsAt?: Date;
   subscriptionEndsAt?: Date;
   notificationPreferences: {
