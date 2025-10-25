@@ -83,9 +83,7 @@ export async function createCheckoutSession({
         customer: customerId,
         line_items: [{ price: priceId, quantity: 1 }],
         allow_promotion_codes: true,
-        payment_intent_data: {
-          metadata,
-        },
+        metadata,
         success_url: success_url,
         cancel_url: cancel_url,
       });
@@ -112,10 +110,28 @@ export async function getCheckoutSession(sessionId: string) {
 }
 
 export async function getOrCreateStripeCustomer(email: string): Promise<{ id: string }> {
+  const db = dbFn();
+  if (!db) throw new Error("Firestore not initialized");
+  
+  // Check our DB first
+  const userSnapshot = await db.collection('users').where('email', '==', email).limit(1).get();
+  if (!userSnapshot.empty) {
+    const user = userSnapshot.docs[0].data() as User;
+    if (user.subscriptionId) { // A Stripe customer ID is stored in subscriptionId for our app
+        const stripeCustomer = await stripe.customers.retrieve(user.subscriptionId);
+        if (stripeCustomer && !stripeCustomer.deleted) {
+             return { id: stripeCustomer.id };
+        }
+    }
+  }
+  
+  // Check Stripe next
   const existing = await stripe.customers.list({ email, limit: 1 });
   if (existing.data.length > 0 && existing.data[0]) {
     return { id: existing.data[0].id };
   }
+  
+  // Create new customer
   const newCustomer = await stripe.customers.create({ email });
   return { id: newCustomer.id };
 }
