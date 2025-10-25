@@ -57,7 +57,6 @@ function CompleteProfileContent() {
 
   const planFromUrl = searchParams.get('plan') as Plan | null;
   const durationFromUrl = searchParams.get('duration') as Duration | null;
-  const currencyFromUrl = searchParams.get('currency') as Currency || 'usd';
   
   const selectedPlan = planFromUrl || 'starter';
   const selectedDuration = durationFromUrl || '1';
