@@ -38,7 +38,6 @@ export async function createCheckoutSession({
     const success_url = successUrl ?? `${baseUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`;
     const cancel_url = cancelUrl ?? `${baseUrl}/settings/billing`;
 
-    // Map plans and durations to Stripe Price IDs
     const priceIdMap: Record<Exclude<Plan, 'starter' | 'custom'>, Record<string, string | undefined>> = {
       standard: {
         '1': process.env.STRIPE_PRICE_ID_STANDARD,
@@ -63,7 +62,6 @@ export async function createCheckoutSession({
     const priceId = plan !== 'starter' && plan !== 'custom' ? priceIdMap[plan][duration] : undefined;
     if (!priceId) throw new Error('❌ Price ID not found for selected plan/duration.');
 
-    // ---- Create session based on duration ----
     let session;
     const sessionParams: Stripe.Checkout.SessionCreateParams = {
         customer: customerId,
@@ -71,20 +69,17 @@ export async function createCheckoutSession({
         allow_promotion_codes: true,
         success_url: success_url,
         cancel_url: cancel_url,
-        metadata: metadata, // Pass metadata at the top level for both modes
+        metadata: metadata,
     };
 
     if (duration === '1') {
-      // Monthly recurring subscription
       sessionParams.mode = 'subscription';
-      sessionParams.subscription_data = { metadata }; // Also pass here for the subscription object
+      sessionParams.subscription_data = { metadata };
     } else {
-      // One-time prepay for multiple months
       sessionParams.mode = 'payment';
     }
 
     session = await stripe.checkout.sessions.create(sessionParams);
-
 
     console.log('✅ Stripe session created:', session.id);
     return { url: session.url };
@@ -114,33 +109,26 @@ export async function getOrCreateStripeCustomer(userId: string, email: string): 
     const userSnapshot = await userRef.get();
     const userData = userSnapshot.data() as User | undefined;
 
-    // 1. Check for existing Stripe customer ID on the user's document
-    if (userData?.subscriptionId) { // This field stores the stripeCustomerId
+    if (userData?.stripeCustomerId) {
         try {
-            // Retrieve the customer to ensure it's still valid in Stripe
-            const stripeCustomer = await stripe.customers.retrieve(userData.subscriptionId);
+            const stripeCustomer = await stripe.customers.retrieve(userData.stripeCustomerId);
             if (stripeCustomer && !stripeCustomer.deleted) {
                 return { id: stripeCustomer.id };
             }
         } catch (error) {
-            // Customer might not exist in Stripe anymore, proceed to check by email
-            console.warn(`Stripe customer ID ${userData.subscriptionId} not found in Stripe. Will check by email.`);
+            console.warn(`Stripe customer ID ${userData.stripeCustomerId} not found in Stripe. Will check by email.`);
         }
     }
 
-    // 2. Check Stripe by email for existing customers
     const existingCustomers = await stripe.customers.list({ email, limit: 1 });
     if (existingCustomers.data.length > 0 && existingCustomers.data[0]) {
         const customer = existingCustomers.data[0];
-        // Save the found customer ID to our DB for future lookups
-        await userRef.update({ subscriptionId: customer.id }); 
+        await userRef.update({ stripeCustomerId: customer.id }); 
         return { id: customer.id };
     }
 
-    // 3. Create a new Stripe customer
     const newCustomer = await stripe.customers.create({ email, metadata: { userId } });
-    // Save the new customer ID to our DB
-    await userRef.update({ subscriptionId: newCustomer.id }); 
+    await userRef.update({ stripeCustomerId: newCustomer.id }); 
     return { id: newCustomer.id };
 }
 
@@ -254,6 +242,7 @@ export async function updateUserPlan(userId: string, newPlan: Plan, planData: Pa
       updateData.subscriptionId = FieldValue.delete();
       updateData.subscriptionStartsAt = FieldValue.delete();
       updateData.subscriptionEndsAt = FieldValue.delete();
+      updateData.stripeCustomerId = FieldValue.delete();
     }
 
     await userRef.update(updateData);
@@ -443,3 +432,5 @@ export async function getAllUsers(orgId: string): Promise<User[]> {
     return [];
   }
 }
+
+    
