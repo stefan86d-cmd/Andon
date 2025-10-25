@@ -53,7 +53,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
         phone: "",
         orgId: firebaseUser.uid, // The new user's ID becomes their organization ID
         notificationPreferences: { newIssue: false, issueResolved: false, muteSound: true },
-        theme: 'system',
+        theme: 'light',
     };
   };
 

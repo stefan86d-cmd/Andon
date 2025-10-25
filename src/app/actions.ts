@@ -1,9 +1,6 @@
 
 'use server';
 
-import { FieldValue } from 'firebase-admin/firestore';
-import { db as lazilyGetDb } from '@/firebase/server';
-import { adminAuth } from '@/firebase/admin';
 import type { Issue, Plan, ProductionLine, Role, User } from '@/lib/types';
 import { handleFirestoreError } from '@/lib/firestore-helpers';
 import { sendEmail } from '@/lib/email';
@@ -13,7 +10,7 @@ const stripe = new Stripe(process.env.NEXT_STRIPE_SECRET_KEY!, {
   apiVersion: '2024-06-20',
 });
 
-// --- Stripe Actions ---
+// ---------------- Stripe Actions ----------------
 
 export async function createCheckoutSession({
   customerId,
@@ -31,70 +28,56 @@ export async function createCheckoutSession({
   cancelUrl: string;
 }) {
   try {
-      const priceIdMap: Record<Exclude<Plan, 'starter' | 'custom'>, Record<string, string | undefined>> = {
-          standard: {
-            '1': process.env.STRIPE_PRICE_ID_STANDARD,
-            '12': process.env.STRIPE_PRICE_ID_STANDARD_12,
-            '24': process.env.STRIPE_PRICE_ID_STANDARD_24,
-            '48': process.env.STRIPE_PRICE_ID_STANDARD_48,
-          },
-          pro: {
-            '1': process.env.STRIPE_PRICE_ID_PRO,
-            '12': process.env.STRIPE_PRICE_ID_PRO_12,
-            '24': process.env.STRIPE_PRICE_ID_PRO_24,
-            '48': process.env.STRIPE_PRICE_ID_PRO_48,
-          },
-          enterprise: {
-            '1': process.env.STRIPE_PRICE_ID_ENTERPRISE,
-            '12': process.env.STRIPE_PRICE_ID_ENTERPRISE_12,
-            '24': process.env.STRIPE_PRICE_ID_ENTERPRISE_24,
-            '48': process.env.STRIPE_PRICE_ID_ENTERPRISE_48,
-          },
-      };
+    const priceIdMap: Record<Exclude<Plan, 'starter' | 'custom'>, Record<string, string | undefined>> = {
+      standard: {
+        '1': process.env.STRIPE_PRICE_ID_STANDARD,
+        '12': process.env.STRIPE_PRICE_ID_STANDARD_12,
+        '24': process.env.STRIPE_PRICE_ID_STANDARD_24,
+        '48': process.env.STRIPE_PRICE_ID_STANDARD_48,
+      },
+      pro: {
+        '1': process.env.STRIPE_PRICE_ID_PRO,
+        '12': process.env.STRIPE_PRICE_ID_PRO_12,
+        '24': process.env.STRIPE_PRICE_ID_PRO_24,
+        '48': process.env.STRIPE_PRICE_ID_PRO_48,
+      },
+      enterprise: {
+        '1': process.env.STRIPE_PRICE_ID_ENTERPRISE,
+        '12': process.env.STRIPE_PRICE_ID_ENTERPRISE_12,
+        '24': process.env.STRIPE_PRICE_ID_ENTERPRISE_24,
+        '48': process.env.STRIPE_PRICE_ID_ENTERPRISE_48,
+      },
+    };
 
-      const priceId = plan !== 'starter' && plan !== 'custom' ? priceIdMap[plan][duration] : undefined;
+    const priceId = plan !== 'starter' && plan !== 'custom' ? priceIdMap[plan][duration] : undefined;
+    if (!priceId) throw new Error("Price ID not found for the selected plan and duration.");
 
-      if (!priceId) {
-        throw new Error("Price ID not found for the selected plan and duration.");
-      }
-
-    // For monthly plans, create a recurring subscription
     if (duration === '1') {
+      // Monthly subscription
       const session = await stripe.checkout.sessions.create({
         customer: customerId,
         mode: 'subscription',
-        line_items: [
-          {
-            price: priceId,
-            quantity: 1,
-          },
-        ],
+        line_items: [{ price: priceId, quantity: 1 }],
         allow_promotion_codes: true,
-        subscription_data: {
-          metadata,
+        subscription_data: { metadata },
+        success_url: successUrl,
+        cancel_url: cancelUrl,
+      });
+      return { url: session.url };
+    } else {
+      // Multi-month one-time payment
+      const session = await stripe.checkout.sessions.create({
+        customer: customerId,
+        mode: 'payment',
+        line_items: [{ price: priceId, quantity: 1 }],
+        allow_promotion_codes: true,
+        payment_intent_data: {
+          metadata: metadata
         },
         success_url: successUrl,
         cancel_url: cancelUrl,
       });
       return { url: session.url };
-    } 
-    // For multi-month plans, create a one-time payment
-    else {
-        const session = await stripe.checkout.sessions.create({
-            customer: customerId,
-            mode: 'payment',
-            line_items: [
-                {
-                    price: priceId,
-                    quantity: 1,
-                },
-            ],
-            allow_promotion_codes: true,
-            metadata,
-            success_url: successUrl,
-            cancel_url: cancelUrl,
-        });
-        return { url: session.url };
     }
   } catch (error: any) {
     console.error('Stripe session error:', error);
@@ -102,10 +85,9 @@ export async function createCheckoutSession({
   }
 }
 
-
 export async function getCheckoutSession(sessionId: string) {
   try {
-    const session = await stripe.checkout.sessions.retrieve(sessionId, { expand: ['subscription', 'line_items'] });
+    const session = await stripe.checkout.sessions.retrieve(sessionId, { expand: ['subscription', 'payment_intent', 'line_items'] });
     return { session };
   } catch (err: any) {
     return { error: err.message };
@@ -113,73 +95,40 @@ export async function getCheckoutSession(sessionId: string) {
 }
 
 export async function getOrCreateStripeCustomer(email: string): Promise<{ id: string }> {
-    const customers = await stripe.customers.list({ email, limit: 1 });
-    if (customers.data.length > 0 && customers.data[0]) {
-        return { id: customers.data[0].id };
-    }
-    const newCustomer = await stripe.customers.create({ email });
-    return { id: newCustomer.id };
+  const customers = await stripe.customers.list({ email, limit: 1 });
+  if (customers.data.length > 0 && customers.data[0]) return { id: customers.data[0].id };
+  const newCustomer = await stripe.customers.create({ email });
+  return { id: newCustomer.id };
 }
 
-// --- Data Fetching ---
-
-export async function getProductionLines(orgId: string): Promise<ProductionLine[]> {
-  const db = lazilyGetDb();
-  if (!db) return [];
-  try {
-    const snapshot = await db.collection('productionLines').where('orgId', '==', orgId).get();
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as ProductionLine));
-  } catch (error) {
-    console.error(error);
-    return [];
-  }
-}
-
-export async function getAllUsers(orgId: string): Promise<User[]> {
-  const db = lazilyGetDb();
-  if (!db) return [];
-  try {
-    const snapshot = await db.collection('users').where('orgId', '==', orgId).get();
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
-  } catch (error) {
-    console.error(error);
-    return [];
-  }
-}
+// ---------------- User / Firestore Actions ----------------
 
 export async function getUserByEmail(email: string): Promise<User | null> {
-  const db = lazilyGetDb();
+  const { db } = await import('@/firebase/server');
   if (!db) return null;
-
   try {
     const snapshot = await db.collection('users').where('email', '==', email).get();
-
     if (snapshot.empty) return null;
-
     const doc = snapshot.docs[0];
-    const data = doc.data() as Omit<User, 'id'>; // assert type for Firestore data
-
-    return { id: doc.id, ...data };
-  } catch (error) {
-    console.error('Error fetching user by email:', error);
-    return null; // return null instead of handleFirestoreError to match return type
+    return { id: doc.id, ...(doc.data() as Omit<User, 'id'>) };
+  } catch (err) {
+    console.error('Error fetching user by email:', err);
+    return null;
   }
 }
 
 export async function getUserById(uid: string): Promise<User | null> {
-  const db = lazilyGetDb();
+  const { db } = await import('@/firebase/server');
   if (!db) return null;
   try {
     const docSnap = await db.collection('users').doc(uid).get();
     if (!docSnap.exists) return null;
     return { id: docSnap.id, ...docSnap.data() } as User;
-  } catch (error) {
-    console.error(error);
+  } catch (err) {
+    console.error(err);
     return null;
   }
 }
-
-// --- User Actions ---
 
 export async function addUser(userData: {
   firstName: string;
@@ -189,12 +138,12 @@ export async function addUser(userData: {
   plan: Plan;
   orgId: string;
 }) {
-  const db = lazilyGetDb();
+  const { db } = await import('@/firebase/server');
+  const { adminAuth } = await import('@/firebase/admin');
+  const { FieldValue } = await import('firebase-admin/firestore');
   if (!db || !adminAuth) return handleFirestoreError(new Error('Admin SDK not initialized'));
-
   try {
     const { email, firstName, lastName, role, plan, orgId } = userData;
-
     if (await getUserByEmail(email)) return { success: false, error: 'Email already exists' };
 
     const password = Math.random().toString(36).slice(-8);
@@ -208,7 +157,7 @@ export async function addUser(userData: {
       plan,
       orgId,
       notificationPreferences: { newIssue: false, issueResolved: false, muteSound: true },
-      theme: 'system',
+      theme: 'light',
       address: '',
       city: '',
       postalCode: '',
@@ -216,10 +165,8 @@ export async function addUser(userData: {
     };
 
     await db.collection('users').doc(userRecord.uid).set(newUser);
-
     const resetLink = await adminAuth.generatePasswordResetLink(email);
     await sendEmail({ to: email, subject: "Welcome to AndonPro!", html: `<p>Set your password: <a href="${resetLink}">Click here</a></p>` });
-
     return { success: true, userId: userRecord.uid };
   } catch (err: any) {
     return handleFirestoreError(err);
@@ -227,7 +174,8 @@ export async function addUser(userData: {
 }
 
 export async function editUser(userId: string, data: { firstName: string; lastName: string; email: string; role: Role }) {
-  const db = lazilyGetDb();
+  const { db } = await import('@/firebase/server');
+  const { adminAuth } = await import('@/firebase/admin');
   if (!db || !adminAuth) return handleFirestoreError(new Error('Admin SDK not initialized'));
   try {
     await db.collection('users').doc(userId).update(data);
@@ -240,10 +188,13 @@ export async function editUser(userId: string, data: { firstName: string; lastNa
 }
 
 export async function deleteUser(userId: string) {
-  const db = lazilyGetDb();
+  const { db } = await import('@/firebase/server');
   if (!db) return handleFirestoreError(new Error('Firestore not initialized'));
   try {
     await db.collection('users').doc(userId).delete();
+    // Also delete from Firebase Auth
+    const { adminAuth } = await import('@/firebase/admin');
+    await adminAuth.deleteUser(userId);
     return { success: true };
   } catch (err) {
     return handleFirestoreError(err);
@@ -251,7 +202,8 @@ export async function deleteUser(userId: string) {
 }
 
 export async function updateUserPlan(userId: string, newPlan: Plan, planData: Partial<User>) {
-  const db = lazilyGetDb();
+  const { db } = await import('@/firebase/server');
+  const { FieldValue } = await import('firebase-admin/firestore');
   if (!db) return handleFirestoreError(new Error('Firestore not initialized'));
   try {
     const userRef = db.collection('users').doc(userId);
@@ -266,10 +218,8 @@ export async function updateUserPlan(userId: string, newPlan: Plan, planData: Pa
     }
 
     await userRef.update(updateData);
-
     const user = userSnap.data() as User;
     await sendEmail({ to: user.email, subject: "Plan Changed", html: `<p>Your plan has been updated to ${newPlan}</p>` });
-
     return { success: true };
   } catch (err) {
     return handleFirestoreError(err);
@@ -277,66 +227,65 @@ export async function updateUserPlan(userId: string, newPlan: Plan, planData: Pa
 }
 
 export async function sendWelcomeEmail(userId: string) {
-    const db = lazilyGetDb();
-    if (!db) return handleFirestoreError(new Error('Firestore not initialized'));
-    try {
-        const user = await getUserById(userId);
-        if (!user) return { success: false, error: "User not found" };
+  const { db } = await import('@/firebase/server');
+  if (!db) return handleFirestoreError(new Error('Firestore not initialized'));
+  try {
+    const user = await getUserById(userId);
+    if (!user) return { success: false, error: "User not found" };
 
-        await sendEmail({
-            to: user.email,
-            subject: "Welcome to AndonPro!",
-            html: `<h1>Welcome, ${user.firstName}!</h1><p>Your account is ready. <a href="${process.env.NEXT_PUBLIC_BASE_URL}/dashboard">Go to your dashboard</a>.</p>`
-        });
-        return { success: true };
-    } catch (err: any) {
-        return handleFirestoreError(err);
-    }
+    await sendEmail({
+      to: user.email,
+      subject: "Welcome to AndonPro!",
+      html: `<h1>Welcome, ${user.firstName}!</h1><p>Your account is ready. <a href="${process.env.NEXT_PUBLIC_BASE_URL}/dashboard">Go to your dashboard</a>.</p>`
+    });
+    return { success: true };
+  } catch (err: any) {
+    return handleFirestoreError(err);
+  }
 }
 
 export async function requestPasswordReset(email: string) {
-    if (!adminAuth) return { success: false, message: 'Password reset service is unavailable.' };
-    try {
-        // We generate the link regardless of whether the user exists to prevent email enumeration
-        const link = await adminAuth.generatePasswordResetLink(email);
-        await sendEmail({ to: email, subject: "Reset your password", html: `<p>Reset your password here: <a href="${link}">${link}</a></p>` });
-    } catch (error) {
-        // Do not expose specific errors to the client
-        console.error("Password reset error:", error);
-    }
-    // Always return a generic success message
-    return { success: true, message: "If an account exists for this email, a password reset link has been sent." };
+  const { adminAuth } = await import('@/firebase/admin');
+  if (!adminAuth) return { success: false, message: 'Password reset service is unavailable.' };
+  try {
+    const link = await adminAuth.generatePasswordResetLink(email);
+    await sendEmail({ to: email, subject: "Reset your password", html: `<p>Reset your password here: <a href="${link}">${link}</a></p>` });
+  } catch (error) {
+    console.error("Password reset error:", error);
+  }
+  return { success: true, message: "If an account exists for this email, a password reset link has been sent." };
 }
 
 export async function sendPasswordChangedEmail(email: string) {
-    try {
-        await sendEmail({
-            to: email,
-            subject: "Your Password Has Been Changed",
-            html: "<p>Your password for AndonPro has been successfully changed. If you did not make this change, please contact our support team immediately.</p>",
-        });
-        return { success: true };
-    } catch (err) {
-        return handleFirestoreError(err);
-    }
+  try {
+    await sendEmail({
+      to: email,
+      subject: "Your Password Has Been Changed",
+      html: "<p>Your password for AndonPro has been successfully changed. If you did not make this change, please contact our support team immediately.</p>",
+    });
+    return { success: true };
+  } catch (err) {
+    return handleFirestoreError(err);
+  }
 }
-
 
 export async function changePassword(email: string, currentPass: string, newPass: string) {
-    if (!adminAuth) return { success: false, error: "Authentication service unavailable." };
-    try {
-        // This is a placeholder for a more secure verification method
-        // In a real app, you would re-authenticate the user on the client before calling this
-        return { success: true };
-    } catch (error) {
-        return handleFirestoreError(error);
-    }
+  const { adminAuth } = await import('@/firebase/admin');
+  if (!adminAuth) return { success: false, error: "Authentication service unavailable." };
+  try {
+    // This is a placeholder. Real password change logic would involve re-authenticating the user.
+    // For now, we'll just simulate a success.
+    return { success: true };
+  } catch (error) {
+    return handleFirestoreError(error);
+  }
 }
 
-// --- Issue Actions ---
+// ---------------- Issue Actions ----------------
 
 export async function reportIssue(issueData: Omit<Issue, 'id' | 'reportedAt' | 'reportedBy' | 'status'>, userEmail: string) {
-  const db = lazilyGetDb();
+  const { db } = await import('@/firebase/server');
+  const { FieldValue } = await import('firebase-admin/firestore');
   if (!db) return handleFirestoreError(new Error('Firestore not initialized'));
   try {
     const reporter = await getUserByEmail(userEmail);
@@ -348,7 +297,6 @@ export async function reportIssue(issueData: Omit<Issue, 'id' | 'reportedAt' | '
     const docRef = await db.collection('issues').add(newIssue);
     const issueId = docRef.id;
 
-    // Notify admins/supervisors
     const usersSnapshot = await db.collection('users').where('orgId', '==', issueData.orgId).get();
     const recipients = usersSnapshot.docs.map(d => d.data() as User).filter(u => ['admin', 'supervisor'].includes(u.role) && u.notificationPreferences?.newIssue);
     const dashboardUrl = `${process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000'}/issues`;
@@ -364,7 +312,8 @@ export async function reportIssue(issueData: Omit<Issue, 'id' | 'reportedAt' | '
 }
 
 export async function updateIssue(issueId: string, data: { resolutionNotes?: string; status: 'in_progress' | 'resolved'; productionStopped: boolean }, userEmail: string) {
-  const db = lazilyGetDb();
+  const { db } = await import('@/firebase/server');
+  const { FieldValue } = await import('firebase-admin/firestore');
   if (!db) return handleFirestoreError(new Error('Firestore not initialized'));
   try {
     const resolver = await getUserByEmail(userEmail);
@@ -383,7 +332,6 @@ export async function updateIssue(issueId: string, data: { resolutionNotes?: str
 
     await issueRef.update(updateData);
 
-    // Notify reporter if resolved
     if (data.status === 'resolved') {
       const reporter = await getUserByEmail(issue.reportedBy.email);
       if (reporter && reporter.notificationPreferences?.issueResolved) {
@@ -398,10 +346,22 @@ export async function updateIssue(issueId: string, data: { resolutionNotes?: str
   }
 }
 
-// --- Production Line Actions ---
+// ---------------- Production Line Actions ----------------
+
+export async function getProductionLines(orgId: string): Promise<ProductionLine[]> {
+  const { db } = await import('@/firebase/server');
+  if (!db) return [];
+  try {
+    const snapshot = await db.collection('productionLines').where('orgId', '==', orgId).get();
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as ProductionLine));
+  } catch (err) {
+    console.error(err);
+    return [];
+  }
+}
 
 export async function createProductionLine(name: string, orgId: string) {
-  const db = lazilyGetDb();
+  const { db } = await import('@/firebase/server');
   if (!db) return handleFirestoreError(new Error('Firestore not initialized'));
   try {
     const snapshot = await db.collection('productionLines').where('name', '==', name).where('orgId', '==', orgId).get();
@@ -414,7 +374,7 @@ export async function createProductionLine(name: string, orgId: string) {
 }
 
 export async function editProductionLine(lineId: string, data: { name: string; workstations: { value: string }[] }) {
-  const db = lazilyGetDb();
+  const { db } = await import('@/firebase/server');
   if (!db) return handleFirestoreError(new Error('Firestore not initialized'));
   try {
     await db.collection('productionLines').doc(lineId).update({ name: data.name, workstations: data.workstations.map(ws => ws.value) });
@@ -425,7 +385,7 @@ export async function editProductionLine(lineId: string, data: { name: string; w
 }
 
 export async function deleteProductionLine(lineId: string) {
-  const db = lazilyGetDb();
+  const { db } = await import('@/firebase/server');
   if (!db) return handleFirestoreError(new Error('Firestore not initialized'));
   try {
     await db.collection('productionLines').doc(lineId).delete();
@@ -435,4 +395,16 @@ export async function deleteProductionLine(lineId: string) {
   }
 }
 
-    
+// ---------------- Users List ----------------
+
+export async function getAllUsers(orgId: string): Promise<User[]> {
+  const { db } = await import('@/firebase/server');
+  if (!db) return [];
+  try {
+    const snapshot = await db.collection('users').where('orgId', '==', orgId).get();
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
+}
