@@ -216,7 +216,13 @@ function CheckoutContent() {
                     <CardContent className="space-y-4">
                     <div className="space-y-2">
                         <div className="flex justify-between"><span>Plan</span><span className="capitalize font-medium">{selectedPlan}</span></div>
-                        <div className="flex justify-between"><span>Plan Length</span><span>{showDurationOptions ? `${selectedDuration} Months` : 'Monthly'}</span></div>
+                        <div className="flex justify-between"><span>Billed</span><span>{showDurationOptions && selectedDuration !== '1' ? `Every ${selectedDuration} Months` : 'Monthly'}</span></div>
+                        {selectedPlan !== 'starter' && showDurationOptions && selectedDuration !== '1' && (
+                            <div className="flex justify-between text-sm text-muted-foreground">
+                                <span>Price per month</span>
+                                <span>{currencySymbols[selectedCurrency]}{formatPrice(monthlyPrice, selectedCurrency)}</span>
+                            </div>
+                        )}
                         {discount > 0 && 
                             <div className="flex justify-between bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300 p-2 rounded-md">
                                 <span>Discount</span>
@@ -225,17 +231,17 @@ function CheckoutContent() {
                         }
                     </div>
                     <Separator />
-                    <div className="space-y-1 text-right">
-                            {discount > 0 && (
-                                <p className="text-muted-foreground line-through">
-                                    {currencySymbols[selectedCurrency]}{formatPrice(undiscountedTotal, selectedCurrency)}
-                                </p>
-                            )}
-                            <div className="flex justify-between items-center font-bold text-lg">
-                                <span>Subtotal</span>
-                                <span>{currencySymbols[selectedCurrency]}{formatPrice(totalDue, selectedCurrency)}</span>
-                            </div>
+                    <div className="space-y-1">
+                        {discount > 0 && (
+                            <p className="text-right text-sm text-muted-foreground line-through">
+                                {currencySymbols[selectedCurrency]}{formatPrice(undiscountedTotal, selectedCurrency)}
+                            </p>
+                        )}
+                        <div className="flex justify-between items-baseline font-bold text-lg">
+                            <span>Total Due Today</span>
+                            <span>{currencySymbols[selectedCurrency]}{formatPrice(totalDue, selectedCurrency)}</span>
                         </div>
+                    </div>
                     </CardContent>
                     <CardFooter>
                     <Button onClick={handleContinue} className="w-full" disabled={isSubmitting}>
@@ -265,5 +271,3 @@ export default function CheckoutPage() {
         </Suspense>
     )
 }
-
-    
