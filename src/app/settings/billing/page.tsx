@@ -131,6 +131,7 @@ export default function BillingPage() {
 
     const selectedTier = newPlan ? tiers[newPlan] : null;
     const monthlyPrice = selectedTier ? selectedTier.prices[isStarterPlan ? duration : '1'][currency] : 0;
+    const totalBilledPrice = monthlyPrice * parseInt(duration, 10);
     
     const renewalDate = currentUser.subscriptionEndsAt && isValid(new Date(currentUser.subscriptionEndsAt))
         ? format(new Date(currentUser.subscriptionEndsAt), "MMMM d, yyyy")
@@ -207,10 +208,16 @@ export default function BillingPage() {
                              {selectedTier && newPlan !== currentUser.plan && (
                                  <div className="space-y-2 rounded-lg border bg-card-foreground/5 p-4">
                                     <div className="space-y-1">
-                                        <div className="flex justify-between items-center font-bold text-lg">
+                                        <div className="flex justify-between items-center font-semibold text-lg">
                                             <span>New Monthly Price</span>
                                             <span>{currencySymbols[currency]}{formatPrice(monthlyPrice, currency)}</span>
                                         </div>
+                                         {isStarterPlan && duration !== '1' && (
+                                            <div className="flex justify-between items-center text-sm text-muted-foreground">
+                                                <span>Total Billed ({duration} months)</span>
+                                                <span className="font-medium text-foreground">{currencySymbols[currency]}{formatPrice(totalBilledPrice, currency)}</span>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             )}
@@ -245,3 +252,4 @@ export default function BillingPage() {
         </div>
     );
 }
+
