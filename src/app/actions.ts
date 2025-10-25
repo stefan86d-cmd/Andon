@@ -104,7 +104,8 @@ export async function getOrCreateStripeCustomer(email: string): Promise<{ id: st
 // ---------------- User / Firestore Actions ----------------
 
 export async function getUserByEmail(email: string): Promise<User | null> {
-  const { db } = await import('@/firebase/server');
+  const { db: dbFn } = await import('@/firebase/server');
+  const db = dbFn();
   if (!db) return null;
   try {
     const snapshot = await db.collection('users').where('email', '==', email).get();
@@ -118,7 +119,8 @@ export async function getUserByEmail(email: string): Promise<User | null> {
 }
 
 export async function getUserById(uid: string): Promise<User | null> {
-  const { db } = await import('@/firebase/server');
+  const { db: dbFn } = await import('@/firebase/server');
+  const db = dbFn();
   if (!db) return null;
   try {
     const docSnap = await db.collection('users').doc(uid).get();
@@ -138,9 +140,9 @@ export async function addUser(userData: {
   plan: Plan;
   orgId: string;
 }) {
-  const { db } = await import('@/firebase/server');
+  const { db: dbFn } = await import('@/firebase/server');
+  const db = dbFn();
   const { adminAuth } = await import('@/firebase/admin');
-  const { FieldValue } = await import('firebase-admin/firestore');
   if (!db || !adminAuth) return handleFirestoreError(new Error('Admin SDK not initialized'));
   try {
     const { email, firstName, lastName, role, plan, orgId } = userData;
@@ -174,7 +176,8 @@ export async function addUser(userData: {
 }
 
 export async function editUser(userId: string, data: { firstName: string; lastName: string; email: string; role: Role }) {
-  const { db } = await import('@/firebase/server');
+  const { db: dbFn } = await import('@/firebase/server');
+  const db = dbFn();
   const { adminAuth } = await import('@/firebase/admin');
   if (!db || !adminAuth) return handleFirestoreError(new Error('Admin SDK not initialized'));
   try {
@@ -188,7 +191,8 @@ export async function editUser(userId: string, data: { firstName: string; lastNa
 }
 
 export async function deleteUser(userId: string) {
-  const { db } = await import('@/firebase/server');
+  const { db: dbFn } = await import('@/firebase/server');
+  const db = dbFn();
   if (!db) return handleFirestoreError(new Error('Firestore not initialized'));
   try {
     await db.collection('users').doc(userId).delete();
@@ -202,7 +206,8 @@ export async function deleteUser(userId: string) {
 }
 
 export async function updateUserPlan(userId: string, newPlan: Plan, planData: Partial<User>) {
-  const { db } = await import('@/firebase/server');
+  const { db: dbFn } = await import('@/firebase/server');
+  const db = dbFn();
   const { FieldValue } = await import('firebase-admin/firestore');
   if (!db) return handleFirestoreError(new Error('Firestore not initialized'));
   try {
@@ -227,7 +232,8 @@ export async function updateUserPlan(userId: string, newPlan: Plan, planData: Pa
 }
 
 export async function sendWelcomeEmail(userId: string) {
-  const { db } = await import('@/firebase/server');
+  const { db: dbFn } = await import('@/firebase/server');
+  const db = dbFn();
   if (!db) return handleFirestoreError(new Error('Firestore not initialized'));
   try {
     const user = await getUserById(userId);
@@ -284,7 +290,8 @@ export async function changePassword(email: string, currentPass: string, newPass
 // ---------------- Issue Actions ----------------
 
 export async function reportIssue(issueData: Omit<Issue, 'id' | 'reportedAt' | 'reportedBy' | 'status'>, userEmail: string) {
-  const { db } = await import('@/firebase/server');
+  const { db: dbFn } = await import('@/firebase/server');
+  const db = dbFn();
   const { FieldValue } = await import('firebase-admin/firestore');
   if (!db) return handleFirestoreError(new Error('Firestore not initialized'));
   try {
@@ -312,7 +319,8 @@ export async function reportIssue(issueData: Omit<Issue, 'id' | 'reportedAt' | '
 }
 
 export async function updateIssue(issueId: string, data: { resolutionNotes?: string; status: 'in_progress' | 'resolved'; productionStopped: boolean }, userEmail: string) {
-  const { db } = await import('@/firebase/server');
+  const { db: dbFn } = await import('@/firebase/server');
+  const db = dbFn();
   const { FieldValue } = await import('firebase-admin/firestore');
   if (!db) return handleFirestoreError(new Error('Firestore not initialized'));
   try {
@@ -349,7 +357,8 @@ export async function updateIssue(issueId: string, data: { resolutionNotes?: str
 // ---------------- Production Line Actions ----------------
 
 export async function getProductionLines(orgId: string): Promise<ProductionLine[]> {
-  const { db } = await import('@/firebase/server');
+  const { db: dbFn } = await import('@/firebase/server');
+  const db = dbFn();
   if (!db) return [];
   try {
     const snapshot = await db.collection('productionLines').where('orgId', '==', orgId).get();
@@ -361,7 +370,8 @@ export async function getProductionLines(orgId: string): Promise<ProductionLine[
 }
 
 export async function createProductionLine(name: string, orgId: string) {
-  const { db } = await import('@/firebase/server');
+  const { db: dbFn } = await import('@/firebase/server');
+  const db = dbFn();
   if (!db) return handleFirestoreError(new Error('Firestore not initialized'));
   try {
     const snapshot = await db.collection('productionLines').where('name', '==', name).where('orgId', '==', orgId).get();
@@ -374,7 +384,8 @@ export async function createProductionLine(name: string, orgId: string) {
 }
 
 export async function editProductionLine(lineId: string, data: { name: string; workstations: { value: string }[] }) {
-  const { db } = await import('@/firebase/server');
+  const { db: dbFn } = await import('@/firebase/server');
+  const db = dbFn();
   if (!db) return handleFirestoreError(new Error('Firestore not initialized'));
   try {
     await db.collection('productionLines').doc(lineId).update({ name: data.name, workstations: data.workstations.map(ws => ws.value) });
@@ -385,7 +396,8 @@ export async function editProductionLine(lineId: string, data: { name: string; w
 }
 
 export async function deleteProductionLine(lineId: string) {
-  const { db } = await import('@/firebase/server');
+  const { db: dbFn } = await import('@/firebase/server');
+  const db = dbFn();
   if (!db) return handleFirestoreError(new Error('Firestore not initialized'));
   try {
     await db.collection('productionLines').doc(lineId).delete();
@@ -398,7 +410,8 @@ export async function deleteProductionLine(lineId: string) {
 // ---------------- Users List ----------------
 
 export async function getAllUsers(orgId: string): Promise<User[]> {
-  const { db } = await import('@/firebase/server');
+  const { db: dbFn } = await import('@/firebase/server');
+  const db = dbFn();
   if (!db) return [];
   try {
     const snapshot = await db.collection('users').where('orgId', '==', orgId).get();
