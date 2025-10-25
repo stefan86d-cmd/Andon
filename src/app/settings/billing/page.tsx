@@ -89,7 +89,7 @@ export default function BillingPage() {
             try {
                 if (!currentUser?.email) throw new Error("User email not found.");
                 
-                const customer = await getOrCreateStripeCustomer(currentUser.email);
+                const customer = await getOrCreateStripeCustomer(currentUser.id, currentUser.email);
 
                 const successUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`;
                 const cancelUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/settings/billing`;
@@ -245,5 +245,3 @@ export default function BillingPage() {
         </div>
     );
 }
-
-    

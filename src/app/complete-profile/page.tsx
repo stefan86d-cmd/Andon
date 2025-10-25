@@ -152,7 +152,7 @@ function CompleteProfileContent() {
            try {
                 if (!currentUser?.email) throw new Error("User email is not available.");
                 
-                const customer = await getOrCreateStripeCustomer(currentUser.email);
+                const customer = await getOrCreateStripeCustomer(currentUser.id, currentUser.email);
 
                 const successUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`;
                 const cancelUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/checkout`;
@@ -305,5 +305,3 @@ export default function CompleteProfilePage() {
         </Suspense>
     )
 }
-
-    

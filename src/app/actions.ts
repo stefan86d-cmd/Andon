@@ -105,35 +105,42 @@ export async function getCheckoutSession(sessionId: string) {
     return { session };
   } catch (error: any) {
     console.error('❌ Stripe getCheckoutSession error:', error);
-    return { error: error.message };
+    throw new Error(error.message || 'Failed to retrieve Stripe session');
   }
 }
 
-export async function getOrCreateStripeCustomer(email: string): Promise<{ id: string }> {
-  const db = dbFn();
-  if (!db) throw new Error("Firestore not initialized");
-  
-  // Check our DB first
-  const userSnapshot = await db.collection('users').where('email', '==', email).limit(1).get();
-  if (!userSnapshot.empty) {
-    const user = userSnapshot.docs[0].data() as User;
-    if (user.subscriptionId) { // A Stripe customer ID is stored in subscriptionId for our app
-        const stripeCustomer = await stripe.customers.retrieve(user.subscriptionId);
-        if (stripeCustomer && !stripeCustomer.deleted) {
-             return { id: stripeCustomer.id };
+export async function getOrCreateStripeCustomer(userId: string, email: string): Promise<{ id: string }> {
+    const db = dbFn();
+    if (!db) throw new Error("Firestore not initialized");
+
+    const userRef = db.collection('users').doc(userId);
+    const userSnapshot = await userRef.get();
+    const userData = userSnapshot.data() as User | undefined;
+
+    // 1. Check for existing Stripe customer ID on the user's document
+    if (userData?.subscriptionId) { // subscriptionId holds the stripeCustomerId
+        try {
+            const stripeCustomer = await stripe.customers.retrieve(userData.subscriptionId);
+            if (stripeCustomer && !stripeCustomer.deleted) {
+                return { id: stripeCustomer.id };
+            }
+        } catch (error) {
+            // Customer might not exist in Stripe anymore, proceed to check by email
         }
     }
-  }
-  
-  // Check Stripe next
-  const existing = await stripe.customers.list({ email, limit: 1 });
-  if (existing.data.length > 0 && existing.data[0]) {
-    return { id: existing.data[0].id };
-  }
-  
-  // Create new customer
-  const newCustomer = await stripe.customers.create({ email });
-  return { id: newCustomer.id };
+
+    // 2. Check Stripe by email
+    const existingCustomers = await stripe.customers.list({ email, limit: 1 });
+    if (existingCustomers.data.length > 0 && existingCustomers.data[0]) {
+        const customer = existingCustomers.data[0];
+        await userRef.update({ subscriptionId: customer.id }); // Save to our DB
+        return { id: customer.id };
+    }
+
+    // 3. Create a new Stripe customer
+    const newCustomer = await stripe.customers.create({ email });
+    await userRef.update({ subscriptionId: newCustomer.id }); // Save new ID to our DB
+    return { id: newCustomer.id };
 }
 
 
@@ -435,5 +442,3 @@ export async function getAllUsers(orgId: string): Promise<User[]> {
     return [];
   }
 }
-
-    

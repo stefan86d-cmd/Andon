@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/layout/logo';
 import { toast } from '@/hooks/use-toast';
-import { addMonths, fromUnixTime, format, add } from 'date-fns';
+import { fromUnixTime, format, add } from 'date-fns';
 import Link from 'next/link';
 import type { Plan, User } from '@/lib/types';
 import type { Stripe } from 'stripe';
@@ -52,10 +52,10 @@ function SuccessContent() {
 
         const fulfillOrder = async () => {
             try {
-                const { session: checkoutSession, error } = await getCheckoutSession(sessionId);
+                const { session: checkoutSession } = await getCheckoutSession(sessionId);
 
-                if (error || !checkoutSession) {
-                    setErrorMessage(error || 'Failed to retrieve checkout session.');
+                if (!checkoutSession) {
+                    setErrorMessage('Failed to retrieve checkout session.');
                     setStatus('error');
                     return;
                 }
@@ -122,7 +122,7 @@ function SuccessContent() {
 
             } catch (e: any) {
                 console.error("Fulfill order error:", e);
-                setErrorMessage('Failed to update your plan in our system. Please contact support.');
+                setErrorMessage(e.message || 'Failed to update your plan in our system. Please contact support.');
                 setStatus('error');
             }
         };
