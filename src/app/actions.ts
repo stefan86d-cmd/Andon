@@ -8,6 +8,8 @@ import Stripe from 'stripe';
 import { db as dbFn } from '@/firebase/server';
 import { adminAuth } from '@/firebase/admin';
 import { FieldValue } from 'firebase-admin/firestore';
+import { add } from 'date-fns';
+
 
 // ---------------- Stripe Actions ----------------
 
@@ -63,31 +65,26 @@ export async function createCheckoutSession({
 
     // ---- Create session based on duration ----
     let session;
+    const sessionParams: any = {
+        customer: customerId,
+        line_items: [{ price: priceId, quantity: 1 }],
+        allow_promotion_codes: true, // Ensure this is a boolean
+        success_url: success_url,
+        cancel_url: cancel_url,
+    };
+
     if (duration === '1') {
       // Monthly recurring subscription
-      session = await stripe.checkout.sessions.create({
-        mode: 'subscription',
-        customer: customerId,
-        line_items: [{ price: priceId, quantity: 1 }],
-        allow_promotion_codes: true,
-        subscription_data: {
-          metadata,
-        },
-        success_url: success_url,
-        cancel_url: cancel_url,
-      });
+      sessionParams.mode = 'subscription';
+      sessionParams.subscription_data = { metadata };
     } else {
       // One-time prepay for multiple months
-      session = await stripe.checkout.sessions.create({
-        mode: 'payment',
-        customer: customerId,
-        line_items: [{ price: priceId, quantity: 1 }],
-        allow_promotion_codes: true,
-        metadata,
-        success_url: success_url,
-        cancel_url: cancel_url,
-      });
+      sessionParams.mode = 'payment';
+      sessionParams.metadata = metadata;
     }
+
+    session = await stripe.checkout.sessions.create(sessionParams);
+
 
     console.log('✅ Stripe session created:', session.id);
     return { url: session.url };
@@ -118,7 +115,7 @@ export async function getOrCreateStripeCustomer(userId: string, email: string): 
     const userData = userSnapshot.data() as User | undefined;
 
     // 1. Check for existing Stripe customer ID on the user's document
-    if (userData?.subscriptionId) { // subscriptionId holds the stripeCustomerId
+    if (userData?.subscriptionId) { // This field stores the stripeCustomerId
         try {
             const stripeCustomer = await stripe.customers.retrieve(userData.subscriptionId);
             if (stripeCustomer && !stripeCustomer.deleted) {
@@ -126,6 +123,7 @@ export async function getOrCreateStripeCustomer(userId: string, email: string): 
             }
         } catch (error) {
             // Customer might not exist in Stripe anymore, proceed to check by email
+            console.warn(`Stripe customer ID ${userData.subscriptionId} not found in Stripe. Will check by email.`);
         }
     }
 
@@ -133,13 +131,15 @@ export async function getOrCreateStripeCustomer(userId: string, email: string): 
     const existingCustomers = await stripe.customers.list({ email, limit: 1 });
     if (existingCustomers.data.length > 0 && existingCustomers.data[0]) {
         const customer = existingCustomers.data[0];
-        await userRef.update({ subscriptionId: customer.id }); // Save to our DB
+        // Save the found customer ID to our DB for future lookups
+        await userRef.update({ subscriptionId: customer.id }); 
         return { id: customer.id };
     }
 
     // 3. Create a new Stripe customer
-    const newCustomer = await stripe.customers.create({ email });
-    await userRef.update({ subscriptionId: newCustomer.id }); // Save new ID to our DB
+    const newCustomer = await stripe.customers.create({ email, metadata: { userId } });
+    // Save the new customer ID to our DB
+    await userRef.update({ subscriptionId: newCustomer.id }); 
     return { id: newCustomer.id };
 }
 
@@ -442,3 +442,5 @@ export async function getAllUsers(orgId: string): Promise<User[]> {
     return [];
   }
 }
+
+    
