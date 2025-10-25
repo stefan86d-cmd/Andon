@@ -65,22 +65,22 @@ export async function createCheckoutSession({
 
     // ---- Create session based on duration ----
     let session;
-    const sessionParams: any = {
+    const sessionParams: Stripe.Checkout.SessionCreateParams = {
         customer: customerId,
         line_items: [{ price: priceId, quantity: 1 }],
-        allow_promotion_codes: true, // Ensure this is a boolean
+        allow_promotion_codes: true,
         success_url: success_url,
         cancel_url: cancel_url,
+        metadata: metadata, // Pass metadata at the top level for both modes
     };
 
     if (duration === '1') {
       // Monthly recurring subscription
       sessionParams.mode = 'subscription';
-      sessionParams.subscription_data = { metadata };
+      sessionParams.subscription_data = { metadata }; // Also pass here for the subscription object
     } else {
       // One-time prepay for multiple months
       sessionParams.mode = 'payment';
-      sessionParams.metadata = metadata;
     }
 
     session = await stripe.checkout.sessions.create(sessionParams);
@@ -117,6 +117,7 @@ export async function getOrCreateStripeCustomer(userId: string, email: string): 
     // 1. Check for existing Stripe customer ID on the user's document
     if (userData?.subscriptionId) { // This field stores the stripeCustomerId
         try {
+            // Retrieve the customer to ensure it's still valid in Stripe
             const stripeCustomer = await stripe.customers.retrieve(userData.subscriptionId);
             if (stripeCustomer && !stripeCustomer.deleted) {
                 return { id: stripeCustomer.id };
@@ -127,7 +128,7 @@ export async function getOrCreateStripeCustomer(userId: string, email: string): 
         }
     }
 
-    // 2. Check Stripe by email
+    // 2. Check Stripe by email for existing customers
     const existingCustomers = await stripe.customers.list({ email, limit: 1 });
     if (existingCustomers.data.length > 0 && existingCustomers.data[0]) {
         const customer = existingCustomers.data[0];
@@ -442,5 +443,3 @@ export async function getAllUsers(orgId: string): Promise<User[]> {
     return [];
   }
 }
-
-    
