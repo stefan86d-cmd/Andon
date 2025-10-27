@@ -68,7 +68,6 @@ function CheckoutContent() {
   const { currentUser } = useUser();
   const [isSubmitting, startTransition] = useTransition();
   const [year, setYear] = useState(new Date().getFullYear());
-  const [clientSecret, setClientSecret] = useState<string | null>(null);
 
 
   useEffect(() => {
@@ -126,8 +125,8 @@ function CheckoutContent() {
             metadata,
         });
 
-        if (result.clientSecret) {
-            setClientSecret(result.clientSecret);
+        if (result.url) {
+            router.push(result.url);
         } else {
             throw new Error("Could not create a checkout session.");
         }
@@ -140,35 +139,6 @@ function CheckoutContent() {
       }
     });
   };
-
-  if (clientSecret) {
-      return (
-        <div className="bg-muted">
-            <div className="container mx-auto flex min-h-screen flex-col items-center justify-center py-12">
-                <div className="w-full max-w-lg">
-                    <div className="flex justify-center mb-8">
-                        <Link href="/">
-                            <Logo />
-                        </Link>
-                    </div>
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Complete Your Payment</CardTitle>
-                            <CardDescription>Enter your payment details below to finalize your plan.</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <EmbeddedCheckoutForm clientSecret={clientSecret} />
-                        </CardContent>
-                    </Card>
-                     <footer className="mt-8 text-center text-sm text-muted-foreground">
-                        © {year} AndonPro. All rights reserved.
-                    </footer>
-                </div>
-            </div>
-        </div>
-      );
-  }
-
 
   const buttonText = isNewUser ? "Continue to Sign Up" : "Proceed to Payment";
 
