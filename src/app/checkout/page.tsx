@@ -28,7 +28,6 @@ import { Badge } from '@/components/ui/badge';
 import { useUser } from '@/contexts/user-context';
 import { toast } from '@/hooks/use-toast';
 import { createCheckoutSession, getOrCreateStripeCustomer } from '@/app/actions';
-import { EmbeddedCheckoutForm } from '@/components/checkout/embedded-checkout-form';
 
 const tiers: Record<Plan, { name: string; prices: Record<Duration, Record<Currency, number>> }> = {
   starter: { 
@@ -68,8 +67,6 @@ function CheckoutContent() {
   const { currentUser } = useUser();
   const [isSubmitting, startTransition] = useTransition();
   const [year, setYear] = useState(new Date().getFullYear());
-  const [clientSecret, setClientSecret] = useState<string | null>(null);
-
 
   useEffect(() => {
     setYear(new Date().getFullYear());
@@ -126,8 +123,8 @@ function CheckoutContent() {
             metadata,
         });
 
-        if (result.clientSecret) {
-            setClientSecret(result.clientSecret);
+        if (result.url) {
+            router.push(result.url);
         } else {
             throw new Error("Could not create a checkout session.");
         }
@@ -142,31 +139,6 @@ function CheckoutContent() {
   };
 
   const buttonText = isNewUser ? "Continue to Sign Up" : "Proceed to Payment";
-
-  if (clientSecret) {
-    return (
-        <div className="bg-muted">
-            <div className="container mx-auto flex min-h-screen flex-col items-center justify-center py-12">
-                 <div className="w-full max-w-lg">
-                    <div className="flex justify-center mb-8">
-                        <Link href="/">
-                            <Logo />
-                        </Link>
-                    </div>
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Complete Your Payment</CardTitle>
-                            <CardDescription>Enter your payment details below to finalize your subscription.</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                             <EmbeddedCheckoutForm clientSecret={clientSecret} />
-                        </CardContent>
-                    </Card>
-                 </div>
-            </div>
-        </div>
-    )
-  }
 
   return (
     <div className="bg-muted">
