@@ -33,7 +33,7 @@ const db = admin.firestore();
 // --- Main Handler ---
 export async function POST(req: Request) {
   const body = await req.text();
-  const sig = headers().get("stripe-signature");
+  const sig = (await headers()).get("stripe-signature");
 
   let event: Stripe.Event;
 
@@ -75,7 +75,7 @@ export async function POST(req: Request) {
           plan,
           subscriptionId,
           subscriptionStartsAt: admin.firestore.Timestamp.fromDate(subscriptionStartsAt),
-          subscriptionEndsAt: admin.firestore.Timestamp.fromDate(subscriptionEndsAt),
+          subscriptionEndsAt: admin.firestore.Timestamp.fromDate(subscriptionEndsAt!),
           updatedAt: admin.firestore.FieldValue.serverTimestamp(),
         };
 
