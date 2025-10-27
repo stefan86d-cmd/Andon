@@ -90,9 +90,13 @@ function SuccessContent() {
                     subscriptionId,
                     subscriptionStartsAt: startDate,
                     subscriptionEndsAt: endDate,
-                    // Ensure a role is set if it was a new user, making the profile "complete"
-                    role: currentUser.role || "admin",
                 };
+                
+                // If this was a new user registration, their profile is now complete.
+                // Set their role to 'admin'.
+                if (isNewUser) {
+                    planUpdateData.role = 'admin';
+                }
                 
                 // Use the server action to update the plan in Firestore
                 const updateResult = await updateUserPlan(currentUser.id, plan, planUpdateData);
