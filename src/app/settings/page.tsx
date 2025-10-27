@@ -1,13 +1,12 @@
 
 "use client"
 
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useUser } from "@/contexts/user-context";
-import { useState } from "react";
 import { format } from "date-fns";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -16,7 +15,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "@/hooks/use-toast";
 import type { Theme } from "@/lib/types";
 
-export default function SettingsPage() {
+function SettingsPageContent() {
     const { currentUser, updateCurrentUser } = useUser();
     const { theme, setTheme } = useTheme();
 
@@ -74,7 +73,7 @@ export default function SettingsPage() {
                         </CardContent>
                          {canManageAccount && (
                             <CardFooter>
-                                <Link href="/settings/account" className={cn(buttonVariants({ variant: "default" }))}>
+                                <Link href="/settings/account" className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2")}>
                                     Manage Account & Billing
                                 </Link>
                             </CardFooter>
@@ -97,7 +96,7 @@ export default function SettingsPage() {
                                 </div>
                             </CardContent>
                             <CardFooter>
-                                 <Link href="/settings/billing" className={cn(buttonVariants({ variant: "outline" }))}>
+                                 <Link href="/settings/billing" className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2")}>
                                     View Billing Details
                                  </Link>
                             </CardFooter>
@@ -187,4 +186,8 @@ export default function SettingsPage() {
             </div>
         </main>
     );
+}
+
+export default function SettingsPage() {
+    return <SettingsPageContent />;
 }
