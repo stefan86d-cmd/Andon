@@ -17,61 +17,25 @@ const stripe = new Stripe(process.env.NEXT_STRIPE_SECRET_KEY!, {
   apiVersion: '2024-06-20',
 });
 
-// A robust mapping of plan, duration, and currency to specific Stripe Price IDs
-const priceIdMap: Record<Exclude<Plan, 'starter' | 'custom'>, Partial<Record<"1" | "12" | "24" | "48", Record<string, string | undefined>>>> = {
+// A robust mapping of plan and duration to specific Stripe Price IDs
+const priceIdMap: Record<Exclude<Plan, 'starter' | 'custom'>, Record<'1' | '12' | '24' | '48', string | undefined>> = {
   standard: {
-    '1': {
-      usd: process.env.STRIPE_PRICE_ID_STANDARD,
-      eur: process.env.STRIPE_PRICE_ID_STANDARD_EUR, 
-    },
-    '12': {
-      usd: process.env.STRIPE_PRICE_ID_STANDARD_12,
-      eur: process.env.STRIPE_PRICE_ID_STANDARD_12_EUR,
-    },
-    '24': {
-      usd: process.env.STRIPE_PRICE_ID_STANDARD_24,
-      eur: process.env.STRIPE_PRICE_ID_STANDARD_24_EUR,
-    },
-    '48': {
-      usd: process.env.STRIPE_PRICE_ID_STANDARD_48,
-      eur: process.env.STRIPE_PRICE_ID_STANDARD_48_EUR,
-    },
+    '1': process.env.STRIPE_PRICE_ID_STANDARD,
+    '12': process.env.STRIPE_PRICE_ID_STANDARD_12,
+    '24': process.env.STRIPE_PRICE_ID_STANDARD_24,
+    '48': process.env.STRIPE_PRICE_ID_STANDARD_48,
   },
   pro: {
-    '1': {
-      usd: process.env.STRIPE_PRICE_ID_PRO,
-      eur: process.env.STRIPE_PRICE_ID_PRO_EUR,
-    },
-    '12': {
-      usd: process.env.STRIPE_PRICE_ID_PRO_12,
-      eur: process.env.STRIPE_PRICE_ID_PRO_12_EUR,
-    },
-    '24': {
-      usd: process.env.STRIPE_PRICE_ID_PRO_24,
-      eur: process.env.STRIPE_PRICE_ID_PRO_24_EUR,
-    },
-    '48': {
-      usd: process.env.STRIPE_PRICE_ID_PRO_48,
-      eur: process.env.STRIPE_PRICE_ID_PRO_48_EUR,
-    },
+    '1': process.env.STRIPE_PRICE_ID_PRO,
+    '12': process.env.STRIPE_PRICE_ID_PRO_12,
+    '24': process.env.STRIPE_PRICE_ID_PRO_24,
+    '48': process.env.STRIPE_PRICE_ID_PRO_48,
   },
   enterprise: {
-    '1': {
-      usd: process.env.STRIPE_PRICE_ID_ENTERPRISE,
-      eur: process.env.STRIPE_PRICE_ID_ENTERPRISE_EUR,
-    },
-    '12': {
-      usd: process.env.STRIPE_PRICE_ID_ENTERPRISE_12,
-      eur: process.env.STRIPE_PRICE_ID_ENTERPRISE_12_EUR,
-    },
-    '24': {
-      usd: process.env.STRIPE_PRICE_ID_ENTERPRISE_24,
-      eur: process.env.STRIPE_PRICE_ID_ENTERPRISE_24_EUR,
-    },
-    '48': {
-      usd: process.env.STRIPE_PRICE_ID_ENTERPRISE_48,
-      eur: process.env.STRIPE_PRICE_ID_ENTERPRISE_48_EUR,
-    },
+    '1': process.env.STRIPE_PRICE_ID_ENTERPRISE,
+    '12': process.env.STRIPE_PRICE_ID_ENTERPRISE_12,
+    '24': process.env.STRIPE_PRICE_ID_ENTERPRISE_24,
+    '48': process.env.STRIPE_PRICE_ID_ENTERPRISE_48,
   },
 };
 
@@ -80,7 +44,7 @@ export async function createCheckoutSession({
   customerId,
   plan,
   duration,
-  currency, // Added currency parameter
+  currency,
   metadata,
 }: {
   customerId: string;
@@ -92,12 +56,12 @@ export async function createCheckoutSession({
   try {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000';
     
-    // Safely look up the price ID using plan, duration, and currency
-    const priceId = (plan !== 'starter' && plan !== 'custom' && priceIdMap[plan]?.[duration])
-        ? priceIdMap[plan]![duration]![currency]
-        : undefined;
+    // Safely look up the price ID using plan and duration
+    const priceId = (plan !== 'starter' && plan !== 'custom' && priceIdMap[plan])
+      ? priceIdMap[plan][duration]
+      : undefined;
 
-    if (!priceId) throw new Error('❌ Price ID not found for selected plan, duration, or currency.');
+    if (!priceId) throw new Error('❌ Price ID not found for selected plan or duration.');
     
     const mode = duration === '1' ? 'subscription' : 'payment';
     
@@ -105,6 +69,7 @@ export async function createCheckoutSession({
       mode,
       customer: customerId,
       line_items: [{ price: priceId, quantity: 1 }],
+      currency,
       ui_mode: 'embedded',
       return_url: `${baseUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
       metadata,
