@@ -3,7 +3,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { LoaderCircle } from "lucide-react";
+import { LoaderCircle, Globe } from "lucide-react";
 import { useUser } from "@/contexts/user-context";
 import { useState, useMemo, useEffect, useTransition } from "react";
 import Link from "next/link";
@@ -17,6 +17,7 @@ import { Logo } from "@/components/layout/logo";
 import { useRouter } from "next/navigation";
 import { format, isValid } from "date-fns";
 import { createCheckoutSession, getOrCreateStripeCustomer } from "@/app/actions";
+import { EmbeddedCheckoutForm } from "@/components/checkout/embedded-checkout-form";
 
 
 const tiers: Record<Exclude<Plan, 'custom'>, { name: string; prices: Record<Duration, Record<Currency, number>> }> & { custom?: any } = {
@@ -55,8 +56,8 @@ const formatPrice = (price: number, currency: Currency) => {
 
 export default function BillingPage() {
     const { currentUser } = useUser();
-    const router = useRouter();
     const [isSubmitting, startTransition] = useTransition();
+    const [clientSecret, setClientSecret] = useState<string | null>(null);
 
     const [currency, setCurrency] = useState<Currency>('usd');
     const [newPlan, setNewPlan] = useState<Plan | undefined>(currentUser?.plan);
@@ -91,21 +92,18 @@ export default function BillingPage() {
                 
                 const customer = await getOrCreateStripeCustomer(currentUser.id, currentUser.email);
 
-                const successUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`;
-                const cancelUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/settings/billing`;
                 const metadata = { userId: currentUser.id, plan: newPlan, duration: selectedDuration, isNewUser: 'false' };
                 
                 const result = await createCheckoutSession({
                     customerId: customer.id,
                     plan: newPlan,
                     duration: selectedDuration,
+                    currency: currency,
                     metadata,
-                    successUrl,
-                    cancelUrl,
                 });
 
-                if (result.url) {
-                    router.push(result.url);
+                if (result.clientSecret) {
+                    setClientSecret(result.clientSecret);
                 } else {
                     throw new Error("Could not create a checkout session.");
                 }
@@ -131,12 +129,33 @@ export default function BillingPage() {
 
     const selectedTier = newPlan ? tiers[newPlan] : null;
     const monthlyPrice = selectedTier ? selectedTier.prices[isStarterPlan ? duration : '1'][currency] : 0;
-    const totalBilledPrice = monthlyPrice * parseInt(duration, 10);
+    const totalBilledPrice = monthlyPrice * parseInt(isStarterPlan ? duration : '1', 10);
     
     const renewalDate = currentUser.subscriptionEndsAt && isValid(new Date(currentUser.subscriptionEndsAt))
         ? format(new Date(currentUser.subscriptionEndsAt), "MMMM d, yyyy")
         : "N/A";
    
+     if (clientSecret) {
+        return (
+           <div className="bg-muted min-h-screen flex flex-col items-center justify-center p-4">
+                <div className="w-full max-w-lg">
+                     <div className="flex justify-center mb-8">
+                        <Logo />
+                    </div>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Complete Your Payment</CardTitle>
+                            <CardDescription>Enter your payment details below to complete the subscription.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <EmbeddedCheckoutForm clientSecret={clientSecret} />
+                        </CardContent>
+                    </Card>
+                </div>
+            </div>
+        )
+    }
+
     return (
         <div className="bg-muted">
             <div className="container mx-auto flex min-h-screen flex-col items-center justify-center py-12">
@@ -170,7 +189,19 @@ export default function BillingPage() {
                                             ))}
                                         </SelectContent>
                                     </Select>
-                                    {isStarterPlan ? (
+                                     <Select value={currency} onValueChange={(value) => setCurrency(value as Currency)}>
+                                        <SelectTrigger className="w-full">
+                                             <div className="flex items-center gap-2"><Globe className="h-4 w-4" /><SelectValue placeholder="Currency" /></div>
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="usd">USD</SelectItem>
+                                            <SelectItem value="eur">EUR</SelectItem>
+                                            <SelectItem value="gbp">GBP</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                {isStarterPlan && (
+                                    <div className="pt-2">
                                         <Select value={duration} onValueChange={(value) => setDuration(value as Duration)}>
                                             <SelectTrigger>
                                                 <SelectValue placeholder="Select duration" />
@@ -182,19 +213,8 @@ export default function BillingPage() {
                                                 <SelectItem value="48">48 Months</SelectItem>
                                             </SelectContent>
                                         </Select>
-                                    ) : (
-                                        <Select value={currency} onValueChange={(value) => setCurrency(value as any)}>
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Currency" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="usd">USD</SelectItem>
-                                                <SelectItem value="eur">EUR</SelectItem>
-                                                <SelectItem value="gbp">GBP</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    )}
-                                </div>
+                                    </div>
+                                )}
                                 {isStarterPlan && (
                                      <div className="flex gap-2 items-center pt-2">
                                         {duration === '12' && <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~20%</Badge>}
@@ -253,3 +273,4 @@ export default function BillingPage() {
     );
 }
 
+    

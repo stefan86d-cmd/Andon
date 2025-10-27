@@ -123,6 +123,7 @@ function CheckoutContent() {
             customerId: customer.id,
             plan: selectedPlan,
             duration: selectedDuration,
+            currency: selectedCurrency,
             metadata,
         });
 
@@ -291,3 +292,5 @@ export default function CheckoutPage() {
         </Suspense>
     )
 }
+
+    
