@@ -58,9 +58,11 @@ function CompleteProfileContent() {
 
   const planFromUrl = searchParams.get('plan') as Plan | null;
   const durationFromUrl = searchParams.get('duration') as Duration | null;
+  const currencyFromUrl = searchParams.get('currency') as Currency | null;
   
   const selectedPlan = planFromUrl || 'starter';
   const selectedDuration = durationFromUrl || '1';
+  const selectedCurrency = currencyFromUrl || 'usd';
   
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
@@ -160,6 +162,7 @@ function CompleteProfileContent() {
                     customerId: customer.id,
                     plan: selectedPlan,
                     duration: selectedDuration,
+                    currency: selectedCurrency,
                     metadata,
                 });
 
