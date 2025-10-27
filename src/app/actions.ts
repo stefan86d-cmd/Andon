@@ -22,18 +22,14 @@ export async function createCheckoutSession({
   plan,
   duration,
   metadata,
-  successUrl,
-  cancelUrl,
 }: {
   customerId: string;
   plan: Plan;
   duration: '1' | '12' | '24' | '48';
   metadata?: Record<string, string>;
-  successUrl?: string;
-  cancelUrl?: string;
 }) {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'http://andonpro.com';
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000';
     
     const priceIdMap: Record<Exclude<Plan, 'starter' | 'custom'>, Record<string, string | undefined>> = {
       standard: {
@@ -65,8 +61,8 @@ export async function createCheckoutSession({
       mode,
       customer: customerId,
       line_items: [{ price: priceId, quantity: 1 }],
-      success_url: successUrl || `${baseUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: cancelUrl || `${baseUrl}/settings/billing`,
+      ui_mode: 'embedded',
+      return_url: `${baseUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
       metadata,
     };
 
@@ -77,7 +73,7 @@ export async function createCheckoutSession({
     const session = await stripe.checkout.sessions.create(sessionParams);
 
     console.log('✅ Stripe session created:', session.id);
-    return { url: session.url };
+    return { clientSecret: session.client_secret };
   } catch (error: any) {
     console.error('❌ Stripe session error:', error);
     throw new Error(error.message || 'Failed to create Stripe checkout session.');

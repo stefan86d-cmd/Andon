@@ -28,6 +28,8 @@ import { Badge } from '@/components/ui/badge';
 import { useUser } from '@/contexts/user-context';
 import { toast } from '@/hooks/use-toast';
 import { createCheckoutSession, getOrCreateStripeCustomer } from '@/app/actions';
+import { EmbeddedCheckoutForm } from '@/components/checkout/embedded-checkout-form';
+
 
 const tiers: Record<Plan, { name: string; prices: Record<Duration, Record<Currency, number>> }> = {
   starter: { 
@@ -66,6 +68,7 @@ function CheckoutContent() {
   const searchParams = useSearchParams();
   const { currentUser } = useUser();
   const [isSubmitting, startTransition] = useTransition();
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [year, setYear] = useState(new Date().getFullYear());
 
   useEffect(() => {
@@ -123,8 +126,8 @@ function CheckoutContent() {
             metadata,
         });
 
-        if (result.url) {
-            router.push(result.url);
+        if (result.clientSecret) {
+            setClientSecret(result.clientSecret);
         } else {
             throw new Error("Could not create a checkout session.");
         }
@@ -139,6 +142,27 @@ function CheckoutContent() {
   };
 
   const buttonText = isNewUser ? "Continue to Sign Up" : "Proceed to Payment";
+  
+  if (clientSecret) {
+    return (
+       <div className="bg-muted min-h-screen flex flex-col items-center justify-center p-4">
+            <div className="w-full max-w-lg">
+                 <div className="flex justify-center mb-8">
+                    <Logo />
+                </div>
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Complete Your Payment</CardTitle>
+                        <CardDescription>Enter your payment details below to complete the subscription.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <EmbeddedCheckoutForm clientSecret={clientSecret} />
+                    </CardContent>
+                </Card>
+            </div>
+        </div>
+    )
+  }
 
   return (
     <div className="bg-muted">
