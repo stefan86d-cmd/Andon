@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { LoaderCircle, Globe } from "lucide-react";
 import { useUser } from "@/contexts/user-context";
-import { useState, useMemo, useEffect, useTransition } from "react";
+import { useState, useMemo, useEffect, useTransition, Suspense } from "react";
 import Link from "next/link";
 import { toast } from "@/hooks/use-toast";
 import type { Plan } from "@/lib/types";
@@ -54,7 +54,7 @@ const formatPrice = (price: number, currency: Currency) => {
 };
 
 
-export default function BillingPage() {
+function BillingPageContent() {
     const { currentUser } = useUser();
     const [isSubmitting, startTransition] = useTransition();
     const [clientSecret, setClientSecret] = useState<string | null>(null);
@@ -274,4 +274,14 @@ export default function BillingPage() {
     );
 }
 
-    
+export default function BillingPage() {
+    return (
+        <Suspense fallback={
+            <div className="flex h-screen items-center justify-center">
+                <LoaderCircle className="h-8 w-8 animate-spin" />
+            </div>
+        }>
+            <BillingPageContent />
+        </Suspense>
+    )
+}
