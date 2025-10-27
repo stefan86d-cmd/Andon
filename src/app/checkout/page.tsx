@@ -28,6 +28,7 @@ import { Badge } from '@/components/ui/badge';
 import { useUser } from '@/contexts/user-context';
 import { toast } from '@/hooks/use-toast';
 import { createCheckoutSession, getOrCreateStripeCustomer } from '@/app/actions';
+import { EmbeddedCheckoutForm } from '@/components/checkout/embedded-checkout-form';
 
 const tiers: Record<Plan, { name: string; prices: Record<Duration, Record<Currency, number>> }> = {
   starter: { 
@@ -67,6 +68,8 @@ function CheckoutContent() {
   const { currentUser } = useUser();
   const [isSubmitting, startTransition] = useTransition();
   const [year, setYear] = useState(new Date().getFullYear());
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
+
 
   useEffect(() => {
     setYear(new Date().getFullYear());
@@ -114,8 +117,6 @@ function CheckoutContent() {
 
         const customer = await getOrCreateStripeCustomer(currentUser.id, currentUser.email);
         
-        const successUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`;
-        const cancelUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/checkout`;
         const metadata = { userId: currentUser.id, plan: selectedPlan, duration: selectedDuration, isNewUser: 'false' };
         
         const result = await createCheckoutSession({
@@ -123,12 +124,10 @@ function CheckoutContent() {
             plan: selectedPlan,
             duration: selectedDuration,
             metadata,
-            successUrl,
-            cancelUrl
         });
 
-        if (result.url) {
-            router.push(result.url);
+        if (result.clientSecret) {
+            setClientSecret(result.clientSecret);
         } else {
             throw new Error("Could not create a checkout session.");
         }
@@ -142,7 +141,36 @@ function CheckoutContent() {
     });
   };
 
-  const buttonText = isNewUser ? "Continue to Sign Up" : "Confirm Plan Change";
+  if (clientSecret) {
+      return (
+        <div className="bg-muted">
+            <div className="container mx-auto flex min-h-screen flex-col items-center justify-center py-12">
+                <div className="w-full max-w-lg">
+                    <div className="flex justify-center mb-8">
+                        <Link href="/">
+                            <Logo />
+                        </Link>
+                    </div>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Complete Your Payment</CardTitle>
+                            <CardDescription>Enter your payment details below to finalize your plan.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <EmbeddedCheckoutForm clientSecret={clientSecret} />
+                        </CardContent>
+                    </Card>
+                     <footer className="mt-8 text-center text-sm text-muted-foreground">
+                        © {year} AndonPro. All rights reserved.
+                    </footer>
+                </div>
+            </div>
+        </div>
+      );
+  }
+
+
+  const buttonText = isNewUser ? "Continue to Sign Up" : "Proceed to Payment";
 
   return (
     <div className="bg-muted">
