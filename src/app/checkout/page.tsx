@@ -73,7 +73,6 @@ function CheckoutContent() {
   }, []);
 
   const isNewUser = !currentUser;
-  const isStarterUpgrade = currentUser?.plan === 'starter';
   
   const [selectedPlan, setSelectedPlan] = useState<Plan>(searchParams.get('plan') as Plan || 'pro');
   const [selectedDuration, setSelectedDuration] = useState<Duration>(searchParams.get('duration') as Duration || '12');
@@ -172,7 +171,7 @@ function CheckoutContent() {
                         <SelectTrigger><SelectValue placeholder="Select plan" /></SelectTrigger>
                         <SelectContent>
                             {Object.entries(tiers).map(([key, tier]) => 
-                                tier.name !== 'Custom' && <SelectItem key={key} value={key} className="capitalize">{tier.name}</SelectItem>
+                                tier.name !== 'Custom' && tier.name !== 'Starter' && <SelectItem key={key} value={key} className="capitalize">{tier.name}</SelectItem>
                             )}
                         </SelectContent>
                         </Select>

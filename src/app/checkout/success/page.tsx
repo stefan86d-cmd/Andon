@@ -55,15 +55,11 @@ function SuccessContent() {
                 const { session: checkoutSession } = await getCheckoutSession(sessionId);
 
                 if (!checkoutSession) {
-                    setErrorMessage('Failed to retrieve checkout session.');
-                    setStatus('error');
-                    return;
+                    throw new Error('Failed to retrieve checkout session.');
                 }
                 
                 if (!checkoutSession.metadata?.userId || checkoutSession.metadata.userId !== currentUser.id) {
-                    setErrorMessage('Session user ID does not match the logged-in user.');
-                    setStatus('error');
-                    return;
+                    throw new Error('Session user ID does not match the logged-in user.');
                 }
 
                 const plan = checkoutSession.metadata?.plan as Plan;
@@ -71,9 +67,7 @@ function SuccessContent() {
                 const duration = parseInt(checkoutSession.metadata?.duration || '1', 10);
 
                 if (!plan) {
-                    setErrorMessage('Plan information is missing from the session.');
-                    setStatus('error');
-                    return;
+                    throw new Error('Plan information is missing from the session.');
                 }
                 
                 const subscription = checkoutSession.subscription as Stripe.Subscription;
@@ -89,9 +83,7 @@ function SuccessContent() {
                     endDate = add(startDate, { months: duration });
                     subscriptionId = checkoutSession.id; // Use session ID for one-time payments as a reference
                 } else {
-                     setErrorMessage('Invalid session mode or missing subscription details.');
-                     setStatus('error');
-                     return;
+                     throw new Error('Invalid session mode or missing subscription details.');
                 }
 
                 const planUpdateData: Partial<User> = {

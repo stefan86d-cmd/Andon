@@ -65,7 +65,6 @@ export async function createCheckoutSession({
     const sessionParams: Stripe.Checkout.SessionCreateParams = {
         customer: customerId,
         line_items: [{ price: priceId, quantity: 1 }],
-        allow_promotion_codes: true, // Explicitly set as a boolean
         success_url: success_url,
         cancel_url: cancel_url,
         metadata: metadata,
@@ -74,8 +73,10 @@ export async function createCheckoutSession({
     if (duration === '1') {
       sessionParams.mode = 'subscription';
       sessionParams.subscription_data = { metadata };
+      sessionParams.allow_promotion_codes = true;
     } else {
       sessionParams.mode = 'payment';
+      sessionParams.allow_promotion_codes = true;
     }
 
     const session = await stripe.checkout.sessions.create(sessionParams);
@@ -431,7 +432,3 @@ export async function getAllUsers(orgId: string): Promise<User[]> {
     return [];
   }
 }
-
-    
-
-    
