@@ -100,6 +100,7 @@ export default function BillingPage() {
                     duration: selectedDuration,
                     currency: currency,
                     metadata,
+                    returnPath: '/settings/billing/success', // Use the new success page
                 });
 
                 if (result.clientSecret) {

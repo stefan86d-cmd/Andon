@@ -46,12 +46,14 @@ export async function createCheckoutSession({
   duration,
   currency,
   metadata,
+  returnPath,
 }: {
   customerId: string;
   plan: Plan;
   duration: '1' | '12' | '24' | '48';
   currency: 'usd' | 'eur' | 'gbp';
   metadata?: Record<string, string>;
+  returnPath?: string;
 }) {
   try {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000';
@@ -65,13 +67,18 @@ export async function createCheckoutSession({
     
     const mode = duration === '1' ? 'subscription' : 'payment';
     
+    // Use the provided return path or default to the new user success page
+    const finalReturnUrl = returnPath 
+      ? `${baseUrl}${returnPath}?session_id={CHECKOUT_SESSION_ID}`
+      : `${baseUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`;
+
     const sessionParams: Stripe.Checkout.SessionCreateParams = {
       mode,
       customer: customerId,
       line_items: [{ price: priceId, quantity: 1 }],
       currency,
       ui_mode: 'embedded',
-      return_url: `${baseUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+      return_url: finalReturnUrl,
       metadata,
     };
 
