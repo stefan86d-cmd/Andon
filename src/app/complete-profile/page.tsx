@@ -26,6 +26,7 @@ import type { Plan, Role } from '@/lib/types';
 import { toast } from '@/hooks/use-toast';
 import { useUser } from '@/contexts/user-context';
 import { createCheckoutSession, sendWelcomeEmail, getOrCreateStripeCustomer } from '@/app/actions';
+import { EmbeddedCheckoutForm } from '@/components/checkout/embedded-checkout-form';
 
 
 const profileFormSchema = z.object({
@@ -49,6 +50,7 @@ function CompleteProfileContent() {
   
   const [isSubmitting, startTransition] = useTransition();
   const [year, setYear] = useState(new Date().getFullYear());
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
 
 
   useEffect(() => {
@@ -153,9 +155,6 @@ function CompleteProfileContent() {
                 if (!currentUser?.email) throw new Error("User email is not available.");
                 
                 const customer = await getOrCreateStripeCustomer(currentUser.id, currentUser.email);
-
-                const successUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`;
-                const cancelUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/checkout`;
                 const metadata = { userId: currentUser.id, plan: selectedPlan, duration: selectedDuration, isNewUser: 'true' };
 
                 const result = await createCheckoutSession({
@@ -163,12 +162,10 @@ function CompleteProfileContent() {
                     plan: selectedPlan,
                     duration: selectedDuration,
                     metadata,
-                    successUrl,
-                    cancelUrl
                 });
 
-                if (result.url) {
-                    router.push(result.url);
+                if (result.clientSecret) {
+                    setClientSecret(result.clientSecret);
                 } else {
                     throw new Error("Could not create a checkout session.");
                 }
@@ -189,6 +186,31 @@ function CompleteProfileContent() {
             <LoaderCircle className="h-8 w-8 animate-spin" />
         </div>
     );
+  }
+
+  if (clientSecret) {
+      return (
+        <div className="bg-muted">
+            <div className="container mx-auto flex min-h-screen flex-col items-center justify-center py-12">
+                 <div className="w-full max-w-lg">
+                    <div className="flex justify-center mb-8">
+                        <Link href="/">
+                            <Logo />
+                        </Link>
+                    </div>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Complete Your Payment</CardTitle>
+                            <CardDescription>Enter your payment details below to finalize your subscription.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                             <EmbeddedCheckoutForm clientSecret={clientSecret} />
+                        </CardContent>
+                    </Card>
+                 </div>
+            </div>
+        </div>
+      )
   }
 
   return (

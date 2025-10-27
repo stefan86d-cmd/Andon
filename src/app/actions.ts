@@ -22,20 +22,15 @@ export async function createCheckoutSession({
   plan,
   duration,
   metadata,
-  successUrl,
-  cancelUrl,
 }: {
   customerId: string;
   plan: Plan;
   duration: '1' | '12' | '24' | '48';
   metadata?: Record<string, string>;
-  successUrl?: string;
-  cancelUrl?: string;
 }) {
   try {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000';
-    const success_url = successUrl ?? `${baseUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`;
-    const cancel_url = cancelUrl ?? `${baseUrl}/settings/billing`;
+    const return_url = `${baseUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`;
 
     const priceIdMap: Record<Exclude<Plan, 'starter' | 'custom'>, Record<string, string | undefined>> = {
       standard: {
@@ -62,11 +57,11 @@ export async function createCheckoutSession({
     if (!priceId) throw new Error('❌ Price ID not found for selected plan/duration.');
     
     const sessionParams: Stripe.Checkout.SessionCreateParams = {
+      ui_mode: 'embedded',
       customer: customerId,
       line_items: [{ price: priceId, quantity: 1 }],
-      success_url,
-      cancel_url,
       metadata,
+      return_url,
     };
 
     if (duration === '1') {
@@ -79,7 +74,7 @@ export async function createCheckoutSession({
     const session = await stripe.checkout.sessions.create(sessionParams);
 
     console.log('✅ Stripe session created:', session.id);
-    return { url: session.url };
+    return { clientSecret: session.client_secret };
   } catch (error: any) {
     console.error('❌ Stripe session error:', error);
     throw new Error(error.message || 'Failed to create Stripe checkout session.');
