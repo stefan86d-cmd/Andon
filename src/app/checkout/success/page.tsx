@@ -9,7 +9,6 @@ import { LoaderCircle, CheckCircle2, XCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/layout/logo';
-import { toast } from '@/hooks/use-toast';
 import { fromUnixTime, format, add } from 'date-fns';
 import Link from 'next/link';
 import type { Plan, User } from '@/lib/types';
@@ -91,6 +90,8 @@ function SuccessContent() {
                     subscriptionId,
                     subscriptionStartsAt: startDate,
                     subscriptionEndsAt: endDate,
+                    // Ensure a role is set if it was a new user, making the profile "complete"
+                    role: currentUser.role || "admin",
                 };
                 
                 // Use the server action to update the plan in Firestore
@@ -122,15 +123,18 @@ function SuccessContent() {
         fulfillOrder();
 
     }, [sessionId, currentUser, userLoading, router, updateCurrentUser, orderFulfilled]);
-
+    
+    // This effect will run after the user state is updated by fulfillOrder
     useEffect(() => {
-        if (status === 'success') {
-            const timer = setTimeout(() => {
+        // If the order has been fulfilled and we have a complete user object
+        if (orderFulfilled && currentUser?.role) {
+             const timer = setTimeout(() => {
                 router.push('/dashboard');
-            }, 5000); // 5-second delay
+            }, 3000); // 3-second delay
             return () => clearTimeout(timer);
         }
-    }, [status, router]);
+    }, [orderFulfilled, currentUser, router])
+
 
     if (status === 'loading') {
         return (
