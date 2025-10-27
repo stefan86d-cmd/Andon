@@ -33,7 +33,7 @@ export async function createCheckoutSession({
   cancelUrl?: string;
 }) {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000';
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'http://andonpro.com';
     
     const priceIdMap: Record<Exclude<Plan, 'starter' | 'custom'>, Record<string, string | undefined>> = {
       standard: {

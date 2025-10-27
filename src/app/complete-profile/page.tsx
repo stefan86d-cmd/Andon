@@ -109,7 +109,7 @@ function CompleteProfileContent() {
             country: data.country,
             phone: data.phone,
             orgId: currentUser.id, // The first admin's ID becomes the org ID
-            plan: initialPlan,
+            plan: initialPlan as Plan,
         };
         
         await updateCurrentUser(userProfileData);
