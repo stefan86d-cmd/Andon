@@ -62,11 +62,10 @@ export async function createCheckoutSession({
     const priceId = plan !== 'starter' && plan !== 'custom' ? priceIdMap[plan][duration] : undefined;
     if (!priceId) throw new Error('❌ Price ID not found for selected plan/duration.');
 
-    let session;
     const sessionParams: Stripe.Checkout.SessionCreateParams = {
         customer: customerId,
         line_items: [{ price: priceId, quantity: 1 }],
-        allow_promotion_codes: true,
+        allow_promotion_codes: true, // Explicitly set as a boolean
         success_url: success_url,
         cancel_url: cancel_url,
         metadata: metadata,
@@ -79,7 +78,7 @@ export async function createCheckoutSession({
       sessionParams.mode = 'payment';
     }
 
-    session = await stripe.checkout.sessions.create(sessionParams);
+    const session = await stripe.checkout.sessions.create(sessionParams);
 
     console.log('✅ Stripe session created:', session.id);
     return { url: session.url };
@@ -432,5 +431,7 @@ export async function getAllUsers(orgId: string): Promise<User[]> {
     return [];
   }
 }
+
+    
 
     
