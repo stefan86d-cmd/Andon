@@ -67,7 +67,6 @@ export async function createCheckoutSession({
         line_items: [{ price: priceId, quantity: 1 }],
         success_url: success_url,
         cancel_url: cancel_url,
-        allow_promotion_codes: true, // Guaranteed boolean
         metadata, // Always include metadata at the top level
     };
 
