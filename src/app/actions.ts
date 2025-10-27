@@ -67,16 +67,15 @@ export async function createCheckoutSession({
         line_items: [{ price: priceId, quantity: 1 }],
         success_url: success_url,
         cancel_url: cancel_url,
-        metadata: metadata,
+        allow_promotion_codes: true, // Guaranteed boolean
+        metadata, // Always include metadata at the top level
     };
 
     if (duration === '1') {
       sessionParams.mode = 'subscription';
       sessionParams.subscription_data = { metadata };
-      sessionParams.allow_promotion_codes = true;
     } else {
       sessionParams.mode = 'payment';
-      sessionParams.allow_promotion_codes = true;
     }
 
     const session = await stripe.checkout.sessions.create(sessionParams);
@@ -432,3 +431,5 @@ export async function getAllUsers(orgId: string): Promise<User[]> {
     return [];
   }
 }
+
+    
