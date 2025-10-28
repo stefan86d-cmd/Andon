@@ -56,7 +56,7 @@ export async function createCheckoutSession({
   returnPath?: string;
 }) {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000';
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://localhost:3000';
     
     // Safely look up the price ID using plan and duration
     const priceId = (plan !== 'starter' && plan !== 'custom' && priceIdMap[plan])
