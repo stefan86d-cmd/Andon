@@ -2,7 +2,7 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { add } from "date-fns";
-import { getAdminServices } from "@/firebase/admin";
+import { adminDb } from "@/firebase/admin";
 import { Timestamp, FieldValue } from 'firebase-admin/firestore';
 
 
@@ -30,8 +30,11 @@ export async function POST(req: Request) {
     return new NextResponse(`Webhook Error: ${err.message}`, { status: 400 });
   }
 
-  // Lazily get the DB instance only when an event needs processing.
-  const { db: adminDb } = getAdminServices();
+  // Ensure adminDb is available before proceeding
+  if (!adminDb) {
+    console.error("❌ Firebase Admin DB is not initialized. Cannot process webhook.");
+    return new NextResponse("Internal Server Error: Firebase not configured.", { status: 500 });
+  }
 
   // Handle Checkout Success for both new subscriptions and one-time payments
   if (event.type === "checkout.session.completed") {
