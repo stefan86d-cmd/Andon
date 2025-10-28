@@ -164,6 +164,7 @@ function CompleteProfileContent() {
                     duration: selectedDuration,
                     currency: selectedCurrency,
                     metadata,
+                    returnPath: '/login'
                 });
 
                 if (result.clientSecret) {

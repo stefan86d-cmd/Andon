@@ -100,7 +100,7 @@ function BillingPageContent() {
                     duration: selectedDuration,
                     currency: currency,
                     metadata,
-                    returnPath: '/settings/billing/success', // Use the new success page
+                    returnPath: '/dashboard',
                 });
 
                 if (result.clientSecret) {

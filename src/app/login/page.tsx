@@ -1,8 +1,8 @@
 
 "use client";
 
-import React, { useState, useTransition, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useTransition, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -45,19 +45,30 @@ function GoogleIcon() {
   );
 }
 
-// --- Page Component ---
-export default function LoginPage() {
+function LoginContent() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [isLoggingIn, startLoginTransition] = useTransition();
   const [year, setYear] = useState(new Date().getFullYear());
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { login, signInWithGoogle } = useUser();
-
+  
   useEffect(() => {
     setYear(new Date().getFullYear());
   }, []);
+
+  useEffect(() => {
+    if (searchParams.get('payment_success') === 'true') {
+        toast({
+            title: "Payment Successful!",
+            description: "Your account is activated. Please log in to continue.",
+        });
+        // Clean the URL
+        router.replace('/login', { scroll: false });
+    }
+}, [searchParams, router]);
 
   // --- Login handler ---
   const handleLogin = (e: React.FormEvent) => {
@@ -196,4 +207,18 @@ export default function LoginPage() {
       </div>
     </div>
   );
+}
+
+
+// --- Page Component ---
+export default function LoginPage() {
+    return (
+        <Suspense fallback={
+            <div className="flex h-screen items-center justify-center">
+                <LoaderCircle className="h-8 w-8 animate-spin" />
+            </div>
+        }>
+          <LoginContent />
+        </Suspense>
+    )
 }
