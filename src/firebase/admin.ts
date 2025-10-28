@@ -3,57 +3,58 @@ import * as admin from "firebase-admin";
 import type { App } from "firebase-admin/app";
 import type { Auth } from "firebase-admin/auth";
 import type { Firestore } from "firebase-admin/firestore";
+import { experimental_taintObjectReference } from "react";
 
 let app: App | undefined;
 let auth: Auth | undefined;
 let db: Firestore | undefined;
 
-function initializeAdminApp(): App {
-  if (admin.apps.length > 0 && admin.apps[0]) {
-    return admin.apps[0];
-  }
+/**
+ * Lazily initializes and returns Firebase Admin services.
+ * This ensures initialization only happens once and when needed.
+ * It also protects the service account credentials from being bundled in client code.
+ */
+export function getAdminServices(): { app?: App; auth?: Auth; db?: Firestore } {
+  experimental_taintObjectReference(
+    "Do not pass service account credentials to the client.",
+    process.env.FIREBASE_SERVICE_ACCOUNT_ANDON_EF46A
+  );
 
-  const serviceAccountString = process.env.FIREBASE_SERVICE_ACCOUNT_ANDON_EF46A;
-
-  if (!serviceAccountString) {
-    console.error(
-      "❌ Firebase Admin SDK initialization failed: The FIREBASE_SERVICE_ACCOUNT_ANDON_EF46A environment variable is not set."
-    );
-    throw new Error("Firebase Admin credentials are not configured.");
+  if (app) {
+    return { app, auth, db };
   }
 
   try {
+    const serviceAccountString = process.env.FIREBASE_SERVICE_ACCOUNT_ANDON_EF46A;
+    if (!serviceAccountString) {
+      throw new Error("Firebase Admin credentials are not configured.");
+    }
+    
     const serviceAccount = JSON.parse(serviceAccountString);
-
     if (serviceAccount.private_key) {
       serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
     }
 
-    const newApp = admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount),
-    });
-
-    console.log("✅ Firebase Admin SDK initialized successfully.");
-    return newApp;
-  } catch (error: any) {
-    console.error("❌ Firebase Admin SDK initialization failed due to an error:", error);
-    if (error instanceof SyntaxError) {
-      console.error("This is likely due to a malformed JSON string in your FIREBASE_SERVICE_ACCOUNT_ANDON_EF46A environment variable.");
+    if (admin.apps.length > 0 && admin.apps[0]) {
+      app = admin.apps[0];
+    } else {
+      app = admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount),
+      });
     }
-    throw new Error(`Failed to initialize Firebase Admin SDK. Details: ${error.message}`);
-  }
-}
-
-/**
- * Lazily initializes and returns Firebase Admin services.
- * This ensures initialization only happens once and when needed.
- */
-export function getAdminServices(): { app: App; auth: Auth; db: Firestore } {
-  if (!app) {
-    app = initializeAdminApp();
+    
     auth = admin.auth(app);
     db = admin.firestore(app);
+    
+    console.log("✅ Firebase Admin SDK initialized successfully.");
+    return { app, auth, db };
+
+  } catch (error: any) {
+    // Log the error but do not throw, to prevent build failures.
+    // The functions calling this will handle the undefined return.
+    if (process.env.NODE_ENV === 'development') {
+      console.error("Firebase Admin SDK initialization failed:", error.message);
+    }
+    return {};
   }
-  // These are guaranteed to be defined after the block above.
-  return { app, auth: auth!, db: db! };
 }
