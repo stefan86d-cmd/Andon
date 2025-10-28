@@ -2,7 +2,7 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { add } from "date-fns";
-import { adminDb } from "@/firebase/admin";
+import { getAdminServices } from "@/firebase/admin";
 import { Timestamp, FieldValue } from 'firebase-admin/firestore';
 
 
@@ -29,6 +29,9 @@ export async function POST(req: Request) {
     console.error("❌ Webhook signature verification failed:", err.message);
     return new NextResponse(`Webhook Error: ${err.message}`, { status: 400 });
   }
+
+  // Lazily get the DB instance only when an event needs processing.
+  const { db: adminDb } = getAdminServices();
 
   // Handle Checkout Success for both new subscriptions and one-time payments
   if (event.type === "checkout.session.completed") {

@@ -6,7 +6,7 @@ import { handleFirestoreError } from '@/lib/firestore-helpers';
 import { sendEmail } from '@/lib/email';
 import Stripe from 'stripe';
 import { db as dbFn } from '@/firebase/server';
-import { adminAuth } from '@/firebase/admin';
+import { getAdminServices } from '@/firebase/admin';
 import { FieldValue } from 'firebase-admin/firestore';
 import { add } from 'date-fns';
 
@@ -69,8 +69,8 @@ export async function createCheckoutSession({
     
     // Use the provided return path or default to the dashboard with a success flag
     const finalReturnUrl = returnPath 
-      ? `${baseUrl}${returnPath}`
-      : `${baseUrl}/dashboard?payment_success=true&session_id={CHECKOUT_SESSION_ID}`;
+      ? `https://andonpro.com${returnPath}`
+      : `https://andonpro.com/dashboard?payment_success=true&session_id={CHECKOUT_SESSION_ID}`;
 
     const sessionParams: Stripe.Checkout.SessionCreateParams = {
       mode,
@@ -168,6 +168,7 @@ export async function addUser(userData: {
   orgId: string;
 }) {
   const db = dbFn();
+  const { auth: adminAuth } = getAdminServices();
   if (!db || !adminAuth) return handleFirestoreError(new Error('Admin SDK not initialized'));
   try {
     const { email, firstName, lastName, role, plan, orgId } = userData;
@@ -202,6 +203,7 @@ export async function addUser(userData: {
 
 export async function editUser(userId: string, data: { firstName: string; lastName: string; email: string; role: Role }) {
   const db = dbFn();
+  const { auth: adminAuth } = getAdminServices();
   if (!db || !adminAuth) return handleFirestoreError(new Error('Admin SDK not initialized'));
   try {
     await db.collection('users').doc(userId).update(data);
@@ -215,6 +217,7 @@ export async function editUser(userId: string, data: { firstName: string; lastNa
 
 export async function deleteUser(userId: string) {
   const db = dbFn();
+  const { auth: adminAuth } = getAdminServices();
   if (!db) return handleFirestoreError(new Error('Firestore not initialized'));
   try {
     await db.collection('users').doc(userId).delete();
@@ -270,6 +273,7 @@ export async function sendWelcomeEmail(userId: string) {
 }
 
 export async function requestPasswordReset(email: string) {
+  const { auth: adminAuth } = getAdminServices();
   if (!adminAuth) return { success: false, message: 'Password reset service is unavailable.' };
   try {
     const link = await adminAuth.generatePasswordResetLink(email);
@@ -294,6 +298,7 @@ export async function sendPasswordChangedEmail(email: string) {
 }
 
 export async function changePassword(email: string, currentPass: string, newPass: string) {
+  const { auth: adminAuth } = getAdminServices();
   if (!adminAuth) return { success: false, error: "Authentication service unavailable." };
   try {
     // This is a placeholder. Real password change logic would involve re-authenticating the user.

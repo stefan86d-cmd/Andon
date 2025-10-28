@@ -1,23 +1,20 @@
 
 import * as admin from "firebase-admin";
+import type { App } from "firebase-admin/app";
+import type { Auth } from "firebase-admin/auth";
+import type { Firestore } from "firebase-admin/firestore";
 
-// This will hold the single initialized instance of the Firebase App.
-let adminApp: admin.app.App;
+let app: App | undefined;
+let auth: Auth | undefined;
+let db: Firestore | undefined;
 
-/**
- * Initializes and returns the Firebase Admin App instance.
- * It ensures that the app is initialized only once.
- */
-function getAdminApp(): admin.app.App {
-  // If the app is already initialized, return it.
+function initializeAdminApp(): App {
   if (admin.apps.length > 0 && admin.apps[0]) {
     return admin.apps[0];
   }
 
-  // Retrieve the service account JSON from environment variables.
   const serviceAccountString = process.env.FIREBASE_SERVICE_ACCOUNT_ANDON_EF46A;
 
-  // Check if the service account variable is set.
   if (!serviceAccountString) {
     console.error(
       "❌ Firebase Admin SDK initialization failed: The FIREBASE_SERVICE_ACCOUNT_ANDON_EF46A environment variable is not set."
@@ -26,40 +23,37 @@ function getAdminApp(): admin.app.App {
   }
 
   try {
-    // Parse the service account string into a JSON object.
     const serviceAccount = JSON.parse(serviceAccountString);
 
-    // IMPORTANT: Explicitly handle escaped newlines in the private key.
     if (serviceAccount.private_key) {
       serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
     }
 
-    // Initialize the Firebase Admin App with the parsed credentials.
-    adminApp = admin.initializeApp({
+    const newApp = admin.initializeApp({
       credential: admin.credential.cert(serviceAccount),
     });
 
     console.log("✅ Firebase Admin SDK initialized successfully.");
-    return adminApp;
-
+    return newApp;
   } catch (error: any) {
     console.error("❌ Firebase Admin SDK initialization failed due to an error:", error);
-    // Add more detailed logging for parsing errors
     if (error instanceof SyntaxError) {
-        console.error("This is likely due to a malformed JSON string in your FIREBASE_SERVICE_ACCOUNT_ANDON_EF46A environment variable.");
+      console.error("This is likely due to a malformed JSON string in your FIREBASE_SERVICE_ACCOUNT_ANDON_EF46A environment variable.");
     }
-    // Re-throw the error to ensure the server fails loudly if configuration is wrong.
-    throw new Error(`Failed to initialize Firebase Admin SDK. Check your service account credentials. Details: ${error.message}`);
+    throw new Error(`Failed to initialize Firebase Admin SDK. Details: ${error.message}`);
   }
 }
 
-// Initialize the app immediately and export the services.
-// This ensures that any credential errors are caught at startup.
-const app = getAdminApp();
-
-export const adminAuth = admin.auth(app);
-export const adminDb = admin.firestore(app);
-export const adminStorage = admin.storage(app);
-
-// Also export the app getter for any advanced use cases.
-export { getAdminApp };
+/**
+ * Lazily initializes and returns Firebase Admin services.
+ * This ensures initialization only happens once and when needed.
+ */
+export function getAdminServices(): { app: App; auth: Auth; db: Firestore } {
+  if (!app) {
+    app = initializeAdminApp();
+    auth = admin.auth(app);
+    db = admin.firestore(app);
+  }
+  // These are guaranteed to be defined after the block above.
+  return { app, auth: auth!, db: db! };
+}

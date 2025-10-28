@@ -1,6 +1,6 @@
 
-import { getFirestore, Firestore } from "firebase-admin/firestore";
-import { getAdminApp } from "./admin";
+import type { Firestore } from "firebase-admin/firestore";
+import { getAdminServices } from "./admin";
 
 let db: Firestore | undefined;
 
@@ -8,15 +8,18 @@ function getDb(): Firestore | undefined {
     if (db) {
         return db;
     }
-
-    const app = getAdminApp();
-    if (!app) {
-        // This will happen if the service account isn't available.
-        // We return undefined instead of throwing to avoid crashing the server.
+    
+    try {
+        // Use the lazy initializer from admin.ts
+        const adminServices = getAdminServices();
+        db = adminServices.db;
+        return db;
+    } catch (error) {
+        // If initialization fails (e.g., missing env var), this will catch it.
+        // We log the error but return undefined to avoid crashing the server.
+        console.error("Failed to get Firestore instance from admin services:", error);
         return undefined;
     }
-    db = getFirestore(app);
-    return db;
 }
 
 // To avoid re-exporting `undefined` and allow for conditional use,
