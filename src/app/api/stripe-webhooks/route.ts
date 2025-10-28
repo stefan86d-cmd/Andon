@@ -2,8 +2,10 @@
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
-import * as admin from "firebase-admin";
 import { add } from "date-fns";
+import { adminDb, adminAuth } from "@/firebase/admin";
+import { Timestamp, FieldValue } from 'firebase-admin/firestore';
+
 
 // --- Stripe Setup ---
 const stripe = new Stripe(process.env.NEXT_STRIPE_SECRET_KEY!, {
@@ -12,28 +14,11 @@ const stripe = new Stripe(process.env.NEXT_STRIPE_SECRET_KEY!, {
 
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!;
 
-// --- Firebase Admin Setup ---
-if (!admin.apps.length) {
-  const serviceAccountString = process.env.FIREBASE_SERVICE_ACCOUNT_ANDON_EF46A;
-  if (serviceAccountString) {
-    const serviceAccount = JSON.parse(serviceAccountString);
-    if (serviceAccount.private_key) {
-        serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
-    }
-    admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount),
-    });
-  } else {
-    console.error("Firebase Admin SDK credentials are not configured.");
-  }
-}
-
-const db = admin.firestore();
 
 // --- Main Handler ---
 export async function POST(req: Request) {
   const body = await req.text();
-  const sig = (await headers()).get("stripe-signature");
+  const sig = headers().get("stripe-signature");
 
   let event: Stripe.Event;
 
@@ -55,7 +40,7 @@ export async function POST(req: Request) {
 
     if (userId && plan) {
       try {
-        const userRef = db.collection("users").doc(userId);
+        const userRef = adminDb.collection("users").doc(userId);
         
         let subscriptionId;
         let subscriptionStartsAt = new Date();
@@ -80,9 +65,9 @@ export async function POST(req: Request) {
         const updates: Record<string, any> = {
           plan,
           subscriptionId,
-          subscriptionStartsAt: admin.firestore.Timestamp.fromDate(subscriptionStartsAt),
-          subscriptionEndsAt: admin.firestore.Timestamp.fromDate(subscriptionEndsAt),
-          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          subscriptionStartsAt: Timestamp.fromDate(subscriptionStartsAt),
+          subscriptionEndsAt: Timestamp.fromDate(subscriptionEndsAt),
+          updatedAt: FieldValue.serverTimestamp(),
         };
 
         await userRef.update(updates);
@@ -103,14 +88,14 @@ export async function POST(req: Request) {
     if ((invoice.billing_reason === 'subscription_cycle' || invoice.billing_reason === 'subscription_create') && subscriptionId) {
         try {
             const subscription = await stripe.subscriptions.retrieve(subscriptionId as string);
-            const userSnapshot = await db.collection("users").where("subscriptionId", "==", subscription.id).limit(1).get();
+            const userSnapshot = await adminDb.collection("users").where("subscriptionId", "==", subscription.id).limit(1).get();
 
             if (!userSnapshot.empty) {
                 const userId = userSnapshot.docs[0].id;
-                await db.collection("users").doc(userId).update({
-                    subscriptionStartsAt: admin.firestore.Timestamp.fromMillis(subscription.current_period_start * 1000),
-                    subscriptionEndsAt: admin.firestore.Timestamp.fromMillis(subscription.current_period_end * 1000),
-                    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+                await adminDb.collection("users").doc(userId).update({
+                    subscriptionStartsAt: Timestamp.fromMillis(subscription.current_period_start * 1000),
+                    subscriptionEndsAt: Timestamp.fromMillis(subscription.current_period_end * 1000),
+                    updatedAt: FieldValue.serverTimestamp(),
                 });
                 console.log(`🔄 Subscription renewed for user ${userId}`);
             }
@@ -126,16 +111,16 @@ export async function POST(req: Request) {
     const subscription = event.data.object as Stripe.Subscription;
     
     try {
-        const userSnapshot = await db.collection("users").where("subscriptionId", "==", subscription.id).limit(1).get();
+        const userSnapshot = await adminDb.collection("users").where("subscriptionId", "==", subscription.id).limit(1).get();
         
         if (!userSnapshot.empty) {
             const userId = userSnapshot.docs[0].id;
-            await db.collection("users").doc(userId).update({
+            await adminDb.collection("users").doc(userId).update({
                 plan: "starter",
-                subscriptionId: admin.firestore.FieldValue.delete(),
-                subscriptionStartsAt: admin.firestore.FieldValue.delete(),
-                subscriptionEndsAt: admin.firestore.FieldValue.delete(),
-                updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+                subscriptionId: FieldValue.delete(),
+                subscriptionStartsAt: FieldValue.delete(),
+                subscriptionEndsAt: FieldValue.delete(),
+                updatedAt: FieldValue.serverTimestamp(),
             });
             console.log(`🟥 Subscription canceled for user ${userId}`);
         }
