@@ -116,16 +116,20 @@ function DashboardPageContent() {
 
         if (intervals.length === 0) continue;
 
-        const mergedIntervals = [intervals[0]];
-        for (let i = 1; i < intervals.length; i++) {
-            const lastMerged = mergedIntervals[mergedIntervals.length - 1];
-            const current = intervals[i];
-            if (current.start <= lastMerged.end) {
-                lastMerged.end = max([lastMerged.end, current.end]);
-            } else {
-                mergedIntervals.push(current);
+        let mergedIntervals = [intervals[0]];
+        if(intervals.length > 1) {
+            mergedIntervals = [intervals[0]];
+            for (let i = 1; i < intervals.length; i++) {
+                const lastMerged = mergedIntervals[mergedIntervals.length - 1];
+                const current = intervals[i];
+                if (current.start <= lastMerged.end) {
+                    lastMerged.end = max([lastMerged.end, current.end]);
+                } else {
+                    mergedIntervals.push(current);
+                }
             }
         }
+        
 
         const lineDowntime = mergedIntervals.reduce(
         (total, interval) => total + differenceInSeconds(interval.end, interval.start),

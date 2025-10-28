@@ -67,7 +67,7 @@ export async function POST(req: Request) {
             subscriptionStartsAt = new Date(subscription.current_period_start * 1000);
             subscriptionEndsAt = new Date(subscription.current_period_end * 1000);
         } else if (session.mode === 'payment') {
-            subscriptionId = session.payment_intent as string;
+            subscriptionId = session.payment_intent as string; // Use payment intent for one-time
             subscriptionEndsAt = add(subscriptionStartsAt, { months: duration });
         }
         
@@ -89,12 +89,12 @@ export async function POST(req: Request) {
     }
   }
 
-  // ✅ Handle Subscription Updates (e.g., renewals)
-  if (event.type === "invoice.payment_succeeded") {
+  // Handle Subscription Updates (e.g., renewals)
+  if (event.type === "invoice.payment_succeeded" || event.type === "invoice_payment.paid") {
     const invoice = event.data.object as Stripe.Invoice;
     const subscriptionId = invoice.subscription;
 
-    if (invoice.billing_reason === 'subscription_cycle' && subscriptionId) {
+    if ((invoice.billing_reason === 'subscription_cycle' || invoice.billing_reason === 'subscription_create') && subscriptionId) {
         try {
             const subscription = await stripe.subscriptions.retrieve(subscriptionId as string);
             const userSnapshot = await db.collection("users").where("subscriptionId", "==", subscription.id).limit(1).get();
@@ -115,7 +115,7 @@ export async function POST(req: Request) {
     }
   }
 
-  // ✅ Handle Subscription Cancellations
+  // Handle Subscription Cancellations
   if (event.type === "customer.subscription.deleted") {
     const subscription = event.data.object as Stripe.Subscription;
     
