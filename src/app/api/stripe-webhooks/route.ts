@@ -90,7 +90,7 @@ export async function POST(req: Request) {
   }
 
   // Handle Subscription Updates (e.g., renewals)
-  if (event.type === "invoice.payment_succeeded" || event.type === "invoice_payment.paid") {
+  if (event.type === "invoice.payment_succeeded" || event.type === "invoice.paid") {
     const invoice = event.data.object as Stripe.Invoice;
     const subscriptionId = invoice.subscription;
 
