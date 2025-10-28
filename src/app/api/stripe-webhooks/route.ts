@@ -67,15 +67,21 @@ export async function POST(req: Request) {
             subscriptionStartsAt = new Date(subscription.current_period_start * 1000);
             subscriptionEndsAt = new Date(subscription.current_period_end * 1000);
         } else if (session.mode === 'payment') {
-            subscriptionId = session.payment_intent as string; // Use payment intent for one-time
+            // Use the payment intent for one-time payments as a unique ID
+            subscriptionId = session.payment_intent as string; 
             subscriptionEndsAt = add(subscriptionStartsAt, { months: duration });
         }
         
+        if (!subscriptionId || !subscriptionEndsAt) {
+          console.error("❌ Could not determine subscription ID or end date from checkout session:", session.id);
+          return new NextResponse("Internal Server Error", { status: 500 });
+        }
+
         const updates: Record<string, any> = {
           plan,
           subscriptionId,
           subscriptionStartsAt: admin.firestore.Timestamp.fromDate(subscriptionStartsAt),
-          subscriptionEndsAt: admin.firestore.Timestamp.fromDate(subscriptionEndsAt!),
+          subscriptionEndsAt: admin.firestore.Timestamp.fromDate(subscriptionEndsAt),
           updatedAt: admin.firestore.FieldValue.serverTimestamp(),
         };
 
@@ -89,8 +95,8 @@ export async function POST(req: Request) {
     }
   }
 
-  // Handle Subscription Updates (e.g., renewals)
-  if (event.type === "invoice.payment_succeeded" || event.type === "invoice.paid") {
+  // Handle Subscription Renewals for both event types
+  if (event.type === "invoice.payment_succeeded" || (event.type as string) === 'invoice_payment.paid') {
     const invoice = event.data.object as Stripe.Invoice;
     const subscriptionId = invoice.subscription;
 
@@ -109,7 +115,7 @@ export async function POST(req: Request) {
                 console.log(`🔄 Subscription renewed for user ${userId}`);
             }
         } catch (error) {
-            console.error("❌ Firestore update failed for invoice.payment_succeeded:", error);
+            console.error("❌ Firestore update failed for invoice payment:", error);
             return new NextResponse("Internal Server Error", { status: 500 });
         }
     }

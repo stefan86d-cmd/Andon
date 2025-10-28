@@ -28,6 +28,7 @@ interface UserContextType {
   signInWithGoogle: () => Promise<boolean>;
   logout: () => void;
   updateCurrentUser: (user: Partial<User>) => Promise<void>;
+  refreshCurrentUser: () => Promise<void>;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -56,6 +57,17 @@ export function UserProvider({ children }: { children: ReactNode }) {
         theme: 'light',
     };
   };
+
+  const refreshCurrentUser = useCallback(async () => {
+    if (auth?.currentUser) {
+      setLoading(true);
+      const userProfile = await getClientUserById(auth.currentUser.uid);
+      if (userProfile) {
+        setCurrentUser(userProfile);
+      }
+      setLoading(false);
+    }
+  }, [auth]);
 
   const handleAuthUser = useCallback(async (firebaseUser: FirebaseUser | null) => {
     if (firebaseUser) {
@@ -215,7 +227,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   }, [currentUser]);
 
   return (
-    <UserContext.Provider value={{ currentUser, loading, login, registerWithEmail, signInWithGoogle, logout, updateCurrentUser }}>
+    <UserContext.Provider value={{ currentUser, loading, login, registerWithEmail, signInWithGoogle, logout, updateCurrentUser, refreshCurrentUser }}>
       {children}
     </UserContext.Provider>
   );

@@ -16,6 +16,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { IssuesGrid } from "@/components/dashboard/issues-grid";
 import { toast } from "@/hooks/use-toast";
 import { LoaderCircle } from "lucide-react";
+import { getCheckoutSession } from "@/app/actions";
 
 type Duration = {
   years?: number;
@@ -28,7 +29,7 @@ type Duration = {
 };
 
 function DashboardPageContent() {
-    const { currentUser } = useUser();
+    const { currentUser, refreshCurrentUser } = useUser();
     const isMobile = useIsMobile();
     const searchParams = useSearchParams();
     const [allIssues, setAllIssues] = useState<Issue[]>([]);
@@ -38,15 +39,38 @@ function DashboardPageContent() {
     const [view, setView] = useState<'list' | 'grid'>();
 
     useEffect(() => {
-        if (searchParams.get('payment_success') === 'true') {
-            toast({
-                title: "Purchase Successful!",
-                description: "Thank you for your purchase. Your plan has been upgraded.",
-            });
-             // Clean the URL
-            window.history.replaceState(null, '', '/dashboard');
-        }
-    }, [searchParams]);
+        const checkPaymentStatus = async () => {
+            const sessionId = searchParams.get('session_id');
+            if (searchParams.get('payment_success') === 'true' && sessionId) {
+                try {
+                    // Verify the session on the backend
+                    const { session } = await getCheckoutSession(sessionId);
+                    if (session && session.payment_status === 'paid') {
+                        // The webhook might take a moment.
+                        // Force a refresh of user data to get the new plan.
+                        await refreshCurrentUser();
+                        
+                        toast({
+                            title: "Purchase Successful!",
+                            description: "Thank you for your purchase. Your plan has been upgraded.",
+                        });
+                    }
+                } catch (error) {
+                    console.error("Error verifying checkout session:", error);
+                    toast({
+                        title: "Verification Error",
+                        description: "Could not verify payment status. If your plan isn't updated, please contact support.",
+                        variant: "destructive",
+                    });
+                } finally {
+                    // Clean the URL
+                    window.history.replaceState(null, '', '/dashboard');
+                }
+            }
+        };
+        
+        checkPaymentStatus();
+    }, [searchParams, refreshCurrentUser]);
 
     useEffect(() => {
         if (isMobile) {

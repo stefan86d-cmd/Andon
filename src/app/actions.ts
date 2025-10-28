@@ -84,6 +84,8 @@ export async function createCheckoutSession({
 
     if (mode === 'subscription') {
       sessionParams.subscription_data = { metadata };
+    } else if (mode === 'payment') {
+      sessionParams.payment_intent_data = { metadata };
     }
 
     const session = await stripe.checkout.sessions.create(sessionParams);
