@@ -15,6 +15,7 @@ import { LayoutGrid, Rows } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { IssuesGrid } from "@/components/dashboard/issues-grid";
 import { toast } from "@/hooks/use-toast";
+import { LoaderCircle } from "lucide-react";
 
 type Duration = {
   years?: number;
@@ -282,9 +283,13 @@ function DashboardPageContent() {
 }
 
 
-export default function Home() {
+export default function DashboardPage() {
   return (
-    <Suspense>
+    <Suspense fallback={
+        <div className="flex h-screen items-center justify-center">
+            <LoaderCircle className="h-8 w-8 animate-spin" />
+        </div>
+    }>
         <DashboardPageContent />
     </Suspense>
   );
