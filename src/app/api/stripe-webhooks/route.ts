@@ -1,9 +1,8 @@
 
-import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { add } from "date-fns";
-import { adminDb, adminAuth } from "@/firebase/admin";
+import { adminDb } from "@/firebase/admin";
 import { Timestamp, FieldValue } from 'firebase-admin/firestore';
 
 
@@ -18,7 +17,7 @@ const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!;
 // --- Main Handler ---
 export async function POST(req: Request) {
   const body = await req.text();
-  const sig = headers().get("stripe-signature");
+  const sig = req.headers.get("stripe-signature");
 
   let event: Stripe.Event;
 
@@ -81,7 +80,7 @@ export async function POST(req: Request) {
   }
 
   // Handle Subscription Renewals for both event types
-  if (event.type === "invoice.payment_succeeded" || (event.type as string) === 'invoice_payment.paid') {
+  if ((event.type as string) === "invoice.payment_succeeded" || (event.type as string) === 'invoice_payment.paid') {
     const invoice = event.data.object as Stripe.Invoice;
     const subscriptionId = invoice.subscription;
 
