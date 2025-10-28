@@ -12,8 +12,11 @@ function getDb(): Firestore | undefined {
     try {
         // Use the lazy initializer from admin.ts
         const adminServices = getAdminServices();
-        db = adminServices.db;
-        return db;
+        if (adminServices) {
+            db = adminServices.db;
+            return db;
+        }
+        return undefined;
     } catch (error) {
         // If initialization fails (e.g., missing env var), this will catch it.
         // We log the error but return undefined to avoid crashing the server.

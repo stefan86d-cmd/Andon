@@ -217,8 +217,9 @@ export async function editUser(userId: string, data: { firstName: string; lastNa
 
 export async function deleteUser(userId: string) {
   const db = dbFn();
-  const { auth: adminAuth } = getAdminServices();
   if (!db) return handleFirestoreError(new Error('Firestore not initialized'));
+  const { auth: adminAuth } = getAdminServices();
+  if (!adminAuth) return handleFirestoreError(new Error('Admin SDK not initialized'));
   try {
     await db.collection('users').doc(userId).delete();
     // Also delete from Firebase Auth
@@ -434,5 +435,3 @@ export async function getAllUsers(orgId: string): Promise<User[]> {
     return [];
   }
 }
-
-    
