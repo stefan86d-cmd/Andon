@@ -16,7 +16,6 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { IssuesGrid } from "@/components/dashboard/issues-grid";
 import { toast } from "@/hooks/use-toast";
 import { LoaderCircle } from "lucide-react";
-import { getCheckoutSession } from "@/app/actions";
 
 type Duration = {
   years?: number;
@@ -40,37 +39,28 @@ function DashboardPageContent() {
 
     useEffect(() => {
         const checkPaymentStatus = async () => {
-            const sessionId = searchParams.get('session_id');
-            if (searchParams.get('payment_success') === 'true' && sessionId) {
-                try {
-                    // Verify the session on the backend
-                    const { session } = await getCheckoutSession(sessionId);
-                    if (session && session.payment_status === 'paid') {
-                        // The webhook might take a moment.
-                        // Force a refresh of user data to get the new plan.
-                        await refreshCurrentUser();
-                        
-                        toast({
-                            title: "Purchase Successful!",
-                            description: "Thank you for your purchase. Your plan has been upgraded.",
-                        });
-                    }
-                } catch (error) {
-                    console.error("Error verifying checkout session:", error);
+            if (searchParams.get('payment_success') === 'true') {
+                toast({
+                    title: "Processing Your Purchase...",
+                    description: "Your plan is being updated. Please wait a moment.",
+                });
+
+                // Wait a couple of seconds to give the webhook time to process.
+                setTimeout(async () => {
+                    await refreshCurrentUser();
                     toast({
-                        title: "Verification Error",
-                        description: "Could not verify payment status. If your plan isn't updated, please contact support.",
-                        variant: "destructive",
+                        title: "Purchase Successful!",
+                        description: "Thank you for your purchase. Your plan has been upgraded.",
                     });
-                } finally {
-                    // Clean the URL
+                     // Clean the URL
                     window.history.replaceState(null, '', '/dashboard');
-                }
+                }, 2000); // 2-second delay
             }
         };
         
         checkPaymentStatus();
-    }, [searchParams, refreshCurrentUser]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [searchParams]);
 
     useEffect(() => {
         if (isMobile) {

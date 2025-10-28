@@ -69,7 +69,7 @@ export async function createCheckoutSession({
     
     // Use the provided return path or default to the dashboard with a success flag
     const finalReturnUrl = returnPath 
-      ? `${baseUrl}${returnPath}?payment_success=true&session_id={CHECKOUT_SESSION_ID}`
+      ? `${baseUrl}${returnPath}`
       : `${baseUrl}/dashboard?payment_success=true&session_id={CHECKOUT_SESSION_ID}`;
 
     const sessionParams: Stripe.Checkout.SessionCreateParams = {
@@ -95,18 +95,6 @@ export async function createCheckoutSession({
   } catch (error: any) {
     console.error('❌ Stripe session error:', error);
     throw new Error(error.message || 'Failed to create Stripe checkout session.');
-  }
-}
-
-export async function getCheckoutSession(sessionId: string) {
-  try {
-    const session = await stripe.checkout.sessions.retrieve(sessionId, {
-      expand: ['subscription', 'payment_intent', 'line_items'],
-    });
-    return { session };
-  } catch (error: any) {
-    console.error('❌ Stripe getCheckoutSession error:', error);
-    throw new Error(error.message || 'Failed to retrieve Stripe session');
   }
 }
 
