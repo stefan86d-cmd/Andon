@@ -1,7 +1,8 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { IssuesDataTable } from "@/components/dashboard/issues-data-table";
 import { StatsCards } from "@/components/dashboard/stats-cards";
 import { getClientIssues, getClientProductionLines } from "@/lib/data";
@@ -13,6 +14,7 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { LayoutGrid, Rows } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { IssuesGrid } from "@/components/dashboard/issues-grid";
+import { toast } from "@/hooks/use-toast";
 
 type Duration = {
   years?: number;
@@ -27,11 +29,23 @@ type Duration = {
 function DashboardPageContent() {
     const { currentUser } = useUser();
     const isMobile = useIsMobile();
+    const searchParams = useSearchParams();
     const [allIssues, setAllIssues] = useState<Issue[]>([]);
     const [recentIssues, setRecentIssues] = useState<Issue[]>([]);
     const [productionLines, setProductionLines] = useState<ProductionLine[]>([]);
     const [loading, setLoading] = useState(true);
     const [view, setView] = useState<'list' | 'grid'>();
+
+    useEffect(() => {
+        if (searchParams.get('payment_success') === 'true') {
+            toast({
+                title: "Purchase Successful!",
+                description: "Thank you for your purchase. Your plan has been upgraded.",
+            });
+             // Clean the URL
+            window.history.replaceState(null, '', '/dashboard');
+        }
+    }, [searchParams]);
 
     useEffect(() => {
         if (isMobile) {
@@ -265,5 +279,9 @@ function DashboardPageContent() {
 
 
 export default function Home() {
-  return <DashboardPageContent />;
+  return (
+    <Suspense>
+        <DashboardPageContent />
+    </Suspense>
+  );
 }

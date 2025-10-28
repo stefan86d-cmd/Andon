@@ -67,10 +67,10 @@ export async function createCheckoutSession({
     
     const mode = duration === '1' ? 'subscription' : 'payment';
     
-    // Use the provided return path or default to the new user success page
+    // Use the provided return path or default to the dashboard with a success flag
     const finalReturnUrl = returnPath 
-      ? `${baseUrl}${returnPath}?session_id={CHECKOUT_SESSION_ID}`
-      : `${baseUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`;
+      ? `${baseUrl}${returnPath}?payment_success=true&session_id={CHECKOUT_SESSION_ID}`
+      : `${baseUrl}/dashboard?payment_success=true&session_id={CHECKOUT_SESSION_ID}`;
 
     const sessionParams: Stripe.Checkout.SessionCreateParams = {
       mode,
