@@ -3,7 +3,6 @@ import * as admin from "firebase-admin";
 import type { App } from "firebase-admin/app";
 import type { Auth } from "firebase-admin/auth";
 import type { Firestore } from "firebase-admin/firestore";
-import { experimental_taintObjectReference } from "react";
 
 let app: App | undefined;
 let auth: Auth | undefined;
@@ -12,14 +11,8 @@ let db: Firestore | undefined;
 /**
  * Lazily initializes and returns Firebase Admin services.
  * This ensures initialization only happens once and when needed.
- * It also protects the service account credentials from being bundled in client code.
  */
-export function getAdminServices(): { app?: App; auth?: Auth; db?: Firestore } {
-  experimental_taintObjectReference(
-    "Do not pass service account credentials to the client.",
-    process.env.FIREBASE_SERVICE_ACCOUNT_ANDON_EF46A
-  );
-
+function getAdminServices(): { app?: App; auth?: Auth; db?: Firestore } {
   if (app) {
     return { app, auth, db };
   }
@@ -50,11 +43,14 @@ export function getAdminServices(): { app?: App; auth?: Auth; db?: Firestore } {
     return { app, auth, db };
 
   } catch (error: any) {
-    // Log the error but do not throw, to prevent build failures.
-    // The functions calling this will handle the undefined return.
     if (process.env.NODE_ENV === 'development') {
       console.error("Firebase Admin SDK initialization failed:", error.message);
     }
+    // Instead of throwing, return empty object to allow build to continue
+    // where server-side services may not be needed.
     return {};
   }
 }
+
+const { db: adminDb, auth: adminAuth } = getAdminServices();
+export { adminDb, adminAuth };

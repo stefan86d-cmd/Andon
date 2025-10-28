@@ -27,7 +27,7 @@ jobs:
         run: npm ci
 
       - name: Build Next.js app
-        run: npm run build
+        run: FIREBASE_CLI_EXPERIMENTS=webframeworks npm run build
         env:
           NEXT_PUBLIC_BASE_URL: https://andonpro.com
           FIREBASE_SERVICE_ACCOUNT_ANDON_EF46A: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_ANDON_EF46A }}
@@ -97,4 +97,3 @@ jobs:
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           RESEND_FROM_EMAIL: ${{ secrets.RESEND_FROM_EMAIL }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-    
