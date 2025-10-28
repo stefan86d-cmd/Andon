@@ -9,9 +9,9 @@ let auth: Auth | undefined;
 let db: Firestore | undefined;
 
 try {
-  const serviceAccountString = process.env.FIREBASE_SERVICE_ACCOUNT_ANDON_EF46A;
+  const serviceAccountString = process.env.SERVICE_ACCOUNT_ANDON_EF46A;
   if (!serviceAccountString) {
-    throw new Error("The FIREBASE_SERVICE_ACCOUNT_ANDON_EF46A environment variable is not set.");
+    throw new Error("The SERVICE_ACCOUNT_ANDON_EF46A environment variable is not set.");
   }
 
   const serviceAccount = JSON.parse(serviceAccountString);
