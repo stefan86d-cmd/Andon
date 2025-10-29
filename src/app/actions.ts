@@ -109,7 +109,16 @@ export async function addUser(userData: {
 
     await db.collection('users').doc(userRecord.uid).set(newUser);
     const resetLink = await adminAuth.generatePasswordResetLink(email);
-    await sendEmail({ to: email, subject: "Welcome to AndonPro!", html: `<p>Set your password: <a href="${resetLink}">Click here</a></p>` });
+    
+    const emailHtml = `
+      <p><b>Welcome to AndonPro</b></p>
+      <p>You have been invited to join your team on AndonPro.</p>
+      <p>To get started, please set your password by clicking the link below:</p>
+      <p><a href="${resetLink}">Set Your Password</a></p>
+      <p>This link will expire in 24 hours.</p>
+    `;
+
+    await sendEmail({ to: email, subject: "Welcome to AndonPro!", html: emailHtml });
     return { success: true, userId: userRecord.uid };
   } catch (err: any) {
     return handleFirestoreError(err);
@@ -430,3 +439,5 @@ export async function createCheckoutSession({
     throw new Error(error.message || 'Failed to create Stripe checkout session.');
   }
 }
+
+    
