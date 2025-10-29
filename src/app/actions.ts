@@ -8,7 +8,7 @@ import Stripe from 'stripe';
 import { db as dbFn } from '@/firebase/server';
 import { adminAuth } from '@/firebase/admin';
 import { FieldValue } from 'firebase-admin/firestore';
-import { add } from 'date-fns';
+
 
 const stripe = new Stripe(process.env.NEXT_STRIPE_SECRET_KEY!, {
   apiVersion: '2024-06-20',

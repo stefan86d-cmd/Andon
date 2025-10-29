@@ -1,7 +1,6 @@
 
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
-import { add } from "date-fns";
 import { adminDb } from "@/firebase/admin";
 import { Timestamp, FieldValue } from 'firebase-admin/firestore';
 
@@ -12,6 +11,12 @@ const stripe = new Stripe(process.env.NEXT_STRIPE_SECRET_KEY!, {
 });
 
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!;
+
+const addMonths = (date: Date, months: number): Date => {
+  const newDate = new Date(date);
+  newDate.setMonth(newDate.getMonth() + months);
+  return newDate;
+};
 
 
 // --- Main Handler ---
@@ -59,7 +64,7 @@ export async function POST(req: Request) {
         } else if (session.mode === 'payment') {
             // Use the payment intent for one-time payments as a unique ID
             subscriptionId = session.payment_intent as string; 
-            subscriptionEndsAt = add(subscriptionStartsAt, { months: duration });
+            subscriptionEndsAt = addMonths(subscriptionStartsAt, duration);
         }
         
         if (!subscriptionId || !subscriptionEndsAt) {
