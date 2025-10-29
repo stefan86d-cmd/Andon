@@ -3,74 +3,60 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // 🔒 Helper function: Checks if a user belongs to the same organization
-    function isUserInOrg(orgId) {
-      return request.auth != null &&
-             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.orgId == orgId;
-    }
-    
-    // 🔒 Helper function: Checks if the user is an admin in their organization
-    function isAdmin() {
-      return request.auth != null &&
-             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
-    }
-    
-    // 🔒 Helper function: Checks if the user is a supervisor or admin
-    function isSupervisorOrAdmin() {
-      return request.auth != null &&
-             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'supervisor'];
+    function isOwner(userId) {
+      return request.auth.uid == userId;
     }
 
-    // ===== USERS COLLECTION =====
+    function isOrgMember() {
+      // Check if the user is part of the organization they are trying to access
+      return exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.orgId == resource.data.orgId;
+    }
+
+    function isOrgAdmin() {
+      // Check if the user is an admin of the organization
+      let userDoc = get(/databases/$(database)/documents/users/$(request.auth.uid));
+      return exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             userDoc.data.role == 'admin' &&
+             userDoc.data.orgId == resource.data.orgId;
+    }
+    
+    function isOrgAdminByOrgId(orgId) {
+      let userDoc = get(/databases/$(database)/documents/users/$(request.auth.uid));
+      return exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             userDoc.data.role == 'admin' &&
+             userDoc.data.orgId == orgId;
+    }
+
     match /users/{userId} {
-      // Allow a user to create their own user document
-      // This is crucial for the sign-up process.
-      allow create: if request.auth != null && request.auth.uid == userId;
-
-      // Allow users to read or update only their own profile
-      allow read, update: if request.auth != null && request.auth.uid == userId;
-      
-      // Admins can manage users within their own organization
-      allow list, delete: if isAdmin() && isUserInOrg(get(/databases/$(database)/documents/users/$(userId)).data.orgId);
+      // Allow users to read and write to their own document
+      allow read, update, delete: if isOwner(userId);
+      // Allow new users to create their own document
+      allow create: if isOwner(userId);
+       // Allow admins to read user data within their own organization
+      allow get: if isOrgAdminByOrgId(get(/databases/$(database)/documents/users/$(userId)).data.orgId);
     }
-
-    // ===== PRODUCTION LINES =====
-    match /productionLines/{lineId} {
-      // Only admins can create, edit, or delete production lines
-      allow create, update, delete: if isAdmin() &&
-                                     request.resource.data.orgId != null &&
-                                     isUserInOrg(request.resource.data.orgId);
-
-      // Anyone in the organization can read the production line data
-      allow read: if request.auth != null &&
-                   resource.data.orgId != null &&
-                   isUserInOrg(resource.data.orgId);
+    
+    match /users/{userId} {
+      // Admins can list all users in their organization
+      allow list: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
-
-    // ===== ISSUES =====
+    
     match /issues/{issueId} {
-      // Any authenticated user in the organization can create an issue
-      allow create: if request.auth != null &&
-                      request.resource.data.orgId != null &&
-                      isUserInOrg(request.resource.data.orgId);
-
-      // Any authenticated user in the organization can read issues
-      allow read: if request.auth != null &&
-                   resource.data.orgId != null &&
-                   isUserInOrg(resource.data.orgId);
-                   
-      // Only admins or supervisors can update an issue
-      allow update: if isSupervisorOrAdmin() &&
-                       resource.data.orgId != null &&
-                       isUserInOrg(resource.data.orgId);
-      
-      // Prevent deletion of issues to maintain a historical record
-      allow delete: if false;
+      // Org members can create issues
+      allow create: if isOrgMember();
+      // Org members can read issues
+      allow get, list: if isOrgMember();
+      // Admins and supervisors of the org can update and delete issues
+      allow update, delete: if isOrgAdmin();
+    }
+    
+    match /productionLines/{lineId} {
+       // Org members can read production lines
+      allow get, list: if isOrgMember();
+      // Admins of the org can create, update, and delete lines
+      allow create, update, delete: if isOrgAdmin();
     }
 
-    // ===== FALLBACK (for unlisted collections) =====
-    match /{document=**} {
-      allow read, write: if false; // everything else is denied explicitly
-    }
   }
 }
