@@ -1,18 +1,19 @@
 {
-    "name": "andonpro-functions",
-    "scripts": {
-      "lint": "eslint .",
-      "serve": "firebase emulators:start --only functions",
-      "deploy": "firebase deploy --only functions",
-      "logs": "firebase functions:log"
-    },
-    "engines": {
-      "node": "20"
-    },
-    "main": "index.js",
-    "dependencies": {
-      "firebase-admin": "^12.5.0",
-      "firebase-functions": "^6.1.0"
-    }
+  "name": "andonpro-functions",
+  "description": "Firebase backend for AndonPro",
+  "main": "index.js",
+  "engines": {
+    "node": "20"
+  },
+  "scripts": {
+    "serve": "firebase emulators:start --only functions",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "dependencies": {
+    "firebase-admin": "^12.5.0",
+    "firebase-functions": "^6.1.0",
+    "cors": "^2.8.5",
+    "express": "^4.19.2"
   }
-  
+}
