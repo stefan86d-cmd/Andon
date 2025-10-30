@@ -8,6 +8,44 @@ import Stripe from 'stripe';
 import { db as dbFn } from '@/firebase/server';
 import { adminAuth } from '@/firebase/admin';
 import { FieldValue } from 'firebase-admin/firestore';
+import {
+    getUserByEmail,
+    getUserById,
+    addUser,
+    editUser,
+    deleteUser,
+    updateUserPlan,
+    sendPasswordChangedEmail,
+    changePassword,
+    reportIssue,
+    updateIssue,
+    getProductionLines,
+    createProductionLine,
+    editProductionLine,
+    deleteProductionLine,
+    getAllUsers
+} from '@/lib/server-actions';
+import { getAuth, sendPasswordResetEmail } from "firebase/auth";
+import { getClientInstances } from "@/firebase/client"; 
+
+export {
+    getUserByEmail,
+    getUserById,
+    addUser,
+    editUser,
+    deleteUser,
+    updateUserPlan,
+    sendPasswordChangedEmail,
+    changePassword,
+    reportIssue,
+    updateIssue,
+    getProductionLines,
+    createProductionLine,
+    editProductionLine,
+    deleteProductionLine,
+    getAllUsers
+};
+
 
 const stripe = new Stripe(process.env.NEXT_STRIPE_SECRET_KEY!, {
   apiVersion: '2024-06-20',
@@ -190,42 +228,22 @@ export async function createCheckoutSession({
   }
 }
 
-export * from '@/lib/server-actions';
-import { Resend } from 'resend';
-
-const resend = new Resend(process.env.RESEND_API_KEY);
-
-export async function sendWelcomeEmail(email: string, name?: string) {
+export async function sendWelcomeEmail(userId: string) {
   try {
-    await resend.emails.send({
-      from: 'AndonPro <noreply@yourdomain.com>', // change domain to your verified one
-      to: email,
-      subject: '🎉 Welcome to AndonPro!',
-      html: `
-        <div style="font-family: system-ui, sans-serif; padding: 20px; line-height: 1.6;">
-          <h2 style="color:#007BFF;">Welcome${name ? `, ${name}` : ''}!</h2>
-          <p>We're excited to have you join <strong>AndonPro</strong>.</p>
-          <p>Your account has been successfully created and is now ready to use.</p>
-          <p>Get started by logging into your dashboard:</p>
-          <a href="https://andonpro.com" 
-             style="display:inline-block; background:#007BFF; color:#fff; padding:10px 16px; border-radius:6px; text-decoration:none;">
-             Go to Dashboard
-          </a>
-          <p style="margin-top:20px; font-size:0.9rem; color:#666;">If you didn’t create this account, please ignore this message.</p>
-        </div>
-      `,
-    });
+    const user = await getUserById(userId);
+    if (!user) return { success: false, error: "User not found" };
 
-    console.log(`✅ Welcome email sent to ${email}`);
+    await sendEmail({
+      to: user.email,
+      subject: "Welcome to AndonPro!",
+      html: `<h1>Welcome, ${user.firstName}!</h1><p>Your account is ready. <a href="${process.env.NEXT_PUBLIC_BASE_URL}/dashboard">Go to your dashboard</a>.</p>`
+    });
     return { success: true };
-  } catch (error) {
-    console.error('❌ Failed to send welcome email:', error);
-    return { success: false, error };
+  } catch (err: any) {
+    return handleFirestoreError(err);
   }
 }
 
-import { getAuth, sendPasswordResetEmail } from "firebase/auth";
-import { getClientInstances } from "@/firebase/client"; 
 
 export async function requestPasswordReset(email: string) {
   const { app } = getClientInstances();
