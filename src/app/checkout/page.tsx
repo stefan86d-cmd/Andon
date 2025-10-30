@@ -205,7 +205,7 @@ function CheckoutContent() {
                             <SelectItem value="48">48 Months</SelectItem>
                         </SelectContent>
                         </Select>
-                        <Select value={selectedCurrency} onValueChange={(v) => setSelectedCurrency(v as Currency)} disabled>
+                        <Select value={selectedCurrency} onValueChange={(v) => setSelectedCurrency(v as Currency)}>
                         <SelectTrigger className="w-[120px]">
                             <div className="flex items-center gap-2"><Globe className="h-4 w-4" /><SelectValue placeholder="Currency" /></div>
                         </SelectTrigger>
@@ -262,6 +262,10 @@ function CheckoutContent() {
                             <span>Total Due Today</span>
                             <span>{currencySymbols[selectedCurrency]}{formatPrice(totalDue, selectedCurrency)}</span>
                         </div>
+                        <p className="text-xs text-muted-foreground text-right mt-1">
+                            After {selectedDuration} months, your plan renews monthly at {currencySymbols[selectedCurrency]}{formatPrice(fullPrice, selectedCurrency)}/mo.
+                        </p>
+
                     </div>
                     </CardContent>
                     <CardFooter>
