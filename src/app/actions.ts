@@ -188,3 +188,36 @@ export async function createCheckoutSession({
     throw new Error(error.message || 'Failed to create Stripe checkout session.');
   }
 }
+
+import { Resend } from 'resend';
+
+const resend = new Resend(process.env.RESEND_API_KEY);
+
+export async function sendWelcomeEmail(email: string, name?: string) {
+  try {
+    await resend.emails.send({
+      from: 'AndonPro <noreply@yourdomain.com>', // change domain to your verified one
+      to: email,
+      subject: '🎉 Welcome to AndonPro!',
+      html: `
+        <div style="font-family: system-ui, sans-serif; padding: 20px; line-height: 1.6;">
+          <h2 style="color:#007BFF;">Welcome${name ? `, ${name}` : ''}!</h2>
+          <p>We're excited to have you join <strong>AndonPro</strong>.</p>
+          <p>Your account has been successfully created and is now ready to use.</p>
+          <p>Get started by logging into your dashboard:</p>
+          <a href="https://andonpro.com" 
+             style="display:inline-block; background:#007BFF; color:#fff; padding:10px 16px; border-radius:6px; text-decoration:none;">
+             Go to Dashboard
+          </a>
+          <p style="margin-top:20px; font-size:0.9rem; color:#666;">If you didn’t create this account, please ignore this message.</p>
+        </div>
+      `,
+    });
+
+    console.log(`✅ Welcome email sent to ${email}`);
+    return { success: true };
+  } catch (error) {
+    console.error('❌ Failed to send welcome email:', error);
+    return { success: false, error };
+  }
+}
