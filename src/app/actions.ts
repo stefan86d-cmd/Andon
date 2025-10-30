@@ -97,7 +97,7 @@ export async function addUser(userData: {
       lastName,
       email,
       role,
-      plan,
+      plan: userData.plan,
       orgId,
       notificationPreferences: { newIssue: false, issueResolved: false, muteSound: true },
       theme: 'light',
@@ -359,27 +359,78 @@ export async function getAllUsers(orgId: string): Promise<User[]> {
 
 // ---------------- Stripe Actions ----------------
 
-// A robust mapping of plan and duration to specific Stripe Price IDs
-const priceIdMap: Record<Exclude<Plan, 'starter' | 'custom'>, Record<'1' | '12' | '24' | '48', string | undefined>> = {
+type Duration = '1' | '12' | '24' | '48';
+type Currency = 'usd' | 'eur' | 'gbp';
+
+const priceIdMap: Record<Exclude<Plan, 'starter' | 'custom'>, Record<Duration, Record<Currency, string | undefined>>> = {
   standard: {
-    '1': process.env.STRIPE_PRICE_ID_STANDARD,
-    '12': process.env.STRIPE_PRICE_ID_STANDARD_12,
-    '24': process.env.STRIPE_PRICE_ID_STANDARD_24,
-    '48': process.env.STRIPE_PRICE_ID_STANDARD_48,
+    '1': {
+      usd: process.env.STRIPE_PRICE_ID_STANDARD_1_USD,
+      eur: process.env.STRIPE_PRICE_ID_STANDARD_1_EUR,
+      gbp: process.env.STRIPE_PRICE_ID_STANDARD_1_GBP,
+    },
+    '12': {
+      usd: process.env.STRIPE_PRICE_ID_STANDARD_12_USD,
+      eur: process.env.STRIPE_PRICE_ID_STANDARD_12_EUR,
+      gbp: process.env.STRIPE_PRICE_ID_STANDARD_12_GBP,
+    },
+    '24': {
+      usd: process.env.STRIPE_PRICE_ID_STANDARD_24_USD,
+      eur: process.env.STRIPE_PRICE_ID_STANDARD_24_EUR,
+      gbp: process.env.STRIPE_PRICE_ID_STANDARD_24_GBP,
+    },
+    '48': {
+      usd: process.env.STRIPE_PRICE_ID_STANDARD_48_USD,
+      eur: process.env.STRIPE_PRICE_ID_STANDARD_48_EUR,
+      gbp: process.env.STRIPE_PRICE_ID_STANDARD_48_GBP,
+    },
   },
   pro: {
-    '1': process.env.STRIPE_PRICE_ID_PRO,
-    '12': process.env.STRIPE_PRICE_ID_PRO_12,
-    '24': process.env.STRIPE_PRICE_ID_PRO_24,
-    '48': process.env.STRIPE_PRICE_ID_PRO_48,
+    '1': {
+      usd: process.env.STRIPE_PRICE_ID_PRO_1_USD,
+      eur: process.env.STRIPE_PRICE_ID_PRO_1_EUR,
+      gbp: process.env.STRIPE_PRICE_ID_PRO_1_GBP,
+    },
+    '12': {
+      usd: process.env.STRIPE_PRICE_ID_PRO_12_USD,
+      eur: process.env.STRIPE_PRICE_ID_PRO_12_EUR,
+      gbp: process.env.STRIPE_PRICE_ID_PRO_12_GBP,
+    },
+    '24': {
+      usd: process.env.STRIPE_PRICE_ID_PRO_24_USD,
+      eur: process.env.STRIPE_PRICE_ID_PRO_24_EUR,
+      gbp: process.env.STRIPE_PRICE_ID_PRO_24_GBP,
+    },
+    '48': {
+      usd: process.env.STRIPE_PRICE_ID_PRO_48_USD,
+      eur: process.env.STRIPE_PRICE_ID_PRO_48_EUR,
+      gbp: process.env.STRIPE_PRICE_ID_PRO_48_GBP,
+    },
   },
   enterprise: {
-    '1': process.env.STRIPE_PRICE_ID_ENTERPRISE,
-    '12': process.env.STRIPE_PRICE_ID_ENTERPRISE_12,
-    '24': process.env.STRIPE_PRICE_ID_ENTERPRISE_24,
-    '48': process.env.STRIPE_PRICE_ID_ENTERPRISE_48,
+    '1': {
+      usd: process.env.STRIPE_PRICE_ID_ENTERPRISE_1_USD,
+      eur: process.env.STRIPE_PRICE_ID_ENTERPRISE_1_EUR,
+      gbp: process.env.STRIPE_PRICE_ID_ENTERPRISE_1_GBP,
+    },
+    '12': {
+      usd: process.env.STRIPE_PRICE_ID_ENTERPRISE_12_USD,
+      eur: process.env.STRIPE_PRICE_ID_ENTERPRISE_12_EUR,
+      gbp: process.env.STRIPE_PRICE_ID_ENTERPRISE_12_GBP,
+    },
+    '24': {
+      usd: process.env.STRIPE_PRICE_ID_ENTERPRISE_24_USD,
+      eur: process.env.STRIPE_PRICE_ID_ENTERPRISE_24_EUR,
+      gbp: process.env.STRIPE_PRICE_ID_ENTERPRISE_24_GBP,
+    },
+    '48': {
+      usd: process.env.STRIPE_PRICE_ID_ENTERPRISE_48_USD,
+      eur: process.env.STRIPE_PRICE_ID_ENTERPRISE_48_EUR,
+      gbp: process.env.STRIPE_PRICE_ID_ENTERPRISE_48_GBP,
+    },
   },
 };
+
 
 export async function createCheckoutSession({
   customerId,
@@ -391,18 +442,18 @@ export async function createCheckoutSession({
 }: {
   customerId: string;
   plan: Plan;
-  duration: '1' | '12' | '24' | '48';
-  currency: 'usd' | 'eur' | 'gbp';
+  duration: Duration;
+  currency: Currency;
   metadata?: Record<string, string>;
   returnPath?: string;
 }) {
   try {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://andonpro.com';
     const priceId = (plan !== 'starter' && plan !== 'custom' && priceIdMap[plan])
-      ? priceIdMap[plan][duration]
+      ? priceIdMap[plan][duration][currency]
       : undefined;
 
-    if (!priceId) throw new Error('❌ Price ID not found for selected plan or duration.');
+    if (!priceId) throw new Error('❌ Price ID not found for selected plan, duration, or currency.');
 
     const mode = duration === '1' ? 'subscription' : 'payment';
 
@@ -410,20 +461,17 @@ export async function createCheckoutSession({
       ? `${baseUrl}${returnPath}`
       : `${baseUrl}/dashboard?payment_success=true&session_id={CHECKOUT_SESSION_ID}`;
 
-    const sessionParams: Stripe.Checkout.SessionCreateParams = {
-      mode,
-      customer: customerId,
-      line_items: [{ price: priceId, quantity: 1 }],
-      currency,
-      ui_mode: 'embedded',
-      return_url: returnUrl,
-      automatic_tax: { enabled: true },
-      metadata: {
-        ...metadata,
-        plan,
-        duration,
-      },
-    };
+      const sessionParams: Stripe.Checkout.SessionCreateParams = {
+        mode,
+        customer: customerId,
+        line_items: [{ price: priceId, quantity: 1 }],
+        currency,
+        ui_mode: 'embedded',
+        return_url: returnUrl,
+        metadata,
+        automatic_tax: { enabled: false },
+      };
+      
 
     if (mode === 'subscription') {
       sessionParams.subscription_data = { metadata };
