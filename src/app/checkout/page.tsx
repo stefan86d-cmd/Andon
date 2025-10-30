@@ -205,7 +205,7 @@ function CheckoutContent() {
                             <SelectItem value="48">48 Months</SelectItem>
                         </SelectContent>
                         </Select>
-                        <Select value={selectedCurrency} onValueChange={(v) => setSelectedCurrency(v as Currency)}>
+                        <Select value={selectedCurrency} onValueChange={(v) => setSelectedCurrency(v as Currency)} disabled>
                         <SelectTrigger className="w-[120px]">
                             <div className="flex items-center gap-2"><Globe className="h-4 w-4" /><SelectValue placeholder="Currency" /></div>
                         </SelectTrigger>

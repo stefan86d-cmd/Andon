@@ -169,7 +169,7 @@ const MobileNavLink = ({ href, children }: { href: string; children: React.React
 
 
 export default function PricingPage() {
-    const [duration, setDuration] = useState<Duration>('1');
+    const [duration, setDuration] = useState<Duration>('12');
     const [currency, setCurrency] = useState<Currency>('usd');
     const { currentUser } = useUser();
     const [year, setYear] = useState(new Date().getFullYear());
@@ -313,9 +313,6 @@ export default function PricingPage() {
                                 <SelectItem value="gbp">GBP (£)</SelectItem>
                             </SelectContent>
                         </Select>
-                        {duration === '12' && <Badge variant="secondary" className="text-sm">Save ~20%</Badge>}
-                        {duration === '24' && <Badge variant="secondary" className="text-sm">Save ~30%</Badge>}
-                        {duration === '48' && <Badge variant="secondary" className="text-sm">Save ~40%</Badge>}
                     </div>
                     <p className="text-xs text-muted-foreground">
                         Savings apply to your first billing period.
@@ -348,12 +345,16 @@ export default function PricingPage() {
                                         <Badge variant={tier.badgeVariant || (tier.premium ? "secondary" : "default")} className={cn("text-sm", tier.premium && "text-foreground border-border")}>{tier.badge}</Badge>
                                     </div>
                                 )}
-                                <Card className={cn("flex flex-col h-full", 
+                                <Card className={cn("flex flex-col h-full relative overflow-hidden", 
                                     tier.popular && (isProBestValue ? 'border-destructive shadow-lg' : 'border-primary shadow-lg'),
                                     tier.premium && "border-2 border-gray-300 dark:border-gray-700 shadow-lg"
                                 )}>
+                                    {duration === '12' && tier.name !== 'Starter' && <Badge variant="secondary" className="absolute top-2 right-2 bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~20%</Badge>}
+                                    {duration === '24' && tier.name !== 'Starter' && <Badge variant="secondary" className="absolute top-2 right-2 bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~30%</Badge>}
+                                    {duration === '48' && tier.name !== 'Starter' && <Badge variant="secondary" className="absolute top-2 right-2 bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~40%</Badge>}
+
                                     <CardHeader className="text-center">
-                                        <CardTitle className="text-2xl">{tier.name}</CardTitle>
+                                        <CardTitle className="text-2xl pt-4">{tier.name}</CardTitle>
                                         <div className="flex items-baseline justify-center gap-1 h-10">
                                             
                                             <span className="text-4xl font-bold">
