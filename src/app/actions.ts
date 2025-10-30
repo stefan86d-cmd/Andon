@@ -381,13 +381,12 @@ const priceIdMap: Record<Exclude<Plan, 'starter' | 'custom'>, Record<'1' | '12' 
   },
 };
 
-
 export async function createCheckoutSession({
   customerId,
   plan,
   duration,
   currency,
-  metadata,
+  metadata = {},
   returnPath,
 }: {
   customerId: string;
@@ -398,21 +397,18 @@ export async function createCheckoutSession({
   returnPath?: string;
 }) {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://localhost:3000';
-    
-    // Safely look up the price ID using plan and duration
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://andonpro.com';
     const priceId = (plan !== 'starter' && plan !== 'custom' && priceIdMap[plan])
       ? priceIdMap[plan][duration]
       : undefined;
 
     if (!priceId) throw new Error('❌ Price ID not found for selected plan or duration.');
-    
+
     const mode = duration === '1' ? 'subscription' : 'payment';
-    
-    // Use the provided return path or default to the dashboard with a success flag
-    const finalReturnUrl = returnPath 
-      ? `https://andonpro.com${returnPath}`
-      : `https://andonpro.com/dashboard?payment_success=true&session_id={CHECKOUT_SESSION_ID}`;
+
+    const returnUrl = returnPath 
+      ? `${baseUrl}${returnPath}`
+      : `${baseUrl}/dashboard?payment_success=true&session_id={CHECKOUT_SESSION_ID}`;
 
     const sessionParams: Stripe.Checkout.SessionCreateParams = {
       mode,
@@ -420,24 +416,27 @@ export async function createCheckoutSession({
       line_items: [{ price: priceId, quantity: 1 }],
       currency,
       ui_mode: 'embedded',
-      return_url: finalReturnUrl,
-      metadata,
+      return_url: returnUrl,
+      automatic_tax: { enabled: true },
+      metadata: {
+        ...metadata,
+        plan,
+        duration,
+      },
     };
 
     if (mode === 'subscription') {
       sessionParams.subscription_data = { metadata };
-    } else if (mode === 'payment') {
+    } else {
       sessionParams.payment_intent_data = { metadata };
     }
 
     const session = await stripe.checkout.sessions.create(sessionParams);
+    console.log(`✅ Created ${mode} session: ${session.id}`);
 
-    console.log('✅ Stripe session created:', session.id);
     return { clientSecret: session.client_secret };
   } catch (error: any) {
-    console.error('❌ Stripe session error:', error);
-    throw new Error(error.message || 'Failed to create Stripe checkout session.');
+    console.error("❌ Stripe session error:", error);
+    throw new Error(error.message || "Failed to create Stripe checkout session.");
   }
 }
-
-    
