@@ -1,3 +1,4 @@
+
 'use server';
 
 import type { Issue, Plan, ProductionLine, Role, User } from '@/lib/types';
@@ -219,5 +220,22 @@ export async function sendWelcomeEmail(email: string, name?: string) {
   } catch (error) {
     console.error('❌ Failed to send welcome email:', error);
     return { success: false, error };
+  }
+}
+
+import { getAuth, sendPasswordResetEmail } from "firebase/auth";
+import { getClientInstances } from "@/firebase/client"; // Corrected import path
+
+export async function requestPasswordReset(email: string) {
+  const { app } = getClientInstances();
+  const auth = getAuth(app);
+
+  try {
+    await sendPasswordResetEmail(auth, email);
+    console.log(`✅ Password reset email sent to ${email}`);
+    return { success: true };
+  } catch (error: any) {
+    console.error("❌ Error sending password reset email:", error);
+    return { success: false, error: error.message };
   }
 }
