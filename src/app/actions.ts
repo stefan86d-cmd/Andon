@@ -190,6 +190,7 @@ export async function createCheckoutSession({
   }
 }
 
+export * from '@/lib/server-actions';
 import { Resend } from 'resend';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -224,7 +225,7 @@ export async function sendWelcomeEmail(email: string, name?: string) {
 }
 
 import { getAuth, sendPasswordResetEmail } from "firebase/auth";
-import { getClientInstances } from "@/firebase/client"; // Corrected import path
+import { getClientInstances } from "@/firebase/client"; 
 
 export async function requestPasswordReset(email: string) {
   const { app } = getClientInstances();
@@ -233,9 +234,10 @@ export async function requestPasswordReset(email: string) {
   try {
     await sendPasswordResetEmail(auth, email);
     console.log(`✅ Password reset email sent to ${email}`);
-    return { success: true };
+    return { success: true, message: "If an account exists for this email, a password reset link has been sent." };
   } catch (error: any) {
     console.error("❌ Error sending password reset email:", error);
-    return { success: false, error: error.message };
+    // To prevent email enumeration, we always return a generic success message.
+    return { success: true, message: "If an account exists for this email, a password reset link has been sent." };
   }
 }
