@@ -8,6 +8,9 @@ import Stripe from 'stripe';
 import { db as dbFn } from '@/firebase/server';
 import { adminAuth } from '@/firebase/admin';
 import { FieldValue } from 'firebase-admin/firestore';
+import { getAuth, sendPasswordResetEmail } from "firebase/auth";
+import { getClientInstances } from "@/firebase/client"; 
+
 import {
     getUserByEmail,
     getUserById,
@@ -25,8 +28,7 @@ import {
     deleteProductionLine,
     getAllUsers
 } from '@/lib/server-actions';
-import { getAuth, sendPasswordResetEmail } from "firebase/auth";
-import { getClientInstances } from "@/firebase/client"; 
+
 
 export {
     getUserByEmail,
@@ -61,28 +63,30 @@ export async function getOrCreateStripeCustomer(userId: string, email: string): 
   const userSnapshot = await userRef.get();
   const userData = userSnapshot.data() as User | undefined;
 
+  // 1. If user has a Stripe ID and it's valid, return it.
   if (userData?.stripeCustomerId) {
     try {
       const stripeCustomer = await stripe.customers.retrieve(userData.stripeCustomerId);
       if (stripeCustomer && !stripeCustomer.deleted) {
         return { id: stripeCustomer.id };
       }
-    } catch {
-      console.warn(`Stripe customer ID ${userData.stripeCustomerId} not found. Checking by email.`);
+    } catch (error) {
+      console.warn(`Stripe customer ID ${userData.stripeCustomerId} for user ${userId} is invalid. A new one will be created.`);
     }
   }
 
-  const existingCustomers = await stripe.customers.list({ email, limit: 1 });
-  if (existingCustomers.data.length > 0 && existingCustomers.data[0]) {
-    const customer = existingCustomers.data[0];
-    await userRef.update({ stripeCustomerId: customer.id });
-    return { id: customer.id };
-  }
+  // 2. Create a new Stripe customer.
+  const newCustomer = await stripe.customers.create({
+    email,
+    metadata: { userId },
+  });
 
-  const newCustomer = await stripe.customers.create({ email, metadata: { userId } });
+  // 3. Save the new customer ID to Firestore.
   await userRef.update({ stripeCustomerId: newCustomer.id });
+
   return { id: newCustomer.id };
 }
+
 
 // ... (keep your user, issue, production line, and email functions unchanged) ...
 
