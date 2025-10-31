@@ -315,7 +315,7 @@ export default function PricingPage() {
                         </Select>
                     </div>
                     <p className="text-xs text-muted-foreground">
-                        Savings apply to your first billing period.
+                        Savings apply for the first billing period of your subscription.
                     </p>
                 </div>
             </div>
@@ -327,7 +327,6 @@ export default function PricingPage() {
                     {tiers.map((tier) => {
                         const monthlyPrice = tier.prices[duration][currency];
                         const fullMonthlyPrice = tier.prices['1'][currency];
-                        const totalBilledPrice = monthlyPrice * parseInt(duration, 10);
                         const isProBestValue = tier.name === "Pro";
                         const linkHref = tier.id === 'starter'
                             ? `/register?plan=starter`
@@ -349,9 +348,11 @@ export default function PricingPage() {
                                     tier.popular && (isProBestValue ? 'border-destructive shadow-lg' : 'border-primary shadow-lg'),
                                     tier.premium && "border-2 border-gray-300 dark:border-gray-700 shadow-lg"
                                 )}>
-                                    {duration === '12' && tier.name !== 'Starter' && <Badge variant="secondary" className="absolute top-2 right-2 bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~20%</Badge>}
-                                    {duration === '24' && tier.name !== 'Starter' && <Badge variant="secondary" className="absolute top-2 right-2 bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~30%</Badge>}
-                                    {duration === '48' && tier.name !== 'Starter' && <Badge variant="secondary" className="absolute top-2 right-2 bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~40%</Badge>}
+                                    <div className="absolute top-2 right-2">
+                                    {duration === '12' && tier.name !== 'Starter' && <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~20%</Badge>}
+                                    {duration === '24' && tier.name !== 'Starter' && <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~30%</Badge>}
+                                    {duration === '48' && tier.name !== 'Starter' && <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~40%</Badge>}
+                                    </div>
 
                                     <CardHeader className="text-center">
                                         <CardTitle className="text-2xl pt-4">{tier.name}</CardTitle>
@@ -388,7 +389,7 @@ export default function PricingPage() {
                                         </Link>
                                          {tier.name !== 'Starter' && duration !== '1' && (
                                             <p className="text-xs text-muted-foreground mt-3 text-center">
-                                                Billed as one payment of {currencySymbols[currency]}{formatPrice(totalBilledPrice, currency)}. That&apos;s only {currencySymbols[currency]}{formatPrice(monthlyPrice, currency)}/mo (regularly {currencySymbols[currency]}{formatPrice(fullMonthlyPrice, currency)}/mo).
+                                                Discounted price for the first {duration} months. That's only {currencySymbols[currency]}{formatPrice(monthlyPrice, currency)}/mo (regularly {currencySymbols[currency]}{formatPrice(fullMonthlyPrice, currency)}/mo).
                                             </p>
                                         )}
                                          {tier.name !== 'Starter' && duration === '1' && (

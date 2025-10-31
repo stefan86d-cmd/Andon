@@ -119,8 +119,9 @@ export async function createCheckoutSession({
     }
 
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://andonpro.com';
+    const durationInMonths = parseInt(duration, 10);
 
-    // Dynamically construct the environment variable name
+    // The price ID now always corresponds to the discounted monthly rate for that tier.
     const priceIdEnvVar = `STRIPE_PRICE_ID_${plan.toUpperCase()}_${duration}_${currency.toUpperCase()}`;
     const priceId = process.env[priceIdEnvVar];
 
@@ -128,17 +129,17 @@ export async function createCheckoutSession({
       throw new Error(`Price ID for plan '${plan}', duration '${duration}', currency '${currency}' is not configured. Please check your environment variables (looking for ${priceIdEnvVar}).`);
     }
 
-    // Always subscription mode
     const mode: Stripe.Checkout.SessionCreateParams.Mode = 'subscription';
-
-    // Apply coupon if applicable
-    const couponIdEnvVar = `STRIPE_COUPON_ID_${duration}_MONTHS`;
-    const couponId = process.env[couponIdEnvVar];
-    const discounts = couponId ? [{ coupon: couponId }] : undefined;
 
     const returnUrl = returnPath
       ? `${baseUrl}${returnPath}`
       : `${baseUrl}/dashboard?payment_success=true&session_id={CHECKOUT_SESSION_ID}`;
+      
+    // Set up a trial period for the selected duration.
+    // Stripe trials are in days. We'll approximate months as 30 days.
+    // Important: For durations > 1, the user pays nothing today and the first payment
+    // is at the end of the trial period. The price used is the monthly one.
+    const trialPeriodDays = durationInMonths > 1 ? durationInMonths * 30 : undefined;
 
     const sessionParams: Stripe.Checkout.SessionCreateParams = {
       mode,
@@ -151,8 +152,8 @@ export async function createCheckoutSession({
       automatic_tax: { enabled: false },
       subscription_data: {
         metadata,
+        trial_period_days: trialPeriodDays,
       },
-      discounts,
     };
 
     const session = await stripe.checkout.sessions.create(sessionParams);

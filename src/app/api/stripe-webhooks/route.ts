@@ -1,3 +1,4 @@
+
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { adminDb } from "@/firebase/admin";
@@ -8,13 +9,6 @@ const stripe = new Stripe(process.env.NEXT_STRIPE_SECRET_KEY!, {
 });
 
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!;
-
-// Utility to add months to a given date
-const addMonths = (date: Date, months: number): Date => {
-  const newDate = new Date(date);
-  newDate.setMonth(newDate.getMonth() + months);
-  return newDate;
-};
 
 export async function POST(req: Request) {
   const body = await req.text();
@@ -36,89 +30,54 @@ export async function POST(req: Request) {
   }
 
   // ---------------------------------------------------------------------------
-  // ✅ CHECKOUT COMPLETED (first purchase / subscription start)
+  // ✅ CHECKOUT COMPLETED (subscription start)
   // ---------------------------------------------------------------------------
   if (event.type === "checkout.session.completed") {
     const session = event.data.object as Stripe.Checkout.Session;
     const userId = session.metadata?.userId;
     const plan = session.metadata?.plan;
-    const duration = parseInt(session.metadata?.duration || "1", 10);
 
-    if (userId && plan) {
+    if (userId && plan && session.mode === "subscription") {
       try {
         const userRef = adminDb.collection("users").doc(userId);
+        const subscription = await stripe.subscriptions.retrieve(session.subscription as string);
 
-        let subscriptionId: string | null = null;
-        let subscriptionStartsAt = new Date();
-        let subscriptionEndsAt = new Date();
+        const updates: Record<string, any> = {
+          plan,
+          subscriptionId: subscription.id,
+          subscriptionStatus: subscription.status,
+          subscriptionStartsAt: Timestamp.fromMillis(subscription.current_period_start * 1000),
+          subscriptionEndsAt: Timestamp.fromMillis(subscription.current_period_end * 1000),
+          updatedAt: FieldValue.serverTimestamp(),
+        };
 
-        if (session.mode === "subscription") {
-          const subscription = await stripe.subscriptions.retrieve(
-            session.subscription as string
-          );
-          subscriptionId = subscription.id;
-          subscriptionStartsAt = new Date(subscription.current_period_start * 1000);
-          subscriptionEndsAt = new Date(subscription.current_period_end * 1000);
-
-          // 🧩 Detect upfront prepaid setup using a long trial
-          const updates: Record<string, any> = {
-            plan,
-            subscriptionId,
-            subscriptionStartsAt: Timestamp.fromDate(subscriptionStartsAt),
-            subscriptionEndsAt: Timestamp.fromDate(subscriptionEndsAt),
-            updatedAt: FieldValue.serverTimestamp(),
-            subscriptionStatus: subscription.status,
-          };
-
-          if (subscription.trial_end && subscription.trial_end * 1000 > Date.now()) {
-            updates.trialEndsAt = Timestamp.fromMillis(subscription.trial_end * 1000);
-            updates.isPrepaid = true;
-          } else {
-            updates.isPrepaid = false;
-          }
-
-          await userRef.update(updates);
-          console.log(`✅ Subscription started for user ${userId} (${plan})`);
+        // Detect if the subscription is in a trial period (our new discount model)
+        if (subscription.trial_end && subscription.trial_end * 1000 > Date.now()) {
+          updates.trialEndsAt = Timestamp.fromMillis(subscription.trial_end * 1000);
+          updates.isPrepaid = true; // Using 'isPrepaid' to signify it's in the initial discount period
+        } else {
+          updates.isPrepaid = false;
         }
 
-        // Handle one-time upfront purchase (if any legacy payment mode)
-        if (session.mode === "payment") {
-          subscriptionId = session.payment_intent as string;
-          subscriptionEndsAt = addMonths(subscriptionStartsAt, duration);
-
-          await userRef.update({
-            plan,
-            subscriptionId,
-            subscriptionStartsAt: Timestamp.fromDate(subscriptionStartsAt),
-            subscriptionEndsAt: Timestamp.fromDate(subscriptionEndsAt),
-            isPrepaid: true,
-            updatedAt: FieldValue.serverTimestamp(),
-            subscriptionStatus: "active",
-          });
-
-          console.log(`✅ One-time prepaid plan recorded for user ${userId}`);
-        }
+        await userRef.update(updates);
+        console.log(`✅ Subscription started for user ${userId} (${plan})`);
+        
       } catch (error) {
         console.error("❌ Firestore update failed for checkout.session.completed:", error);
         return new NextResponse("Internal Server Error", { status: 500 });
       }
     }
   }
-
+  
   // ---------------------------------------------------------------------------
-  // 🔄 SUBSCRIPTION RENEWAL (monthly continuation or prepaid → regular)
+  // 🔄 SUBSCRIPTION RENEWAL / INVOICE PAID
   // ---------------------------------------------------------------------------
-  if (event.type === "invoice.payment_succeeded") 
-    
-    {
+  if (event.type === "invoice.payment_succeeded") {
     const invoice = event.data.object as Stripe.Invoice;
     const subscriptionId = invoice.subscription;
 
-    if (
-      (invoice.billing_reason === "subscription_cycle" ||
-        invoice.billing_reason === "subscription_create") &&
-      subscriptionId
-    ) {
+    // This handles both regular monthly renewals and the very first payment after a trial ends
+    if (subscriptionId) {
       try {
         const subscription = await stripe.subscriptions.retrieve(subscriptionId as string);
         const userSnapshot = await adminDb
@@ -132,20 +91,22 @@ export async function POST(req: Request) {
           const userDoc = userSnapshot.docs[0].data();
 
           const updates: Record<string, any> = {
+            subscriptionStatus: subscription.status,
             subscriptionStartsAt: Timestamp.fromMillis(subscription.current_period_start * 1000),
             subscriptionEndsAt: Timestamp.fromMillis(subscription.current_period_end * 1000),
             updatedAt: FieldValue.serverTimestamp(),
-            subscriptionStatus: subscription.status,
           };
 
-          // 🧩 Transition from prepaid → normal monthly
-          if (userDoc.isPrepaid && userDoc.trialEndsAt && Date.now() > userDoc.trialEndsAt.toMillis()) {
-            updates.isPrepaid = false;
+          // If the user was in a trial/prepaid state and it has now ended,
+          // transition them to a normal subscription state.
+          if (userDoc.isPrepaid && (!subscription.trial_end || subscription.trial_end * 1000 < Date.now())) {
+            updates.isPrepaid = FieldValue.delete();
             updates.trialEndsAt = FieldValue.delete();
+            console.log(`✅ User ${userId} transitioned from trial to paid subscription.`);
           }
 
           await adminDb.collection("users").doc(userId).update(updates);
-          console.log(`🔁 Subscription renewed for user ${userId}`);
+          console.log(`🔁 Subscription invoice paid for user ${userId}`);
         }
       } catch (error) {
         console.error("❌ Renewal update failed:", error);

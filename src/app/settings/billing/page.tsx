@@ -84,7 +84,7 @@ function BillingPageContent() {
             return;
         }
 
-        const selectedDuration = isStarterPlan ? duration : '1';
+        const selectedDuration = duration;
         
         startTransition(async () => {
             try {
@@ -129,8 +129,7 @@ function BillingPageContent() {
     const availablePlans = Object.keys(tiers).filter(p => p !== 'starter' && p !== 'custom') as Plan[];
 
     const selectedTier = newPlan ? tiers[newPlan] : null;
-    const monthlyPrice = selectedTier ? selectedTier.prices[isStarterPlan ? duration : '1'][currency] : 0;
-    const totalBilledPrice = monthlyPrice * parseInt(isStarterPlan ? duration : '1', 10);
+    const monthlyPrice = selectedTier ? selectedTier.prices[duration][currency] : 0;
     
     const renewalDate = currentUser.subscriptionEndsAt && isValid(new Date(currentUser.subscriptionEndsAt))
         ? format(new Date(currentUser.subscriptionEndsAt), "MMMM d, yyyy")
@@ -201,28 +200,24 @@ function BillingPageContent() {
                                         </SelectContent>
                                     </Select>
                                 </div>
-                                {isStarterPlan && (
-                                    <div className="pt-2">
-                                        <Select value={duration} onValueChange={(value) => setDuration(value as Duration)}>
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Select duration" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="1">1 Month</SelectItem>
-                                                <SelectItem value="12">12 Months</SelectItem>
-                                                <SelectItem value="24">24 Months</SelectItem>
-                                                <SelectItem value="48">48 Months</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                )}
-                                {isStarterPlan && (
-                                     <div className="flex gap-2 items-center pt-2">
-                                        {duration === '12' && <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~20%</Badge>}
-                                        {duration === '24' && <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~30%</Badge>}
-                                        {duration === '48' && <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~40%</Badge>}
-                                     </div>
-                                )}
+                                <div className="pt-2">
+                                    <Select value={duration} onValueChange={(value) => setDuration(value as Duration)}>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select duration" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="1">1 Month</SelectItem>
+                                            <SelectItem value="12">12 Months</SelectItem>
+                                            <SelectItem value="24">24 Months</SelectItem>
+                                            <SelectItem value="48">48 Months</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="flex gap-2 items-center pt-2">
+                                    {duration === '12' && <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~20%</Badge>}
+                                    {duration === '24' && <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~30%</Badge>}
+                                    {duration === '48' && <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~40%</Badge>}
+                                </div>
                                  <p className="text-sm text-muted-foreground">Plan changes will be billed based on selection.</p>
                             </div>
 
@@ -233,12 +228,6 @@ function BillingPageContent() {
                                             <span>New Monthly Price</span>
                                             <span>{currencySymbols[currency]}{formatPrice(monthlyPrice, currency)}</span>
                                         </div>
-                                         {isStarterPlan && duration !== '1' && (
-                                            <div className="flex justify-between items-center text-sm text-muted-foreground">
-                                                <span>Total Billed ({duration} months)</span>
-                                                <span className="font-medium text-foreground">{currencySymbols[currency]}{formatPrice(totalBilledPrice, currency)}</span>
-                                            </div>
-                                        )}
                                     </div>
                                 </div>
                             )}

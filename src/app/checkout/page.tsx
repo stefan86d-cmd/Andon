@@ -84,20 +84,17 @@ function CheckoutContent() {
   const selectedTier = tiers[selectedPlan];
   const monthlyPrice = selectedTier.prices[selectedDuration][selectedCurrency];
   const fullPrice = selectedTier.prices['1'][selectedCurrency];
-  const totalDue = monthlyPrice * parseInt(selectedDuration, 10);
-  const undiscountedTotal = fullPrice * parseInt(selectedDuration, 10);
-
 
   const discount = useMemo(() => {
     if (selectedDuration === '1') return 0;
-    return undiscountedTotal - totalDue;
-  }, [selectedDuration, undiscountedTotal, totalDue]);
+    return fullPrice - monthlyPrice;
+  }, [selectedDuration, fullPrice, monthlyPrice]);
 
   const renewalText = useMemo(() => {
       if (selectedPlan === 'starter') return "The Starter plan is always free.";
       const symbol = currencySymbols[selectedCurrency];
       const price = formatPrice(fullPrice, selectedCurrency);
-      return `Renews at ${symbol}${price}/mo. Cancel anytime.`;
+      return `After the discount period, your plan renews at ${symbol}${price}/mo. Cancel anytime.`;
   }, [fullPrice, selectedCurrency, selectedPlan]);
 
   const handleContinue = () => {
@@ -205,7 +202,7 @@ function CheckoutContent() {
                             <SelectItem value="48">48 Months</SelectItem>
                         </SelectContent>
                         </Select>
-                        <Select value={selectedCurrency} onValueChange={(v) => setSelectedCurrency(v as Currency)}>
+                        <Select value={selectedCurrency} onValueChange={(v) => setSelectedCurrency(v as Currency)} disabled>
                         <SelectTrigger className="w-[120px]">
                             <div className="flex items-center gap-2"><Globe className="h-4 w-4" /><SelectValue placeholder="Currency" /></div>
                         </SelectTrigger>
@@ -237,16 +234,16 @@ function CheckoutContent() {
                     <CardContent className="space-y-4">
                     <div className="space-y-2">
                         <div className="flex justify-between"><span>Plan</span><span className="capitalize font-medium">{selectedPlan}</span></div>
-                        <div className="flex justify-between"><span>Billed</span><span>{selectedDuration !== '1' ? `Every ${selectedDuration} Months` : 'Monthly'}</span></div>
-                        {selectedPlan !== 'starter' && selectedDuration !== '1' && (
+                        <div className="flex justify-between"><span>Billed</span><span>Monthly</span></div>
+                        {selectedPlan !== 'starter' && (
                             <div className="flex justify-between text-sm text-muted-foreground">
-                                <span>Price per month</span>
-                                <span>{currencySymbols[selectedCurrency]}{formatPrice(monthlyPrice, selectedCurrency)}</span>
+                                <span>Regular price</span>
+                                <span>{currencySymbols[selectedCurrency]}{formatPrice(fullPrice, selectedCurrency)} / mo</span>
                             </div>
                         )}
                         {discount > 0 && 
                             <div className="flex justify-between bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300 p-2 rounded-md">
-                                <span>Discount</span>
+                                <span>Discount (first {selectedDuration} months)</span>
                                 <span>-{currencySymbols[selectedCurrency]}{formatPrice(discount, selectedCurrency)}</span>
                             </div>
                         }
@@ -255,15 +252,15 @@ function CheckoutContent() {
                     <div className="space-y-1">
                         {discount > 0 && (
                             <p className="text-right text-sm text-muted-foreground line-through">
-                                {currencySymbols[selectedCurrency]}{formatPrice(undiscountedTotal, selectedCurrency)}
+                                {currencySymbols[selectedCurrency]}{formatPrice(fullPrice, selectedCurrency)}
                             </p>
                         )}
                         <div className="flex justify-between items-baseline font-bold text-lg">
-                            <span>Total Due Today</span>
-                            <span>{currencySymbols[selectedCurrency]}{formatPrice(totalDue, selectedCurrency)}</span>
+                            <span>Price Today</span>
+                            <span>{currencySymbols[selectedCurrency]}{formatPrice(monthlyPrice, selectedCurrency)}</span>
                         </div>
                         <p className="text-xs text-muted-foreground text-right mt-1">
-                            After {selectedDuration} months, your plan renews monthly at {currencySymbols[selectedCurrency]}{formatPrice(fullPrice, selectedCurrency)}/mo.
+                           + taxes. Renews at {currencySymbols[selectedCurrency]}{formatPrice(fullPrice, selectedCurrency)}/mo after {selectedDuration} months.
                         </p>
 
                     </div>
@@ -296,5 +293,3 @@ export default function CheckoutPage() {
         </Suspense>
     )
 }
-
-    
