@@ -26,7 +26,8 @@ import {
     createProductionLine,
     editProductionLine,
     deleteProductionLine,
-    getAllUsers
+    getAllUsers,
+    requestPasswordReset
 } from '@/lib/server-actions';
 
 
@@ -45,7 +46,8 @@ export {
     createProductionLine,
     editProductionLine,
     deleteProductionLine,
-    getAllUsers
+    getAllUsers,
+    requestPasswordReset
 };
 
 
@@ -176,21 +178,5 @@ export async function sendWelcomeEmail(userId: string) {
     return { success: true };
   } catch (err: any) {
     return handleFirestoreError(err);
-  }
-}
-
-
-export async function requestPasswordReset(email: string) {
-  const { app } = getClientInstances();
-  const auth = getAuth(app);
-
-  try {
-    await sendPasswordResetEmail(auth, email);
-    console.log(`✅ Password reset email sent to ${email}`);
-    return { success: true, message: "If an account exists for this email, a password reset link has been sent." };
-  } catch (error: any) {
-    console.error("❌ Error sending password reset email:", error);
-    // To prevent email enumeration, we always return a generic success message.
-    return { success: true, message: "If an account exists for this email, a password reset link has been sent." };
   }
 }
