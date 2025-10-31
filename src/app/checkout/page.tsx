@@ -79,7 +79,7 @@ function CheckoutContent() {
   
   const [selectedPlan, setSelectedPlan] = useState<Plan>(searchParams.get('plan') as Plan || 'pro');
   const [selectedDuration, setSelectedDuration] = useState<Duration>(searchParams.get('duration') as Duration || '12');
-  const [selectedCurrency, setSelectedCurrency] = useState<Currency>(search-params.get('currency') as Currency || 'usd');
+  const [selectedCurrency, setSelectedCurrency] = useState<Currency>(searchParams.get('currency') as Currency || 'usd');
 
   const selectedTier = tiers[selectedPlan];
   const monthlyPrice = selectedTier.prices[selectedDuration][selectedCurrency];
@@ -96,8 +96,9 @@ function CheckoutContent() {
       if (selectedPlan === 'starter') return "The Starter plan is always free.";
       const symbol = currencySymbols[selectedCurrency];
       const price = formatPrice(fullPrice, selectedCurrency);
-      return `After ${selectedDuration} months, your plan renews at ${symbol}${price}/mo. Cancel anytime.`;
-  }, [fullPrice, selectedCurrency, selectedPlan, selectedDuration]);
+      const savingsText = parseInt(selectedDuration) > 1 ? `That's only ${symbol}${formatPrice(monthlyPrice, selectedCurrency)}/mo (regularly ${symbol}${price}/mo).` : "";
+      return `Discounted price for the first ${selectedDuration} months. ${savingsText} Renews at ${symbol}${price}/mo. Cancel anytime.`;
+  }, [fullPrice, monthlyPrice, selectedCurrency, selectedPlan, selectedDuration]);
 
   const handleContinue = () => {
     if (selectedPlan === 'starter') {
@@ -236,7 +237,7 @@ function CheckoutContent() {
                     <CardContent className="space-y-4">
                     <div className="space-y-2">
                         <div className="flex justify-between"><span>Plan</span><span className="capitalize font-medium">{selectedPlan}</span></div>
-                        <div className="flex justify-between"><span>Billed as one payment</span><span>{currencySymbols[selectedCurrency]}{formatPrice(fullPayment, selectedCurrency)}</span></div>
+                        <div className="flex justify-between"><span>Price per month</span><span>{currencySymbols[selectedCurrency]}{formatPrice(monthlyPrice, selectedCurrency)}</span></div>
                         {selectedPlan !== 'starter' && (
                             <div className="flex justify-between text-sm text-muted-foreground">
                                 <span>Regular price</span>
@@ -254,10 +255,10 @@ function CheckoutContent() {
                      <div className="space-y-1">
                         <div className="flex justify-between items-baseline font-bold text-lg">
                             <span>Price Today</span>
-                            <span>{currencySymbols[selectedCurrency]}{formatPrice(fullPayment, selectedCurrency)}</span>
+                            <span>{currencySymbols[selectedCurrency]}{formatPrice(monthlyPrice, selectedCurrency)}</span>
                         </div>
                         <p className="text-xs text-muted-foreground text-right mt-1">
-                           + taxes. Renews at {currencySymbols[selectedCurrency]}{formatPrice(fullPrice * parseInt(selectedDuration, 10), selectedCurrency)} per {selectedDuration} months.
+                           + taxes. Renews at {currencySymbols[selectedCurrency]}{formatPrice(fullPrice, selectedCurrency)}/mo after the first {selectedDuration} months.
                         </p>
 
                     </div>
