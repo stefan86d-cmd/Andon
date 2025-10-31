@@ -95,81 +95,6 @@ export async function getOrCreateStripeCustomer(userId: string, email: string): 
 type Duration = '1' | '12' | '24' | '48';
 type Currency = 'usd' | 'eur' | 'gbp';
 
-const priceIdMap: Record<Exclude<Plan, 'starter' | 'custom'>, Record<Duration, Record<Currency, string | undefined>>> = {
-  standard: {
-    '1': {
-      usd: process.env.STRIPE_PRICE_ID_STANDARD_1_USD,
-      eur: process.env.STRIPE_PRICE_ID_STANDARD_1_EUR,
-      gbp: process.env.STRIPE_PRICE_ID_STANDARD_1_GBP,
-    },
-    '12': {
-      usd: process.env.STRIPE_PRICE_ID_STANDARD_12_USD,
-      eur: process.env.STRIPE_PRICE_ID_STANDARD_12_EUR,
-      gbp: process.env.STRIPE_PRICE_ID_STANDARD_12_GBP,
-    },
-    '24': {
-      usd: process.env.STRIPE_PRICE_ID_STANDARD_24_USD,
-      eur: process.env.STRIPE_PRICE_ID_STANDARD_24_EUR,
-      gbp: process.env.STRIPE_PRICE_ID_STANDARD_24_GBP,
-    },
-    '48': {
-      usd: process.env.STRIPE_PRICE_ID_STANDARD_48_USD,
-      eur: process.env.STRIPE_PRICE_ID_STANDARD_48_EUR,
-      gbp: process.env.STRIPE_PRICE_ID_STANDARD_48_GBP,
-    },
-  },
-  pro: {
-    '1': {
-      usd: process.env.STRIPE_PRICE_ID_PRO_1_USD,
-      eur: process.env.STRIPE_PRICE_ID_PRO_1_EUR,
-      gbp: process.env.STRIPE_PRICE_ID_PRO_1_GBP,
-    },
-    '12': {
-      usd: process.env.STRIPE_PRICE_ID_PRO_12_USD,
-      eur: process.env.STRIPE_PRICE_ID_PRO_12_EUR,
-      gbp: process.env.STRIPE_PRICE_ID_PRO_12_GBP,
-    },
-    '24': {
-      usd: process.env.STRIPE_PRICE_ID_PRO_24_USD,
-      eur: process.env.STRIPE_PRICE_ID_PRO_24_EUR,
-      gbp: process.env.STRIPE_PRICE_ID_PRO_24_GBP,
-    },
-    '48': {
-      usd: process.env.STRIPE_PRICE_ID_PRO_48_USD,
-      eur: process.env.STRIPE_PRICE_ID_PRO_48_EUR,
-      gbp: process.env.STRIPE_PRICE_ID_PRO_48_GBP,
-    },
-  },
-  enterprise: {
-    '1': {
-      usd: process.env.STRIPE_PRICE_ID_ENTERPRISE_1_USD,
-      eur: process.env.STRIPE_PRICE_ID_ENTERPRISE_1_EUR,
-      gbp: process.env.STRIPE_PRICE_ID_ENTERPRISE_1_GBP,
-    },
-    '12': {
-      usd: process.env.STRIPE_PRICE_ID_ENTERPRISE_12_USD,
-      eur: process.env.STRIPE_PRICE_ID_ENTERPRISE_12_EUR,
-      gbp: process.env.STRIPE_PRICE_ID_ENTERPRISE_12_GBP,
-    },
-    '24': {
-      usd: process.env.STRIPE_PRICE_ID_ENTERPRISE_24_USD,
-      eur: process.env.STRIPE_PRICE_ID_ENTERPRISE_24_EUR,
-      gbp: process.env.STRIPE_PRICE_ID_ENTERPRISE_24_GBP,
-    },
-    '48': {
-      usd: process.env.STRIPE_PRICE_ID_ENTERPRISE_48_USD,
-      eur: process.env.STRIPE_PRICE_ID_ENTERPRISE_48_EUR,
-      gbp: process.env.STRIPE_PRICE_ID_ENTERPRISE_48_GBP,
-    },
-  },
-};
-
-// 🧾 Coupon placeholders
-const COUPON_MAP: Record<'12' | '24' | '48', string | undefined> = {
-  '12': process.env.STRIPE_COUPON_ID_12_MONTHS,
-  '24': process.env.STRIPE_COUPON_ID_24_MONTHS,
-  '48': process.env.STRIPE_COUPON_ID_48_MONTHS,
-};
 
 export async function createCheckoutSession({
   customerId,
@@ -187,21 +112,27 @@ export async function createCheckoutSession({
   returnPath?: string;
 }) {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://andonpro.com';
-    const priceId = (plan !== 'starter' && plan !== 'custom' && priceIdMap[plan])
-      ? priceIdMap[plan][duration][currency]
-      : undefined;
+    if (plan === 'starter' || plan === 'custom') {
+      throw new Error('Cannot create checkout session for starter or custom plans.');
+    }
 
-    if (!priceId) throw new Error('❌ Price ID not found for selected plan, duration, or currency.');
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://andonpro.com';
+
+    // Dynamically construct the environment variable name
+    const priceIdEnvVar = `STRIPE_PRICE_ID_${plan.toUpperCase()}_${duration}_${currency.toUpperCase()}`;
+    const priceId = process.env[priceIdEnvVar];
+
+    if (!priceId) {
+      throw new Error(`Price ID for plan '${plan}', duration '${duration}', currency '${currency}' is not configured. Please check your environment variables (looking for ${priceIdEnvVar}).`);
+    }
 
     // Always subscription mode
     const mode: Stripe.Checkout.SessionCreateParams.Mode = 'subscription';
 
     // Apply coupon if applicable
-    const discounts =
-      duration === '12' || duration === '24' || duration === '48'
-        ? [{ coupon: COUPON_MAP[duration]! }]
-        : undefined;
+    const couponIdEnvVar = `STRIPE_COUPON_ID_${duration}_MONTHS`;
+    const couponId = process.env[couponIdEnvVar];
+    const discounts = couponId ? [{ coupon: couponId }] : undefined;
 
     const returnUrl = returnPath
       ? `${baseUrl}${returnPath}`
