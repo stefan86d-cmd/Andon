@@ -42,7 +42,7 @@ export async function POST(req: Request) {
         const userRef = adminDb.collection("users").doc(userId);
         const subscription = await stripe.subscriptions.retrieve(session.subscription as string);
 
-        const updates: Record<string, any> = {
+        const updates = {
           plan,
           subscriptionId: subscription.id,
           subscriptionStatus: subscription.status,
@@ -50,14 +50,6 @@ export async function POST(req: Request) {
           subscriptionEndsAt: Timestamp.fromMillis(subscription.current_period_end * 1000),
           updatedAt: FieldValue.serverTimestamp(),
         };
-
-        // Detect if the subscription is in a trial period (our new discount model)
-        if (subscription.trial_end && subscription.trial_end * 1000 > Date.now()) {
-          updates.trialEndsAt = Timestamp.fromMillis(subscription.trial_end * 1000);
-          updates.isPrepaid = true; // Using 'isPrepaid' to signify it's in the initial discount period
-        } else {
-          updates.isPrepaid = false;
-        }
 
         await userRef.update(updates);
         console.log(`✅ Subscription started for user ${userId} (${plan})`);
@@ -76,7 +68,6 @@ export async function POST(req: Request) {
     const invoice = event.data.object as Stripe.Invoice;
     const subscriptionId = invoice.subscription;
 
-    // This handles both regular monthly renewals and the very first payment after a trial ends
     if (subscriptionId) {
       try {
         const subscription = await stripe.subscriptions.retrieve(subscriptionId as string);
@@ -88,24 +79,12 @@ export async function POST(req: Request) {
 
         if (!userSnapshot.empty) {
           const userId = userSnapshot.docs[0].id;
-          const userDoc = userSnapshot.docs[0].data();
-
-          const updates: Record<string, any> = {
+          await adminDb.collection("users").doc(userId).update({
             subscriptionStatus: subscription.status,
             subscriptionStartsAt: Timestamp.fromMillis(subscription.current_period_start * 1000),
             subscriptionEndsAt: Timestamp.fromMillis(subscription.current_period_end * 1000),
             updatedAt: FieldValue.serverTimestamp(),
-          };
-
-          // If the user was in a trial/prepaid state and it has now ended,
-          // transition them to a normal subscription state.
-          if (userDoc.isPrepaid && (!subscription.trial_end || subscription.trial_end * 1000 < Date.now())) {
-            updates.isPrepaid = FieldValue.delete();
-            updates.trialEndsAt = FieldValue.delete();
-            console.log(`✅ User ${userId} transitioned from trial to paid subscription.`);
-          }
-
-          await adminDb.collection("users").doc(userId).update(updates);
+          });
           console.log(`🔁 Subscription invoice paid for user ${userId}`);
         }
       } catch (error) {
@@ -160,8 +139,6 @@ export async function POST(req: Request) {
           subscriptionId: FieldValue.delete(),
           subscriptionStartsAt: FieldValue.delete(),
           subscriptionEndsAt: FieldValue.delete(),
-          trialEndsAt: FieldValue.delete(),
-          isPrepaid: FieldValue.delete(),
           updatedAt: FieldValue.serverTimestamp(),
         });
         console.log(`🟥 Subscription canceled for user ${userId}`);
