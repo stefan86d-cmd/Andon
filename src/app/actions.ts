@@ -119,46 +119,30 @@ export async function createCheckoutSession({
     }
 
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://andonpro.com';
-    let priceId: string | undefined;
+    
+    // Always use the 1-month base price ID.
+    const basePriceIdEnvVar = `STRIPE_PRICE_ID_${plan.toUpperCase()}_1_${currency.toUpperCase()}`;
+    const priceId = process.env[basePriceIdEnvVar];
+    
+    if (!priceId) {
+      throw new Error(`Base price ID for plan '${plan}' is not configured. (Expected ${basePriceIdEnvVar})`);
+    }
+
+    // Determine the coupon to apply based on duration.
     let couponId: string | undefined;
-
-    // 1. Prioritize specific Price ID
-    const specificPriceIdEnvVar = `STRIPE_PRICE_ID_${plan.toUpperCase()}_${duration}_${currency.toUpperCase()}`;
-    const specificPriceId = process.env[specificPriceIdEnvVar];
-
-    if (specificPriceId) {
-      priceId = specificPriceId;
-      console.log(`Using specific Price ID: ${priceId} from env var ${specificPriceIdEnvVar}`);
-    } else {
-      // 2. Fallback to 1-month base price + coupon
-      const basePriceIdEnvVar = `STRIPE_PRICE_ID_${plan.toUpperCase()}_1_${currency.toUpperCase()}`;
-      priceId = process.env[basePriceIdEnvVar];
-      
-      if (!priceId) {
-        throw new Error(`Base price ID for plan '${plan}' is not configured. (Expected ${basePriceIdEnvVar})`);
-      }
-
-      if (duration !== '1') {
-        const couponMap: Record<Duration, string | undefined> = {
-          '1': undefined,
-          '12': process.env.STRIPE_COUPON_20_OFF,
-          '24': process.env.STRIPE_COUPON_30_OFF,
-          '48': process.env.STRIPE_COUPON_40_OFF,
-        };
-        couponId = couponMap[duration];
-        console.log(`Using base Price ID: ${priceId} with coupon for duration ${duration}`);
-        if (!couponId) {
-            console.warn(`Coupon for duration '${duration}' is not configured. Proceeding without discount.`);
-        }
-      } else {
-        console.log(`Using base Price ID: ${priceId} for 1 month duration.`);
+    if (duration !== '1') {
+      const couponMap: Record<Duration, string | undefined> = {
+        '1': undefined,
+        '12': process.env.STRIPE_COUPON_20_OFF,
+        '24': process.env.STRIPE_COUPON_30_OFF,
+        '48': process.env.STRIPE_COUPON_40_OFF,
+      };
+      couponId = couponMap[duration];
+      if (!couponId) {
+          console.warn(`Coupon for duration '${duration}' is not configured. Proceeding without discount.`);
       }
     }
     
-    if (!priceId) {
-      throw new Error(`Could not determine a Price ID for plan '${plan}', duration '${duration}', currency '${currency.toUpperCase()}'.`);
-    }
-
     const returnUrl = returnPath
       ? `${baseUrl}${returnPath}`
       : `${baseUrl}/dashboard?payment_success=true&session_id={CHECKOUT_SESSION_ID}`;
@@ -172,6 +156,7 @@ export async function createCheckoutSession({
           quantity: 1,
         },
       ],
+      // Apply the coupon if one was found.
       discounts: couponId ? [{ coupon: couponId }] : [],
       ui_mode: 'embedded',
       return_url: returnUrl,
@@ -206,3 +191,5 @@ export async function sendWelcomeEmail(userId: string) {
     return handleFirestoreError(err);
   }
 }
+
+    

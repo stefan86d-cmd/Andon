@@ -71,15 +71,26 @@ function CheckoutContent() {
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [year, setYear] = useState(new Date().getFullYear());
 
+  const [selectedPlan, setSelectedPlan] = useState<Plan>(searchParams.get('plan') as Plan || 'pro');
+  const [selectedDuration, setSelectedDuration] = useState<Duration>(searchParams.get('duration') as Duration || '12');
+  const [selectedCurrency, setSelectedCurrency] = useState<Currency>(searchParams.get('currency') as Currency || 'usd');
+
   useEffect(() => {
     setYear(new Date().getFullYear());
   }, []);
 
+  // Effect to sync state with URL params
+  useEffect(() => {
+    const planFromUrl = searchParams.get('plan') as Plan | null;
+    const durationFromUrl = searchParams.get('duration') as Duration | null;
+    const currencyFromUrl = searchParams.get('currency') as Currency | null;
+
+    if (planFromUrl) setSelectedPlan(planFromUrl);
+    if (durationFromUrl) setSelectedDuration(durationFromUrl);
+    if (currencyFromUrl) setSelectedCurrency(currencyFromUrl);
+  }, [searchParams]);
+
   const isNewUser = !currentUser;
-  
-  const [selectedPlan, setSelectedPlan] = useState<Plan>(searchParams.get('plan') as Plan || 'pro');
-  const [selectedDuration, setSelectedDuration] = useState<Duration>(searchParams.get('duration') as Duration || '12');
-  const [selectedCurrency, setSelectedCurrency] = useState<Currency>(searchParams.get('currency') as Currency || 'usd');
 
   const selectedTier = tiers[selectedPlan];
   const monthlyPrice = selectedTier.prices[selectedDuration][selectedCurrency];
@@ -96,8 +107,8 @@ function CheckoutContent() {
       if (selectedPlan === 'starter') return "The Starter plan is always free.";
       const symbol = currencySymbols[selectedCurrency];
       const price = formatPrice(fullPrice, selectedCurrency);
-      const savingsText = parseInt(selectedDuration) > 1 ? `That's only ${symbol}${formatPrice(monthlyPrice, selectedCurrency)}/mo (regularly ${symbol}${price}/mo).` : "";
-      return `Discounted price for the first ${selectedDuration} months. ${savingsText} Renews at ${symbol}${price}/mo. Cancel anytime.`;
+      const savingsText = parseInt(selectedDuration) > 1 ? `That's only ${symbol}${formatPrice(monthlyPrice, selectedCurrency)}/mo.` : "";
+      return `Billed monthly. Discount applies for the first ${selectedDuration} months. ${savingsText} Renews at ${symbol}${price}/mo. Cancel anytime.`;
   }, [fullPrice, monthlyPrice, selectedCurrency, selectedPlan, selectedDuration]);
 
   const handleContinue = () => {
@@ -258,7 +269,7 @@ function CheckoutContent() {
                             <span>{currencySymbols[selectedCurrency]}{formatPrice(monthlyPrice, selectedCurrency)}</span>
                         </div>
                         <p className="text-xs text-muted-foreground text-right mt-1">
-                           + taxes. Renews at {currencySymbols[selectedCurrency]}{formatPrice(fullPrice, selectedCurrency)}/mo after the first {selectedDuration} months.
+                           + taxes. Billed monthly. Renews at {currencySymbols[selectedCurrency]}{formatPrice(fullPrice, selectedCurrency)}/mo after the first {selectedDuration} months.
                         </p>
 
                     </div>
@@ -291,3 +302,5 @@ export default function CheckoutPage() {
         </Suspense>
     )
 }
+
+    

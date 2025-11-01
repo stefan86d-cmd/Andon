@@ -387,14 +387,9 @@ export default function PricingPage() {
                                         }), "w-full")}>
                                             {ctaText}
                                         </Link>
-                                         {tier.name !== 'Starter' && duration !== '1' && (
+                                         {tier.name !== 'Starter' && (
                                             <p className="text-xs text-muted-foreground mt-3 text-center">
-                                               Discounted price for the first {duration} months. That's only {currencySymbols[currency]}{formatPrice(monthlyPrice, currency)}/mo (regularly {currencySymbols[currency]}{formatPrice(fullMonthlyPrice, currency)}/mo).
-                                            </p>
-                                        )}
-                                         {tier.name !== 'Starter' && duration === '1' && (
-                                            <p className="text-xs text-muted-foreground mt-3 text-center">
-                                                Renews at {currencySymbols[currency]}{formatPrice(fullMonthlyPrice, currency)}/mo. Cancel anytime.
+                                               Billed monthly. Discount applies for the first {duration} months. Renews at {currencySymbols[currency]}{formatPrice(fullMonthlyPrice, currency)}/mo.
                                             </p>
                                         )}
                                          {tier.name === 'Starter' && (
@@ -477,3 +472,5 @@ export default function PricingPage() {
     </div>
   );
 }
+
+    
