@@ -119,16 +119,29 @@ export async function createCheckoutSession({
     }
 
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://andonpro.com';
-    const priceIdEnvVar = `STRIPE_PRICE_ID_${plan.toUpperCase()}_${duration}_${currency.toUpperCase()}`;
+    // ALWAYS use the 1-month price ID as the base for the subscription.
+    const priceIdEnvVar = `STRIPE_PRICE_ID_${plan.toUpperCase()}_1_${currency.toUpperCase()}`;
     const priceId = process.env[priceIdEnvVar];
 
     if (!priceId) {
       throw new Error(
-        `Price ID for plan '${plan}' (${duration} Month(s), ${currency.toUpperCase()}) is not configured. (Expected ${priceIdEnvVar})`
+        `Base Price ID for plan '${plan}' (1 Month, ${currency.toUpperCase()}) is not configured. (Expected ${priceIdEnvVar})`
       );
     }
     
-    console.log(`Creating checkout for ${plan} plan, ${duration} months, ${currency.toUpperCase()} using Price ID: ${priceId}`);
+    console.log(`Creating checkout for ${plan} plan (${currency.toUpperCase()}) using Price ID: ${priceId}`);
+
+    // --- Coupon logic ---
+    const couponMap: Record<Duration, string | undefined> = {
+        '1': undefined, // No coupon for standard monthly
+        '12': process.env.STRIPE_COUPON_20_OFF,
+        '24': process.env.STRIPE_COUPON_30_OFF,
+        '48': process.env.STRIPE_COUPON_40_OFF,
+    };
+    const couponId = couponMap[duration];
+    if (duration !== '1' && !couponId) {
+        console.warn(`⚠️ Warning: No coupon found for duration '${duration}'. The subscription will be created without a discount.`);
+    }
 
     const returnUrl = returnPath
       ? `${baseUrl}${returnPath}`
@@ -144,10 +157,10 @@ export async function createCheckoutSession({
           quantity: 1, 
         },
       ],
+      discounts: couponId ? [{ coupon: couponId }] : undefined,
       ui_mode: 'embedded',
       return_url: returnUrl,
       metadata,
-      automatic_tax: { enabled: false },
       subscription_data: {
         metadata,
       },
