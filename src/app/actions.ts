@@ -119,45 +119,28 @@ export async function createCheckoutSession({
     }
 
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://andonpro.com';
-    // ALWAYS use the 1-month price ID as the base for the subscription.
-    const priceIdEnvVar = `STRIPE_PRICE_ID_${plan.toUpperCase()}_1_${currency.toUpperCase()}`;
+    const priceIdEnvVar = `STRIPE_PRICE_ID_${plan.toUpperCase()}_${duration}_${currency.toUpperCase()}`;
     const priceId = process.env[priceIdEnvVar];
-
-    if (!priceId) {
-      throw new Error(
-        `Base Price ID for plan '${plan}' (1 Month, ${currency.toUpperCase()}) is not configured. (Expected ${priceIdEnvVar})`
-      );
-    }
     
-    console.log(`Creating checkout for ${plan} plan (${currency.toUpperCase()}) using Price ID: ${priceId}`);
-
-    // --- Coupon logic ---
-    const couponMap: Record<Duration, string | undefined> = {
-        '1': undefined, // No coupon for standard monthly
-        '12': process.env.STRIPE_COUPON_20_OFF,
-        '24': process.env.STRIPE_COUPON_30_OFF,
-        '48': process.env.STRIPE_COUPON_40_OFF,
-    };
-    const couponId = couponMap[duration];
-    if (duration !== '1' && !couponId) {
-        console.warn(`⚠️ Warning: No coupon found for duration '${duration}'. The subscription will be created without a discount.`);
+    if (!priceId) {
+      throw new Error(`Price ID for plan '${plan}', duration '${duration}', currency '${currency.toUpperCase()}' is not configured. (Expected ${priceIdEnvVar})`);
     }
+
+    console.log(`Creating checkout for ${plan} plan (${currency.toUpperCase()}) using Price ID: ${priceId}`);
 
     const returnUrl = returnPath
       ? `${baseUrl}${returnPath}`
       : `${baseUrl}/dashboard?payment_success=true&session_id={CHECKOUT_SESSION_ID}`;
 
-    // --- Build the session parameters ---
     const sessionParams: Stripe.Checkout.SessionCreateParams = {
       mode: 'subscription',
       customer: customerId,
       line_items: [
         {
           price: priceId,
-          quantity: 1, 
+          quantity: 1,
         },
       ],
-      discounts: couponId ? [{ coupon: couponId }] : undefined,
       ui_mode: 'embedded',
       return_url: returnUrl,
       metadata,
