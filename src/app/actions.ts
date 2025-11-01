@@ -119,25 +119,35 @@ export async function createCheckoutSession({
     }
 
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://andonpro.com';
-
-    // Dynamically construct the Price ID environment variable name
-    const priceIdEnvVar = `STRIPE_PRICE_ID_${plan.toUpperCase()}_${duration}_${currency.toUpperCase()}`;
+    
+    // Always use the 1-month price ID for the subscription.
+    const priceIdEnvVar = `STRIPE_PRICE_ID_${plan.toUpperCase()}_1_${currency.toUpperCase()}`;
     const priceId = process.env[priceIdEnvVar];
 
     if (!priceId) {
-      throw new Error(`Price ID for plan '${plan}', duration '${duration}', currency '${currency}' is not configured. Please check your environment variables (looking for ${priceIdEnvVar}).`);
+      throw new Error(`Price ID for plan '${plan}' (1 Month, ${currency.toUpperCase()}) is not configured. Please check your environment variables (looking for ${priceIdEnvVar}).`);
     }
 
-    const mode: Stripe.Checkout.SessionCreateParams.Mode = 'subscription';
+    // Determine the coupon to apply based on the duration.
+    let couponId: string | undefined = undefined;
+    if (duration !== '1') {
+      const couponIdEnvVar = `STRIPE_COUPON_ID_${duration}_${currency.toUpperCase()}`;
+      couponId = process.env[couponIdEnvVar];
+      if (!couponId) {
+        // Log a warning but don't fail, just proceed without a discount.
+        console.warn(`Coupon ID for duration '${duration}' and currency '${currency.toUpperCase()}' not found. Proceeding without discount. (Looked for ${couponIdEnvVar})`);
+      }
+    }
 
     const returnUrl = returnPath
       ? `${baseUrl}${returnPath}`
       : `${baseUrl}/dashboard?payment_success=true&session_id={CHECKOUT_SESSION_ID}`;
 
     const sessionParams: Stripe.Checkout.SessionCreateParams = {
-      mode,
+      mode: 'subscription',
       customer: customerId,
       line_items: [{ price: priceId, quantity: 1 }],
+      discounts: couponId ? [{ coupon: couponId }] : undefined,
       currency,
       ui_mode: 'embedded',
       return_url: returnUrl,
