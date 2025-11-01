@@ -119,29 +119,16 @@ export async function createCheckoutSession({
     }
 
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://andonpro.com';
-    const priceIdEnvVar = `STRIPE_PRICE_ID_${plan.toUpperCase()}_1_${currency.toUpperCase()}`;
+    const priceIdEnvVar = `STRIPE_PRICE_ID_${plan.toUpperCase()}_${duration}_${currency.toUpperCase()}`;
     const priceId = process.env[priceIdEnvVar];
 
     if (!priceId) {
       throw new Error(
-        `Price ID for plan '${plan}' (1 Month, ${currency.toUpperCase()}) is not configured. (Expected ${priceIdEnvVar})`
+        `Price ID for plan '${plan}' (${duration} Month(s), ${currency.toUpperCase()}) is not configured. (Expected ${priceIdEnvVar})`
       );
     }
-
-    // Log for clarity
-    console.log(`Creating checkout for ${plan} plan, ${duration} months, ${currency.toUpperCase()}`);
-
-    // --- Unified coupon setup ---
-    const COUPONS: Record<string, string | undefined> = {
-      '12': process.env.STRIPE_COUPON_20_OFF, // 12-month upfront
-      '24': process.env.STRIPE_COUPON_30_OFF, // 24-month upfront
-      '48': process.env.STRIPE_COUPON_40_OFF, // 48-month upfront
-    };
-    const couponId = COUPONS[duration];
-
-    // --- Upfront logic ---
-    const isUpfront = duration !== '1';
-    const trialMonths = isUpfront ? parseInt(duration) : 0;
+    
+    console.log(`Creating checkout for ${plan} plan, ${duration} months, ${currency.toUpperCase()} using Price ID: ${priceId}`);
 
     const returnUrl = returnPath
       ? `${baseUrl}${returnPath}`
@@ -154,20 +141,15 @@ export async function createCheckoutSession({
       line_items: [
         {
           price: priceId,
-          quantity: isUpfront ? trialMonths : 1, // Pay upfront for multiple months
+          quantity: 1, 
         },
       ],
-      discounts: couponId ? [{ coupon: couponId }] : undefined,
       ui_mode: 'embedded',
       return_url: returnUrl,
       metadata,
       automatic_tax: { enabled: false },
       subscription_data: {
         metadata,
-        ...(isUpfront && {
-          // The subscription renews monthly *after* the prepaid period
-          trial_period_days: trialMonths * 30, // ~months in days
-        }),
       },
     };
 
