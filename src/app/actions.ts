@@ -119,42 +119,55 @@ export async function createCheckoutSession({
     }
 
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://andonpro.com';
-    
-    // Always use the 1-month price ID for the subscription.
     const priceIdEnvVar = `STRIPE_PRICE_ID_${plan.toUpperCase()}_1_${currency.toUpperCase()}`;
     const priceId = process.env[priceIdEnvVar];
 
     if (!priceId) {
-      throw new Error(`Price ID for plan '${plan}' (1 Month, ${currency.toUpperCase()}) is not configured. Please check your environment variables (looking for ${priceIdEnvVar}).`);
+      throw new Error(
+        `Price ID for plan '${plan}' (1 Month, ${currency.toUpperCase()}) is not configured. (Expected ${priceIdEnvVar})`
+      );
     }
 
-    // Determine the coupon to apply based on the duration.
-    let couponId: string | undefined = undefined;
-    if (duration !== '1') {
-      const couponIdEnvVar = `STRIPE_COUPON_ID_${duration}_${currency.toUpperCase()}`;
-      couponId = process.env[couponIdEnvVar];
-      if (!couponId) {
-        // Log a warning but don't fail, just proceed without a discount.
-        console.warn(`Coupon ID for duration '${duration}' and currency '${currency.toUpperCase()}' not found. Proceeding without discount. (Looked for ${couponIdEnvVar})`);
-      }
-    }
+    // Log for clarity
+    console.log(`Creating checkout for ${plan} plan, ${duration} months, ${currency.toUpperCase()}`);
+
+    // --- Unified coupon setup ---
+    const COUPONS: Record<string, string | undefined> = {
+      '12': process.env.STRIPE_COUPON_20_OFF, // 12-month upfront
+      '24': process.env.STRIPE_COUPON_30_OFF, // 24-month upfront
+      '48': process.env.STRIPE_COUPON_40_OFF, // 48-month upfront
+    };
+    const couponId = COUPONS[duration];
+
+    // --- Upfront logic ---
+    const isUpfront = duration !== '1';
+    const trialMonths = isUpfront ? parseInt(duration) : 0;
 
     const returnUrl = returnPath
       ? `${baseUrl}${returnPath}`
       : `${baseUrl}/dashboard?payment_success=true&session_id={CHECKOUT_SESSION_ID}`;
 
+    // --- Build the session parameters ---
     const sessionParams: Stripe.Checkout.SessionCreateParams = {
       mode: 'subscription',
       customer: customerId,
-      line_items: [{ price: priceId, quantity: 1 }],
+      line_items: [
+        {
+          price: priceId,
+          quantity: isUpfront ? trialMonths : 1, // Pay upfront for multiple months
+        },
+      ],
       discounts: couponId ? [{ coupon: couponId }] : undefined,
-      currency,
       ui_mode: 'embedded',
       return_url: returnUrl,
       metadata,
       automatic_tax: { enabled: false },
       subscription_data: {
         metadata,
+        ...(isUpfront && {
+          // The subscription renews monthly *after* the prepaid period
+          trial_period_days: trialMonths * 30, // ~months in days
+        }),
       },
     };
 

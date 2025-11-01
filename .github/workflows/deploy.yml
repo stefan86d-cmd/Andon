@@ -66,15 +66,10 @@ jobs:
           STRIPE_PRICE_ID_STANDARD_1_GBP: ${{ secrets.STRIPE_PRICE_ID_STANDARD_1_GBP }}
           
           # Coupon IDs
-          STRIPE_COUPON_ID_12_USD: ${{ secrets.STRIPE_COUPON_ID_12_USD }}
-          STRIPE_COUPON_ID_24_USD: ${{ secrets.STRIPE_COUPON_ID_24_USD }}
-          STRIPE_COUPON_ID_48_USD: ${{ secrets.STRIPE_COUPON_ID_48_USD }}
-          STRIPE_COUPON_ID_12_EUR: ${{ secrets.STRIPE_COUPON_ID_12_EUR }}
-          STRIPE_COUPON_ID_24_EUR: ${{ secrets.STRIPE_COUPON_ID_24_EUR }}
-          STRIPE_COUPON_ID_48_EUR: ${{ secrets.STRIPE_COUPON_ID_48_EUR }}
-          STRIPE_COUPON_ID_12_GBP: ${{ secrets.STRIPE_COUPON_ID_12_GBP }}
-          STRIPE_COUPON_ID_24_GBP: ${{ secrets.STRIPE_COUPON_ID_24_GBP }}
-          STRIPE_COUPON_ID_48_GBP: ${{ secrets.STRIPE_COUPON_ID_48_GBP }}
+          STRIPE_COUPON_20_OFF: ${{ secrets.STRIPE_COUPON_20_OFF }}
+          STRIPE_COUPON_30_OFF: ${{ secrets.STRIPE_COUPON_30_OFF }}
+          STRIPE_COUPON_40_OFF: ${{ secrets.STRIPE_COUPON_40_OFF }}
+
 
       # 🔐 Authenticate with Google Cloud using service account
       - name: Authenticate to Google Cloud
@@ -114,12 +109,7 @@ jobs:
           STRIPE_PRICE_ID_STANDARD_1_GBP: ${{ secrets.STRIPE_PRICE_ID_STANDARD_1_GBP }}
           
           # Coupon IDs
-          STRIPE_COUPON_ID_12_USD: ${{ secrets.STRIPE_COUPON_ID_12_USD }}
-          STRIPE_COUPON_ID_24_USD: ${{ secrets.STRIPE_COUPON_ID_24_USD }}
-          STRIPE_COUPON_ID_48_USD: ${{ secrets.STRIPE_COUPON_ID_48_USD }}
-          STRIPE_COUPON_ID_12_EUR: ${{ secrets.STRIPE_COUPON_ID_12_EUR }}
-          STRIPE_COUPON_ID_24_EUR: ${{ secrets.STRIPE_COUPON_ID_24_EUR }}
-          STRIPE_COUPON_ID_48_EUR: ${{ secrets.STRIPE_COUPON_ID_48_EUR }}
-          STRIPE_COUPON_ID_12_GBP: ${{ secrets.STRIPE_COUPON_ID_12_GBP }}
-          STRIPE_COUPON_ID_24_GBP: ${{ secrets.STRIPE_COUPON_ID_24_GBP }}
-          STRIPE_COUPON_ID_48_GBP: ${{ secrets.STRIPE_COUPON_ID_48_GBP }}
+          STRIPE_COUPON_20_OFF: ${{ secrets.STRIPE_COUPON_20_OFF }}
+          STRIPE_COUPON_30_OFF: ${{ secrets.STRIPE_COUPON_30_OFF }}
+          STRIPE_COUPON_40_OFF: ${{ secrets.STRIPE_COUPON_40_OFF }}
+
