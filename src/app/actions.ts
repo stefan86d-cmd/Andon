@@ -162,6 +162,9 @@ export async function createCheckoutSession({
       automatic_tax: {
         enabled: true,
       },
+      customer_update: {
+        address: 'auto'
+      },
     };
 
     const session = await stripe.checkout.sessions.create(sessionParams);
