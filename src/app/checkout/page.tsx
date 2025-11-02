@@ -95,13 +95,11 @@ function CheckoutContent() {
   const selectedTier = tiers[selectedPlan];
   const monthlyPrice = selectedTier.prices[selectedDuration][selectedCurrency];
   const fullPrice = selectedTier.prices['1'][selectedCurrency];
-  const fullPayment = monthlyPrice * parseInt(selectedDuration, 10);
 
-  const discount = useMemo(() => {
-    if (selectedDuration === '1') return 0;
-    const totalFullPrice = fullPrice * parseInt(selectedDuration, 10);
-    return totalFullPrice - fullPayment;
-  }, [selectedDuration, fullPrice, fullPayment]);
+  const totalFullPrice = fullPrice * parseInt(selectedDuration, 10);
+  const totalDiscountedPrice = monthlyPrice * parseInt(selectedDuration, 10);
+  const discount = totalFullPrice - totalDiscountedPrice;
+
 
   const renewalText = useMemo(() => {
       if (selectedPlan === 'starter') return "The Starter plan is always free.";
@@ -216,7 +214,7 @@ function CheckoutContent() {
                             <SelectItem value="48">48 Months</SelectItem>
                         </SelectContent>
                         </Select>
-                        <Select value={selectedCurrency} onValueChange={(v) => setSelectedCurrency(v as Currency)} disabled>
+                        <Select value={selectedCurrency} onValueChange={(v) => setSelectedCurrency(v as Currency)}>
                         <SelectTrigger className="w-[120px]">
                             <div className="flex items-center gap-2"><Globe className="h-4 w-4" /><SelectValue placeholder="Currency" /></div>
                         </SelectTrigger>

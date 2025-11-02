@@ -44,9 +44,9 @@ const tiers = [
     id: "standard",
     prices: {
         '1': { usd: 39.99, eur: 36.99, gbp: 32.99 },
-        '12': { usd: 31.99, eur: 29.99, gbp: 26.99 },
-        '24': { usd: 27.99, eur: 25.99, gbp: 22.99 },
-        '48': { usd: 23.99, eur: 21.99, gbp: 19.99 },
+        '12': { usd: 31.99, eur: 29.59, gbp: 26.39 },
+        '24': { usd: 27.99, eur: 25.89, gbp: 23.09 },
+        '48': { usd: 23.99, eur: 22.19, gbp: 19.79 },
     },
     pricePeriod: "/ month",
     description: "For growing factories that need more power and insights.",
@@ -67,7 +67,7 @@ const tiers = [
     prices: {
         '1': { usd: 59.99, eur: 54.99, gbp: 49.99 },
         '12': { usd: 47.99, eur: 43.99, gbp: 39.99 },
-        '24': { usd: 41.99, eur: 38.99, gbp: 34.99 },
+        '24': { usd: 41.99, eur: 38.49, gbp: 34.99 },
         '48': { usd: 35.99, eur: 32.99, gbp: 29.99 },
     },
     pricePeriod: "/ month",
@@ -91,7 +91,7 @@ const tiers = [
     prices: {
         '1': { usd: 149.99, eur: 139.99, gbp: 124.99 },
         '12': { usd: 119.99, eur: 111.99, gbp: 99.99 },
-        '24': { usd: 104.99, eur: 97.99, gbp: 87.99 },
+        '24': { usd: 104.99, eur: 97.99, gbp: 87.49 },
         '48': { usd: 89.99, eur: 83.99, gbp: 74.99 },
     },
     pricePeriod: "/ month",
@@ -389,7 +389,7 @@ export default function PricingPage() {
                                         </Link>
                                          {tier.name !== 'Starter' && (
                                             <p className="text-xs text-muted-foreground mt-3 text-center">
-                                               Billed monthly. Discount applies for the first {duration} months. Renews at {currencySymbols[currency]}{formatPrice(fullMonthlyPrice, currency)}/mo.
+                                               Billed monthly. Renews at {currencySymbols[currency]}{formatPrice(fullMonthlyPrice, currency)}/mo after the first {duration} months.
                                             </p>
                                         )}
                                          {tier.name === 'Starter' && (
