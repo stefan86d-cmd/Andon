@@ -1,13 +1,18 @@
 
 "use client";
 
+import React, { useState, useEffect, useTransition } from "react";
 import Link from "next/link";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+
 import { Logo } from "@/components/layout/logo";
 import { cn } from "@/lib/utils";
 import { MegaMenu } from "@/components/layout/mega-menu";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Mail, Phone, Building, Menu } from "lucide-react";
+import { Mail, Phone, Building, Menu, LoaderCircle } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -17,7 +22,17 @@ import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
-import { useState, useEffect } from "react";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { toast } from "@/hooks/use-toast";
+import { sendContactEmail } from "@/app/actions";
+
+const contactFormSchema = z.object({
+  name: z.string().min(1, "Name is required."),
+  email: z.string().email("Please enter a valid email address."),
+  message: z.string().min(10, "Message must be at least 10 characters long."),
+});
+
+type ContactFormValues = z.infer<typeof contactFormSchema>;
 
 const servicesMenuItems = [
     { title: "Production Monitoring", description: "Get a live overview of your entire production line.", badge: "", href: "/services/monitoring" },
@@ -50,20 +65,34 @@ const MobileNavLink = ({ href, children }: { href: string; children: React.React
 
 export default function ContactPage() {
     const [year, setYear] = useState(new Date().getFullYear());
-    const [name, setName] = useState('');
-    const [email, setEmail] = useState('');
-    const [message, setMessage] = useState('');
+    const [isSubmitting, startTransition] = useTransition();
+
+    const form = useForm<ContactFormValues>({
+        resolver: zodResolver(contactFormSchema),
+        defaultValues: { name: "", email: "", message: "" },
+    });
 
     useEffect(() => {
         setYear(new Date().getFullYear());
     }, []);
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        // Here you would typically handle the form submission,
-        // e.g., send the data to a server or an email service.
-        console.log({ name, email, message });
-        alert("Thank you for your message! (Form submission is not yet implemented)");
+    const onSubmit = (data: ContactFormValues) => {
+        startTransition(async () => {
+            const result = await sendContactEmail(data);
+            if (result.success) {
+                toast({
+                    title: "Message Sent!",
+                    description: "Thank you for contacting us. We'll get back to you shortly.",
+                });
+                form.reset();
+            } else {
+                toast({
+                    variant: "destructive",
+                    title: "Submission Failed",
+                    description: result.error || "Could not send your message. Please try again.",
+                });
+            }
+        });
     };
 
   return (
@@ -187,21 +216,47 @@ export default function ContactPage() {
                                 <CardTitle>Send us a Message</CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <form onSubmit={handleSubmit} className="space-y-4">
-                                    <div className="space-y-2">
-                                        <Label htmlFor="name">Name</Label>
-                                        <Input id="name" value={name} onChange={(e) => setName(e.target.value)} />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="email">Email</Label>
-                                        <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="message">Message</Label>
-                                        <Textarea id="message" value={message} onChange={(e) => setMessage(e.target.value)} />
-                                    </div>
-                                    <Button type="submit" className="w-full">Send Message</Button>
-                                </form>
+                                <Form {...form}>
+                                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                                        <FormField
+                                            control={form.control}
+                                            name="name"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel>Name</FormLabel>
+                                                    <FormControl><Input {...field} /></FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                        <FormField
+                                            control={form.control}
+                                            name="email"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel>Email</FormLabel>
+                                                    <FormControl><Input type="email" {...field} /></FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                        <FormField
+                                            control={form.control}
+                                            name="message"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel>Message</FormLabel>
+                                                    <FormControl><Textarea {...field} /></FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                        <Button type="submit" className="w-full" disabled={isSubmitting}>
+                                            {isSubmitting && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
+                                            Send Message
+                                        </Button>
+                                    </form>
+                                </Form>
                             </CardContent>
                         </Card>
                     </div>

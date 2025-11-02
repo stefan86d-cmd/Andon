@@ -129,18 +129,16 @@ export async function createCheckoutSession({
     }
 
     // Determine the coupon to apply based on duration.
-    let couponId: string | undefined;
-    if (duration !== '1') {
-      const couponMap: Record<Duration, string | undefined> = {
+    const couponMap: Record<Duration, string | undefined> = {
         '1': undefined,
         '12': process.env.STRIPE_COUPON_20_OFF,
         '24': process.env.STRIPE_COUPON_30_OFF,
         '48': process.env.STRIPE_COUPON_40_OFF,
-      };
-      couponId = couponMap[duration];
-      if (!couponId) {
-          console.warn(`Coupon for duration '${duration}' is not configured. Proceeding without discount.`);
-      }
+    };
+    const couponId = couponMap[duration];
+
+    if (duration !== '1' && !couponId) {
+        console.warn(`Coupon for duration '${duration}' is not configured. Proceeding without discount.`);
     }
     
     const returnUrl = returnPath
@@ -192,4 +190,47 @@ export async function sendWelcomeEmail(userId: string) {
   }
 }
 
+export async function sendContactEmail({ name, email, message }: { name: string; email: string; message: string; }) {
+    const supportEmail = 'support@andonpro.com';
+    const emailHtmlToSupport = `
+        <p>You have received a new contact form submission from:</p>
+        <ul>
+            <li><strong>Name:</strong> ${name}</li>
+            <li><strong>Email:</strong> ${email}</li>
+        </ul>
+        <p><strong>Message:</strong></p>
+        <p>${message}</p>
+    `;
+
+    const emailHtmlToUser = `
+        <p>Hello ${name},</p>
+        <p>Thank you for contacting AndonPro. We have received your message and will get back to you as soon as possible.</p>
+        <p>Here is a copy of your message:</p>
+        <blockquote style="border-left: 2px solid #ccc; padding-left: 1rem; margin-left: 1rem; font-style: italic;">
+            ${message}
+        </blockquote>
+        <p>Best regards,<br/>The AndonPro Team</p>
+    `;
+
+    try {
+        // Send email to support
+        await sendEmail({
+            to: supportEmail,
+            subject: `New Contact Form Submission from ${name}`,
+            html: emailHtmlToSupport,
+        });
+
+        // Send confirmation email to user
+        await sendEmail({
+            to: email,
+            subject: 'Thank You for Contacting AndonPro',
+            html: emailHtmlToUser,
+        });
+
+        return { success: true };
+    } catch (error) {
+        console.error('Failed to send contact email:', error);
+        return { success: false, error: 'Failed to send your message. Please try again later.' };
+    }
+}
     
