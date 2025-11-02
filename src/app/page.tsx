@@ -4,7 +4,7 @@
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
-import { ArrowRight, Factory, BarChart3, Wrench, PiggyBank, Menu } from 'lucide-react';
+import { ArrowRight, Factory, BarChart3, Wrench, HandCoins, Menu } from 'lucide-react';
 import { Logo } from "@/components/layout/logo";
 import { cn } from "@/lib/utils";
 import FooterLogo from "@/components/layout/footer-logo";
@@ -33,7 +33,7 @@ const features = [
     description: 'Track key performance indicators, analyze downtime, and identify recurring problems with our comprehensive reports.',
   },
   {
-    icon: <PiggyBank className="h-10 w-10 text-primary" />,
+    icon: <HandCoins className="h-10 w-10 text-primary" />,
     title: 'Affordable Pricing',
     description: 'Get started for free and scale with flexible, transparent pricing plans that fit teams and factories of all sizes.',
   },
