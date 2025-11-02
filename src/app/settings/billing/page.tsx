@@ -149,10 +149,20 @@ function BillingPageContent() {
     const selectedTier = newPlan ? tiers[newPlan] : null;
     const monthlyPrice = selectedTier ? selectedTier.prices[duration][currency] : 0;
     
-    const renewalDate = currentUser.subscriptionEndsAt && isValid(new Date(currentUser.subscriptionEndsAt))
+    const endDate = currentUser.subscriptionEndsAt && isValid(new Date(currentUser.subscriptionEndsAt))
         ? format(new Date(currentUser.subscriptionEndsAt), "MMMM d, yyyy")
         : "N/A";
    
+    const subscriptionText = () => {
+        if (currentUser.subscriptionStatus === 'canceled') {
+            return `Your plan access ends on ${endDate}.`;
+        }
+        if (currentUser.plan !== 'starter') {
+            return `Your subscription renews on ${endDate}.`;
+        }
+        return null;
+    };
+    
      if (clientSecret) {
         return (
            <div className="bg-muted min-h-screen flex flex-col items-center justify-center p-4">
@@ -187,7 +197,7 @@ function BillingPageContent() {
                         <h2 className="text-2xl font-bold mt-2 text-center">Plan & Billing</h2>
                         <p className="text-muted-foreground text-center">
                             You are currently on the <span className="font-semibold">{planName}</span> plan. 
-                             {currentUser.plan !== 'starter' && ` Your subscription renews on ${renewalDate}.`}
+                             {subscriptionText()}
                         </p>
                     </div>
                     <Card className="mt-8">
@@ -261,12 +271,12 @@ function BillingPageContent() {
                             <div>
                                 <h3 className="text-sm font-semibold mb-2">Cancel Subscription</h3>
                                 <p className="text-sm text-muted-foreground mb-4">
-                                    If you cancel, you will lose access to your plan's features at the end of your billing period on {renewalDate}.
+                                    If you cancel, you will lose access to your plan's features at the end of your billing period on {endDate}.
                                 </p>
                                 <CancelSubscriptionDialog onConfirm={handleCancelConfirm} disabled={isCancelling}>
-                                    <Button variant="destructive" className="w-full sm:w-auto" disabled={currentUser.plan === 'starter' || isCancelling}>
+                                    <Button variant="destructive" className="w-full sm:w-auto" disabled={currentUser.plan === 'starter' || isCancelling || currentUser.subscriptionStatus === 'canceled'}>
                                         {isCancelling && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
-                                        Cancel Subscription
+                                        {currentUser.subscriptionStatus === 'canceled' ? 'Cancellation Pending' : 'Cancel Subscription'}
                                     </Button>
                                 </CancelSubscriptionDialog>
                             </div>
@@ -295,5 +305,7 @@ export default function BillingPage() {
         </Suspense>
     )
 }
+
+    
 
     

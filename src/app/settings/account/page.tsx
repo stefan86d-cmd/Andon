@@ -136,9 +136,19 @@ export default function AccountSettingsPage() {
     
     const planName = currentUser.plan.charAt(0).toUpperCase() + currentUser.plan.slice(1);
 
-    const renewalDate = currentUser.subscriptionEndsAt && isValid(new Date(currentUser.subscriptionEndsAt))
+    const endDate = currentUser.subscriptionEndsAt && isValid(new Date(currentUser.subscriptionEndsAt))
         ? format(new Date(currentUser.subscriptionEndsAt), "MMMM d, yyyy")
         : "N/A";
+
+    const subscriptionText = () => {
+        if (currentUser.plan === 'starter') {
+            return "The Starter plan is always free.";
+        }
+        if (currentUser.subscriptionStatus === 'canceled') {
+            return `Your plan access ends on ${endDate}.`;
+        }
+        return `Your plan renews on ${endDate}.`;
+    };
 
     return (
         <div className="bg-muted">
@@ -367,7 +377,7 @@ export default function AccountSettingsPage() {
                                     <h3 className="text-lg font-semibold">Current Plan: {planName}</h3>
                                     <p className="text-sm text-muted-foreground">Your workspace is on the {planName} plan.</p>
                                      <p className="text-sm text-muted-foreground mt-2">
-                                        {currentUser.plan === 'starter' ? 'The Starter plan is always free.' : `Your plan renews on ${renewalDate}.`}
+                                        {subscriptionText()}
                                     </p>
                                 </div>
                             </CardContent>
@@ -386,3 +396,5 @@ export default function AccountSettingsPage() {
         </div>
     );
 }
+
+    

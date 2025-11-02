@@ -24,6 +24,7 @@ export type User = {
   stripeCustomerId?: string;
   subscriptionStartsAt?: Date;
   subscriptionEndsAt?: Date;
+  subscriptionStatus?: 'active' | 'canceled' | 'payment_failed';
   notificationPreferences: {
     newIssue: boolean;
     issueResolved: boolean;
@@ -109,3 +110,5 @@ export type IssueByDay = {
   date: string;
   issues: number;
 }
+
+    
