@@ -97,6 +97,14 @@ const faqs = [
         )
     },
     {
+        question: "Is AndonPro a mobile or desktop application?",
+        answer: () => (
+            <p>
+                AndonPro is a fully responsive, web-based application, which means it works on any device with a modern web browser, including desktops, tablets, and mobile phones. While it scales to fit any screen size, the administrative and supervisor dashboards are optimized for the best experience on a PC or Mac.
+            </p>
+        )
+    },
+    {
         question: "What issue categories can I report?",
         answer: () => (
             <>
@@ -271,5 +279,7 @@ export default function FaqPage() {
     </div>
   );
 }
+
+    
 
     
