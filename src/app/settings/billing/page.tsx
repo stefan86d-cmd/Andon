@@ -16,7 +16,7 @@ import { CancelSubscriptionDialog } from "@/components/settings/cancel-subscript
 import { Logo } from "@/components/layout/logo";
 import { useRouter } from "next/navigation";
 import { format, isValid } from "date-fns";
-import { createCheckoutSession, getOrCreateStripeCustomer } from "@/app/actions";
+import { createCheckoutSession, getOrCreateStripeCustomer, cancelSubscription } from "@/app/actions";
 import { EmbeddedCheckoutForm } from "@/components/checkout/embedded-checkout-form";
 
 
@@ -55,8 +55,9 @@ const formatPrice = (price: number, currency: Currency) => {
 
 
 function BillingPageContent() {
-    const { currentUser } = useUser();
+    const { currentUser, refreshCurrentUser } = useUser();
     const [isSubmitting, startTransition] = useTransition();
+    const [isCancelling, startCancellationTransition] = useTransition();
     const [clientSecret, setClientSecret] = useState<string | null>(null);
 
     const [currency, setCurrency] = useState<Currency>('usd');
@@ -119,9 +120,26 @@ function BillingPageContent() {
     }
 
     const handleCancelConfirm = () => {
-        toast({
-            title: "Subscription Cancelled (Mock)",
-            description: "Your subscription would be cancelled at the end of the current period.",
+        if (!currentUser?.subscriptionId) {
+            toast({ title: "Error", description: "No active subscription found to cancel." });
+            return;
+        }
+        
+        startCancellationTransition(async () => {
+            const result = await cancelSubscription(currentUser.id, currentUser.subscriptionId!);
+            if (result.success) {
+                await refreshCurrentUser();
+                toast({
+                    title: "Subscription Cancellation Initiated",
+                    description: "Your subscription will be canceled at the end of the current billing period.",
+                });
+            } else {
+                toast({
+                    variant: "destructive",
+                    title: "Cancellation Failed",
+                    description: result.error || "Could not cancel your subscription. Please try again.",
+                });
+            }
         });
     }
 
@@ -245,8 +263,11 @@ function BillingPageContent() {
                                 <p className="text-sm text-muted-foreground mb-4">
                                     If you cancel, you will lose access to your plan's features at the end of your billing period on {renewalDate}.
                                 </p>
-                                <CancelSubscriptionDialog onConfirm={handleCancelConfirm}>
-                                    <Button variant="destructive" className="w-full sm:w-auto" disabled={currentUser.plan === 'starter'}>Cancel Subscription</Button>
+                                <CancelSubscriptionDialog onConfirm={handleCancelConfirm} disabled={isCancelling}>
+                                    <Button variant="destructive" className="w-full sm:w-auto" disabled={currentUser.plan === 'starter' || isCancelling}>
+                                        {isCancelling && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
+                                        Cancel Subscription
+                                    </Button>
                                 </CancelSubscriptionDialog>
                             </div>
                         </CardContent>
@@ -274,3 +295,5 @@ export default function BillingPage() {
         </Suspense>
     )
 }
+
+    

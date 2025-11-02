@@ -7,6 +7,11 @@ import { sendEmail } from '@/lib/email';
 import { db as dbFn } from '@/firebase/server';
 import { adminAuth } from '@/firebase/admin';
 import { FieldValue } from 'firebase-admin/firestore';
+import Stripe from 'stripe';
+
+const stripe = new Stripe(process.env.NEXT_STRIPE_SECRET_KEY!, {
+  apiVersion: '2024-06-20',
+});
 
 export async function getUserByEmail(email: string): Promise<User | null> {
   const db = dbFn();
@@ -308,3 +313,28 @@ export async function getAllUsers(orgId: string): Promise<User[]> {
     return [];
   }
 }
+
+
+// ---------------- Subscription Actions ----------------
+
+export async function cancelSubscription(userId: string, subscriptionId: string) {
+    const db = dbFn();
+    if (!db) return handleFirestoreError(new Error('Firestore not initialized'));
+
+    try {
+        const subscription = await stripe.subscriptions.update(subscriptionId, {
+            cancel_at_period_end: true,
+        });
+
+        await db.collection('users').doc(userId).update({
+            subscriptionStatus: 'canceled'
+        });
+
+        return { success: true, subscription };
+    } catch (error: any) {
+        console.error("Stripe cancellation error:", error);
+        return { success: false, error: error.message };
+    }
+}
+
+    

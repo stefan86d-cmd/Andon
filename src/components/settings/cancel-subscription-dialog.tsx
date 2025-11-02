@@ -14,16 +14,20 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { LoaderCircle } from "lucide-react";
 
 interface CancelSubscriptionDialogProps {
   children: React.ReactNode;
   onConfirm: () => void;
+  disabled?: boolean;
 }
 
-export function CancelSubscriptionDialog({ children, onConfirm }: CancelSubscriptionDialogProps) {
+export function CancelSubscriptionDialog({ children, onConfirm, disabled = false }: CancelSubscriptionDialogProps) {
 
   const handleConfirm = () => {
-    onConfirm();
+    if (!disabled) {
+      onConfirm();
+    }
   };
 
   return (
@@ -35,12 +39,13 @@ export function CancelSubscriptionDialog({ children, onConfirm }: CancelSubscrip
         <AlertDialogHeader>
           <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
           <AlertDialogDescription>
-            This action cannot be undone. Your Pro plan will be cancelled at the end of the current billing period. You will lose access to AI-powered prioritization and advanced reporting features.
+            This action cannot be undone. Your subscription will be cancelled at the end of the current billing period. You will lose access to your plan features at that time.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>No, keep plan</AlertDialogCancel>
-          <AlertDialogAction onClick={handleConfirm} className="bg-destructive hover:bg-destructive/90">
+          <AlertDialogCancel disabled={disabled}>No, keep plan</AlertDialogCancel>
+          <AlertDialogAction onClick={handleConfirm} className="bg-destructive hover:bg-destructive/90" disabled={disabled}>
+             {disabled && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
             Yes, cancel subscription
           </AlertDialogAction>
         </AlertDialogFooter>
@@ -48,3 +53,5 @@ export function CancelSubscriptionDialog({ children, onConfirm }: CancelSubscrip
     </AlertDialog>
   );
 }
+
+    
