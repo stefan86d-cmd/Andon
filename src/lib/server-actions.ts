@@ -159,9 +159,12 @@ export async function requestPasswordReset(email: string) {
   if (!adminAuth) return { success: false, message: 'Password reset service is unavailable.' };
   try {
     const link = await adminAuth.generatePasswordResetLink(email);
-    await sendEmail({ to: email, subject: "Reset your password", html: `<p>Reset your password here: <a href="${link}">${link}</a></p>` });
-  } catch (error) {
-    console.error("Password reset error:", error);
+    await sendEmail({ to: email, subject: "Reset your password", html: `<p>You can reset your password by clicking this link: <a href="${link}">${link}</a></p>` });
+  } catch (error: any) {
+    // Don't reveal if an email doesn't exist.
+    if (error.code !== 'auth/user-not-found') {
+      console.error("Password reset error:", error);
+    }
   }
   return { success: true, message: "If an account exists for this email, a password reset link has been sent." };
 }
@@ -179,16 +182,6 @@ export async function sendPasswordChangedEmail(email: string) {
   }
 }
 
-export async function changePassword(email: string, currentPass: string, newPass: string) {
-  if (!adminAuth) return { success: false, error: "Authentication service unavailable." };
-  try {
-    // This is a placeholder. Real password change logic would involve re-authenticating the user.
-    // For now, we'll just simulate a success.
-    return { success: true };
-  } catch (error) {
-    return handleFirestoreError(error);
-  }
-}
 
 // ---------------- Issue Actions ----------------
 

@@ -17,7 +17,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { toast } from "@/hooks/use-toast";
-import { changePassword } from "@/app/actions";
+import { requestPasswordReset } from "@/app/actions";
 import type { Plan } from "@/lib/types";
 import { Logo } from "@/components/layout/logo";
 import { countries } from "@/lib/countries";
@@ -42,21 +42,11 @@ const profileFormSchema = z.object({
 });
 type ProfileFormValues = z.infer<typeof profileFormSchema>;
 
-const passwordFormSchema = z.object({
-  currentPassword: z.string().min(1, "Current password is required."),
-  newPassword: z.string().min(6, "New password must be at least 6 characters."),
-  confirmPassword: z.string(),
-}).refine((data) => data.newPassword === data.confirmPassword, {
-  message: "Passwords do not match.",
-  path: ["confirmPassword"],
-});
-type PasswordFormValues = z.infer<typeof passwordFormSchema>;
-
 
 export default function AccountSettingsPage() {
     const { currentUser, updateCurrentUser } = useUser();
     const [isProfileSubmitting, startProfileTransition] = useTransition();
-    const [isPasswordSubmitting, startPasswordTransition] = useTransition();
+    const [isPasswordRequesting, startPasswordRequestTransition] = useTransition();
     const router = useRouter();
     
     // State for toggling profile edit mode
@@ -81,14 +71,6 @@ export default function AccountSettingsPage() {
         },
     });
 
-    const passwordForm = useForm<PasswordFormValues>({
-        resolver: zodResolver(passwordFormSchema),
-        defaultValues: {
-            currentPassword: "",
-            newPassword: "",
-            confirmPassword: "",
-        },
-    });
 
     useEffect(() => {
         if (currentUser) {
@@ -128,33 +110,20 @@ export default function AccountSettingsPage() {
         });
     }
 
-    const onPasswordSubmit = (data: PasswordFormValues) => {
-        startPasswordTransition(async () => {
+    const handlePasswordResetRequest = () => {
+        startPasswordRequestTransition(async () => {
             if (!currentUser?.email) return;
-            const result = await changePassword(currentUser.email, data.currentPassword, data.newPassword);
-    
+            const result = await requestPasswordReset(currentUser.email);
             if (result.success) {
                 toast({
-                    title: "Password Updated",
-                    description: "Your password has been changed successfully.",
+                    title: "Password Reset Email Sent",
+                    description: result.message,
                 });
-                passwordForm.reset();
             } else {
-                // Safely extract the error message
-                const errorMsg =
-                    "error" in result && typeof result.error === "string"
-                        ? result.error
-                        : "An unexpected error occurred.";
-    
-                toast({
+                 toast({
                     variant: "destructive",
-                    title: "Update Failed",
-                    description: errorMsg,
-                });
-    
-                passwordForm.setError("currentPassword", {
-                    type: "manual",
-                    message: errorMsg,
+                    title: "Request Failed",
+                    description: "Could not send password reset email. Please try again later.",
                 });
             }
         });
@@ -369,51 +338,15 @@ export default function AccountSettingsPage() {
                                         <CardTitle>Change Password</CardTitle>
                                     </AccordionTrigger>
                                     <AccordionContent>
-                                         <Form {...passwordForm}>
-                                            <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)}>
-                                                <CardContent className="space-y-4 pt-0">
-                                                    <FormField
-                                                        control={passwordForm.control}
-                                                        name="currentPassword"
-                                                        render={({ field }) => (
-                                                            <FormItem>
-                                                                <FormLabel>Current Password</FormLabel>
-                                                                <FormControl><Input type="password" {...field} /></FormControl>
-                                                                <FormMessage />
-                                                            </FormItem>
-                                                        )}
-                                                    />
-                                                    <FormField
-                                                        control={passwordForm.control}
-                                                        name="newPassword"
-                                                        render={({ field }) => (
-                                                            <FormItem>
-                                                                <FormLabel>New Password</FormLabel>
-                                                                <FormControl><Input type="password" {...field} /></FormControl>
-                                                                <FormMessage />
-                                                            </FormItem>
-                                                        )}
-                                                    />
-                                                    <FormField
-                                                        control={passwordForm.control}
-                                                        name="confirmPassword"
-                                                        render={({ field }) => (
-                                                            <FormItem>
-                                                                <FormLabel>Confirm New Password</FormLabel>
-                                                                <FormControl><Input type="password" {...field} /></FormControl>
-                                                                <FormMessage />
-                                                            </FormItem>
-                                                        )}
-                                                    />
-                                                </CardContent>
-                                                <CardFooter>
-                                                    <Button type="submit" disabled={isPasswordSubmitting}>
-                                                        {isPasswordSubmitting && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
-                                                        Update Password
-                                                    </Button>
-                                                </CardFooter>
-                                            </form>
-                                        </Form>
+                                        <CardContent className="space-y-4 pt-0">
+                                           <p className="text-sm text-muted-foreground">To change your password, we'll send a secure reset link to your email address.</p>
+                                        </CardContent>
+                                        <CardFooter>
+                                            <Button onClick={handlePasswordResetRequest} disabled={isPasswordRequesting}>
+                                                {isPasswordRequesting && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
+                                                Send Reset Link
+                                            </Button>
+                                        </CardFooter>
                                     </AccordionContent>
                                 </AccordionItem>
                             </Accordion>

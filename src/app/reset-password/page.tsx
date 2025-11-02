@@ -39,6 +39,7 @@ function ResetPasswordContent() {
   const searchParams = useSearchParams();
   const [isSubmitting, startTransition] = useTransition();
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [isValidating, setIsValidating] = useState(true);
 
   const oobCode = searchParams.get('oobCode');
 
@@ -53,15 +54,18 @@ function ResetPasswordContent() {
   // Verify the reset code and get the user's email
   React.useEffect(() => {
     if (oobCode) {
-      const { app } = getClientInstances();
-      const auth = getAuth(app);
+      const { auth } = getClientInstances();
       verifyPasswordResetCode(auth, oobCode)
         .then((email) => {
           setUserEmail(email);
+          setIsValidating(false);
         })
         .catch(() => {
           toast({ title: "Invalid Link", description: "This password reset link is invalid or has expired.", variant: "destructive" });
+          setIsValidating(false);
         });
+    } else {
+      setIsValidating(false);
     }
   }, [oobCode]);
 
@@ -74,12 +78,11 @@ function ResetPasswordContent() {
 
     startTransition(async () => {
       try {
-        const { app } = getClientInstances();
-        const auth = getAuth(app); // Use client-side auth
+        const { auth } = getClientInstances();
         
         await confirmPasswordReset(auth, oobCode, data.newPassword);
 
-        // Send confirmation email
+        // Send confirmation email via server action
         await sendPasswordChangedEmail(userEmail);
         
         toast({
@@ -101,6 +104,14 @@ function ResetPasswordContent() {
       }
     });
   };
+
+  if (isValidating) {
+    return (
+      <div className="flex items-center justify-center">
+        <LoaderCircle className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
 
   if (!oobCode || !userEmail) {
      return (
