@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { adminDb } from "@/firebase/admin";
 import { Timestamp, FieldValue } from "firebase-admin/firestore";
+import { sendWelcomeEmail } from "@/lib/server-actions";
 
 const stripe = new Stripe(process.env.NEXT_STRIPE_SECRET_KEY!, {
   apiVersion: "2024-06-20",
@@ -36,6 +37,7 @@ export async function POST(req: Request) {
     const session = event.data.object as Stripe.Checkout.Session;
     const userId = session.metadata?.userId;
     const plan = session.metadata?.plan;
+    const isNewUser = session.metadata?.isNewUser === 'true';
 
     if (userId && plan && session.mode === "subscription") {
       try {
@@ -53,6 +55,12 @@ export async function POST(req: Request) {
 
         await userRef.update(updates);
         console.log(`✅ Subscription started for user ${userId} (${plan})`);
+        
+        // Send a welcome email if this is a new user's first subscription
+        if (isNewUser) {
+          await sendWelcomeEmail(userId);
+          console.log(`💌 Welcome email sent to new subscriber ${userId}`);
+        }
         
       } catch (error) {
         console.error("❌ Firestore update failed for checkout.session.completed:", error);

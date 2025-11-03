@@ -164,7 +164,7 @@ function CompleteProfileContent() {
                     duration: selectedDuration,
                     currency: selectedCurrency,
                     metadata,
-                    returnPath: '/login?payment_success=true&session_id={CHECKOUT_SESSION_ID}',
+                    returnPath: '/dashboard?payment_success=true&session_id={CHECKOUT_SESSION_ID}',
                 });
 
                 if (result.clientSecret) {

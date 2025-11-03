@@ -336,5 +336,3 @@ export async function cancelSubscription(userId: string, subscriptionId: string)
         return { success: false, error: error.message };
     }
 }
-
-    
