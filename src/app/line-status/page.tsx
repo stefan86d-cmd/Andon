@@ -58,9 +58,11 @@ export default function LineStatusPage() {
     (line) => line.id === selectedLineId
   );
   
-  const fetchIssuesForStation = useCallback(async () => {
+  const fetchIssuesForStation = useCallback(async (isInitialLoad = false) => {
     if (selectedLineId && selectedWorkstation && selectedLine && currentUser?.orgId) {
-        setIssuesLoading(true);
+        if (isInitialLoad) {
+          setIssuesLoading(true);
+        }
         const allIssues = await getClientIssues(currentUser.orgId);
         const twentyFourHoursAgo = subHours(new Date(), 24);
         const fullWorkstationName = `${selectedLine.name} - ${selectedWorkstation}`;
@@ -72,15 +74,18 @@ export default function LineStatusPage() {
             issue.reportedAt >= twentyFourHoursAgo
         );
         setIssues(filteredIssues.sort((a, b) => b.reportedAt.getTime() - a.reportedAt.getTime()));
-        setIssuesLoading(false);
+        
+        if (isInitialLoad) {
+          setIssuesLoading(false);
+        }
     }
   }, [selectedLineId, selectedWorkstation, selectedLine, currentUser?.orgId]);
 
 
   useEffect(() => {
     if (selectionConfirmed) {
-      fetchIssuesForStation();
-      const interval = setInterval(fetchIssuesForStation, 30000);
+      fetchIssuesForStation(true);
+      const interval = setInterval(() => fetchIssuesForStation(false), 30000);
       return () => clearInterval(interval);
     }
   }, [selectionConfirmed, fetchIssuesForStation]);
@@ -119,7 +124,7 @@ export default function LineStatusPage() {
                 loading={issuesLoading}
                 title={title}
                 description={description}
-                onIssueUpdate={fetchIssuesForStation}
+                onIssueUpdate={() => fetchIssuesForStation(false)}
             />
         );
     }
@@ -130,7 +135,7 @@ export default function LineStatusPage() {
             loading={issuesLoading}
             title={title}
             description={description} 
-            onIssueUpdate={fetchIssuesForStation}
+            onIssueUpdate={() => fetchIssuesForStation(false)}
             productionLines={productionLines}
         />
     );
@@ -201,7 +206,7 @@ export default function LineStatusPage() {
                           productionLines={allLines}
                           selectedLineId={selectedLineId}
                           selectedWorkstation={selectedWorkstation}
-                          onIssueReported={fetchIssuesForStation}
+                          onIssueReported={() => fetchIssuesForStation(false)}
                       >
                           <Button className="flex-1 sm:flex-initial">
                               <PlusCircle className="mr-2 h-4 w-4" />

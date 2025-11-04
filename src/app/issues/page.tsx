@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { IssuesDataTable } from "@/components/dashboard/issues-data-table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Issue, ProductionLine, IssueCategory } from "@/lib/types";
@@ -44,16 +44,21 @@ export default function IssuesPage() {
     }
   }, [isMobile]);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async (isInitialLoad = false) => {
       if (!currentUser?.orgId) return;
-      setLoading(true);
+      if (isInitialLoad) {
+        setLoading(true);
+      }
       const [issuesData, linesData] = await Promise.all([
           getClientIssues(currentUser.orgId),
           getClientProductionLines(currentUser.orgId),
       ]);
       setIssues(issuesData);
       setProductionLines(linesData);
-      setLoading(false);
+      
+      if (isInitialLoad) {
+        setLoading(false);
+      }
 
       if (issuesData.length > 0) {
           const latestIssueTimestamp = new Date(issuesData[0].reportedAt).getTime();
@@ -63,27 +68,27 @@ export default function IssuesPage() {
               window.dispatchEvent(new StorageEvent('storage', { key: 'lastSeenIssueTimestamp' }));
           }
       }
-  };
+  }, [currentUser?.orgId]);
 
   useEffect(() => {
     if (!currentUser?.orgId) return;
 
-    fetchData();
+    fetchData(true);
 
     const handleStorageChange = (event: StorageEvent) => {
         if (event.key === 'lastSeenIssueTimestamp') {
-            fetchData();
+            fetchData(false);
         }
     };
 
     window.addEventListener('storage', handleStorageChange);
-    const interval = setInterval(fetchData, 30000); 
+    const interval = setInterval(() => fetchData(false), 30000); 
 
     return () => {
         clearInterval(interval);
         window.removeEventListener('storage', handleStorageChange);
     };
-  }, [currentUser?.orgId]);
+  }, [currentUser?.orgId, fetchData]);
 
   useEffect(() => {
     setTempSelectedLines(selectedLines);
@@ -148,7 +153,7 @@ export default function IssuesPage() {
           title={title}
           description={description}
           loading={loading}
-          onIssueUpdate={fetchData}
+          onIssueUpdate={() => fetchData(false)}
           productionLines={productionLines}
         />
       );
@@ -159,7 +164,7 @@ export default function IssuesPage() {
         title={title}
         description={description}
         loading={loading}
-        onIssueUpdate={fetchData}
+        onIssueUpdate={() => fetchData(false)}
       />
     );
   };

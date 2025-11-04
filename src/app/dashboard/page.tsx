@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useState, Suspense, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import { IssuesDataTable } from "@/components/dashboard/issues-data-table";
 import { StatsCards } from "@/components/dashboard/stats-cards";
@@ -47,7 +47,7 @@ function formatAverageDuration(seconds: number) {
         const remainingHours = Math.round(hours % 24);
         return `${days}d ${remainingHours}h`;
     }
-    return `${hours.toFixed(1)} hours`;
+    return `${hours.toFixed(1)}h`;
 };
 
 function getChange(current: number, previous: number): { change: string, changeType: 'increase' | 'decrease' } {
@@ -117,26 +117,31 @@ function DashboardPageContent() {
         }
     }, [isMobile]);
 
-    const fetchData = async () => {
+    const fetchData = useCallback(async (isInitialLoad = false) => {
         if (!currentUser?.orgId) return;
-        setLoading(true);
+        if (isInitialLoad) {
+            setLoading(true);
+        }
         const [issuesData, linesData] = await Promise.all([
-        getClientIssues(currentUser.orgId),
-        getClientProductionLines(currentUser.orgId),
+            getClientIssues(currentUser.orgId),
+            getClientProductionLines(currentUser.orgId),
         ]);
         setAllIssues(issuesData);
         setRecentIssues(issuesData.slice(0, 5));
         setProductionLines(linesData);
-        setLoading(false);
-    };
+        if (isInitialLoad) {
+            setLoading(false);
+        }
+    }, [currentUser?.orgId]);
+
 
     useEffect(() => {
         if (!currentUser?.orgId) return;
 
-        fetchData();
-        const interval = setInterval(fetchData, 30000);
+        fetchData(true);
+        const interval = setInterval(() => fetchData(false), 30000);
         return () => clearInterval(interval);
-    }, [currentUser?.orgId]);
+    }, [currentUser?.orgId, fetchData]);
     
     if (!currentUser || (currentUser.role !== "admin" && currentUser.role !== "supervisor")) {
         return (
@@ -265,7 +270,7 @@ function DashboardPageContent() {
                 <IssuesGrid 
                     issues={recentIssues}
                     title="Recent Issues"
-                    onIssueUpdate={fetchData}
+                    onIssueUpdate={() => fetchData(false)}
                 />
             );
         }
@@ -274,7 +279,7 @@ function DashboardPageContent() {
             <IssuesDataTable 
                 issues={recentIssues} 
                 title="Recent Issues" 
-                onIssueUpdate={fetchData} 
+                onIssueUpdate={() => fetchData(false)} 
                 productionLines={productionLines}
             />
         );
