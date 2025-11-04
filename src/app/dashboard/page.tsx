@@ -6,9 +6,9 @@ import { useSearchParams } from "next/navigation";
 import { IssuesDataTable } from "@/components/dashboard/issues-data-table";
 import { StatsCards } from "@/components/dashboard/stats-cards";
 import { getClientIssues, getClientProductionLines } from "@/lib/data";
-import { subHours, intervalToDuration, differenceInSeconds, max } from "date-fns";
+import { subHours, intervalToDuration, differenceInSeconds, max, subDays } from "date-fns";
 import { useUser } from "@/contexts/user-context";
-import type { Issue, ProductionLine } from "@/lib/types";
+import type { Issue, ProductionLine, StatCard } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { LayoutGrid, Rows } from "lucide-react";
@@ -26,6 +26,48 @@ type Duration = {
   minutes?: number;
   seconds?: number;
 };
+
+function formatDuration(d: Duration) {
+    const parts = [];
+    if (d.hours) parts.push(`${d.hours}h`);
+    if (d.minutes) parts.push(`${d.minutes}m`);
+    if (d.seconds && !d.hours && !d.minutes) parts.push(`${d.seconds}s`);
+    return parts.join(" ") || "0m";
+};
+
+function formatAverageDuration(seconds: number) {
+    if (seconds <= 0) return "N/A";
+    const hours = seconds / 3600;
+    if (hours < 1) {
+    const minutes = Math.round(seconds / 60);
+    return `${minutes} min`;
+    }
+    return `${hours.toFixed(1)} hours`;
+};
+
+function getChange(current: number, previous: number): { change: string, changeType: 'increase' | 'decrease' } {
+    if (previous === 0) {
+        return current > 0 ? { change: `+${current}`, changeType: 'increase' } : { change: '0', changeType: 'increase' };
+    }
+    if (current === previous) {
+        return { change: '0', changeType: 'increase' }; // Or 'decrease', it doesn't matter
+    }
+    const diff = current - previous;
+    const percentageChange = (diff / previous) * 100;
+    
+    if (Math.abs(diff) < 1 && diff !== 0) { // For fractional changes, show percentage
+        return {
+            change: `${percentageChange > 0 ? '+' : ''}${percentageChange.toFixed(0)}%`,
+            changeType: diff > 0 ? 'increase' : 'decrease'
+        };
+    }
+
+    return {
+        change: `${diff > 0 ? '+' : ''}${diff}`,
+        changeType: diff > 0 ? 'increase' : 'decrease'
+    };
+}
+
 
 function DashboardPageContent() {
     const { currentUser, refreshCurrentUser } = useUser();
@@ -99,112 +141,97 @@ function DashboardPageContent() {
         );
     }
     
+    // --- STATS CALCULATIONS ---
     const now = new Date();
-    const twentyFourHoursAgo = subHours(now, 24);
     
-    const stoppedIssuesInLast24h = allIssues.filter(
-        (issue) => issue.productionStopped && issue.reportedAt > twentyFourHoursAgo
-    );
+    // 1. Open Issues
+    const openIssues = allIssues.filter(issue => issue.status === "in_progress" || issue.status === "reported");
+    const openIssuesLastHour = allIssues.filter(issue => {
+        const wasOpen = issue.reportedAt < subHours(now, 1) && (issue.status === 'reported' || issue.status === 'in_progress' || (issue.resolvedAt && issue.resolvedAt > subHours(now, 1)));
+        return wasOpen;
+    });
+    const openIssuesChange = getChange(openIssues.length, openIssuesLastHour.length);
+
+    // 2. Avg Resolution Time
+    const last7DaysEnd = now;
+    const last7DaysStart = subDays(now, 7);
+    const prev7DaysEnd = last7DaysStart;
+    const prev7DaysStart = subDays(now, 14);
+
+    const resolvedThisWeek = allIssues.filter(i => i.status === 'resolved' && i.resolvedAt && i.resolvedAt >= last7DaysStart && i.resolvedAt <= last7DaysEnd);
+    const totalResolutionSecondsThisWeek = resolvedThisWeek.reduce((acc, i) => acc + differenceInSeconds(i.resolvedAt!, i.reportedAt), 0);
+    const avgResTimeThisWeek = resolvedThisWeek.length > 0 ? totalResolutionSecondsThisWeek / resolvedThisWeek.length : 0;
     
-    const issuesByLine: Record<string, Issue[]> = stoppedIssuesInLast24h.reduce(
-        (acc, issue) => {
-        const lineId = issue.productionLineId;
-        if (!acc[lineId]) acc[lineId] = [];
-        acc[lineId].push(issue);
-        return acc;
-        },
-        {} as Record<string, Issue[]>
-    );
+    const resolvedLastWeek = allIssues.filter(i => i.status === 'resolved' && i.resolvedAt && i.resolvedAt >= prev7DaysStart && i.resolvedAt < prev7DaysEnd);
+    const totalResolutionSecondsLastWeek = resolvedLastWeek.reduce((acc, i) => acc + differenceInSeconds(i.resolvedAt!, i.reportedAt), 0);
+    const avgResTimeLastWeek = resolvedLastWeek.length > 0 ? totalResolutionSecondsLastWeek / resolvedLastWeek.length : 0;
+    const avgResTimeChange = getChange(avgResTimeThisWeek, avgResTimeLastWeek);
+    
+    // 3. Production Stop Time
+    const last24h = subHours(now, 24);
+    const prev24h = subHours(now, 48);
+    const calculateDowntime = (issues: Issue[], startTime: Date, endTime: Date) => {
+        const stoppedIssues = issues.filter(issue => issue.productionStopped && issue.reportedAt < endTime);
+        let totalDowntimeSeconds = 0;
+        const intervals = stoppedIssues.map(issue => ({
+            start: issue.reportedAt > startTime ? issue.reportedAt : startTime,
+            end: issue.resolvedAt && issue.resolvedAt < endTime ? issue.resolvedAt : endTime,
+        })).filter(i => i.end && i.start < i.end).sort((a,b) => a.start.getTime() - b.start.getTime());
 
-    let totalDowntimeSeconds = 0;
-
-    for (const lineId in issuesByLine) {
-        const lineIssues = issuesByLine[lineId];
-        if (lineIssues.length === 0) continue;
-
-        const intervals = lineIssues
-        .map((issue) => ({
-            start: issue.reportedAt,
-            end: issue.resolvedAt && issue.resolvedAt < now ? issue.resolvedAt : now,
-        }))
-        .sort((a, b) => a.start.getTime() - b.start.getTime());
-
-        if (intervals.length === 0) continue;
-
-        let mergedIntervals = [intervals[0]];
-        if(intervals.length > 1) {
-            mergedIntervals = [intervals[0]];
-            for (let i = 1; i < intervals.length; i++) {
-                const lastMerged = mergedIntervals[mergedIntervals.length - 1];
-                const current = intervals[i];
-                if (current.start <= lastMerged.end) {
-                    lastMerged.end = max([lastMerged.end, current.end]);
-                } else {
-                    mergedIntervals.push(current);
-                }
+        if (intervals.length === 0) return 0;
+        
+        const merged = [intervals[0]];
+        for (let i = 1; i < intervals.length; i++) {
+            const last = merged[merged.length-1];
+            const current = intervals[i];
+            if(current.start <= last.end!) {
+                last.end = max([last.end!, current.end!]);
+            } else {
+                merged.push(current);
             }
         }
-        
-
-        const lineDowntime = mergedIntervals.reduce(
-        (total, interval) => total + differenceInSeconds(interval.end, interval.start),
-        0
-        );
-
-        totalDowntimeSeconds += lineDowntime;
+        return merged.reduce((acc, interval) => acc + differenceInSeconds(interval.end!, interval.start), 0);
     }
-
-    const duration = intervalToDuration({ start: 0, end: totalDowntimeSeconds * 1000 });
-
-    const formatDuration = (d: Duration) => {
-        const parts = [];
-        if (d.hours) parts.push(`${d.hours}h`);
-        if (d.minutes) parts.push(`${d.minutes}m`);
-        if (d.seconds && !d.hours && !d.minutes) parts.push(`${d.seconds}s`);
-        return parts.join(" ") || "0m";
-    };
-
-    const productionStopTime = formatDuration(duration);
-
-    const resolvedIssues = allIssues.filter(
-        (issue) => issue.status === "resolved" && issue.resolvedAt
-    );
-
-    const totalResolutionSeconds = resolvedIssues.reduce((acc, issue) => {
-        if (issue.resolvedAt) {
-        return acc + differenceInSeconds(issue.resolvedAt, issue.reportedAt);
-        }
-        return acc;
-    }, 0);
-
-    const avgResolutionSeconds =
-        resolvedIssues.length > 0
-        ? totalResolutionSeconds / resolvedIssues.length
-        : 0;
-
-    const formatAverageDuration = (seconds: number) => {
-        if (seconds === 0) return "N/A";
-        const hours = seconds / 3600;
-        if (hours < 1) {
-        const minutes = Math.round(seconds / 60);
-        return `${minutes} min`;
-        }
-        return `${hours.toFixed(1)} hours`;
-    };
-
-    const avgResolutionTime = formatAverageDuration(avgResolutionSeconds);
+    const stopTimeLast24h = calculateDowntime(allIssues, last24h, now);
+    const stopTimePrev24h = calculateDowntime(allIssues, prev24h, last24h);
+    const stopTimeChange = getChange(stopTimeLast24h / 60, stopTimePrev24h / 60); // Compare in minutes
     
-    const stats = {
-        openIssues: allIssues.filter(
-          (issue) => issue.status === "in_progress" || issue.status === "reported"
-        ).length,
-        avgResolutionTime: avgResolutionTime,
-        productionStopTime: productionStopTime,
-        criticalAlerts: allIssues.filter(
-          (issue) =>
-            issue.priority === "critical" && issue.reportedAt > twentyFourHoursAgo
-        ).length,
-      };
+    // 4. Critical Alerts
+    const criticalAlertsLast24h = allIssues.filter(i => i.priority === "critical" && i.reportedAt > last24h).length;
+    const criticalAlertsPrev24h = allIssues.filter(i => i.priority === "critical" && i.reportedAt > prev24h && i.reportedAt <= last24h).length;
+    const criticalAlertsChange = getChange(criticalAlertsLast24h, criticalAlertsPrev24h);
+    
+
+    const stats: StatCard[] = [
+        {
+            title: "Open Issues",
+            value: openIssues.length.toString(),
+            change: openIssuesChange.change,
+            changeType: openIssuesChange.changeType,
+            changeDescription: "since last hour",
+        },
+        {
+            title: "Avg. Resolution Time",
+            value: formatAverageDuration(avgResTimeThisWeek),
+            change: avgResTimeChange.change.includes('%') ? avgResTimeChange.change : `${avgResTimeChange.change}s`,
+            changeType: avgResTimeChange.changeType,
+            changeDescription: "vs. last week",
+        },
+        {
+            title: "Production Stop Time",
+            value: formatDuration(intervalToDuration({ start: 0, end: stopTimeLast24h * 1000 })),
+            change: `${stopTimeChange.change}m`,
+            changeType: stopTimeChange.changeType,
+            changeDescription: "vs. previous 24h",
+        },
+        {
+            title: "Critical Alerts",
+            value: criticalAlertsLast24h.toString(),
+            change: criticalAlertsChange.change,
+            changeType: criticalAlertsChange.changeType,
+            changeDescription: "in last 24h",
+        },
+    ];
 
     const renderRecentIssues = () => {
         if (!view) return null;
@@ -257,38 +284,7 @@ function DashboardPageContent() {
                 </div>
             ) : (
                 <>
-                <StatsCards
-                    stats={[
-                    {
-                        title: "Open Issues",
-                        value: stats.openIssues.toString(),
-                        change: "+5",
-                        changeType: "increase",
-                        description: "since last hour",
-                    },
-                    {
-                        title: "Avg. Resolution Time",
-                        value: stats.avgResolutionTime,
-                        change: "-12%",
-                        changeType: "decrease",
-                        description: "this week",
-                    },
-                    {
-                        title: "Production Stop Time",
-                        value: stats.productionStopTime,
-                        change: "+15m",
-                        changeType: "increase",
-                        description: "in last 24 hours",
-                    },
-                    {
-                        title: "Critical Alerts",
-                        value: stats.criticalAlerts.toString(),
-                        change: "+1",
-                        changeType: "increase",
-                        description: "in last 24 hours",
-                    },
-                    ]}
-                />
+                <StatsCards stats={stats} />
                 {renderRecentIssues()}
                 </>
             )}

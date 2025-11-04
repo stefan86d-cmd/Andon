@@ -86,7 +86,7 @@ export type StatCard = {
   value: string;
   change: string;
   changeType: "increase" | "decrease";
-  description: string;
+  changeDescription: string;
 };
 
 export type DowntimeRecord = {
@@ -110,5 +110,3 @@ export type IssueByDay = {
   date: string;
   issues: number;
 }
-
-    

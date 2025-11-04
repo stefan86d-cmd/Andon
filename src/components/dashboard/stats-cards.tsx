@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 
 export function StatsCards({ stats }: { stats: StatCard[] }) {
   const isIncreaseBad = (title: string) => {
-    return ["Critical Alerts", "Open Issues", "Production Stop Time"].includes(title);
+    return ["Critical Alerts", "Open Issues", "Production Stop Time", "Avg. Resolution Time"].includes(title);
   }
 
   return (
@@ -44,7 +44,7 @@ export function StatsCards({ stats }: { stats: StatCard[] }) {
               >
                 {stat.change}
               </span>{" "}
-              {stat.description}
+              {stat.changeDescription}
             </p>
           </CardContent>
         </Card>
