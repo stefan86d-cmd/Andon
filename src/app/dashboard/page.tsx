@@ -39,8 +39,13 @@ function formatAverageDuration(seconds: number) {
     if (seconds <= 0) return "N/A";
     const hours = seconds / 3600;
     if (hours < 1) {
-    const minutes = Math.round(seconds / 60);
-    return `${minutes} min`;
+        const minutes = Math.round(seconds / 60);
+        return `${minutes} min`;
+    }
+    if (hours > 24) {
+        const days = Math.floor(hours / 24);
+        const remainingHours = Math.round(hours % 24);
+        return `${days}d ${remainingHours}h`;
     }
     return `${hours.toFixed(1)} hours`;
 };
@@ -63,7 +68,7 @@ function getChange(current: number, previous: number): { change: string, changeT
     }
 
     return {
-        change: `${diff > 0 ? '+' : ''}${diff}`,
+        change: `${diff > 0 ? '+' : ''}${Math.round(diff)}`,
         changeType: diff > 0 ? 'increase' : 'decrease'
     };
 }
@@ -165,7 +170,17 @@ function DashboardPageContent() {
     const resolvedLastWeek = allIssues.filter(i => i.status === 'resolved' && i.resolvedAt && i.resolvedAt >= prev7DaysStart && i.resolvedAt < prev7DaysEnd);
     const totalResolutionSecondsLastWeek = resolvedLastWeek.reduce((acc, i) => acc + differenceInSeconds(i.resolvedAt!, i.reportedAt), 0);
     const avgResTimeLastWeek = resolvedLastWeek.length > 0 ? totalResolutionSecondsLastWeek / resolvedLastWeek.length : 0;
-    const avgResTimeChange = getChange(avgResTimeThisWeek, avgResTimeLastWeek);
+    
+    const avgResTimeDiff = avgResTimeThisWeek - avgResTimeLastWeek;
+    let avgResTimeChangeDescription: string;
+    let avgResTimeChangeType: 'increase' | 'decrease' = avgResTimeDiff > 0 ? 'increase' : 'decrease';
+
+    if (avgResTimeLastWeek === 0) {
+        avgResTimeChangeDescription = avgResTimeThisWeek > 0 ? `+${formatAverageDuration(avgResTimeThisWeek)}` : "0";
+    } else {
+        const percentageChange = (avgResTimeDiff / avgResTimeLastWeek) * 100;
+        avgResTimeChangeDescription = `${percentageChange > 0 ? '+' : ''}${percentageChange.toFixed(0)}%`;
+    }
     
     // 3. Production Stop Time
     const last24h = subHours(now, 24);
@@ -194,7 +209,16 @@ function DashboardPageContent() {
     }
     const stopTimeLast24h = calculateDowntime(allIssues, last24h, now);
     const stopTimePrev24h = calculateDowntime(allIssues, prev24h, last24h);
-    const stopTimeChange = getChange(stopTimeLast24h / 60, stopTimePrev24h / 60); // Compare in minutes
+    
+    const stopTimeDiffHours = (stopTimeLast24h - stopTimePrev24h) / 3600;
+    const stopTimeChangeType = stopTimeDiffHours >= 0 ? 'increase' : 'decrease';
+    let stopTimeChangeDescription: string;
+    if (Math.abs(stopTimeDiffHours) < 1) {
+        const stopTimeDiffMinutes = stopTimeDiffHours * 60;
+        stopTimeChangeDescription = `${stopTimeDiffMinutes >= 0 ? '+' : ''}${stopTimeDiffMinutes.toFixed(0)}m`;
+    } else {
+        stopTimeChangeDescription = `${stopTimeDiffHours >= 0 ? '+' : ''}${stopTimeDiffHours.toFixed(1)}h`;
+    }
     
     // 4. Critical Alerts
     const criticalAlertsLast24h = allIssues.filter(i => i.priority === "critical" && i.reportedAt > last24h).length;
@@ -213,15 +237,15 @@ function DashboardPageContent() {
         {
             title: "Avg. Resolution Time",
             value: formatAverageDuration(avgResTimeThisWeek),
-            change: avgResTimeChange.change.includes('%') ? avgResTimeChange.change : `${avgResTimeChange.change}s`,
-            changeType: avgResTimeChange.changeType,
+            change: avgResTimeChangeDescription,
+            changeType: avgResTimeChangeType,
             changeDescription: "vs. last week",
         },
         {
             title: "Production Stop Time",
             value: formatDuration(intervalToDuration({ start: 0, end: stopTimeLast24h * 1000 })),
-            change: `${stopTimeChange.change}m`,
-            changeType: stopTimeChange.changeType,
+            change: stopTimeChangeDescription,
+            changeType: stopTimeChangeType,
             changeDescription: "vs. previous 24h",
         },
         {
