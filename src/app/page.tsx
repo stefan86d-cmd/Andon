@@ -25,7 +25,7 @@ const features = [
   {
     icon: <Wrench className="h-10 w-10 text-primary" />,
     title: 'Customizable Workflows',
-    description: 'Unlike other monitoring tools, AndonPro allows you to fully customize and edit your production lines and workstations.',
+    description: 'Built for flexibility, AndonPro allows you to fully customize and edit your production lines and workstations to perfectly fit your operational needs.',
   },
   {
     icon: <BarChart3 className="h-10 w-10 text-primary" />,
