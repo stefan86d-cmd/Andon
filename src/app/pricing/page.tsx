@@ -374,8 +374,8 @@ export default function PricingPage() {
             <div className="container">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                     {tiers.map((tier) => {
-                        const priceInfo = tier.name !== 'Starter' ? tier.prices[duration][currency] : null;
-                        const fullPriceInfo = tier.name !== 'Starter' ? tier.prices['1'][currency] : null;
+                        const priceInfo = tier.name !== 'Starter' ? tier.prices[duration]?.[currency] : null;
+                        const fullPriceInfo = tier.name !== 'Starter' ? tier.prices['1']?.[currency] : null;
                         
                         const monthlyPrice = priceInfo ? priceInfo.price : 0;
                         const fullMonthlyPrice = fullPriceInfo ? fullPriceInfo.price : 0;
@@ -441,9 +441,9 @@ export default function PricingPage() {
                                         }), "w-full")}>
                                             {ctaText}
                                         </Link>
-                                         {tier.name !== 'Starter' && (
+                                         {tier.name !== 'Starter' && fullPriceInfo && (
                                             <p className="text-xs text-muted-foreground mt-3 text-center">
-                                               Billed monthly. Renews at {currencySymbols[currency]}{formatPrice(fullMonthlyPrice, currency)}/mo after the first {duration} months.
+                                               Billed monthly. Renews at {currencySymbols[currency]}{formatPrice(fullPriceInfo.price, currency)}/mo after the first {duration} months.
                                             </p>
                                          )}
                                          {tier.name === 'Starter' && (
@@ -526,5 +526,3 @@ export default function PricingPage() {
     </div>
   );
 }
-
-    

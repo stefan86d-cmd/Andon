@@ -96,6 +96,9 @@ export async function getOrCreateStripeCustomer(userId: string, email: string): 
 
 export async function getPriceDetails(priceId: string) {
     try {
+        if (!priceId) {
+            return null;
+        }
         const price = await stripe.prices.retrieve(priceId);
         const product = await stripe.products.retrieve(price.product as string);
 
@@ -127,7 +130,7 @@ export async function createCheckoutSession({
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://andonpro.com';
     
     if (!priceId) {
-      throw new Error(`Price ID is required.`);
+      throw new Error(`Price ID is missing. Cannot create a checkout session without a price ID.`);
     }
 
     const price = await stripe.prices.retrieve(priceId);
