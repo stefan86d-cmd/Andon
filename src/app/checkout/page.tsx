@@ -71,25 +71,21 @@ function CheckoutContent() {
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [year, setYear] = useState(new Date().getFullYear());
 
-  const [selectedPlan, setSelectedPlan] = useState<Plan>(searchParams.get('plan') as Plan || 'pro');
-  const [selectedDuration, setSelectedDuration] = useState<Duration>(searchParams.get('duration') as Duration || '12');
-  const [selectedCurrency, setSelectedCurrency] = useState<Currency>(searchParams.get('currency') as Currency || 'usd');
-
+  // --- Use URL as the single source of truth ---
+  const selectedPlan = (searchParams.get('plan') as Plan) || 'pro';
+  const selectedDuration = (searchParams.get('duration') as Duration) || '12';
+  const selectedCurrency = (searchParams.get('currency') as Currency) || 'usd';
+  
   useEffect(() => {
     setYear(new Date().getFullYear());
   }, []);
 
-  // Effect to sync state with URL params
-  useEffect(() => {
-    const planFromUrl = searchParams.get('plan') as Plan | null;
-    const durationFromUrl = searchParams.get('duration') as Duration | null;
-    const currencyFromUrl = searchParams.get('currency') as Currency | null;
-
-    if (planFromUrl) setSelectedPlan(planFromUrl);
-    if (durationFromUrl) setSelectedDuration(durationFromUrl);
-    if (currencyFromUrl) setSelectedCurrency(currencyFromUrl);
-  }, [searchParams]);
-
+  const handleSelectionChange = (type: 'plan' | 'duration' | 'currency', value: string) => {
+    const newParams = new URLSearchParams(searchParams.toString());
+    newParams.set(type, value);
+    router.push(`/checkout?${newParams.toString()}`, { scroll: false });
+  };
+  
   const isNewUser = !currentUser;
 
   const selectedTier = tiers[selectedPlan];
@@ -197,7 +193,7 @@ function CheckoutContent() {
                     </CardHeader>
                     <CardContent className="space-y-4">
                     <div className="flex gap-2">
-                        <Select value={selectedPlan} onValueChange={(v) => setSelectedPlan(v as Plan)}>
+                        <Select value={selectedPlan} onValueChange={(v) => handleSelectionChange('plan', v)}>
                         <SelectTrigger><SelectValue placeholder="Select plan" /></SelectTrigger>
                         <SelectContent>
                             {Object.entries(tiers).map(([key, tier]) => 
@@ -205,7 +201,7 @@ function CheckoutContent() {
                             )}
                         </SelectContent>
                         </Select>
-                        <Select value={selectedDuration} onValueChange={(v) => setSelectedDuration(v as Duration)}>
+                        <Select value={selectedDuration} onValueChange={(v) => handleSelectionChange('duration', v)}>
                         <SelectTrigger><SelectValue placeholder="Select duration" /></SelectTrigger>
                         <SelectContent>
                             <SelectItem value="1">1 Month</SelectItem>
@@ -214,7 +210,7 @@ function CheckoutContent() {
                             <SelectItem value="48">48 Months</SelectItem>
                         </SelectContent>
                         </Select>
-                        <Select value={selectedCurrency} onValueChange={(v) => setSelectedCurrency(v as Currency)}>
+                        <Select value={selectedCurrency} onValueChange={(v) => handleSelectionChange('currency', v)}>
                         <SelectTrigger className="w-[120px]">
                             <div className="flex items-center gap-2"><Globe className="h-4 w-4" /><SelectValue placeholder="Currency" /></div>
                         </SelectTrigger>
