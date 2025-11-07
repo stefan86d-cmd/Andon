@@ -140,11 +140,7 @@ export async function createCheckoutSession({
     const priceId = process.env[priceIdEnvVar];
     
     if (!priceId) {
-<<<<<<< HEAD
       throw new Error(`Price ID for ${plan} (${duration}mo, ${currency}) is not configured. Looking for env var: ${priceIdEnvVar}`);
-=======
-      throw new Error(`Price ID is missing. Cannot create a checkout session without a price ID.`);
->>>>>>> 9866fcf7ca418cb2951f514c947c44a327beeb67
     }
 
     const couponMap: Record<string, string | undefined> = {
