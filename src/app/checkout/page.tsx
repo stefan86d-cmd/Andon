@@ -243,9 +243,9 @@ function CheckoutContent() {
                                 <Select value={plan} onValueChange={(v) => handleSelectionChange('plan', v)}>
                                     <SelectTrigger><SelectValue placeholder="Select plan" /></SelectTrigger>
                                     <SelectContent>
-                                    {Object.entries(tiers).map(([key, tier]) =>
-                                        tier.name !== 'Custom' && tier.name !== 'Starter' && (
-                                        <SelectItem key={key} value={key} className="capitalize">{tier.name}</SelectItem>
+                                    {Object.keys(tiers).map((key) =>
+                                        key !== 'custom' && key !== 'starter' && (
+                                        <SelectItem key={key} value={key} className="capitalize">{tiers[key as keyof typeof tiers].name}</SelectItem>
                                         )
                                     )}
                                     </SelectContent>
