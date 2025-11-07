@@ -82,7 +82,7 @@ export default function IssuesPage() {
     };
 
     window.addEventListener('storage', handleStorageChange);
-    const interval = setInterval(() => fetchData(false), 30000); 
+    const interval = setInterval(() => fetchData(false), 10000); 
 
     return () => {
         clearInterval(interval);

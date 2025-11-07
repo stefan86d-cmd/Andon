@@ -67,7 +67,7 @@ export function Header() {
       };
       
       window.addEventListener('storage', handleStorageChange);
-      const interval = setInterval(calculateNewIssues, 30000); 
+      const interval = setInterval(calculateNewIssues, 10000); 
 
       return () => {
         clearInterval(interval);

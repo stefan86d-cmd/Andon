@@ -85,7 +85,7 @@ export default function LineStatusPage() {
   useEffect(() => {
     if (selectionConfirmed) {
       fetchIssuesForStation(true);
-      const interval = setInterval(() => fetchIssuesForStation(false), 30000);
+      const interval = setInterval(() => fetchIssuesForStation(false), 10000);
       return () => clearInterval(interval);
     }
   }, [selectionConfirmed, fetchIssuesForStation]);

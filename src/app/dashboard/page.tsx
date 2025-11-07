@@ -139,7 +139,7 @@ function DashboardPageContent() {
         if (!currentUser?.orgId) return;
 
         fetchData(true);
-        const interval = setInterval(() => fetchData(false), 30000);
+        const interval = setInterval(() => fetchData(false), 10000);
         return () => clearInterval(interval);
     }, [currentUser?.orgId, fetchData]);
     
