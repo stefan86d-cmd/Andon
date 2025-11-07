@@ -71,7 +71,7 @@ function CheckoutContent() {
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [year, setYear] = useState(new Date().getFullYear());
 
-  // --- Use URL as the single source of truth ---
+  // --- URL is the single source of truth ---
   const selectedPlan = (searchParams.get('plan') as Plan) || 'pro';
   const selectedDuration = (searchParams.get('duration') as Duration) || '12';
   const selectedCurrency = (searchParams.get('currency') as Currency) || 'usd';
@@ -296,5 +296,7 @@ export default function CheckoutPage() {
         </Suspense>
     )
 }
+
+    
 
     
