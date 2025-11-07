@@ -374,8 +374,9 @@ export default function PricingPage() {
             <div className="container">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                     {tiers.map((tier) => {
-                        const priceInfo = tier.name !== 'Starter' ? tier.prices[duration][currency] : null;
-                        const fullPriceInfo = tier.name !== 'Starter' ? tier.prices['1'][currency] : null;
+                        const isStarter = tier.name === 'Starter';
+                        const priceInfo = !isStarter && 'prices' in tier ? (tier.prices as any)[duration]?.[currency] : null;
+                        const fullPriceInfo = !isStarter && 'prices' in tier ? (tier.prices as any)['1']?.[currency] : null;
                         
                         const monthlyPrice = priceInfo ? priceInfo.price : 0;
                         
