@@ -148,7 +148,7 @@ function CheckoutContent() {
   }
 
   const OrderSummary = () => {
-      if (plan === 'starter' || !tiers[plan as keyof typeof tiers]) {
+      if (plan === 'starter' || !Object.keys(tiers).includes(plan)) {
            return (
               <div className="space-y-4">
                 <div className="flex justify-between"><span>Plan</span><span className="capitalize font-medium">Starter</span></div>
@@ -202,7 +202,7 @@ function CheckoutContent() {
   }
   
     const renewalText = useMemo(() => {
-        if (plan === 'starter' || !tiers[plan as keyof typeof tiers]) return "The Starter plan is always free.";
+        if (plan === 'starter' || !Object.keys(tiers).includes(plan)) return "The Starter plan is always free.";
         
         const selectedTier = tiers[plan as keyof typeof tiers];
         const monthlyPrice = selectedTier.prices[duration][currency];
