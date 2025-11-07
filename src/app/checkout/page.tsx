@@ -61,7 +61,7 @@ const tiers: Record<Exclude<Plan, 'custom' | 'starter'>, { name: string; prices:
 function CheckoutContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { currentUser } = useUser();
+  const { currentUser } } from '@/contexts/user-context';
   const [isSubmitting, startTransition] = useTransition();
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [year, setYear] = useState(new Date().getFullYear());
@@ -72,7 +72,7 @@ function CheckoutContent() {
 
   const plan = (searchParams.get('plan') as Plan) || 'pro';
   const duration = (searchParams.get('duration') as Duration) || '12';
-  const currency = (searchParams.get('currency') as Currency) || 'usd';
+  const currency = (search_params.get('currency') as Currency) || 'usd';
 
   const handleSelectionChange = (type: 'plan' | 'duration' | 'currency', value: string) => {
     const newParams = new URLSearchParams(searchParams.toString());
@@ -174,12 +174,10 @@ function CheckoutContent() {
                 <div className="space-y-2">
                     <div className="flex justify-between"><span>Plan</span><span className="capitalize font-medium">{plan}</span></div>
                     <div className="flex justify-between"><span>Price per month</span><span>{currencySymbols[currency]}{formatPrice(monthlyPrice, currency)}</span></div>
-                     {plan !== 'starter' && (
-                        <div className="flex justify-between text-sm text-muted-foreground">
-                            <span>Regular price</span>
-                            <span>{currencySymbols[currency]}{formatPrice(fullPrice, currency)} / mo</span>
-                        </div>
-                    )}
+                    <div className="flex justify-between text-sm text-muted-foreground">
+                        <span>Regular price</span>
+                        <span>{currencySymbols[currency]}{formatPrice(fullPrice, currency)} / mo</span>
+                    </div>
                      {discount > 0 && (
                         <div className="flex justify-between bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300 p-2 rounded-md">
                         <span>Discount ({duration} months)</span>
@@ -244,7 +242,7 @@ function CheckoutContent() {
                                     <SelectTrigger><SelectValue placeholder="Select plan" /></SelectTrigger>
                                     <SelectContent>
                                     {Object.keys(tiers).map((key) =>
-                                        key !== 'custom' && key !== 'starter' && (
+                                        (key !== 'custom' && key !== 'starter') && (
                                         <SelectItem key={key} value={key} className="capitalize">{tiers[key as keyof typeof tiers].name}</SelectItem>
                                         )
                                     )}
@@ -324,3 +322,5 @@ export default function CheckoutPage() {
         </Suspense>
     )
 }
+
+    
