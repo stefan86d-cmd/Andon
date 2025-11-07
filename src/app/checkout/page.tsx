@@ -27,41 +27,24 @@ import type { Plan } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { useUser } from '@/contexts/user-context';
 import { toast } from '@/hooks/use-toast';
-import { createCheckoutSession, getOrCreateStripeCustomer } from '@/app/actions';
+import { createCheckoutSession, getOrCreateStripeCustomer, getPriceDetails } from '@/app/actions';
 import { EmbeddedCheckoutForm } from '@/components/checkout/embedded-checkout-form';
-
-
-const tiers: Record<Plan, { name: string; prices: Record<Duration, Record<Currency, number>> }> = {
-  starter: { 
-    name: "Starter", 
-    prices: { '1': { usd: 0, eur: 0, gbp: 0 }, '12': { usd: 0, eur: 0, gbp: 0 }, '24': { usd: 0, eur: 0, gbp: 0 }, '48': { usd: 0, eur: 0, gbp: 0 } } 
-  },
-  standard: { 
-    name: "Standard", 
-    prices: { '1': { usd: 39.99, eur: 36.99, gbp: 32.99 }, '12': { usd: 31.99, eur: 29.99, gbp: 26.99 }, '24': { usd: 27.99, eur: 25.99, gbp: 22.99 }, '48': { usd: 23.99, eur: 21.99, gbp: 19.99 } }
-  },
-  pro: { 
-    name: "Pro", 
-    prices: { '1': { usd: 59.99, eur: 54.99, gbp: 49.99 }, '12': { usd: 47.99, eur: 43.99, gbp: 39.99 }, '24': { usd: 41.99, eur: 38.99, gbp: 34.99 }, '48': { usd: 35.99, eur: 32.99, gbp: 29.99 } }
-  },
-  enterprise: { 
-    name: "Enterprise", 
-    prices: { '1': { usd: 149.99, eur: 139.99, gbp: 124.99 }, '12': { usd: 119.99, eur: 111.99, gbp: 99.99 }, '24': { usd: 104.99, eur: 97.99, gbp: 87.99 }, '48': { usd: 89.99, eur: 83.99, gbp: 74.99 } }
-  },
-  custom: {
-    name: "Custom",
-    prices: { '1': { usd: 0, eur: 0, gbp: 0 }, '12': { usd: 0, eur: 0, gbp: 0 }, '24': { usd: 0, eur: 0, gbp: 0 }, '48': { usd: 0, eur: 0, gbp: 0 } }
-  }
-};
+import { Skeleton } from '@/components/ui/skeleton';
 
 const currencySymbols = { usd: '$', eur: '€', gbp: '£' };
 type Currency = 'usd' | 'eur' | 'gbp';
-type Duration = '1' | '12' | '24' | '48';
 
 const formatPrice = (price: number, currency: Currency) => {
     const locale = { usd: 'en-US', eur: 'de-DE', gbp: 'en-GB' }[currency];
     return price.toLocaleString(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 };
+
+interface PriceDetails {
+    price: number;
+    currency: Currency;
+    plan: Plan;
+    duration: string;
+}
 
 function CheckoutContent() {
   const router = useRouter();
@@ -70,50 +53,45 @@ function CheckoutContent() {
   const [isSubmitting, startTransition] = useTransition();
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [year, setYear] = useState(new Date().getFullYear());
+  const [priceDetails, setPriceDetails] = useState<PriceDetails | null>(null);
+  const [isLoadingPrice, setIsLoadingPrice] = useState(true);
 
-  // --- URL is the single source of truth ---
-  const selectedPlan = (searchParams.get('plan') as Plan) || 'pro';
-  const selectedDuration = (searchParams.get('duration') as Duration) || '12';
-  const selectedCurrency = (searchParams.get('currency') as Currency) || 'usd';
-  
+  const priceId = searchParams.get('priceId');
+
   useEffect(() => {
     setYear(new Date().getFullYear());
   }, []);
-
-  const handleSelectionChange = (type: 'plan' | 'duration' | 'currency', value: string) => {
-    const newParams = new URLSearchParams(searchParams.toString());
-    newParams.set(type, value);
-    router.push(`/checkout?${newParams.toString()}`, { scroll: false });
-  };
   
-  const isNewUser = !currentUser;
-
-  const selectedTier = tiers[selectedPlan];
-  const monthlyPrice = selectedTier.prices[selectedDuration][selectedCurrency];
-  const fullPrice = selectedTier.prices['1'][selectedCurrency];
-
-  const totalFullPrice = fullPrice * parseInt(selectedDuration, 10);
-  const totalDiscountedPrice = monthlyPrice * parseInt(selectedDuration, 10);
-  const discount = totalFullPrice - totalDiscountedPrice;
-
-
-  const renewalText = useMemo(() => {
-      if (selectedPlan === 'starter') return "The Starter plan is always free.";
-      const symbol = currencySymbols[selectedCurrency];
-      const price = formatPrice(fullPrice, selectedCurrency);
-      const savingsText = parseInt(selectedDuration) > 1 ? `That's only ${symbol}${formatPrice(monthlyPrice, selectedCurrency)}/mo.` : "";
-      return `Billed monthly. Discount applies for the first ${selectedDuration} months. ${savingsText} Renews at ${symbol}${price}/mo. Cancel anytime.`;
-  }, [fullPrice, monthlyPrice, selectedCurrency, selectedPlan, selectedDuration]);
-
-  const handleContinue = () => {
-    if (selectedPlan === 'starter') {
-        router.push(`/register?plan=starter`);
+  useEffect(() => {
+    if (!priceId) {
+        toast({ title: "Missing Price", description: "No price was selected. Please go back to the pricing page.", variant: "destructive" });
+        setIsLoadingPrice(false);
         return;
     }
     
+    setIsLoadingPrice(true);
+    getPriceDetails(priceId).then(details => {
+        if (details) {
+            setPriceDetails(details as PriceDetails);
+        } else {
+            toast({ title: "Invalid Price", description: "The selected price is not valid. Please go back and try again.", variant: "destructive" });
+        }
+        setIsLoadingPrice(false);
+    });
+
+  }, [priceId]);
+
+  const isNewUser = !currentUser;
+
+  const handleContinue = () => {
+    if (!priceId) {
+        toast({ title: "Error", description: "No price selected.", variant: "destructive"});
+        return;
+    }
+
     startTransition(async () => {
       if (!currentUser) {
-          router.push(`/register?plan=${selectedPlan}&duration=${selectedDuration}&currency=${selectedCurrency}`);
+          router.push(`/register?priceId=${priceId}`);
           return;
       }
       
@@ -122,13 +100,11 @@ function CheckoutContent() {
 
         const customer = await getOrCreateStripeCustomer(currentUser.id, currentUser.email);
         
-        const metadata = { userId: currentUser.id, plan: selectedPlan, duration: selectedDuration, isNewUser: 'false' };
+        const metadata = { userId: currentUser.id, plan: priceDetails?.plan || '', duration: priceDetails?.duration || '' };
         
         const result = await createCheckoutSession({
             customerId: customer.id,
-            plan: selectedPlan,
-            duration: selectedDuration,
-            currency: selectedCurrency,
+            priceId: priceId,
             metadata,
         });
 
@@ -170,111 +146,77 @@ function CheckoutContent() {
     )
   }
 
+  const OrderSummary = () => {
+      if (isLoadingPrice || !priceDetails) {
+          return (
+              <div className="space-y-4">
+                  <Skeleton className="h-6 w-full" />
+                  <Skeleton className="h-6 w-2/3" />
+                  <Separator />
+                  <Skeleton className="h-8 w-1/2 ml-auto" />
+              </div>
+          )
+      }
+
+      const { price, currency, plan, duration } = priceDetails;
+      const currencySymbol = currencySymbols[currency];
+
+      return (
+           <div className="space-y-4">
+                <div className="space-y-2">
+                    <div className="flex justify-between"><span>Plan</span><span className="capitalize font-medium">{plan}</span></div>
+                    <div className="flex justify-between"><span>Duration</span><span>{duration} Months</span></div>
+                </div>
+                <Separator />
+                <div className="space-y-1">
+                    <div className="flex justify-between items-baseline font-bold text-lg">
+                        <span>Price per Month</span>
+                        <span>{currencySymbol}{formatPrice(price, currency)}</span>
+                    </div>
+                     <p className="text-xs text-muted-foreground text-right mt-1">
+                       + applicable taxes
+                    </p>
+                </div>
+            </div>
+      )
+  }
+
   return (
     <div className="bg-muted">
         <div className="container mx-auto flex min-h-screen flex-col items-center justify-center py-12">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 w-full max-w-6xl">
-                {/* Left Side: Plan Selection */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 w-full max-w-4xl">
+                {/* Left Side: Plan Review */}
                 <div className="flex flex-col gap-8">
-                <div className="flex justify-start">
-                    <Link href={currentUser ? "/dashboard" : "/"}>
-                    <Logo />
-                    </Link>
-                </div>
-                <div>
-                    <h2 className="text-2xl font-bold mt-2">Checkout</h2>
-                    <p className="text-muted-foreground">
-                    {currentUser ? "Review your new plan details below." : "Review your plan and continue to create your account."}
-                    </p>
-                </div>
-                <Card>
-                    <CardHeader>
-                    <CardTitle>Selected Plan</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                    <div className="flex gap-2">
-                        <Select value={selectedPlan} onValueChange={(v) => handleSelectionChange('plan', v)}>
-                        <SelectTrigger><SelectValue placeholder="Select plan" /></SelectTrigger>
-                        <SelectContent>
-                            {Object.entries(tiers).map(([key, tier]) => 
-                                tier.name !== 'Custom' && tier.name !== 'Starter' && <SelectItem key={key} value={key} className="capitalize">{tier.name}</SelectItem>
-                            )}
-                        </SelectContent>
-                        </Select>
-                        <Select value={selectedDuration} onValueChange={(v) => handleSelectionChange('duration', v)}>
-                        <SelectTrigger><SelectValue placeholder="Select duration" /></SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="1">1 Month</SelectItem>
-                            <SelectItem value="12">12 Months</SelectItem>
-                            <SelectItem value="24">24 Months</SelectItem>
-                            <SelectItem value="48">48 Months</SelectItem>
-                        </SelectContent>
-                        </Select>
-                        <Select value={selectedCurrency} onValueChange={(v) => handleSelectionChange('currency', v)}>
-                        <SelectTrigger className="w-[120px]">
-                            <div className="flex items-center gap-2"><Globe className="h-4 w-4" /><SelectValue placeholder="Currency" /></div>
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="usd">USD</SelectItem>
-                            <SelectItem value="eur">EUR</SelectItem>
-                            <SelectItem value="gbp">GBP</SelectItem>
-                        </SelectContent>
-                        </Select>
+                    <div className="flex justify-start">
+                        <Link href={currentUser ? "/dashboard" : "/"}>
+                        <Logo />
+                        </Link>
                     </div>
                     <div>
-                        <div className="flex gap-2 items-center">
-                            {selectedDuration === '12' && <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~20%</Badge>}
-                            {selectedDuration === '24' && <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~30%</Badge>}
-                            {selectedDuration === '48' && <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~40%</Badge>}
-                        </div>
+                        <h2 className="text-2xl font-bold mt-2">Checkout</h2>
+                        <p className="text-muted-foreground">
+                        {currentUser ? "Review your new plan details below." : "Review your plan and continue to create your account."}
+                        </p>
                     </div>
-                    <p className="text-sm text-muted-foreground">{renewalText}</p>
-                    </CardContent>
-                </Card>
+                     <Card>
+                        <CardHeader>
+                            <CardTitle>Order Summary</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <OrderSummary />
+                        </CardContent>
+                        <CardFooter>
+                            <Button onClick={handleContinue} className="w-full" disabled={isSubmitting || isLoadingPrice || !priceId}>
+                                {(isSubmitting || isLoadingPrice) && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
+                                {buttonText}
+                            </Button>
+                        </CardFooter>
+                    </Card>
                 </div>
 
-                {/* Right Side: Order Summary */}
-                <div className="flex flex-col gap-8 pt-0 lg:pt-16">
-                <Card className="w-full">
-                    <CardHeader>
-                    <CardTitle>Order Summary</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                    <div className="space-y-2">
-                        <div className="flex justify-between"><span>Plan</span><span className="capitalize font-medium">{selectedPlan}</span></div>
-                        <div className="flex justify-between"><span>Price per month</span><span>{currencySymbols[selectedCurrency]}{formatPrice(monthlyPrice, selectedCurrency)}</span></div>
-                        {selectedPlan !== 'starter' && (
-                            <div className="flex justify-between text-sm text-muted-foreground">
-                                <span>Regular price</span>
-                                <span>{currencySymbols[selectedCurrency]}{formatPrice(fullPrice, selectedCurrency)} / mo</span>
-                            </div>
-                        )}
-                        {discount > 0 && 
-                            <div className="flex justify-between bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300 p-2 rounded-md">
-                                <span>Discount ({selectedDuration} months)</span>
-                                <span>-{currencySymbols[selectedCurrency]}{formatPrice(discount, selectedCurrency)}</span>
-                            </div>
-                        }
-                    </div>
-                    <Separator />
-                     <div className="space-y-1">
-                        <div className="flex justify-between items-baseline font-bold text-lg">
-                            <span>Price Today</span>
-                            <span>{currencySymbols[selectedCurrency]}{formatPrice(monthlyPrice, selectedCurrency)}</span>
-                        </div>
-                        <p className="text-xs text-muted-foreground text-right mt-1">
-                           + taxes. Billed monthly. Renews at {currencySymbols[selectedCurrency]}{formatPrice(fullPrice, selectedCurrency)}/mo after the first {selectedDuration} months.
-                        </p>
-
-                    </div>
-                    </CardContent>
-                    <CardFooter>
-                    <Button onClick={handleContinue} className="w-full" disabled={isSubmitting}>
-                        {isSubmitting && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
-                        {buttonText}
-                    </Button>
-                    </CardFooter>
-                </Card>
+                 {/* Right Side: Spacer/Empty or some other content */}
+                <div className="hidden lg:flex flex-col gap-8 pt-0 lg:pt-16 items-center justify-center">
+                    <p className="text-muted-foreground italic">Thank you for choosing AndonPro.</p>
                 </div>
             </div>
             <footer className="mt-8 text-center text-sm text-muted-foreground">
@@ -296,7 +238,5 @@ export default function CheckoutPage() {
         </Suspense>
     )
 }
-
-    
 
     

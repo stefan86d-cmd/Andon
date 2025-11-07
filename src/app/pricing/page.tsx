@@ -23,10 +23,11 @@ const tiers = [
     name: "Starter",
     id: "starter",
     prices: {
-        '1': { usd: 0, eur: 0, gbp: 0 },
-        '12': { usd: 0, eur: 0, gbp: 0 },
-        '24': { usd: 0, eur: 0, gbp: 0 },
-        '48': { usd: 0, eur: 0, gbp: 0 },
+        '1': { 
+            usd: { price: 0, id: 'price_starter_usd' }, 
+            eur: { price: 0, id: 'price_starter_eur' }, 
+            gbp: { price: 0, id: 'price_starter_gbp' } 
+        },
     },
     pricePeriod: "",
     description: "For small teams getting started with issue tracking.",
@@ -43,10 +44,26 @@ const tiers = [
     name: "Standard",
     id: "standard",
     prices: {
-        '1': { usd: 39.99, eur: 36.99, gbp: 32.99 },
-        '12': { usd: 31.99, eur: 29.59, gbp: 26.39 },
-        '24': { usd: 27.99, eur: 25.89, gbp: 23.09 },
-        '48': { usd: 23.99, eur: 22.19, gbp: 19.79 },
+        '1': { // Monthly
+            usd: { price: 39.99, id: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_STANDARD_1_USD! },
+            eur: { price: 36.99, id: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_STANDARD_1_EUR! },
+            gbp: { price: 32.99, id: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_STANDARD_1_GBP! },
+        },
+        '12': { // 12 Months
+            usd: { price: 31.99, id: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_STANDARD_12_USD! },
+            eur: { price: 29.59, id: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_STANDARD_12_EUR! },
+            gbp: { price: 26.39, id: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_STANDARD_12_GBP! },
+        },
+        '24': { // 24 Months
+            usd: { price: 27.99, id: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_STANDARD_24_USD! },
+            eur: { price: 25.89, id: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_STANDARD_24_EUR! },
+            gbp: { price: 23.09, id: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_STANDARD_24_GBP! },
+        },
+        '48': { // 48 Months
+            usd: { price: 23.99, id: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_STANDARD_48_USD! },
+            eur: { price: 22.19, id: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_STANDARD_48_EUR! },
+            gbp: { price: 19.79, id: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_STANDARD_48_GBP! },
+        }
     },
     pricePeriod: "/ month",
     description: "For growing factories that need more power and insights.",
@@ -65,10 +82,26 @@ const tiers = [
     name: "Pro",
     id: "pro",
     prices: {
-        '1': { usd: 59.99, eur: 54.99, gbp: 49.99 },
-        '12': { usd: 47.99, eur: 43.99, gbp: 39.99 },
-        '24': { usd: 41.99, eur: 38.49, gbp: 34.99 },
-        '48': { usd: 35.99, eur: 32.99, gbp: 29.99 },
+        '1': {
+            usd: { price: 59.99, id: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_PRO_1_USD! },
+            eur: { price: 54.99, id: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_PRO_1_EUR! },
+            gbp: { price: 49.99, id: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_PRO_1_GBP! },
+        },
+        '12': {
+            usd: { price: 47.99, id: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_PRO_12_USD! },
+            eur: { price: 43.99, id: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_PRO_12_EUR! },
+            gbp: { price: 39.99, id: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_PRO_12_GBP! },
+        },
+        '24': {
+            usd: { price: 41.99, id: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_PRO_24_USD! },
+            eur: { price: 38.49, id: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_PRO_24_EUR! },
+            gbp: { price: 34.99, id: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_PRO_24_GBP! },
+        },
+        '48': {
+            usd: { price: 35.99, id: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_PRO_48_USD! },
+            eur: { price: 32.99, id: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_PRO_48_EUR! },
+            gbp: { price: 29.99, id: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_PRO_48_GBP! },
+        }
     },
     pricePeriod: "/ month",
     description: "For scaling operations with expanded needs.",
@@ -89,10 +122,26 @@ const tiers = [
     name: "Enterprise",
     id: "enterprise",
     prices: {
-        '1': { usd: 149.99, eur: 139.99, gbp: 124.99 },
-        '12': { usd: 119.99, eur: 111.99, gbp: 99.99 },
-        '24': { usd: 104.99, eur: 97.99, gbp: 87.49 },
-        '48': { usd: 89.99, eur: 83.99, gbp: 74.99 },
+        '1': {
+            usd: { price: 149.99, id: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_ENTERPRISE_1_USD! },
+            eur: { price: 139.99, id: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_ENTERPRISE_1_EUR! },
+            gbp: { price: 124.99, id: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_ENTERPRISE_1_GBP! },
+        },
+        '12': {
+            usd: { price: 119.99, id: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_ENTERPRISE_12_USD! },
+            eur: { price: 111.99, id: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_ENTERPRISE_12_EUR! },
+            gbp: { price: 99.99, id: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_ENTERPRISE_12_GBP! },
+        },
+        '24': {
+            usd: { price: 104.99, id: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_ENTERPRISE_24_USD! },
+            eur: { price: 97.99, id: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_ENTERPRISE_24_EUR! },
+            gbp: { price: 87.49, id: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_ENTERPRISE_24_GBP! },
+        },
+        '48': {
+            usd: { price: 89.99, id: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_ENTERPRISE_48_USD! },
+            eur: { price: 83.99, id: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_ENTERPRISE_48_EUR! },
+            gbp: { price: 74.99, id: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_ENTERPRISE_48_GBP! },
+        }
     },
     pricePeriod: "/ month",
     description: "For large-scale operations with expanded resources.",
@@ -325,12 +374,17 @@ export default function PricingPage() {
             <div className="container">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                     {tiers.map((tier) => {
-                        const monthlyPrice = tier.prices[duration][currency];
-                        const fullMonthlyPrice = tier.prices['1'][currency];
+                        const priceInfo = tier.name !== 'Starter' ? tier.prices[duration][currency] : null;
+                        const fullPriceInfo = tier.name !== 'Starter' ? tier.prices['1'][currency] : null;
+                        
+                        const monthlyPrice = priceInfo ? priceInfo.price : 0;
+                        const fullMonthlyPrice = fullPriceInfo ? fullPriceInfo.price : 0;
+                        const priceId = priceInfo ? priceInfo.id : '';
+
                         const isProBestValue = tier.name === "Pro";
                         const linkHref = tier.id === 'starter'
                             ? `/register?plan=starter`
-                            : `/checkout?plan=${tier.id.toLowerCase()}&duration=${duration}&currency=${currency}`;
+                            : `/checkout?priceId=${priceId}`;
                         
                         let ctaText = tier.cta;
                         if (!currentUser && (tier.name === "Standard" || tier.name === "Pro" || tier.name === "Enterprise")) {
@@ -391,7 +445,7 @@ export default function PricingPage() {
                                             <p className="text-xs text-muted-foreground mt-3 text-center">
                                                Billed monthly. Renews at {currencySymbols[currency]}{formatPrice(fullMonthlyPrice, currency)}/mo after the first {duration} months.
                                             </p>
-                                        )}
+                                         )}
                                          {tier.name === 'Starter' && (
                                             <p className="text-xs text-muted-foreground mt-3 text-center h-8">
                                                 No credit card required.

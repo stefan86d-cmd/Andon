@@ -85,21 +85,24 @@ function BillingPageContent() {
             return;
         }
 
-        const selectedDuration = duration;
-        
+        const priceId = process.env[`NEXT_PUBLIC_STRIPE_PRICE_ID_${newPlan.toUpperCase()}_${duration}_${currency.toUpperCase()}`];
+
+        if (!priceId) {
+            toast({ title: "Error", description: "The selected pricing plan is not available. Please try another combination.", variant: "destructive"});
+            return;
+        }
+
         startTransition(async () => {
             try {
                 if (!currentUser?.email) throw new Error("User email not found.");
                 
                 const customer = await getOrCreateStripeCustomer(currentUser.id, currentUser.email);
 
-                const metadata = { userId: currentUser.id, plan: newPlan, duration: selectedDuration, isNewUser: 'false' };
+                const metadata = { userId: currentUser.id, plan: newPlan, duration: duration, isNewUser: 'false' };
                 
                 const result = await createCheckoutSession({
                     customerId: customer.id,
-                    plan: newPlan,
-                    duration: selectedDuration,
-                    currency: currency,
+                    priceId: priceId,
                     metadata,
                     returnPath: '/dashboard',
                 });

@@ -75,11 +75,17 @@ function RegisterContent() {
     },
   });
 
-  const plan = searchParams.get('plan') || 'starter';
-  const duration = searchParams.get('duration') || '12';
-  const currency = searchParams.get('currency') || 'usd';
+  const priceId = searchParams.get('priceId');
   
-  const getRedirectUrl = () => `/complete-profile?plan=${plan}&duration=${duration}&currency=${currency}`;
+  const getRedirectUrl = () => {
+    const params = new URLSearchParams();
+    if (priceId) {
+        params.set('priceId', priceId);
+    } else {
+        params.set('plan', 'starter');
+    }
+    return `/complete-profile?${params.toString()}`;
+  }
 
   const handleRegistration = (data: RegisterFormValues) => {
     startEmailRegisterTransition(async () => {
@@ -189,3 +195,5 @@ export default function RegisterPage() {
         </Suspense>
     )
 }
+
+    

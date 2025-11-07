@@ -94,40 +94,51 @@ export async function getOrCreateStripeCustomer(userId: string, email: string): 
 
 // ---------------- Stripe Checkout ----------------
 
-type Duration = '1' | '12' | '24' | '48';
-type Currency = 'usd' | 'eur' | 'gbp';
+export async function getPriceDetails(priceId: string) {
+    try {
+        const price = await stripe.prices.retrieve(priceId);
+        const product = await stripe.products.retrieve(price.product as string);
+
+        return {
+            price: (price.unit_amount || 0) / 100,
+            currency: price.currency,
+            plan: product.metadata.plan,
+            duration: product.metadata.duration,
+        }
+    } catch (error) {
+        console.error("Error fetching price details from Stripe:", error);
+        return null;
+    }
+}
 
 
 export async function createCheckoutSession({
   customerId,
-  plan,
-  duration,
-  currency,
+  priceId,
   metadata = {},
   returnPath,
 }: {
   customerId: string;
-  plan: Plan;
-  duration: Duration;
-  currency: Currency;
+  priceId: string;
   metadata?: Record<string, string>;
   returnPath?: string;
 }) {
   try {
-    if (plan === 'starter' || plan === 'custom') {
-      throw new Error('Cannot create checkout session for starter or custom plans.');
-    }
-
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://andonpro.com';
     
-    const basePriceIdEnvVar = `STRIPE_PRICE_ID_${plan.toUpperCase()}_1_${currency.toUpperCase()}`;
-    const priceId = process.env[basePriceIdEnvVar];
-    
     if (!priceId) {
-      throw new Error(`Base price ID for plan '${plan}' and currency '${currency}' is not configured. (Expected ${basePriceIdEnvVar})`);
+      throw new Error(`Price ID is required.`);
     }
 
-    const couponMap: Record<Duration, string | undefined> = {
+    const price = await stripe.prices.retrieve(priceId);
+    if (!price) {
+        throw new Error(`Price with ID ${priceId} not found.`);
+    }
+
+    const product = await stripe.products.retrieve(price.product as string);
+    const duration = product.metadata.duration;
+
+    const couponMap: Record<string, string | undefined> = {
         '1': undefined,
         '12': process.env.STRIPE_COUPON_20_OFF,
         '24': process.env.STRIPE_COUPON_30_OFF,
@@ -236,6 +247,8 @@ export async function sendContactEmail({ name, email, message }: { name: string;
         return { success: false, error: 'Failed to send your message. Please try again later.' };
     }
 }
+    
+
     
 
     

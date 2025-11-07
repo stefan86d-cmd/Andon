@@ -25,7 +25,7 @@ import { countries } from '@/lib/countries';
 import type { Plan, Role } from '@/lib/types';
 import { toast } from '@/hooks/use-toast';
 import { useUser } from '@/contexts/user-context';
-import { createCheckoutSession, sendWelcomeEmail, getOrCreateStripeCustomer } from '@/app/actions';
+import { createCheckoutSession, sendWelcomeEmail, getOrCreateStripeCustomer, getPriceDetails } from '@/app/actions';
 import { EmbeddedCheckoutForm } from '@/components/checkout/embedded-checkout-form';
 
 const profileFormSchema = z.object({
@@ -39,8 +39,13 @@ const profileFormSchema = z.object({
 });
 
 type ProfileFormValues = z.infer<typeof profileFormSchema>;
-type Duration = '1' | '12' | '24' | '48';
-type Currency = 'usd' | 'eur' | 'gbp';
+
+interface PriceDetails {
+    price: number;
+    currency: string;
+    plan: Plan;
+    duration: string;
+}
 
 function CompleteProfileContent() {
   const router = useRouter();
@@ -50,19 +55,25 @@ function CompleteProfileContent() {
   const [isSubmitting, startTransition] = useTransition();
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [year, setYear] = useState(new Date().getFullYear());
+  const [priceDetails, setPriceDetails] = useState<PriceDetails | null>(null);
+
+  const priceId = searchParams.get('priceId');
+  const isStarterPlan = searchParams.get('plan') === 'starter';
 
 
   useEffect(() => {
     setYear(new Date().getFullYear());
   }, []);
 
-  const planFromUrl = searchParams.get('plan') as Plan | null;
-  const durationFromUrl = searchParams.get('duration') as Duration | null;
-  const currencyFromUrl = searchParams.get('currency') as Currency | null;
-  
-  const selectedPlan = planFromUrl || 'starter';
-  const selectedDuration = durationFromUrl || '1';
-  const selectedCurrency = currencyFromUrl || 'usd';
+  useEffect(() => {
+    if (priceId) {
+        getPriceDetails(priceId).then(details => {
+            if (details) {
+                setPriceDetails(details as PriceDetails);
+            }
+        });
+    }
+  }, [priceId]);
   
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
@@ -98,9 +109,7 @@ function CompleteProfileContent() {
     try {
         const userRole: Role = "admin"; // First user is always an admin
         
-        // When signing up for a paid plan, set the user's plan to 'starter' initially.
-        // The plan will be upgraded upon successful payment.
-        const initialPlan = selectedPlan === 'starter' ? 'starter' : 'starter';
+        const initialPlan = isStarterPlan ? 'starter' : (priceDetails?.plan || 'starter');
 
         const userProfileData = {
             firstName: data.firstName,
@@ -113,7 +122,7 @@ function CompleteProfileContent() {
             country: data.country,
             phone: data.phone,
             orgId: currentUser.id, // The first admin's ID becomes the org ID
-            plan: initialPlan as Plan,
+            plan: initialPlan,
         };
         
         await updateCurrentUser(userProfileData);
@@ -143,26 +152,24 @@ function CompleteProfileContent() {
         
         if (!profileSaved || !currentUser) return;
 
-        if (selectedPlan === 'starter') {
+        if (isStarterPlan) {
             await updateCurrentUser({ subscriptionStartsAt: new Date() });
             await sendWelcomeEmail(currentUser.id);
             toast({
                 title: "Registration Complete!",
-                description: `Welcome to the ${selectedPlan} plan. Your account is ready!`,
+                description: `Welcome to the Starter plan. Your account is ready!`,
             });
             router.push('/dashboard');
-        } else {
+        } else if (priceId && priceDetails) {
            try {
                 if (!currentUser?.email) throw new Error("User email is not available.");
                 
                 const customer = await getOrCreateStripeCustomer(currentUser.id, currentUser.email);
-                const metadata = { userId: currentUser.id, plan: selectedPlan, duration: selectedDuration, isNewUser: 'true' };
+                const metadata = { userId: currentUser.id, plan: priceDetails.plan, duration: priceDetails.duration, isNewUser: 'true' };
 
                 const result = await createCheckoutSession({
                     customerId: customer.id,
-                    plan: selectedPlan,
-                    duration: selectedDuration,
-                    currency: selectedCurrency,
+                    priceId: priceId,
                     metadata,
                     returnPath: '/dashboard?payment_success=true&session_id={CHECKOUT_SESSION_ID}',
                 });
@@ -301,7 +308,7 @@ function CompleteProfileContent() {
                         </p>
                         <Button onClick={handleSubmit} className="w-full" disabled={isSubmitting}>
                             {isSubmitting && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
-                            {selectedPlan === 'starter' ? 'Complete Registration' : 'Continue to Payment'}
+                            {isStarterPlan ? 'Complete Registration' : 'Continue to Payment'}
                         </Button>
                     </CardFooter>
                 </Card>
@@ -326,3 +333,5 @@ export default function CompleteProfilePage() {
         </Suspense>
     )
 }
+
+    
