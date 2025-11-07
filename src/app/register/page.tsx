@@ -74,15 +74,12 @@ function RegisterContent() {
       password: "",
     },
   });
-
-  const priceId = searchParams.get('priceId');
   
   const getRedirectUrl = () => {
-    const params = new URLSearchParams();
-    if (priceId) {
-        params.set('priceId', priceId);
-    } else {
-        params.set('plan', 'starter');
+    const params = new URLSearchParams(searchParams.toString());
+    // The plan, duration, currency should already be in searchParams if coming from a paid plan selection
+    if (!params.has('plan')) {
+      params.set('plan', 'starter');
     }
     return `/complete-profile?${params.toString()}`;
   }

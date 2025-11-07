@@ -378,13 +378,12 @@ export default function PricingPage() {
                         const fullPriceInfo = tier.name !== 'Starter' ? tier.prices['1'][currency] : null;
                         
                         const monthlyPrice = priceInfo ? priceInfo.price : 0;
-                        const fullMonthlyPrice = fullPriceInfo ? fullPriceInfo.price : 0;
-                        const priceId = priceInfo ? priceInfo.id : '';
-
-                        const isProBestValue = tier.name === "Pro";
+                        
                         const linkHref = tier.id === 'starter'
                             ? `/register?plan=starter`
-                            : `/checkout?priceId=${priceId}`;
+                            : `/checkout?plan=${tier.id}&duration=${duration}&currency=${currency}`;
+                        
+                        const isProBestValue = tier.name === "Pro";
                         
                         let ctaText = tier.cta;
                         if (!currentUser && (tier.name === "Standard" || tier.name === "Pro" || tier.name === "Enterprise")) {
@@ -441,9 +440,9 @@ export default function PricingPage() {
                                         }), "w-full")}>
                                             {ctaText}
                                         </Link>
-                                         {tier.name !== 'Starter' && (
+                                         {tier.name !== 'Starter' && fullPriceInfo && (
                                             <p className="text-xs text-muted-foreground mt-3 text-center">
-                                               Billed monthly. Renews at {currencySymbols[currency]}{formatPrice(fullMonthlyPrice, currency)}/mo after the first {duration} months.
+                                               Billed monthly. Renews at {currencySymbols[currency]}{formatPrice(fullPriceInfo.price, currency)}/mo after the first {duration} months.
                                             </p>
                                          )}
                                          {tier.name === 'Starter' && (

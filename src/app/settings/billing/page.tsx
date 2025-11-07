@@ -27,15 +27,15 @@ const tiers: Record<Exclude<Plan, 'custom'>, { name: string; prices: Record<Dura
   },
   standard: { 
     name: "Standard", 
-    prices: { '1': { usd: 39.99, eur: 36.99, gbp: 32.99 }, '12': { usd: 31.99, eur: 29.99, gbp: 26.99 }, '24': { usd: 27.99, eur: 25.99, gbp: 22.99 }, '48': { usd: 23.99, eur: 21.99, gbp: 19.99 } }
+    prices: { '1': { usd: 39.99, eur: 36.99, gbp: 32.99 }, '12': { usd: 31.99, eur: 29.59, gbp: 26.39 }, '24': { usd: 27.99, eur: 25.89, gbp: 23.09 }, '48': { usd: 23.99, eur: 22.19, gbp: 19.79 } }
   },
   pro: { 
     name: "Pro", 
-    prices: { '1': { usd: 59.99, eur: 54.99, gbp: 49.99 }, '12': { usd: 47.99, eur: 43.99, gbp: 39.99 }, '24': { usd: 41.99, eur: 38.99, gbp: 34.99 }, '48': { usd: 35.99, eur: 32.99, gbp: 29.99 } }
+    prices: { '1': { usd: 59.99, eur: 54.99, gbp: 49.99 }, '12': { usd: 47.99, eur: 43.99, gbp: 39.99 }, '24': { usd: 41.99, eur: 38.49, gbp: 34.99 }, '48': { usd: 35.99, eur: 32.99, gbp: 29.99 } }
   },
   enterprise: { 
     name: "Enterprise", 
-    prices: { '1': { usd: 149.99, eur: 139.99, gbp: 124.99 }, '12': { usd: 119.99, eur: 111.99, gbp: 99.99 }, '24': { usd: 104.99, eur: 97.99, gbp: 87.99 }, '48': { usd: 89.99, eur: 83.99, gbp: 74.99 } }
+    prices: { '1': { usd: 149.99, eur: 139.99, gbp: 124.99 }, '12': { usd: 119.99, eur: 111.99, gbp: 99.99 }, '24': { usd: 104.99, eur: 97.99, gbp: 87.49 }, '48': { usd: 89.99, eur: 83.99, gbp: 74.99 } }
   },
   custom: {
     name: "Custom",
@@ -85,13 +85,6 @@ function BillingPageContent() {
             return;
         }
 
-        const priceId = process.env[`NEXT_PUBLIC_STRIPE_PRICE_ID_${newPlan.toUpperCase()}_${duration}_${currency.toUpperCase()}`];
-
-        if (!priceId) {
-            toast({ title: "Error", description: "The selected pricing plan is not available. Please try another combination.", variant: "destructive"});
-            return;
-        }
-
         startTransition(async () => {
             try {
                 if (!currentUser?.email) throw new Error("User email not found.");
@@ -102,7 +95,9 @@ function BillingPageContent() {
                 
                 const result = await createCheckoutSession({
                     customerId: customer.id,
-                    priceId: priceId,
+                    plan: newPlan,
+                    duration: duration,
+                    currency: currency,
                     metadata,
                     returnPath: '/dashboard',
                 });
@@ -149,7 +144,7 @@ function BillingPageContent() {
     const planName = currentUser.plan.charAt(0).toUpperCase() + currentUser.plan.slice(1);
     const availablePlans = Object.keys(tiers).filter(p => p !== 'starter' && p !== 'custom') as Plan[];
 
-    const selectedTier = newPlan ? tiers[newPlan] : null;
+    const selectedTier = newPlan && newPlan !== 'starter' ? tiers[newPlan] : null;
     const monthlyPrice = selectedTier ? selectedTier.prices[duration][currency] : 0;
     
     const endDate = currentUser.subscriptionEndsAt && isValid(new Date(currentUser.subscriptionEndsAt))
@@ -312,3 +307,4 @@ export default function BillingPage() {
     
 
     
+

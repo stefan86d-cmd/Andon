@@ -114,29 +114,31 @@ export async function getPriceDetails(priceId: string) {
 
 export async function createCheckoutSession({
   customerId,
-  priceId,
+  plan,
+  duration,
+  currency,
   metadata = {},
   returnPath,
 }: {
   customerId: string;
-  priceId: string;
+  plan: Plan;
+  duration: string;
+  currency: string;
   metadata?: Record<string, string>;
   returnPath?: string;
 }) {
   try {
+    if (plan === 'starter') {
+        throw new Error("Cannot create a checkout session for the Starter plan.");
+    }
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://andonpro.com';
     
+    const priceIdEnvVar = `STRIPE_PRICE_ID_${plan.toUpperCase()}_${duration}_${currency.toUpperCase()}`;
+    const priceId = process.env[priceIdEnvVar];
+    
     if (!priceId) {
-      throw new Error(`Price ID is required.`);
+      throw new Error(`Price ID for ${plan} (${duration}mo, ${currency}) is not configured. Looking for env var: ${priceIdEnvVar}`);
     }
-
-    const price = await stripe.prices.retrieve(priceId);
-    if (!price) {
-        throw new Error(`Price with ID ${priceId} not found.`);
-    }
-
-    const product = await stripe.products.retrieve(price.product as string);
-    const duration = product.metadata.duration;
 
     const couponMap: Record<string, string | undefined> = {
         '1': undefined,

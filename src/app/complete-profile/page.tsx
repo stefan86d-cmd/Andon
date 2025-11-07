@@ -25,8 +25,9 @@ import { countries } from '@/lib/countries';
 import type { Plan, Role } from '@/lib/types';
 import { toast } from '@/hooks/use-toast';
 import { useUser } from '@/contexts/user-context';
-import { createCheckoutSession, sendWelcomeEmail, getOrCreateStripeCustomer, getPriceDetails } from '@/app/actions';
+import { createCheckoutSession, sendWelcomeEmail, getOrCreateStripeCustomer } from '@/app/actions';
 import { EmbeddedCheckoutForm } from '@/components/checkout/embedded-checkout-form';
+
 
 const profileFormSchema = z.object({
   firstName: z.string().min(1, "First name is required."),
@@ -40,12 +41,6 @@ const profileFormSchema = z.object({
 
 type ProfileFormValues = z.infer<typeof profileFormSchema>;
 
-interface PriceDetails {
-    price: number;
-    currency: string;
-    plan: Plan;
-    duration: string;
-}
 
 function CompleteProfileContent() {
   const router = useRouter();
@@ -55,25 +50,16 @@ function CompleteProfileContent() {
   const [isSubmitting, startTransition] = useTransition();
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [year, setYear] = useState(new Date().getFullYear());
-  const [priceDetails, setPriceDetails] = useState<PriceDetails | null>(null);
 
-  const priceId = searchParams.get('priceId');
-  const isStarterPlan = searchParams.get('plan') === 'starter';
+  const plan = (searchParams.get('plan') as Plan) || 'starter';
+  const duration = searchParams.get('duration') || '1';
+  const currency = searchParams.get('currency') || 'usd';
+  const isStarterPlan = plan === 'starter';
 
 
   useEffect(() => {
     setYear(new Date().getFullYear());
   }, []);
-
-  useEffect(() => {
-    if (priceId) {
-        getPriceDetails(priceId).then(details => {
-            if (details) {
-                setPriceDetails(details as PriceDetails);
-            }
-        });
-    }
-  }, [priceId]);
   
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
@@ -109,8 +95,6 @@ function CompleteProfileContent() {
     try {
         const userRole: Role = "admin"; // First user is always an admin
         
-        const initialPlan = isStarterPlan ? 'starter' : (priceDetails?.plan || 'starter');
-
         const userProfileData = {
             firstName: data.firstName,
             lastName: data.lastName,
@@ -122,7 +106,7 @@ function CompleteProfileContent() {
             country: data.country,
             phone: data.phone,
             orgId: currentUser.id, // The first admin's ID becomes the org ID
-            plan: initialPlan,
+            plan: plan,
         };
         
         await updateCurrentUser(userProfileData);
@@ -160,16 +144,18 @@ function CompleteProfileContent() {
                 description: `Welcome to the Starter plan. Your account is ready!`,
             });
             router.push('/dashboard');
-        } else if (priceId && priceDetails) {
+        } else {
            try {
                 if (!currentUser?.email) throw new Error("User email is not available.");
                 
                 const customer = await getOrCreateStripeCustomer(currentUser.id, currentUser.email);
-                const metadata = { userId: currentUser.id, plan: priceDetails.plan, duration: priceDetails.duration, isNewUser: 'true' };
+                const metadata = { userId: currentUser.id, plan: plan, duration: duration, isNewUser: 'true' };
 
                 const result = await createCheckoutSession({
                     customerId: customer.id,
-                    priceId: priceId,
+                    plan,
+                    duration,
+                    currency,
                     metadata,
                     returnPath: '/dashboard?payment_success=true&session_id={CHECKOUT_SESSION_ID}',
                 });
