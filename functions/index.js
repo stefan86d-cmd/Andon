@@ -1,3 +1,4 @@
+
 // ===== Dependencies =====
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
@@ -28,9 +29,11 @@ try {
       serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, "\n");
     }
 
-    admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount),
-    });
+    if (admin.apps.length === 0) {
+        admin.initializeApp({
+            credential: admin.credential.cert(serviceAccount),
+        });
+    }
 
     db = admin.firestore();
     initialized = true;

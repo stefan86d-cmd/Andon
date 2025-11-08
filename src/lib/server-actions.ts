@@ -6,16 +6,24 @@ import { handleFirestoreError } from '@/lib/firestore-helpers';
 import { sendEmail } from '@/lib/email';
 import { db as dbFn } from '@/firebase/server';
 import { adminAuth } from '@/firebase/admin';
-import { FieldValue } from 'firebase-admin/firestore';
+import { FieldValue, Firestore } from 'firebase-admin/firestore';
 import Stripe from 'stripe';
 
 const stripe = new Stripe(process.env.NEXT_STRIPE_SECRET_KEY!, {
   apiVersion: '2024-06-20',
 });
 
-export async function getUserByEmail(email: string): Promise<User | null> {
+async function getDb(): Promise<Firestore> {
   const db = dbFn();
-  if (!db) return null;
+  if (!db) {
+    throw new Error('Firestore is not initialized.');
+  }
+  return db;
+}
+
+
+export async function getUserByEmail(email: string): Promise<User | null> {
+  const db = await getDb();
   try {
     const snapshot = await db.collection('users').where('email', '==', email).get();
     if (snapshot.empty) return null;
@@ -28,8 +36,7 @@ export async function getUserByEmail(email: string): Promise<User | null> {
 }
 
 export async function getUserById(uid: string): Promise<User | null> {
-  const db = dbFn();
-  if (!db) return null;
+  const db = await getDb();
   try {
     const docSnap = await db.collection('users').doc(uid).get();
     if (!docSnap.exists) return null;
@@ -48,14 +55,15 @@ export async function addUser(userData: {
   plan: Plan;
   orgId: string;
 }) {
-  const db = dbFn();
-  if (!db || !adminAuth) return handleFirestoreError(new Error('Admin SDK not initialized'));
+  const db = await getDb();
+  const auth = adminAuth();
+  if (!auth) return handleFirestoreError(new Error('Admin SDK not initialized'));
   try {
     const { email, firstName, lastName, role, plan, orgId } = userData;
     if (await getUserByEmail(email)) return { success: false, error: 'Email already exists' };
 
     const password = Math.random().toString(36).slice(-8);
-    const userRecord = await adminAuth.createUser({ email, password, displayName: `${firstName} ${lastName}` });
+    const userRecord = await auth.createUser({ email, password, displayName: `${firstName} ${lastName}` });
 
     const newUser: Omit<User, 'id'> = {
       firstName,
@@ -73,7 +81,7 @@ export async function addUser(userData: {
     };
 
     await db.collection('users').doc(userRecord.uid).set(newUser);
-    const resetLink = await adminAuth.generatePasswordResetLink(email);
+    const resetLink = await auth.generatePasswordResetLink(email);
     
     const emailHtml = `
       <p><b>Welcome to AndonPro</b></p>
@@ -91,12 +99,13 @@ export async function addUser(userData: {
 }
 
 export async function editUser(userId: string, data: { firstName: string; lastName: string; email: string; role: Role }) {
-  const db = dbFn();
-  if (!db || !adminAuth) return handleFirestoreError(new Error('Admin SDK not initialized'));
+  const db = await getDb();
+  const auth = adminAuth();
+  if (!auth) return handleFirestoreError(new Error('Admin SDK not initialized'));
   try {
     await db.collection('users').doc(userId).update(data);
-    const authUser = await adminAuth.getUser(userId);
-    if (authUser.email !== data.email) await adminAuth.updateUser(userId, { email: data.email });
+    const authUser = await auth.getUser(userId);
+    if (authUser.email !== data.email) await auth.updateUser(userId, { email: data.email });
     return { success: true };
   } catch (err) {
     return handleFirestoreError(err);
@@ -104,13 +113,13 @@ export async function editUser(userId: string, data: { firstName: string; lastNa
 }
 
 export async function deleteUser(userId: string) {
-  const db = dbFn();
-  if (!db) return handleFirestoreError(new Error('Firestore not initialized'));
-  if (!adminAuth) return handleFirestoreError(new Error('Admin SDK not initialized'));
+  const db = await getDb();
+  const auth = adminAuth();
+  if (!auth) return handleFirestoreError(new Error('Admin SDK not initialized'));
   try {
     await db.collection('users').doc(userId).delete();
     // Also delete from Firebase Auth
-    await adminAuth.deleteUser(userId);
+    await auth.deleteUser(userId);
     return { success: true };
   } catch (err) {
     return handleFirestoreError(err);
@@ -118,8 +127,7 @@ export async function deleteUser(userId: string) {
 }
 
 export async function updateUserPlan(userId: string, newPlan: Plan, planData: Partial<User>) {
-  const db = dbFn();
-  if (!db) return handleFirestoreError(new Error('Firestore not initialized'));
+  const db = await getDb();
   try {
     const userRef = db.collection('users').doc(userId);
     const userSnap = await userRef.get();
@@ -143,8 +151,6 @@ export async function updateUserPlan(userId: string, newPlan: Plan, planData: Pa
 }
 
 export async function sendWelcomeEmail(userId: string) {
-  const db = dbFn();
-  if (!db) return handleFirestoreError(new Error('Firestore not initialized'));
   try {
     const user = await getUserById(userId);
     if (!user) return { success: false, error: "User not found" };
@@ -161,9 +167,10 @@ export async function sendWelcomeEmail(userId: string) {
 }
 
 export async function requestPasswordReset(email: string) {
-  if (!adminAuth) return { success: false, message: 'Password reset service is unavailable.' };
+  const auth = adminAuth();
+  if (!auth) return { success: false, message: 'Password reset service is unavailable.' };
   try {
-    const link = await adminAuth.generatePasswordResetLink(email);
+    const link = await auth.generatePasswordResetLink(email);
     await sendEmail({ to: email, subject: "Reset your password", html: `<p>You can reset your password by clicking this link: <a href="${link}">${link}</a></p>` });
   } catch (error: any) {
     // Don't reveal if an email doesn't exist.
@@ -191,8 +198,7 @@ export async function sendPasswordChangedEmail(email: string) {
 // ---------------- Issue Actions ----------------
 
 export async function reportIssue(issueData: Omit<Issue, 'id' | 'reportedAt' | 'reportedBy' | 'status'>, userEmail: string) {
-  const db = dbFn();
-  if (!db) return handleFirestoreError(new Error('Firestore not initialized'));
+  const db = await getDb();
   try {
     const reporter = await getUserByEmail(userEmail);
     if (!reporter) return { success: false, error: 'Reporting user not found' };
@@ -218,8 +224,7 @@ export async function reportIssue(issueData: Omit<Issue, 'id' | 'reportedAt' | '
 }
 
 export async function updateIssue(issueId: string, data: { resolutionNotes?: string; status: 'in_progress' | 'resolved'; productionStopped: boolean }, userEmail: string) {
-  const db = dbFn();
-  if (!db) return handleFirestoreError(new Error('Firestore not initialized'));
+  const db = await getDb();
   try {
     const resolver = await getUserByEmail(userEmail);
     if (!resolver) return { success: false, error: 'Resolving user not found' };
@@ -254,8 +259,7 @@ export async function updateIssue(issueId: string, data: { resolutionNotes?: str
 // ---------------- Production Line Actions ----------------
 
 export async function getProductionLines(orgId: string): Promise<ProductionLine[]> {
-  const db = dbFn();
-  if (!db) return [];
+  const db = await getDb();
   try {
     const snapshot = await db.collection('productionLines').where('orgId', '==', orgId).get();
     return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as ProductionLine));
@@ -266,8 +270,7 @@ export async function getProductionLines(orgId: string): Promise<ProductionLine[
 }
 
 export async function createProductionLine(name: string, orgId: string) {
-  const db = dbFn();
-  if (!db) return handleFirestoreError(new Error('Firestore not initialized'));
+  const db = await getDb();
   try {
     const snapshot = await db.collection('productionLines').where('name', '==', name).where('orgId', '==', orgId).get();
     if (!snapshot.empty) return { success: false, error: 'Production line exists' };
@@ -279,8 +282,7 @@ export async function createProductionLine(name: string, orgId: string) {
 }
 
 export async function editProductionLine(lineId: string, data: { name: string; workstations: { value: string }[] }) {
-  const db = dbFn();
-  if (!db) return handleFirestoreError(new Error('Firestore not initialized'));
+  const db = await getDb();
   try {
     await db.collection('productionLines').doc(lineId).update({ name: data.name, workstations: data.workstations.map(ws => ws.value) });
     return { success: true };
@@ -290,8 +292,7 @@ export async function editProductionLine(lineId: string, data: { name: string; w
 }
 
 export async function deleteProductionLine(lineId: string) {
-  const db = dbFn();
-  if (!db) return handleFirestoreError(new Error('Firestore not initialized'));
+  const db = await getDb();
   try {
     await db.collection('productionLines').doc(lineId).delete();
     return { success: true };
@@ -303,8 +304,7 @@ export async function deleteProductionLine(lineId: string) {
 // ---------------- Users List ----------------
 
 export async function getAllUsers(orgId: string): Promise<User[]> {
-  const db = dbFn();
-  if (!db) return [];
+  const db = await getDb();
   try {
     const snapshot = await db.collection('users').where('orgId', '==', orgId).get();
     return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
@@ -318,8 +318,7 @@ export async function getAllUsers(orgId: string): Promise<User[]> {
 // ---------------- Subscription Actions ----------------
 
 export async function cancelSubscription(userId: string, subscriptionId: string) {
-    const db = dbFn();
-    if (!db) return handleFirestoreError(new Error('Firestore not initialized'));
+    const db = await getDb();
 
     try {
         const subscription = await stripe.subscriptions.update(subscriptionId, {
@@ -340,9 +339,10 @@ export async function cancelSubscription(userId: string, subscriptionId: string)
 
 // ---------------- Registration Actions ----------------
 export async function cancelRegistrationAndDeleteUser(userId: string) {
-  if (!adminAuth) return handleFirestoreError(new Error('Admin SDK not initialized'));
+  const auth = adminAuth();
+  if (!auth) return handleFirestoreError(new Error('Admin SDK not initialized'));
   try {
-    await adminAuth.deleteUser(userId);
+    await auth.deleteUser(userId);
     return { success: true };
   } catch (err) {
     return handleFirestoreError(err);

@@ -24,8 +24,9 @@ export async function POST(req: Request) {
     console.error("❌ Webhook signature verification failed:", err.message);
     return new NextResponse(`Webhook Error: ${err.message}`, { status: 400 });
   }
-
-  if (!adminDb) {
+  
+  const db = adminDb();
+  if (!db) {
     console.error("❌ Firebase Admin DB is not initialized.");
     return new NextResponse("Internal Server Error: Firebase not configured.", { status: 500 });
   }
@@ -41,7 +42,7 @@ export async function POST(req: Request) {
 
     if (userId && plan && session.mode === "subscription") {
       try {
-        const userRef = adminDb.collection("users").doc(userId);
+        const userRef = db.collection("users").doc(userId);
         const subscription = await stripe.subscriptions.retrieve(session.subscription as string);
 
         const updates = {
@@ -79,7 +80,7 @@ export async function POST(req: Request) {
     if (subscriptionId) {
       try {
         const subscription = await stripe.subscriptions.retrieve(subscriptionId as string);
-        const userSnapshot = await adminDb
+        const userSnapshot = await db
           .collection("users")
           .where("subscriptionId", "==", subscription.id)
           .limit(1)
@@ -87,7 +88,7 @@ export async function POST(req: Request) {
 
         if (!userSnapshot.empty) {
           const userId = userSnapshot.docs[0].id;
-          await adminDb.collection("users").doc(userId).update({
+          await db.collection("users").doc(userId).update({
             subscriptionStatus: subscription.status,
             subscriptionStartsAt: Timestamp.fromMillis(subscription.current_period_start * 1000),
             subscriptionEndsAt: Timestamp.fromMillis(subscription.current_period_end * 1000),
@@ -109,7 +110,7 @@ export async function POST(req: Request) {
     const invoice = event.data.object as Stripe.Invoice;
     const subscriptionId = invoice.subscription;
     if (subscriptionId) {
-      const userSnapshot = await adminDb
+      const userSnapshot = await db
         .collection("users")
         .where("subscriptionId", "==", subscriptionId)
         .limit(1)
@@ -117,7 +118,7 @@ export async function POST(req: Request) {
 
       if (!userSnapshot.empty) {
         const userId = userSnapshot.docs[0].id;
-        await adminDb.collection("users").doc(userId).update({
+        await db.collection("users").doc(userId).update({
           subscriptionStatus: "payment_failed",
           updatedAt: FieldValue.serverTimestamp(),
         });
@@ -133,7 +134,7 @@ export async function POST(req: Request) {
     const subscription = event.data.object as Stripe.Subscription;
 
     try {
-      const userSnapshot = await adminDb
+      const userSnapshot = await db
         .collection("users")
         .where("subscriptionId", "==", subscription.id)
         .limit(1)
@@ -141,7 +142,7 @@ export async function POST(req: Request) {
 
       if (!userSnapshot.empty) {
         const userId = userSnapshot.docs[0].id;
-        await adminDb.collection("users").doc(userId).update({
+        await db.collection("users").doc(userId).update({
           plan: "starter",
           subscriptionStatus: "canceled",
           subscriptionId: FieldValue.delete(),
