@@ -96,7 +96,8 @@ function CheckoutContent() {
     
     startTransition(async () => {
       if (!currentUser) {
-          router.push(`/register?plan=${plan}&duration=${duration}&currency=${currency}`);
+          const queryParams = `?plan=${plan}&duration=${duration}&currency=${currency}`;
+          router.push(`/register${queryParams}`);
           return;
       }
 
