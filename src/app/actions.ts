@@ -97,25 +97,26 @@ export async function getOrCreateStripeCustomer(userId: string, email: string): 
 // ---------------- Stripe Checkout ----------------
 
 export async function getPriceDetails(priceId: string) {
-    try {
-        if (!priceId) {
-            return null;
-        }
-        const price = await stripe.prices.retrieve(priceId);
-        const product = await stripe.products.retrieve(price.product as string);
+  if (!priceId) return null;
 
-        return {
-            price: (price.unit_amount || 0) / 100,
-            currency: price.currency,
-            plan: product.metadata.plan,
-            duration: product.metadata.duration,
-        }
-    } catch (error) {
-        console.error("Error fetching price details from Stripe:", error);
-        return null;
-    }
+  try {
+    const price = await stripe.prices.retrieve(priceId);
+    if (!price || !price.product) return null;
+
+    const product = await stripe.products.retrieve(price.product as string);
+    if (!product) return null;
+
+    return {
+      price: (price.unit_amount || 0) / 100,
+      currency: price.currency,
+      plan: product.metadata.plan || 'unknown',
+      duration: product.metadata.duration || '1',
+    };
+  } catch (error) {
+    console.error("Error fetching Stripe price details:", error);
+    return null;
+  }
 }
-
 
 export async function createCheckoutSession({
   customerId,
@@ -132,32 +133,42 @@ export async function createCheckoutSession({
   metadata?: Record<string, string>;
   returnPath?: string;
 }) {
+  if (!customerId) throw new Error("Customer ID is required");
+  if (!plan) throw new Error("Plan is required");
+  if (!currency) throw new Error("Currency is required");
+
   try {
     if (plan === 'starter') {
-        throw new Error("Cannot create a checkout session for the Starter plan.");
+      throw new Error("Cannot create a checkout session for the Starter plan.");
     }
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://andonpro.com';
-    
-    // Always use the base monthly price ID (duration '1')
+
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+    if (!baseUrl) throw new Error("NEXT_PUBLIC_BASE_URL is not defined.");
+
+    // Construct the env var name dynamically
     const priceIdEnvVar = `STRIPE_PRICE_ID_${plan.toUpperCase()}_1_${currency.toUpperCase()}`;
     const priceId = process.env[priceIdEnvVar];
-    
+
     if (!priceId) {
-      throw new Error(`Price ID for ${plan} (${currency}) is not configured. Looking for env var: ${priceIdEnvVar}`);
+      throw new Error(
+        `Stripe price ID not found. Ensure the environment variable ${priceIdEnvVar} exists.`
+      );
     }
 
     const couponMap: Record<string, string | undefined> = {
-        '1': undefined,
-        '12': process.env.STRIPE_COUPON_20_OFF,
-        '24': process.env.STRIPE_COUPON_30_OFF,
-        '48': process.env.STRIPE_COUPON_40_OFF,
+      '1': undefined,
+      '12': process.env.STRIPE_COUPON_20_OFF,
+      '24': process.env.STRIPE_COUPON_30_OFF,
+      '48': process.env.STRIPE_COUPON_40_OFF,
     };
-    const couponId = couponMap[duration];
 
+    const couponId = couponMap[duration];
     if (duration !== '1' && !couponId) {
-        console.warn(`Coupon for duration '${duration}' is not configured. Proceeding without discount.`);
+      console.warn(
+        `No coupon configured for duration '${duration}'. Proceeding without discount.`
+      );
     }
-    
+
     const returnUrl = returnPath
       ? `${baseUrl}${returnPath}`
       : `${baseUrl}/dashboard?payment_success=true&session_id={CHECKOUT_SESSION_ID}`;
@@ -165,36 +176,25 @@ export async function createCheckoutSession({
     const sessionParams: Stripe.Checkout.SessionCreateParams = {
       mode: 'subscription',
       customer: customerId,
-      line_items: [
-        {
-          price: priceId,
-          quantity: 1,
-        },
-      ],
+      line_items: [{ price: priceId, quantity: 1 }],
       discounts: couponId ? [{ coupon: couponId }] : [],
       ui_mode: 'embedded',
       return_url: returnUrl,
       metadata,
-      subscription_data: {
-        metadata,
-      },
-      automatic_tax: {
-        enabled: true,
-      },
-      customer_update: {
-        address: 'auto'
-      },
+      subscription_data: { metadata },
+      automatic_tax: { enabled: true },
+      customer_update: { address: 'auto' },
     };
 
     const session = await stripe.checkout.sessions.create(sessionParams);
-    console.log(`✅ Created subscription checkout session: ${session.id}`);
-
+    console.log(`✅ Stripe checkout session created: ${session.id}`);
     return { clientSecret: session.client_secret };
-  } catch (error: any) {
-    console.error('❌ Stripe session error:', error);
-    throw new Error(error.message || 'Failed to create Stripe checkout session.');
+  } catch (err: any) {
+    console.error("❌ Stripe checkout session creation failed:", err);
+    throw new Error(err.message || "Failed to create Stripe checkout session.");
   }
-}
+};
+
 
 export async function sendWelcomeEmail(userId: string) {
   try {

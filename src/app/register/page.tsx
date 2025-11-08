@@ -20,6 +20,7 @@ import { Separator } from "@/components/ui/separator";
 import { Logo } from "@/components/layout/logo";
 import { useUser } from '@/contexts/user-context';
 import { LoaderCircle } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
 
 const registerFormSchema = z.object({
   email: z.string().email("Please enter a valid email address."),
@@ -44,8 +45,8 @@ function RegisterContent() {
   const searchParams = useSearchParams();
   const { registerWithEmail, signInWithGoogle } = useUser();
 
-  const [isLoading, startEmailRegisterTransition] = useTransition();
-  const [isGoogleLoading, startGoogleRegisterTransition] = useTransition();
+  const [isEmailLoading, startEmailTransition] = useTransition();
+  const [isGoogleLoading, startGoogleTransition] = useTransition();
   const [year, setYear] = useState(new Date().getFullYear());
 
   useEffect(() => setYear(new Date().getFullYear()), []);
@@ -55,7 +56,7 @@ function RegisterContent() {
     defaultValues: { email: "", password: "" },
   });
 
-  // ✅ Persist checkout params in sessionStorage
+  // Persist checkout params safely
   useEffect(() => {
     const params = {
       plan: searchParams.get("plan") || "starter",
@@ -65,7 +66,6 @@ function RegisterContent() {
     sessionStorage.setItem("checkoutParams", JSON.stringify(params));
   }, [searchParams]);
 
-  // ✅ Build redirect URL for complete-profile page
   const getRedirectUrl = () => {
     const params = new URLSearchParams(searchParams.toString());
 
@@ -83,89 +83,99 @@ function RegisterContent() {
     return `/complete-profile?${params.toString()}`;
   };
 
-  const handleRegistration = (data: RegisterFormValues) => {
-    startEmailRegisterTransition(async () => {
-      const success = await registerWithEmail(data.email, data.password);
-      if (success) router.push(getRedirectUrl());
+  const handleEmailRegister = async (data: RegisterFormValues) => {
+    startEmailTransition(async () => {
+      try {
+        const success = await registerWithEmail(data.email, data.password);
+        if (success) router.push(getRedirectUrl());
+        else toast({ title: "Registration Failed", description: "Please try again.", variant: "destructive" });
+      } catch (err: any) {
+        console.error(err);
+        toast({ title: "Error", description: err.message || "Failed to register.", variant: "destructive" });
+      }
     });
   };
 
-  const handleGoogleSignIn = () => {
-    startGoogleRegisterTransition(async () => {
-      const success = await signInWithGoogle();
-      if (success) router.push(getRedirectUrl());
+  const handleGoogleRegister = () => {
+    startGoogleTransition(async () => {
+      try {
+        const success = await signInWithGoogle();
+        if (success) router.push(getRedirectUrl());
+        else toast({ title: "Google Sign-In Failed", description: "Please try again.", variant: "destructive" });
+      } catch (err: any) {
+        console.error(err);
+        toast({ title: "Error", description: err.message || "Failed to sign in with Google.", variant: "destructive" });
+      }
     });
   };
 
-  const isAnyLoading = isLoading || isGoogleLoading;
+  const isAnyLoading = isEmailLoading || isGoogleLoading;
 
   return (
-    <div className="bg-muted">
-      <div className="flex min-h-screen flex-col items-center justify-center">
-        <Card className="mx-auto max-w-sm w-full">
-          <CardHeader className="space-y-1 text-center">
-            <div className="flex justify-center p-6"><Logo /></div>
-            <CardTitle>Create an Account</CardTitle>
-            <CardDescription>Sign up to continue.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 gap-4 mb-4">
-              <Button variant="outline" onClick={handleGoogleSignIn} disabled={isAnyLoading}>
-                {isGoogleLoading ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : <GoogleIcon />}
-                Sign up with Google
+    <div className="bg-muted min-h-screen flex flex-col items-center justify-center">
+      <Card className="mx-auto max-w-sm w-full">
+        <CardHeader className="space-y-1 text-center">
+          <div className="flex justify-center p-6"><Logo /></div>
+          <CardTitle>Create an Account</CardTitle>
+          <CardDescription>Sign up to continue.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 gap-4 mb-4">
+            <Button variant="outline" onClick={handleGoogleRegister} disabled={isAnyLoading} aria-busy={isGoogleLoading}>
+              {isGoogleLoading ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : <GoogleIcon />}
+              Sign up with Google
+            </Button>
+          </div>
+
+          <div className="relative my-4">
+            <Separator />
+            <span className="absolute left-1/2 -translate-x-1/2 -top-2.5 bg-card px-2 text-xs text-muted-foreground">OR</span>
+          </div>
+
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(handleEmailRegister)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <Input type="email" {...field} disabled={isAnyLoading} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Password</FormLabel>
+                    <FormControl>
+                      <Input type="password" {...field} disabled={isAnyLoading} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button type="submit" className="w-full" disabled={isAnyLoading} aria-busy={isEmailLoading}>
+                {isEmailLoading && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
+                Register
               </Button>
-            </div>
+            </form>
+          </Form>
 
-            <div className="relative my-4">
-              <Separator />
-              <span className="absolute left-1/2 -translate-x-1/2 -top-2.5 bg-card px-2 text-xs text-muted-foreground">OR</span>
-            </div>
+          <div className="mt-4 text-center text-sm">
+            Already have an account? <Link href="/login" className="underline">Log in</Link>
+          </div>
+        </CardContent>
+      </Card>
 
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(handleRegistration)} className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email</FormLabel>
-                      <FormControl>
-                        <Input type="email" {...field} disabled={isAnyLoading} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Password</FormLabel>
-                      <FormControl>
-                        <Input type="password" {...field} disabled={isAnyLoading} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <Button type="submit" className="w-full" disabled={isAnyLoading}>
-                  {isLoading && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
-                  Register
-                </Button>
-              </form>
-            </Form>
-
-            <div className="mt-4 text-center text-sm">
-              Already have an account? <Link href="/login" className="underline">Log in</Link>
-            </div>
-          </CardContent>
-        </Card>
-
-        <footer className="mt-8 text-center text-sm text-muted-foreground">
-          © {year} AndonPro. All rights reserved.
-        </footer>
-      </div>
+      <footer className="mt-8 text-center text-sm text-muted-foreground">
+        © {year} AndonPro. All rights reserved.
+      </footer>
     </div>
   );
 }

@@ -60,8 +60,11 @@ function CompleteProfileContent() {
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [year, setYear] = useState(new Date().getFullYear());
 
-  // Derived query params with defaults
-  const plan: Plan = (searchParams.get('plan') as Plan) || 'starter';
+  // --- Validate query params and ensure defaults ---
+  const planParam = searchParams.get('plan');
+  const validPlans: Plan[] = ['starter', 'standard', 'pro', 'enterprise'];
+  const plan: Plan = validPlans.includes(planParam as Plan) ? (planParam as Plan) : 'starter';
+
   const duration = searchParams.get('duration') || '1';
   const currency = searchParams.get('currency') || 'usd';
   const isStarterPlan = plan === 'starter';
@@ -73,36 +76,31 @@ function CompleteProfileContent() {
     },
   });
 
-  // ✅ Safer fix — only fill truly missing params, never overwrite valid ones
-useEffect(() => {
-  const currentParams = new URLSearchParams(searchParams.toString());
-  let updated = false;
-
-  if (!currentParams.has('plan')) {
-    currentParams.set('plan', 'starter');
-    updated = true;
-  }
-  if (!currentParams.has('duration')) {
-    currentParams.set('duration', '1');
-    updated = true;
-  }
-  if (!currentParams.has('currency')) {
-    currentParams.set('currency', 'usd');
-    updated = true;
-  }
-
-  if (updated) {
-    router.replace(`/complete-profile?${currentParams.toString()}`);
-  }
-  // Run once on mount to avoid flicker
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-}, []);
-
-
-  // Set current year
+  // Ensure query params exist in URL
   useEffect(() => {
-    setYear(new Date().getFullYear());
+    const currentParams = new URLSearchParams(searchParams.toString());
+    let updated = false;
+
+    if (!currentParams.has('plan')) {
+      currentParams.set('plan', 'starter');
+      updated = true;
+    }
+    if (!currentParams.has('duration')) {
+      currentParams.set('duration', '1');
+      updated = true;
+    }
+    if (!currentParams.has('currency')) {
+      currentParams.set('currency', 'usd');
+      updated = true;
+    }
+
+    if (updated) {
+      router.replace(`/complete-profile?${currentParams.toString()}`);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => setYear(new Date().getFullYear()), []);
 
   // Populate form with current user data
   useEffect(() => {
@@ -253,7 +251,6 @@ useEffect(() => {
             <CardContent>
               <Form {...form}>
                 <form id="profile-form" className="space-y-6" onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
-                  {/* Form fields */}
                   <div className="grid grid-cols-2 gap-4">
                     <FormField control={form.control} name="firstName" render={({ field }) => (
                       <FormItem>
