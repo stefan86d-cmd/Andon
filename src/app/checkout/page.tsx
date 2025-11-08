@@ -100,7 +100,7 @@ function CheckoutContent() {
           return;
       }
 
-      if (currentUser.plan === 'starter') {
+      if (currentUser.plan !== 'starter') {
           router.push(`/settings/billing?plan=${plan}&duration=${duration}&currency=${currency}`);
           return;
       }
@@ -262,7 +262,7 @@ function CheckoutContent() {
                                     <SelectTrigger><SelectValue placeholder="Select plan" /></SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="starter">Starter</SelectItem>
-                                        {(Object.keys(tiers) as Array<Exclude<Plan, 'custom' | 'starter'>>).map((key) => (
+                                        {(Object.keys(tiers) as Array<Exclude<Plan, 'starter' | 'custom'>>).map((key) => (
                                             <SelectItem key={key} value={key} className="capitalize">{tiers[key].name}</SelectItem>
                                         ))}
                                     </SelectContent>
@@ -343,5 +343,3 @@ export default function CheckoutPage() {
         </Suspense>
     )
 }
-
-    

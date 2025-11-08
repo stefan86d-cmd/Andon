@@ -58,9 +58,8 @@ function RegisterContent() {
   });
 
   const getRedirectUrl = () => {
-    // Directly use the current window's search parameters to construct the redirect URL.
-    // This ensures all parameters (plan, duration, currency) are preserved.
-    const currentParams = new URLSearchParams(window.location.search);
+    // Reliably construct the redirect URL from the current page's search parameters.
+    const currentParams = new URLSearchParams(searchParams.toString());
     return `/complete-profile?${currentParams.toString()}`;
   };
 
@@ -172,5 +171,3 @@ export default function RegisterPage() {
     </Suspense>
   );
 }
-
-    
