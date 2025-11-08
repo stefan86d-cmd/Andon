@@ -78,8 +78,8 @@ function CompleteProfileContent() {
             firstName: currentUser.firstName || "",
             lastName: currentUser.lastName || "",
             address: currentUser.address || "",
-            city: "",
-            postalCode: "",
+            city: currentUser.city || "",
+            postalCode: currentUser.postalCode || "",
             country: currentUser.country || "",
             phone: currentUser.phone || ""
         });
@@ -95,6 +95,7 @@ function CompleteProfileContent() {
     try {
         const userRole: Role = "admin"; // First user is always an admin
         
+        // DO NOT save plan information here. This will be handled by the webhook.
         const userProfileData = {
             firstName: data.firstName,
             lastName: data.lastName,
@@ -106,7 +107,6 @@ function CompleteProfileContent() {
             country: data.country,
             phone: data.phone,
             orgId: currentUser.id, // The first admin's ID becomes the org ID
-            plan: plan,
         };
         
         await updateCurrentUser(userProfileData);
@@ -137,7 +137,8 @@ function CompleteProfileContent() {
         if (!profileSaved || !currentUser) return;
 
         if (isStarterPlan) {
-            await updateCurrentUser({ subscriptionStartsAt: new Date(), subscriptionStatus: 'active' });
+            // For starter plan, we can set the plan directly as there is no payment.
+            await updateCurrentUser({ plan: 'starter', subscriptionStatus: 'active' });
             await sendWelcomeEmail(currentUser.id);
             toast({
                 title: "Registration Complete!",
