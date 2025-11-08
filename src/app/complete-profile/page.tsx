@@ -73,19 +73,31 @@ function CompleteProfileContent() {
     },
   });
 
-  // Fill missing params in URL if needed
-  useEffect(() => {
-    const params = new URLSearchParams(searchParams.toString());
-    let updated = false;
+  // ✅ Safer fix — only fill truly missing params, never overwrite valid ones
+useEffect(() => {
+  const currentParams = new URLSearchParams(searchParams.toString());
+  let updated = false;
 
-    if (!params.get('plan')) { params.set('plan', 'starter'); updated = true; }
-    if (!params.get('duration')) { params.set('duration', '1'); updated = true; }
-    if (!params.get('currency')) { params.set('currency', 'usd'); updated = true; }
+  if (!currentParams.has('plan')) {
+    currentParams.set('plan', 'starter');
+    updated = true;
+  }
+  if (!currentParams.has('duration')) {
+    currentParams.set('duration', '1');
+    updated = true;
+  }
+  if (!currentParams.has('currency')) {
+    currentParams.set('currency', 'usd');
+    updated = true;
+  }
 
-    if (updated) {
-      router.replace(`/complete-profile?${params.toString()}`);
-    }
-  }, [searchParams, router]);
+  if (updated) {
+    router.replace(`/complete-profile?${currentParams.toString()}`);
+  }
+  // Run once on mount to avoid flicker
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, []);
+
 
   // Set current year
   useEffect(() => {
