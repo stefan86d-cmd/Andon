@@ -66,12 +66,10 @@ function CheckoutContent() {
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [year, setYear] = useState(new Date().getFullYear());
 
-  // Use state to manage selections, initialized from URL params
   const [plan, setPlan] = useState<Plan>((searchParams.get('plan') as Plan) || 'pro');
   const [duration, setDuration] = useState<Duration>((searchParams.get('duration') as Duration) || '12');
   const [currency, setCurrency] = useState<Currency>((searchParams.get('currency') as Currency) || 'usd');
 
-  // Effect to sync state with URL search params when they change
   useEffect(() => {
     setPlan((searchParams.get('plan') as Plan) || 'pro');
     setDuration((searchParams.get('duration') as Duration) || '12');
@@ -156,14 +154,14 @@ function CheckoutContent() {
   }
 
   const OrderSummary = () => {
-      const isFreePlan = plan === 'starter' || !tiers[plan as Exclude<Plan, 'starter' | 'custom'>];
+      const isFreePlan = plan === 'starter';
       if (isFreePlan) {
            return (
               <div className="space-y-4">
                 <div className="flex justify-between"><span>Plan</span><span className="capitalize font-medium">Starter</span></div>
                 <Separator />
                 <div className="flex justify-between items-baseline font-bold text-lg">
-                    <span>Price</span>
+                    <span>Price Today</span>
                     <span>Free</span>
                 </div>
             </div>
@@ -171,6 +169,9 @@ function CheckoutContent() {
       }
       
       const selectedTier = tiers[plan as Exclude<Plan, 'starter' | 'custom'>];
+      if (!selectedTier) {
+        return <p>Invalid plan selected.</p>;
+      }
       const monthlyPrice = selectedTier.prices[duration][currency];
       const fullPrice = selectedTier.prices['1'][currency];
       const totalFullPrice = fullPrice * parseInt(duration, 10);
@@ -184,12 +185,10 @@ function CheckoutContent() {
                     <div className="flex justify-between"><span>Plan</span><span className="capitalize font-medium">{plan}</span></div>
                     <div className="flex justify-between"><span>Price per month</span><span>{currencySymbols[currency]}{formatPrice(monthlyPrice, currency)}</span></div>
                     
-                    {plan !== 'starter' && (
-                        <div className="flex justify-between text-sm text-muted-foreground">
-                            <span>Regular price</span>
-                            <span>{currencySymbols[currency]}{formatPrice(fullPrice, currency)} / mo</span>
-                        </div>
-                    )}
+                    <div className="flex justify-between text-sm text-muted-foreground">
+                        <span>Regular price</span>
+                        <span>{currencySymbols[currency]}{formatPrice(fullPrice, currency)} / mo</span>
+                    </div>
                     
                      {discount > 0 && (
                         <div className="flex justify-between bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300 p-2 rounded-md">
@@ -212,21 +211,25 @@ function CheckoutContent() {
       )
   }
   
-    let renewalText: string;
-    if (plan === 'starter' || !tiers[plan as Exclude<Plan, 'starter' | 'custom'>]) {
-        renewalText = "The Starter plan is always free.";
-    } else {
+    const renewalText = useMemo(() => {
+        if (plan === 'starter') {
+            return "The Starter plan is always free.";
+        }
+        
         const selectedTier = tiers[plan as Exclude<Plan, 'starter' | 'custom'>];
+        if (!selectedTier) return "Invalid plan selected.";
+        
         const monthlyPrice = selectedTier.prices[duration][currency];
         const fullPrice = selectedTier.prices['1'][currency];
         const symbol = currencySymbols[currency];
-        const price = formatPrice(fullPrice, currency);
+
         const savingsText =
-        parseInt(duration) > 1
+        parseInt(duration, 10) > 1
             ? `That's only ${symbol}${formatPrice(monthlyPrice, currency)}/mo.`
             : "";
-        renewalText = `Billed monthly. Discount applies for the first ${duration} months. ${savingsText} Renews at ${symbol}${price}/mo. Cancel anytime.`;
-    }
+        return `Billed monthly. Discount applies for the first ${duration} months. ${savingsText} Renews at ${symbol}${formatPrice(fullPrice, currency)}/mo. Cancel anytime.`;
+
+    }, [plan, duration, currency]);
 
   return (
     <div className="bg-muted">
@@ -254,15 +257,16 @@ function CheckoutContent() {
                                 <Select value={plan} onValueChange={(v) => handleSelectionChange('plan', v)}>
                                     <SelectTrigger><SelectValue placeholder="Select plan" /></SelectTrigger>
                                     <SelectContent>
-                                    {(Object.keys(tiers) as Array<keyof typeof tiers>).map((key) =>
-                                        key !== 'custom' && key !== 'starter' && (
-                                        <SelectItem key={key} value={key} className="capitalize">{tiers[key as Exclude<Plan, 'custom' | 'starter'>].name}</SelectItem>
-                                        )
-                                    )}
+                                        <SelectItem value="starter">Starter</SelectItem>
+                                        {(Object.keys(tiers) as Array<keyof typeof tiers>).map((key) =>
+                                            key !== 'custom' && key !== 'starter' && (
+                                            <SelectItem key={key} value={key} className="capitalize">{tiers[key as Exclude<Plan, 'custom' | 'starter'>].name}</SelectItem>
+                                            )
+                                        )}
                                     </SelectContent>
                                 </Select>
 
-                                <Select value={duration} onValueChange={(v) => handleSelectionChange('duration', v)}>
+                                <Select value={duration} onValueChange={(v) => handleSelectionChange('duration', v)} disabled={plan === 'starter'}>
                                     <SelectTrigger><SelectValue placeholder="Select duration" /></SelectTrigger>
                                     <SelectContent>
                                     <SelectItem value="1">1 Month</SelectItem>
@@ -272,7 +276,7 @@ function CheckoutContent() {
                                     </SelectContent>
                                 </Select>
 
-                                <Select value={currency} onValueChange={(v) => handleSelectionChange('currency', v)}>
+                                <Select value={currency} onValueChange={(v) => handleSelectionChange('currency', v)} disabled={plan === 'starter'}>
                                     <SelectTrigger className="w-[120px]">
                                     <div className="flex items-center gap-2">
                                         <Globe className="h-4 w-4" />
@@ -287,13 +291,15 @@ function CheckoutContent() {
                                 </Select>
                             </div>
                             
-                            <div>
-                                <div className="flex gap-2 items-center">
-                                    {duration === '12' && <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~20%</Badge>}
-                                    {duration === '24' && <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~30%</Badge>}
-                                    {duration === '48' && <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~40%</Badge>}
+                            {plan !== 'starter' && (
+                                <div>
+                                    <div className="flex gap-2 items-center">
+                                        {duration === '12' && <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~20%</Badge>}
+                                        {duration === '24' && <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~30%</Badge>}
+                                        {duration === '48' && <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~40%</Badge>}
+                                    </div>
                                 </div>
-                            </div>
+                            )}
                              <p className="text-sm text-muted-foreground">{renewalText}</p>
                         </CardContent>
                     </Card>

@@ -137,7 +137,7 @@ function CompleteProfileContent() {
         if (!profileSaved || !currentUser) return;
 
         if (isStarterPlan) {
-            await updateCurrentUser({ subscriptionStartsAt: new Date() });
+            await updateCurrentUser({ subscriptionStartsAt: new Date(), subscriptionStatus: 'active' });
             await sendWelcomeEmail(currentUser.id);
             toast({
                 title: "Registration Complete!",
