@@ -367,28 +367,6 @@ export async function getOrCreateStripeCustomer(userId: string, email: string): 
   return { id: newCustomer.id };
 }
 
-export async function getPriceDetails(priceId: string) {
-  if (!priceId) return null;
-
-  try {
-    const price = await stripe.prices.retrieve(priceId);
-    if (!price || !price.product) return null;
-
-    const product = await stripe.products.retrieve(price.product as string);
-    if (!product) return null;
-
-    return {
-      price: (price.unit_amount || 0) / 100,
-      currency: price.currency,
-      plan: product.metadata.plan || 'unknown',
-      duration: product.metadata.duration || '1',
-    };
-  } catch (error) {
-    console.error("Error fetching Stripe price details:", error);
-    return null;
-  }
-}
-
 export async function createCheckoutSession({
   customerId,
   plan,
@@ -439,7 +417,6 @@ export async function createCheckoutSession({
       mode: 'subscription',
       customer: customerId,
       line_items: [{ price: priceId, quantity: 1 }],
-      discounts: discounts,
       ui_mode: 'embedded',
       return_url: returnUrl,
       metadata,
@@ -447,6 +424,10 @@ export async function createCheckoutSession({
       customer_update: { address: 'auto' },
       automatic_tax: { enabled: true },
     };
+    
+    if (discounts.length > 0) {
+      sessionParams.discounts = discounts;
+    }
 
     const session = await stripe.checkout.sessions.create(sessionParams);
 
@@ -503,3 +484,5 @@ export async function sendContactEmail({ name, email, message }: { name: string;
         return { success: false, error: 'Failed to send your message. Please try again later.' };
     }
 }
+
+    

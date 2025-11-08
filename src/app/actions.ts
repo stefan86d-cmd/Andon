@@ -26,7 +26,6 @@ import {
     cancelSubscription,
     cancelRegistrationAndDeleteUser,
     getOrCreateStripeCustomer,
-    getPriceDetails,
     createCheckoutSession,
     sendContactEmail,
 } from '@/lib/server-actions';
@@ -52,7 +51,8 @@ export {
     cancelSubscription,
     cancelRegistrationAndDeleteUser,
     getOrCreateStripeCustomer,
-    getPriceDetails,
     createCheckoutSession,
     sendContactEmail,
 };
+
+    
