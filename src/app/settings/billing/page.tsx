@@ -174,7 +174,7 @@ function BillingPageContent() {
                             <CardDescription>Enter your payment details below to complete the subscription.</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <EmbeddedCheckoutForm clientSecret={clientSecret} />
+                            <EmbeddedCheckoutForm key={clientSecret} clientSecret={clientSecret} />
                         </CardContent>
                     </Card>
                 </div>
@@ -303,8 +303,3 @@ export default function BillingPage() {
         </Suspense>
     )
 }
-
-    
-
-    
-

@@ -147,7 +147,7 @@ function CheckoutContent() {
                         <CardDescription>Enter your payment details below to complete the subscription.</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <EmbeddedCheckoutForm clientSecret={clientSecret} />
+                        <EmbeddedCheckoutForm key={clientSecret} clientSecret={clientSecret} />
                     </CardContent>
                 </Card>
             </div>
@@ -156,7 +156,8 @@ function CheckoutContent() {
   }
 
   const OrderSummary = () => {
-      if (plan === 'starter' || !tiers[plan as keyof typeof tiers]) {
+      const isFreePlan = plan === 'starter' || !tiers[plan as Exclude<Plan, 'starter' | 'custom'>];
+      if (isFreePlan) {
            return (
               <div className="space-y-4">
                 <div className="flex justify-between"><span>Plan</span><span className="capitalize font-medium">Starter</span></div>
@@ -169,7 +170,7 @@ function CheckoutContent() {
           )
       }
       
-      const selectedTier = tiers[plan as keyof typeof tiers];
+      const selectedTier = tiers[plan as Exclude<Plan, 'starter' | 'custom'>];
       const monthlyPrice = selectedTier.prices[duration][currency];
       const fullPrice = selectedTier.prices['1'][currency];
       const totalFullPrice = fullPrice * parseInt(duration, 10);
@@ -183,10 +184,12 @@ function CheckoutContent() {
                     <div className="flex justify-between"><span>Plan</span><span className="capitalize font-medium">{plan}</span></div>
                     <div className="flex justify-between"><span>Price per month</span><span>{currencySymbols[currency]}{formatPrice(monthlyPrice, currency)}</span></div>
                     
-                    <div className="flex justify-between text-sm text-muted-foreground">
-                        <span>Regular price</span>
-                        <span>{currencySymbols[currency]}{formatPrice(fullPrice, currency)} / mo</span>
-                    </div>
+                    {plan !== 'starter' && (
+                        <div className="flex justify-between text-sm text-muted-foreground">
+                            <span>Regular price</span>
+                            <span>{currencySymbols[currency]}{formatPrice(fullPrice, currency)} / mo</span>
+                        </div>
+                    )}
                     
                      {discount > 0 && (
                         <div className="flex justify-between bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300 p-2 rounded-md">
@@ -210,9 +213,9 @@ function CheckoutContent() {
   }
   
     const renewalText = useMemo(() => {
-        if (plan === 'starter' || !tiers[plan as keyof typeof tiers]) return "The Starter plan is always free.";
+        if (plan === 'starter' || !tiers[plan as Exclude<Plan, 'starter' | 'custom'>]) return "The Starter plan is always free.";
         
-        const selectedTier = tiers[plan as keyof typeof tiers];
+        const selectedTier = tiers[plan as Exclude<Plan, 'starter' | 'custom'>];
         const monthlyPrice = selectedTier.prices[duration][currency];
         const fullPrice = selectedTier.prices['1'][currency];
         
@@ -253,7 +256,7 @@ function CheckoutContent() {
                                     <SelectContent>
                                     {(Object.keys(tiers) as Array<keyof typeof tiers>).map((key) =>
                                         key !== 'custom' && key !== 'starter' && (
-                                        <SelectItem key={key} value={key} className="capitalize">{tiers[key].name}</SelectItem>
+                                        <SelectItem key={key} value={key} className="capitalize">{tiers[key as Exclude<Plan, 'custom' | 'starter'>].name}</SelectItem>
                                         )
                                     )}
                                     </SelectContent>
@@ -332,5 +335,3 @@ export default function CheckoutPage() {
         </Suspense>
     )
 }
-
-    

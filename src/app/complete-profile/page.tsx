@@ -197,7 +197,7 @@ function CompleteProfileContent() {
                         <CardDescription>Enter your payment details to start your subscription.</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <EmbeddedCheckoutForm clientSecret={clientSecret} />
+                        <EmbeddedCheckoutForm key={clientSecret} clientSecret={clientSecret} />
                     </CardContent>
                 </Card>
             </div>
@@ -319,5 +319,3 @@ export default function CompleteProfilePage() {
         </Suspense>
     )
 }
-
-    
