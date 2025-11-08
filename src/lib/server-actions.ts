@@ -407,33 +407,16 @@ export async function createCheckoutSession({
   if (!customerId) throw new Error("Customer ID is required");
   if (!plan || plan === 'starter') throw new Error("A valid, non-starter plan is required.");
   if (!currency) throw new Error("Currency is required");
-  
-  const priceIdMap: Record<Exclude<Plan, 'starter' | 'custom'>, Record<string, string>> = {
-    standard: {
-      usd: 'price_1SPNLkCKFYqU3RzmZhRSbLM9',
-      eur: 'price_1SPNA1CKFYqU3Rzm2XZEmQFR',
-      gbp: 'price_1SPNPJCKFYqU3Rzm5KFKS4l9',
-    },
-    pro: {
-      usd: 'price_1SPNMSCKFYqU3Rzm6COoQBOC',
-      eur: 'price_1SPNBbCKFYqU3RzmrE3IRkyz',
-      gbp: 'price_1SPNQ1CKFYqU3RzmjiwhweIL',
-    },
-    enterprise: {
-      usd: 'price_1SPNNRCKFYqU3RzmJLR5wDnF',
-      eur: 'price_1SPNCdCKFYqU3RzmOsFnGBky',
-      gbp: 'price_1SQoMYCKFYqU3RzmpzctK1XO',
-    },
-  };
 
   try {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
     if (!baseUrl) throw new Error("NEXT_PUBLIC_BASE_URL is not defined.");
 
-    const priceId = priceIdMap[plan as Exclude<Plan, 'starter' | 'custom'>]?.[currency];
+    const priceIdKey = `STRIPE_PRICE_ID_${plan.toUpperCase()}_1_${currency.toUpperCase()}`;
+    const priceId = process.env[priceIdKey];
 
     if (!priceId) {
-      throw new Error(`Stripe price ID for ${plan} in ${currency} not found.`);
+      throw new Error(`Stripe price ID for ${plan} in ${currency} (key: ${priceIdKey}) not found in environment variables.`);
     }
 
     const couponMap: Record<string, string | undefined> = {
@@ -445,7 +428,7 @@ export async function createCheckoutSession({
     const couponId = couponMap[duration];
     const discounts = [];
     if (couponId) {
-        discounts.push({ coupon: couponId });
+      discounts.push({ coupon: couponId });
     }
 
     const returnUrl = returnPath
