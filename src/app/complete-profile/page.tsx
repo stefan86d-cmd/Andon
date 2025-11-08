@@ -131,59 +131,62 @@ function CompleteProfileContent() {
   };
 
   const handleSubmit = () => {
-      startTransition(async () => {
-        const isProfileValid = await form.trigger();
-        if (!isProfileValid) {
-            toast({
-                title: "Incomplete Profile",
-                description: "Please fill out all required profile fields before proceeding.",
-                variant: "destructive"
-            });
-            return;
+    startTransition(async () => {
+      const isProfileValid = await form.trigger();
+      if (!isProfileValid) {
+        toast({
+          title: "Incomplete Profile",
+          description: "Please fill out all required profile fields before proceeding.",
+          variant: "destructive"
+        });
+        return;
+      }
+  
+      const profileData = form.getValues();
+      const profileSaved = await handleProfileSave(profileData);
+  
+      if (!profileSaved || !currentUser) return;
+  
+      const queryParams = `?plan=${plan}&duration=${duration}&currency=${currency}`;
+  
+      if (isStarterPlan) {
+        // Starter plan: save profile and mark subscription active
+        await updateCurrentUser({ plan: 'starter', subscriptionStatus: 'active' });
+        await sendWelcomeEmail(currentUser.id);
+        toast({
+          title: "Registration Complete!",
+          description: `Welcome to the Starter plan. Your account is ready!`,
+        });
+        router.push(`/dashboard${queryParams}`);
+      } else {
+        try {
+          if (!currentUser?.email) throw new Error("User email is not available.");
+  
+          const customer = await getOrCreateStripeCustomer(currentUser.id, currentUser.email);
+          const metadata = { userId: currentUser.id, plan, duration, currency, isNewUser: 'true' };
+  
+          const result = await createCheckoutSession({
+            customerId: customer.id,
+            plan,
+            duration,
+            currency,
+            metadata,
+            returnPath: `/dashboard${queryParams}&payment_success=true&session_id={CHECKOUT_SESSION_ID}`,
+          });
+  
+          if (result.clientSecret) {
+            setClientSecret(result.clientSecret);
+          } else {
+            throw new Error("Could not create a checkout session.");
+          }
+        } catch(err: any) {
+          toast({
+            variant: "destructive",
+            title: "Checkout Error",
+            description: err.message || "Could not create a checkout session. Please try again.",
+          });
         }
-
-        const profileData = form.getValues();
-        const profileSaved = await handleProfileSave(profileData);
-        
-        if (!profileSaved || !currentUser) return;
-
-        if (isStarterPlan) {
-            await updateCurrentUser({ plan: 'starter', subscriptionStatus: 'active' });
-            await sendWelcomeEmail(currentUser.id);
-            toast({
-                title: "Registration Complete!",
-                description: `Welcome to the Starter plan. Your account is ready!`,
-            });
-            router.push('/dashboard');
-        } else {
-           try {
-                if (!currentUser?.email) throw new Error("User email is not available.");
-                
-                const customer = await getOrCreateStripeCustomer(currentUser.id, currentUser.email);
-                const metadata = { userId: currentUser.id, plan: plan, duration: duration, isNewUser: 'true' };
-
-                const result = await createCheckoutSession({
-                    customerId: customer.id,
-                    plan,
-                    duration,
-                    currency,
-                    metadata,
-                    returnPath: '/dashboard?payment_success=true&session_id={CHECKOUT_SESSION_ID}',
-                });
-
-                if (result.clientSecret) {
-                    setClientSecret(result.clientSecret);
-                } else {
-                    throw new Error("Could not create a checkout session.");
-                }
-            } catch(err: any) {
-                 toast({
-                    variant: "destructive",
-                    title: "Checkout Error",
-                    description: err.message || "Could not create a checkout session. Please try again.",
-                });
-            }
-        }
+      }
     });
   };
 
@@ -201,7 +204,7 @@ function CompleteProfileContent() {
         toast({
           title: "Cancellation Failed",
           description:
-            "error" in result
+            !result.success && "error" in result
               ? result.error
               : "An unexpected error occurred. Please try again.",
           variant: "destructive",
@@ -375,3 +378,5 @@ export default function CompleteProfilePage() {
         </Suspense>
     )
 }
+
+    
