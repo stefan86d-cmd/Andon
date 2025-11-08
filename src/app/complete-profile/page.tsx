@@ -107,7 +107,6 @@ function CompleteProfileContent() {
     try {
         const userRole: Role = "admin"; // First user is always an admin
         
-        // DO NOT save plan information here. This will be handled by the webhook.
         const userProfileData = {
             firstName: data.firstName,
             lastName: data.lastName,
@@ -194,7 +193,6 @@ function CompleteProfileContent() {
     startCancellationTransition(async () => {
       const result = await cancelRegistrationAndDeleteUser(currentUser.id);
       if (result.success) {
-        // Logout will clear local state and onAuthStateChanged will handle redirection
         await logout(); 
         toast({
           title: "Registration Canceled",
