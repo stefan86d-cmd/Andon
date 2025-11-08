@@ -4,7 +4,7 @@
 import type { Issue, Plan, ProductionLine, Role, User } from '@/lib/types';
 import { handleFirestoreError } from '@/lib/firestore-helpers';
 import { sendEmail } from '@/lib/email';
-import Stripe from 'stripe';
+
 
 import {
     getUserByEmail,
@@ -25,6 +25,10 @@ import {
     requestPasswordReset,
     cancelSubscription,
     cancelRegistrationAndDeleteUser,
+    getOrCreateStripeCustomer,
+    getPriceDetails,
+    createCheckoutSession,
+    sendContactEmail,
 } from '@/lib/server-actions';
 
 
@@ -47,208 +51,8 @@ export {
     requestPasswordReset,
     cancelSubscription,
     cancelRegistrationAndDeleteUser,
+    getOrCreateStripeCustomer,
+    getPriceDetails,
+    createCheckoutSession,
+    sendContactEmail,
 };
-
-
-const stripe = new Stripe(process.env.NEXT_STRIPE_SECRET_KEY!, {
-  apiVersion: '2024-06-20',
-});
-
-// ---------------- User / Firestore Actions ----------------
-
-async function getAdminDb() {
-  const { adminDb } = await import('@/firebase/admin');
-  return adminDb();
-}
-
-export async function getOrCreateStripeCustomer(userId: string, email: string): Promise<{ id: string }> {
-  const db = await getAdminDb();
-
-  const userRef = db.collection('users').doc(userId);
-  const userSnapshot = await userRef.get();
-  const userData = userSnapshot.data() as User | undefined;
-
-  // 1. If user has a Stripe ID and it's valid, return it.
-  if (userData?.stripeCustomerId) {
-    try {
-      const stripeCustomer = await stripe.customers.retrieve(userData.stripeCustomerId);
-      if (stripeCustomer && !stripeCustomer.deleted) {
-        return { id: stripeCustomer.id };
-      }
-    } catch (error) {
-      console.warn(`Stripe customer ID ${userData.stripeCustomerId} for user ${userId} is invalid. A new one will be created.`);
-    }
-  }
-
-  // 2. Create a new Stripe customer.
-  const newCustomer = await stripe.customers.create({
-    email,
-    metadata: { userId },
-  });
-
-  // 3. Save the new customer ID to Firestore.
-  await userRef.update({ stripeCustomerId: newCustomer.id });
-
-  return { id: newCustomer.id };
-}
-
-
-// ... (keep your user, issue, production line, and email functions unchanged) ...
-
-// ---------------- Stripe Checkout ----------------
-
-export async function getPriceDetails(priceId: string) {
-  if (!priceId) return null;
-
-  try {
-    const price = await stripe.prices.retrieve(priceId);
-    if (!price || !price.product) return null;
-
-    const product = await stripe.products.retrieve(price.product as string);
-    if (!product) return null;
-
-    return {
-      price: (price.unit_amount || 0) / 100,
-      currency: price.currency,
-      plan: product.metadata.plan || 'unknown',
-      duration: product.metadata.duration || '1',
-    };
-  } catch (error) {
-    console.error("Error fetching Stripe price details:", error);
-    return null;
-  }
-}
-
-export async function createCheckoutSession({
-  customerId,
-  plan,
-  duration,
-  currency,
-  metadata = {},
-  returnPath,
-}: {
-  customerId: string;
-  plan: Plan;
-  duration: string;
-  currency: string;
-  metadata?: Record<string, string>;
-  returnPath?: string;
-}) {
-  if (!customerId) throw new Error("Customer ID is required");
-  if (!plan || plan === 'starter') throw new Error("A valid, non-starter plan is required.");
-  if (!currency) throw new Error("Currency is required");
-
-  const priceIdMap: Record<Exclude<Plan, 'starter' | 'custom'>, Record<string, string>> = {
-    standard: {
-      usd: 'price_1SPNLkCKFYqU3RzmZhRSbLM9',
-      eur: 'price_1SPNA1CKFYqU3Rzm2XZEmQFR',
-      gbp: 'price_1SPNPJCKFYqU3Rzm5KFKS4l9',
-    },
-    pro: {
-      usd: 'price_1SPNMSCKFYqU3Rzm6COoQBOC',
-      eur: 'price_1SPNBbCKFYqU3RzmrE3IRkyz',
-      gbp: 'price_1SPNQ1CKFYqU3RzmjiwhweIL',
-    },
-    enterprise: {
-      usd: 'price_1SPNNRCKFYqU3RzmJLR5wDnF',
-      eur: 'price_1SPNCdCKFYqU3RzmOsFnGBky',
-      gbp: 'price_1SQoMYCKFYqU3RzmpzctK1XO',
-    },
-  };
-
-  try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
-    if (!baseUrl) throw new Error("NEXT_PUBLIC_BASE_URL is not defined.");
-
-    const priceId = priceIdMap[plan as Exclude<Plan, 'starter' | 'custom'>]?.[currency];
-
-    if (!priceId) {
-      throw new Error(`Stripe price ID for ${plan} in ${currency} not found.`);
-    }
-
-    const couponMap: Record<string, string | undefined> = {
-      '12': process.env.STRIPE_COUPON_20_OFF,
-      '24': process.env.STRIPE_COUPON_30_OFF,
-      '48': process.env.STRIPE_COUPON_40_OFF,
-    };
-    
-    const couponId = couponMap[duration];
-    const discounts = couponId ? [{ coupon: couponId }] : [];
-
-    const returnUrl = returnPath
-      ? `${baseUrl}${returnPath}`
-      : `${baseUrl}/dashboard?payment_success=true&session_id={CHECKOUT_SESSION_ID}`;
-
-    const sessionParams: Stripe.Checkout.SessionCreateParams = {
-      mode: 'subscription',
-      customer: customerId,
-      line_items: [{ price: priceId, quantity: 1 }],
-      discounts: discounts,
-      ui_mode: 'embedded',
-      return_url: returnUrl,
-      metadata,
-      subscription_data: { metadata },
-      customer_update: { address: 'auto' },
-      automatic_tax: { enabled: true },
-    };
-
-    const session = await stripe.checkout.sessions.create(sessionParams);
-
-    console.log(`✅ Stripe checkout session created: ${session.id} with ${discounts.length > 0 ? `coupon ${couponId}` : 'no coupon'}`);
-    return { clientSecret: session.client_secret };
-
-  } catch (err: any) {
-    console.error("❌ Stripe checkout session creation failed:", err);
-    throw new Error(err.message || "Failed to create Stripe checkout session.");
-  }
-};
-
-
-export async function sendContactEmail({ name, email, message }: { name: string; email: string; message: string; }) {
-    const supportEmail = 'support@andonpro.com';
-    const emailHtmlToSupport = `
-        <p>You have received a new contact form submission from:</p>
-        <ul>
-            <li><strong>Name:</strong> ${name}</li>
-            <li><strong>Email:</strong> ${email}</li>
-        </ul>
-        <p><strong>Message:</strong></p>
-        <p>${message}</p>
-    `;
-
-    const emailHtmlToUser = `
-        <p>Hello ${name},</p>
-        <p>Thank you for contacting AndonPro. We have received your message and will get back to you as soon as possible.</p>
-        <p>Here is a copy of your message:</p>
-        <blockquote style="border-left: 2px solid #ccc; padding-left: 1rem; margin-left: 1rem; font-style: italic;">
-            ${message}
-        </blockquote>
-        <p>Best regards,<br/>The AndonPro Team</p>
-    `;
-
-    try {
-        // Send email to support
-        await sendEmail({
-            to: supportEmail,
-            subject: `New Contact Form Submission from ${name}`,
-            html: emailHtmlToSupport,
-        });
-
-        // Send confirmation email to user
-        await sendEmail({
-            to: email,
-            subject: 'Thank You for Contacting AndonPro',
-            html: emailHtmlToUser,
-        });
-
-        return { success: true };
-    } catch (error) {
-        console.error('Failed to send contact email:', error);
-        return { success: false, error: 'Failed to send your message. Please try again later.' };
-    }
-}
-    
-
-    
-
-    
