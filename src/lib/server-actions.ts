@@ -8,10 +8,6 @@ import { adminAuth, adminDb } from '@/firebase/admin';
 import { FieldValue, Firestore } from 'firebase-admin/firestore';
 import Stripe from 'stripe';
 
-const stripe = new Stripe(process.env.NEXT_STRIPE_SECRET_KEY!, {
-  apiVersion: '2024-06-20',
-});
-
 export async function getUserByEmail(email: string): Promise<User | null> {
   const db = adminDb();
   try {
@@ -305,6 +301,10 @@ export async function getAllUsers(orgId: string): Promise<User[]> {
 
 export async function cancelSubscription(userId: string, subscriptionId: string) {
     const db = adminDb();
+    if (!process.env.NEXT_STRIPE_SECRET_KEY) {
+        throw new Error('Stripe secret key is not set.');
+    }
+    const stripe = new Stripe(process.env.NEXT_STRIPE_SECRET_KEY);
 
     try {
         const subscription = await stripe.subscriptions.update(subscriptionId, {
@@ -378,5 +378,3 @@ export async function sendContactEmail({ name, email, message }: { name: string;
         return { success: false, error: 'Failed to send your message. Please try again later.' };
     }
 }
-
-    

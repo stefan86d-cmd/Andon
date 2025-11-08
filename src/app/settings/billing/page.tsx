@@ -21,11 +21,7 @@ type Duration = '1' | '12' | '24' | '48';
 type Currency = 'usd' | 'eur' | 'gbp';
 
 
-const tiers: Record<Exclude<Plan, 'custom'>, any> = {
-  starter: { 
-    name: "Starter", 
-    prices: { '1': { usd: 0, eur: 0, gbp: 0 }, '12': { usd: 0, eur: 0, gbp: 0 }, '24': { usd: 0, eur: 0, gbp: 0 }, '48': { usd: 0, eur: 0, gbp: 0 } } 
-  },
+const tiers: Record<Exclude<Plan, 'custom' | 'starter'>, any> = {
   standard: { 
     name: "Standard", 
     prices: { '1': { usd: 39.99, eur: 36.99, gbp: 32.99 }, '12': { usd: 31.99, eur: 29.59, gbp: 26.39 }, '24': { usd: 27.99, eur: 25.89, gbp: 23.09 }, '48': { usd: 23.99, eur: 22.19, gbp: 19.79 } },
@@ -112,9 +108,9 @@ function BillingPageContent() {
     }
 
     const planName = currentUser.plan.charAt(0).toUpperCase() + currentUser.plan.slice(1);
-    const availablePlans = Object.keys(tiers).filter(p => p !== 'starter' && p !== 'custom') as Plan[];
+    const availablePlans = Object.keys(tiers).filter(p => p !== currentUser?.plan) as (keyof typeof tiers)[];
 
-    const selectedTier = newPlan && newPlan !== 'starter' ? tiers[newPlan] : null;
+    const selectedTier = newPlan && newPlan !== 'starter' && newPlan !== 'custom' ? tiers[newPlan] : null;
     const monthlyPrice = selectedTier ? selectedTier.prices[duration][currency] : 0;
     
     const endDate = currentUser.subscriptionEndsAt && isValid(new Date(currentUser.subscriptionEndsAt))
@@ -256,5 +252,3 @@ export default function BillingPage() {
         </Suspense>
     )
 }
-
-    

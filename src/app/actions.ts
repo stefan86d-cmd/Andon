@@ -46,5 +46,3 @@ export {
     cancelRegistrationAndDeleteUser,
     sendContactEmail,
 };
-
-    
