@@ -372,15 +372,11 @@ export default function PricingPage() {
                         const fullPriceInfo = !isStarter ? tier.prices['1'][currency] : null;
                         const monthlyPrice = priceInfo ? priceInfo : 0;
 
-                        const linkHref = isStarter
-                            ? tier.href
-                            : currentUser 
-                              ? `${tier.paymentLinks[duration][currency]}?client_reference_id=${currentUser.orgId}&prefilled_email=${currentUser.email}`
-                              : tier.paymentLinks[duration][currency];
+                        const registrationHref = `/register?plan=${tier.id}&duration=${duration}&currency=${currency}`;
+                        const paymentLink = !isStarter ? tier.paymentLinks[duration][currency] : '#';
+                        const finalHref = currentUser ? `${paymentLink}?client_reference_id=${currentUser.orgId}&prefilled_email=${currentUser.email}` : registrationHref;
                         
                         const isProBestValue = tier.name === "Pro";
-                        
-                        let ctaText = tier.cta;
                         
                         return (
                             <div key={tier.name} className="relative">
@@ -427,10 +423,10 @@ export default function PricingPage() {
                                         </ul>
                                     </CardContent>
                                     <CardFooter className="flex-col items-stretch">
-                                        <Link href={linkHref} className={cn(buttonVariants({ 
+                                        <Link href={finalHref} className={cn(buttonVariants({ 
                                             variant: isProBestValue ? 'destructive' : (tier.popular ? 'default' : 'outline'),
                                         }), "w-full")}>
-                                            {ctaText}
+                                            {tier.cta}
                                         </Link>
                                          {!isStarter && fullPriceInfo && (
                                             <p className="text-xs text-muted-foreground mt-3 text-center">
