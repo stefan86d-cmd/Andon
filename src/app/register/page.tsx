@@ -77,10 +77,6 @@ function RegisterContent() {
   
   const getRedirectUrl = () => {
     const params = new URLSearchParams(searchParams.toString());
-    // The plan, duration, currency should already be in searchParams if coming from a paid plan selection
-    if (!params.has('plan')) {
-      params.set('plan', 'starter');
-    }
     return `/complete-profile?${params.toString()}`;
   }
 
@@ -192,5 +188,3 @@ export default function RegisterPage() {
         </Suspense>
     )
 }
-
-    
