@@ -172,6 +172,7 @@ export async function createCheckoutSession({
       metadata,
       subscription_data: { metadata },
       customer_update: { address: 'auto' },
+      automatic_tax: { enabled: true },
     };
 
     const session = await stripe.checkout.sessions.create(sessionParams);
@@ -234,3 +235,4 @@ export async function sendContactEmail({ name, email, message }: { name: string;
     
 
     
+
