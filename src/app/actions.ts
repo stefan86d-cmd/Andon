@@ -146,7 +146,6 @@ export async function createCheckoutSession({
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
     if (!baseUrl) throw new Error("NEXT_PUBLIC_BASE_URL is not defined.");
 
-    // Construct the env var name dynamically for the base monthly price
     const priceIdEnvVar = `STRIPE_PRICE_ID_${plan.toUpperCase()}_1_${currency.toUpperCase()}`;
     const priceId = process.env[priceIdEnvVar];
 
@@ -156,19 +155,17 @@ export async function createCheckoutSession({
       );
     }
 
-    // Map duration to the corresponding coupon environment variable
     const couponMap: Record<string, string | undefined> = {
-      '1': undefined, // No coupon for 1 month
+      '1': undefined,
       '12': process.env.STRIPE_COUPON_20_OFF,
       '24': process.env.STRIPE_COUPON_30_OFF,
       '48': process.env.STRIPE_COUPON_40_OFF,
     };
 
     const couponId = couponMap[duration];
-    if (duration !== '1' && !couponId) {
-      console.warn(
-        `No coupon configured for duration '${duration}'. Proceeding without discount.`
-      );
+    const discounts = [];
+    if (couponId) {
+        discounts.push({ coupon: couponId });
     }
 
     const returnUrl = returnPath
@@ -179,7 +176,7 @@ export async function createCheckoutSession({
       mode: 'subscription',
       customer: customerId,
       line_items: [{ price: priceId, quantity: 1 }],
-      discounts: couponId ? [{ coupon: couponId }] : [], // Correctly apply coupon
+      discounts,
       ui_mode: 'embedded',
       return_url: returnUrl,
       metadata,
