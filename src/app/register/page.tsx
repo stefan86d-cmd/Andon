@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { Suspense, useState, useTransition, useEffect } from 'react';
@@ -56,31 +57,11 @@ function RegisterContent() {
     defaultValues: { email: "", password: "" },
   });
 
-  // Persist checkout params safely
-  useEffect(() => {
-    const params = {
-      plan: searchParams.get("plan") || "starter",
-      duration: searchParams.get("duration") || "1",
-      currency: searchParams.get("currency") || "usd",
-    };
-    sessionStorage.setItem("checkoutParams", JSON.stringify(params));
-  }, [searchParams]);
-
   const getRedirectUrl = () => {
-    const params = new URLSearchParams(searchParams.toString());
-
-    // Load stored values if missing
-    if (!params.has("plan") || !params.has("duration") || !params.has("currency")) {
-      const stored = sessionStorage.getItem("checkoutParams");
-      if (stored) {
-        const { plan, duration, currency } = JSON.parse(stored);
-        if (!params.has("plan")) params.set("plan", plan);
-        if (!params.has("duration")) params.set("duration", duration);
-        if (!params.has("currency")) params.set("currency", currency);
-      }
-    }
-
-    return `/complete-profile?${params.toString()}`;
+    // Directly use the current window's search parameters to construct the redirect URL.
+    // This ensures all parameters (plan, duration, currency) are preserved.
+    const currentParams = new URLSearchParams(window.location.search);
+    return `/complete-profile?${currentParams.toString()}`;
   };
 
   const handleEmailRegister = async (data: RegisterFormValues) => {
@@ -191,3 +172,5 @@ export default function RegisterPage() {
     </Suspense>
   );
 }
+
+    

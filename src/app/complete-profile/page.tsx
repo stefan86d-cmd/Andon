@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { Suspense, useState, useEffect, useTransition } from 'react';
@@ -60,11 +61,7 @@ function CompleteProfileContent() {
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [year, setYear] = useState(new Date().getFullYear());
 
-  // --- Validate query params and ensure defaults ---
-  const planParam = searchParams.get('plan');
-  const validPlans: Plan[] = ['starter', 'standard', 'pro', 'enterprise'];
-  const plan: Plan = validPlans.includes(planParam as Plan) ? (planParam as Plan) : 'starter';
-
+  const plan = searchParams.get('plan') as Plan || 'starter';
   const duration = searchParams.get('duration') || '1';
   const currency = searchParams.get('currency') || 'usd';
   const isStarterPlan = plan === 'starter';
@@ -76,29 +73,19 @@ function CompleteProfileContent() {
     },
   });
 
-  // Ensure query params exist in URL
+  // Ensure query params exist in URL as a failsafe
   useEffect(() => {
-    const currentParams = new URLSearchParams(searchParams.toString());
-    let updated = false;
-
-    if (!currentParams.has('plan')) {
-      currentParams.set('plan', 'starter');
-      updated = true;
+    const params = new URLSearchParams(window.location.search);
+    let shouldUpdate = false;
+  
+    if (!params.get('plan')) { params.set('plan', 'starter'); shouldUpdate = true; }
+    if (!params.get('duration')) { params.set('duration', '1'); shouldUpdate = true; }
+    if (!params.get('currency')) { params.set('currency', 'usd'); shouldUpdate = true; }
+  
+    if (shouldUpdate) {
+      router.replace(`/complete-profile?${params.toString()}`);
     }
-    if (!currentParams.has('duration')) {
-      currentParams.set('duration', '1');
-      updated = true;
-    }
-    if (!currentParams.has('currency')) {
-      currentParams.set('currency', 'usd');
-      updated = true;
-    }
-
-    if (updated) {
-      router.replace(`/complete-profile?${currentParams.toString()}`);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [router]);
 
   useEffect(() => setYear(new Date().getFullYear()), []);
 
@@ -159,24 +146,30 @@ function CompleteProfileContent() {
         toast({ title: "Incomplete Profile", description: "Please fill out all required profile fields before proceeding.", variant: "destructive" });
         return;
       }
-
+  
       const profileData = form.getValues();
       const profileSaved = await handleProfileSave(profileData);
+  
       if (!profileSaved || !currentUser) return;
-
+  
       const queryParams = `?plan=${plan}&duration=${duration}&currency=${currency}`;
-
+  
       if (isStarterPlan) {
+        // Starter plan: save profile and mark subscription active
         await updateCurrentUser({ plan: 'starter', subscriptionStatus: 'active' });
         await sendWelcomeEmail(currentUser.id);
-        toast({ title: "Registration Complete!", description: `Welcome to the Starter plan. Your account is ready!` });
+        toast({
+          title: "Registration Complete!",
+          description: `Welcome to the Starter plan. Your account is ready!`,
+        });
         router.push(`/dashboard${queryParams}`);
       } else {
         try {
-          if (!currentUser.email) throw new Error("User email is not available.");
+          if (!currentUser?.email) throw new Error("User email is not available.");
+  
           const customer = await getOrCreateStripeCustomer(currentUser.id, currentUser.email);
           const metadata = { userId: currentUser.id, plan, duration, currency, isNewUser: 'true' };
-
+  
           const result = await createCheckoutSession({
             customerId: customer.id,
             plan,
@@ -185,18 +178,23 @@ function CompleteProfileContent() {
             metadata,
             returnPath: `/dashboard${queryParams}&payment_success=true&session_id={CHECKOUT_SESSION_ID}`,
           });
-
+  
           if (result.clientSecret) {
             setClientSecret(result.clientSecret);
           } else {
             throw new Error("Could not create a checkout session.");
           }
-        } catch (err: any) {
-          toast({ variant: "destructive", title: "Checkout Error", description: err.message || "Could not create a checkout session." });
+        } catch(err: any) {
+          toast({
+            variant: "destructive",
+            title: "Checkout Error",
+            description: err.message || "Could not create a checkout session. Please try again.",
+          });
         }
       }
     });
   };
+  
 
   const handleCancelRegistration = () => {
     if (!currentUser) return;
@@ -204,11 +202,17 @@ function CompleteProfileContent() {
       const result = await cancelRegistrationAndDeleteUser(currentUser.id);
       if (result.success) {
         await logout();
-        toast({ title: "Registration Canceled", description: "Your registration has been successfully canceled." });
+        toast({
+          title: "Registration Canceled",
+          description: "Your registration has been successfully canceled.",
+        });
       } else {
         toast({
           title: "Cancellation Failed",
-          description: "error" in result ? result.error : "An unexpected error occurred. Please try again.",
+          description:
+            !result.success && "error" in result
+              ? result.error
+              : "An unexpected error occurred. Please try again.",
           variant: "destructive",
         });
       }
@@ -362,3 +366,5 @@ export default function CompleteProfilePage() {
     </Suspense>
   );
 }
+
+    

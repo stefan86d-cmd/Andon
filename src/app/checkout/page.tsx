@@ -99,6 +99,11 @@ function CheckoutContent() {
           router.push(`/register?plan=${plan}&duration=${duration}&currency=${currency}`);
           return;
       }
+
+      if (currentUser.plan === 'starter') {
+          router.push(`/settings/billing?plan=${plan}&duration=${duration}&currency=${currency}`);
+          return;
+      }
       
       try {
         if (!currentUser.email) throw new Error("User email not available.");

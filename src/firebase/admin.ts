@@ -8,40 +8,52 @@ let app: App | undefined;
 let auth: Auth | undefined;
 let db: Firestore | undefined;
 
-try {
-  const serviceAccountString = process.env.SERVICE_ACCOUNT_ANDON_EF46A;
-  if (!serviceAccountString) {
-    throw new Error("The SERVICE_ACCOUNT_ANDON_EF46A environment variable is not set.");
-  }
-
-  const serviceAccount = JSON.parse(serviceAccountString);
-  if (serviceAccount.private_key) {
-    serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
-  }
-
-  if (admin.apps.length === 0) {
-    app = admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount),
-    });
-  } else {
+function initializeAdmin() {
+  if (admin.apps.length > 0) {
     app = admin.apps[0]!;
+  } else {
+    try {
+      const serviceAccountString = process.env.SERVICE_ACCOUNT_ANDON_EF46A;
+      if (!serviceAccountString) {
+        throw new Error("The SERVICE_ACCOUNT_ANDON_EF46A environment variable is not set.");
+      }
+
+      const serviceAccount = JSON.parse(serviceAccountString);
+      if (serviceAccount.private_key) {
+        serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+      }
+
+      app = admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount),
+      });
+      console.log("✅ Firebase Admin SDK initialized successfully.");
+
+    } catch (error: any) {
+      console.error("Firebase Admin SDK initialization failed:", error.message);
+      // Do not proceed to set auth and db if initialization failed
+      return;
+    }
   }
 
   auth = admin.auth(app);
   db = admin.firestore(app);
-
-  console.log("✅ Firebase Admin SDK initialized successfully.");
-
-} catch (error: any) {
-  // We log this error but do not throw it, allowing the build to proceed.
-  // The serverless functions that need the Admin SDK will fail at runtime if this initialization fails.
-  if (process.env.NODE_ENV === 'development' || process.env.VERCEL) {
-    console.error("Firebase Admin SDK initialization failed:", error.message);
-  } else {
-    // In other environments, we might want to be quieter or handle differently.
-    // For now, logging a warning.
-    console.warn("Firebase Admin SDK not initialized. This is expected during client-side builds.");
-  }
 }
 
-export { db as adminDb, auth as adminAuth };
+// Lazy initialization
+function getAdminInstances() {
+  if (!app) {
+    initializeAdmin();
+  }
+  return { adminDb: db, adminAuth: auth };
+}
+
+// Export getters that ensure initialization
+Object.defineProperty(exports, "adminDb", {
+    get: () => getAdminInstances().adminDb,
+    enumerable: true,
+});
+
+Object.defineProperty(exports, "adminAuth", {
+    get: () => getAdminInstances().adminAuth,
+    enumerable: true,
+});
