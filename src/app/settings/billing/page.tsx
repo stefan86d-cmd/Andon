@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { LoaderCircle, Globe } from "lucide-react";
 import { useUser } from "@/contexts/user-context";
-import { useState, useMemo, useEffect, useTransition, Suspense } from "react";
+import { useState, useEffect, useTransition, Suspense } from "react";
 import Link from "next/link";
 import { toast } from "@/hooks/use-toast";
 import type { Plan } from "@/lib/types";
@@ -14,39 +14,51 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { CancelSubscriptionDialog } from "@/components/settings/cancel-subscription-dialog";
 import { Logo } from "@/components/layout/logo";
-import { useRouter } from "next/navigation";
 import { format, isValid } from "date-fns";
-import { createCheckoutSession, getOrCreateStripeCustomer, cancelSubscription } from "@/app/actions";
-import { EmbeddedCheckoutForm } from "@/components/checkout/embedded-checkout-form";
+import { cancelSubscription } from "@/app/actions";
+
+type Duration = '1' | '12' | '24' | '48';
+type Currency = 'usd' | 'eur' | 'gbp';
 
 
-const tiers: Record<Exclude<Plan, 'custom'>, { name: string; prices: Record<Duration, Record<Currency, number>> }> & { custom?: any } = {
+const tiers: Record<Exclude<Plan, 'custom'>, any> = {
   starter: { 
     name: "Starter", 
     prices: { '1': { usd: 0, eur: 0, gbp: 0 }, '12': { usd: 0, eur: 0, gbp: 0 }, '24': { usd: 0, eur: 0, gbp: 0 }, '48': { usd: 0, eur: 0, gbp: 0 } } 
   },
   standard: { 
     name: "Standard", 
-    prices: { '1': { usd: 39.99, eur: 36.99, gbp: 32.99 }, '12': { usd: 31.99, eur: 29.59, gbp: 26.39 }, '24': { usd: 27.99, eur: 25.89, gbp: 23.09 }, '48': { usd: 23.99, eur: 22.19, gbp: 19.79 } }
+    prices: { '1': { usd: 39.99, eur: 36.99, gbp: 32.99 }, '12': { usd: 31.99, eur: 29.59, gbp: 26.39 }, '24': { usd: 27.99, eur: 25.89, gbp: 23.09 }, '48': { usd: 23.99, eur: 22.19, gbp: 19.79 } },
+    paymentLinks: {
+        '1': { usd: 'https://buy.stripe.com/your_link_here', eur: 'https://buy.stripe.com/your_link_here', gbp: 'https://buy.stripe.com/your_link_here' },
+        '12': { usd: 'https://buy.stripe.com/your_link_here', eur: 'https://buy.stripe.com/your_link_here', gbp: 'https://buy.stripe.com/your_link_here' },
+        '24': { usd: 'https://buy.stripe.com/your_link_here', eur: 'https://buy.stripe.com/your_link_here', gbp: 'https://buy.stripe.com/your_link_here' },
+        '48': { usd: 'https://buy.stripe.com/your_link_here', eur: 'https://buy.stripe.com/your_link_here', gbp: 'https://buy.stripe.com/your_link_here' },
+    }
   },
   pro: { 
     name: "Pro", 
-    prices: { '1': { usd: 59.99, eur: 54.99, gbp: 49.99 }, '12': { usd: 47.99, eur: 43.99, gbp: 39.99 }, '24': { usd: 41.99, eur: 38.49, gbp: 34.99 }, '48': { usd: 35.99, eur: 32.99, gbp: 29.99 } }
+    prices: { '1': { usd: 59.99, eur: 54.99, gbp: 49.99 }, '12': { usd: 47.99, eur: 43.99, gbp: 39.99 }, '24': { usd: 41.99, eur: 38.49, gbp: 34.99 }, '48': { usd: 35.99, eur: 32.99, gbp: 29.99 } },
+    paymentLinks: {
+        '1': { usd: 'https://buy.stripe.com/your_link_here', eur: 'https://buy.stripe.com/your_link_here', gbp: 'https://buy.stripe.com/your_link_here' },
+        '12': { usd: 'https://buy.stripe.com/your_link_here', eur: 'https://buy.stripe.com/your_link_here', gbp: 'https://buy.stripe.com/your_link_here' },
+        '24': { usd: 'https://buy.stripe.com/your_link_here', eur: 'https://buy.stripe.com/your_link_here', gbp: 'https://buy.stripe.com/your_link_here' },
+        '48': { usd: 'https://buy.stripe.com/your_link_here', eur: 'https://buy.stripe.com/your_link_here', gbp: 'https://buy.stripe.com/your_link_here' },
+    }
   },
   enterprise: { 
     name: "Enterprise", 
-    prices: { '1': { usd: 149.99, eur: 139.99, gbp: 124.99 }, '12': { usd: 119.99, eur: 111.99, gbp: 99.99 }, '24': { usd: 104.99, eur: 97.99, gbp: 87.49 }, '48': { usd: 89.99, eur: 83.99, gbp: 74.99 } }
+    prices: { '1': { usd: 149.99, eur: 139.99, gbp: 124.99 }, '12': { usd: 119.99, eur: 111.99, gbp: 99.99 }, '24': { usd: 104.99, eur: 97.99, gbp: 87.49 }, '48': { usd: 89.99, eur: 83.99, gbp: 74.99 } },
+    paymentLinks: {
+        '1': { usd: 'https://buy.stripe.com/your_link_here', eur: 'https://buy.stripe.com/your_link_here', gbp: 'https://buy.stripe.com/your_link_here' },
+        '12': { usd: 'https://buy.stripe.com/your_link_here', eur: 'https://buy.stripe.com/your_link_here', gbp: 'https://buy.stripe.com/your_link_here' },
+        '24': { usd: 'https://buy.stripe.com/your_link_here', eur: 'https://buy.stripe.com/your_link_here', gbp: 'https://buy.stripe.com/your_link_here' },
+        '48': { usd: 'https://buy.stripe.com/your_link_here', eur: 'https://buy.stripe.com/your_link_here', gbp: 'https://buy.stripe.com/your_link_here' },
+    }
   },
-  custom: {
-    name: "Custom",
-    prices: { '1': { usd: 0, eur: 0, gbp: 0 }, '12': { usd: 0, eur: 0, gbp: 0 }, '24': { usd: 0, eur: 0, gbp: 0 }, '48': { usd: 0, eur: 0, gbp: 0 } }
-  }
 };
 
 const currencySymbols = { usd: '$', eur: '€', gbp: '£' };
-type Currency = 'usd' | 'eur' | 'gbp';
-type Duration = '1' | '12' | '24' | '48';
-
 
 const formatPrice = (price: number, currency: Currency) => {
     const locale = { usd: 'en-US', eur: 'de-DE', gbp: 'en-GB' }[currency];
@@ -56,9 +68,7 @@ const formatPrice = (price: number, currency: Currency) => {
 
 function BillingPageContent() {
     const { currentUser, refreshCurrentUser } = useUser();
-    const [isSubmitting, startTransition] = useTransition();
     const [isCancelling, startCancellationTransition] = useTransition();
-    const [clientSecret, setClientSecret] = useState<string | null>(null);
 
     const [currency, setCurrency] = useState<Currency>('usd');
     const [newPlan, setNewPlan] = useState<Plan | undefined>(currentUser?.plan);
@@ -76,47 +86,7 @@ function BillingPageContent() {
             </div>
         );
     }
-
-    const isStarterPlan = currentUser.plan === 'starter';
     
-    const handlePlanChange = () => {
-        if (!newPlan) {
-            toast({ title: "No Plan Selected", description: "Please choose a plan to continue." });
-            return;
-        }
-
-        startTransition(async () => {
-            try {
-                if (!currentUser?.email) throw new Error("User email not found.");
-                
-                const customer = await getOrCreateStripeCustomer(currentUser.id, currentUser.email);
-
-                const metadata = { userId: currentUser.id, plan: newPlan, duration: duration, isNewUser: 'false' };
-                
-                const result = await createCheckoutSession({
-                    customerId: customer.id,
-                    plan: newPlan,
-                    duration: duration,
-                    currency: currency,
-                    metadata,
-                    returnPath: '/dashboard',
-                });
-
-                if (result.clientSecret) {
-                    setClientSecret(result.clientSecret);
-                } else {
-                    throw new Error("Could not create a checkout session.");
-                }
-            } catch (err: any) {
-                toast({
-                    variant: "destructive",
-                    title: "Checkout Error",
-                    description: err.message || "An unexpected error occurred. Please try again.",
-                });
-            }
-        });
-    }
-
     const handleCancelConfirm = () => {
         if (!currentUser?.subscriptionId) {
             toast({ title: "Error", description: "No active subscription found to cancel." });
@@ -160,27 +130,10 @@ function BillingPageContent() {
         }
         return null;
     };
-    
-     if (clientSecret) {
-        return (
-           <div className="bg-muted min-h-screen flex flex-col items-center justify-center p-4">
-                <div className="w-full max-w-lg">
-                     <div className="flex justify-center mb-8">
-                        <Logo />
-                    </div>
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Complete Your Payment</CardTitle>
-                            <CardDescription>Enter your payment details below to complete the subscription.</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <EmbeddedCheckoutForm key={clientSecret} clientSecret={clientSecret} />
-                        </CardContent>
-                    </Card>
-                </div>
-            </div>
-        )
-    }
+
+    const paymentLink = selectedTier 
+        ? `${selectedTier.paymentLinks[duration][currency]}?client_reference_id=${currentUser.orgId}&prefilled_email=${currentUser.email}`
+        : "#";
 
     return (
         <div className="bg-muted">
@@ -258,11 +211,11 @@ function BillingPageContent() {
                                 </div>
                             )}
                             
-
                             <div className="flex gap-2 items-center">
-                                <Button onClick={handlePlanChange} disabled={!newPlan || newPlan === currentUser.plan || isSubmitting}>
-                                    {isSubmitting && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
-                                    {newPlan === currentUser.plan ? 'Current Plan' : (newPlan ? `Go to Checkout` : 'Select a Plan')}
+                                <Button asChild disabled={!newPlan || newPlan === currentUser.plan}>
+                                    <Link href={paymentLink}>
+                                        {newPlan === currentUser.plan ? 'Current Plan' : (newPlan ? `Update Plan` : 'Select a Plan')}
+                                    </Link>
                                 </Button>
                             </div>
                                 <Separator />
@@ -303,3 +256,5 @@ export default function BillingPage() {
         </Suspense>
     )
 }
+
+    

@@ -3,7 +3,7 @@
 
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, Factory, ClipboardList, LayoutDashboard, BarChart3, Bot, UserCog, LifeBuoy, Puzzle, ShieldCheck, Headset, Shield, BadgeCheck, CheckCircle, Globe, ArrowRight, Menu } from "lucide-react";
+import { CheckCircle, Globe, Menu } from "lucide-react";
 import Link from "next/link";
 import { Logo } from "@/components/layout/logo";
 import { cn } from "@/lib/utils";
@@ -18,24 +18,32 @@ import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/s
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 
+type Duration = '1' | '12' | '24' | '48';
+type Currency = 'usd' | 'eur' | 'gbp';
+
+// Instructions:
+// 1. Create a Product in your Stripe Dashboard for each plan (e.g., "AndonPro - Pro").
+// 2. For each Product, create a Price for each currency (e.g., $59.99/month, €54.99/month).
+// 3. Create Coupons in Stripe for your discounts (e.g., 20% off, 30% off, 40% off).
+// 4. Create a Stripe Payment Link for each combination of plan, currency, and duration.
+//    - For 1-month durations, create a link with just the base price.
+//    - For 12, 24, 48-month durations, create a link and attach the appropriate coupon.
+// 5. Paste the URLs for each link into the `paymentLinks` object below.
+
 const tiers = [
   {
     name: "Starter",
     id: "starter",
-    prices: {
-        '1': { usd: { price: 0 }, eur: { price: 0 }, gbp: { price: 0 } },
-        '12': { usd: { price: 0 }, eur: { price: 0 }, gbp: { price: 0 } },
-        '24': { usd: { price: 0 }, eur: { price: 0 }, gbp: { price: 0 } },
-        '48': { usd: { price: 0 }, eur: { price: 0 }, gbp: { price: 0 } },
-    },
+    href: "/register?plan=starter",
+    price: { usd: 0, eur: 0, gbp: 0 },
     pricePeriod: "",
     description: "For small teams getting started with issue tracking.",
     features: [
-      { text: "Up to 5 users" },
-      { text: "1 Production Line" },
-      { text: "Up to 5 workstations" },
-      { text: "Basic Issue Reporting" },
-      { text: "Dashboard View" },
+      "Up to 5 users",
+      "1 Production Line",
+      "Up to 5 workstations",
+      "Basic Issue Reporting",
+      "Dashboard View",
     ],
     cta: "Get Started",
   },
@@ -43,21 +51,43 @@ const tiers = [
     name: "Standard",
     id: "standard",
     prices: {
-        '1': { usd: { price: 39.99 }, eur: { price: 36.99 }, gbp: { price: 32.99 } },
-        '12': { usd: { price: 31.99 }, eur: { price: 29.59 }, gbp: { price: 26.39 } },
-        '24': { usd: { price: 27.99 }, eur: { price: 25.89 }, gbp: { price: 23.09 } },
-        '48': { usd: { price: 23.99 }, eur: { price: 22.19 }, gbp: { price: 19.79 } },
+        '1': { usd: 39.99, eur: 36.99, gbp: 32.99 },
+        '12': { usd: 31.99, eur: 29.59, gbp: 26.39 },
+        '24': { usd: 27.99, eur: 25.89, gbp: 23.09 },
+        '48': { usd: 23.99, eur: 22.19, gbp: 19.79 },
+    },
+    paymentLinks: {
+        '1': {
+            usd: 'https://buy.stripe.com/your_link_here',
+            eur: 'https://buy.stripe.com/your_link_here',
+            gbp: 'https://buy.stripe.com/your_link_here',
+        },
+        '12': {
+            usd: 'https://buy.stripe.com/your_link_here',
+            eur: 'https://buy.stripe.com/your_link_here',
+            gbp: 'https://buy.stripe.com/your_link_here',
+        },
+        '24': {
+            usd: 'https://buy.stripe.com/your_link_here',
+            eur: 'https://buy.stripe.com/your_link_here',
+            gbp: 'https://buy.stripe.com/your_link_here',
+        },
+        '48': {
+            usd: 'https://buy.stripe.com/your_link_here',
+            eur: 'https://buy.stripe.com/your_link_here',
+            gbp: 'https://buy.stripe.com/your_link_here',
+        },
     },
     pricePeriod: "/ month",
     description: "For growing factories that need more power and insights.",
     features: [
-      { text: "Up to 80 users" },
-      { text: "Up to 5 Production Lines" },
-      { text: "Up to 10 workstations per line" },
-      { text: "Advanced Reporting & Analytics" },
-      { text: "User Role Management" },
+      "Up to 80 users",
+      "Up to 5 Production Lines",
+      "Up to 10 workstations per line",
+      "Advanced Reporting & Analytics",
+      "User Role Management",
     ],
-    cta: "Upgrade to Standard",
+    cta: "Choose Plan",
     badge: "Most popular",
     popular: true,
   },
@@ -65,22 +95,44 @@ const tiers = [
     name: "Pro",
     id: "pro",
     prices: {
-        '1': { usd: { price: 59.99 }, eur: { price: 54.99 }, gbp: { price: 49.99 } },
-        '12': { usd: { price: 47.99 }, eur: { price: 43.99 }, gbp: { price: 39.99 } },
-        '24': { usd: { price: 41.99 }, eur: { price: 38.49 }, gbp: { price: 34.99 } },
-        '48': { usd: { price: 35.99 }, eur: { price: 32.99 }, gbp: { price: 29.99 } },
+        '1': { usd: 59.99, eur: 54.99, gbp: 49.99 },
+        '12': { usd: 47.99, eur: 43.99, gbp: 39.99 },
+        '24': { usd: 41.99, eur: 38.49, gbp: 34.99 },
+        '48': { usd: 35.99, eur: 32.99, gbp: 29.99 },
+    },
+     paymentLinks: {
+        '1': {
+            usd: 'https://buy.stripe.com/your_link_here',
+            eur: 'https://buy.stripe.com/your_link_here',
+            gbp: 'https://buy.stripe.com/your_link_here',
+        },
+        '12': {
+            usd: 'https://buy.stripe.com/your_link_here',
+            eur: 'https://buy.stripe.com/your_link_here',
+            gbp: 'https://buy.stripe.com/your_link_here',
+        },
+        '24': {
+            usd: 'https://buy.stripe.com/your_link_here',
+            eur: 'https://buy.stripe.com/your_link_here',
+            gbp: 'https://buy.stripe.com/your_link_here',
+        },
+        '48': {
+            usd: 'https://buy.stripe.com/your_link_here',
+            eur: 'https://buy.stripe.com/your_link_here',
+            gbp: 'https://buy.stripe.com/your_link_here',
+        },
     },
     pricePeriod: "/ month",
     description: "For scaling operations with expanded needs.",
     features: [
-        { text: "Up to 150 users" },
-        { text: "Up to 10 Production Lines" },
-        { text: "Up to 15 workstations per line" },
-        { text: "Advanced Reporting & Analytics" },
-        { text: "User Role Management" },
-        { text: "Priority Support" },
+        "Up to 150 users",
+        "Up to 10 Production Lines",
+        "Up to 15 workstations per line",
+        "Advanced Reporting & Analytics",
+        "User Role Management",
+        "Priority Support",
     ],
-    cta: "Upgrade to Pro",
+    cta: "Choose Plan",
     badge: "Best Value",
     popular: true,
     badgeVariant: "destructive" as "destructive",
@@ -89,22 +141,44 @@ const tiers = [
     name: "Enterprise",
     id: "enterprise",
     prices: {
-        '1': { usd: { price: 149.99 }, eur: { price: 139.99 }, gbp: { price: 124.99 } },
-        '12': { usd: { price: 119.99 }, eur: { price: 111.99 }, gbp: { price: 99.99 } },
-        '24': { usd: { price: 104.99 }, eur: { price: 97.99 }, gbp: { price: 87.49 } },
-        '48': { usd: { price: 89.99 }, eur: { price: 83.99 }, gbp: { price: 74.99 } },
+        '1': { usd: 149.99, eur: 139.99, gbp: 124.99 },
+        '12': { usd: 119.99, eur: 111.99, gbp: 99.99 },
+        '24': { usd: 104.99, eur: 97.99, gbp: 87.49 },
+        '48': { usd: 89.99, eur: 83.99, gbp: 74.99 },
+    },
+     paymentLinks: {
+        '1': {
+            usd: 'https://buy.stripe.com/your_link_here',
+            eur: 'https://buy.stripe.com/your_link_here',
+            gbp: 'https://buy.stripe.com/your_link_here',
+        },
+        '12': {
+            usd: 'https://buy.stripe.com/your_link_here',
+            eur: 'https://buy.stripe.com/your_link_here',
+            gbp: 'https://buy.stripe.com/your_link_here',
+        },
+        '24': {
+            usd: 'https://buy.stripe.com/your_link_here',
+            eur: 'https://buy.stripe.com/your_link_here',
+            gbp: 'https://buy.stripe.com/your_link_here',
+        },
+        '48': {
+            usd: 'https://buy.stripe.com/your_link_here',
+            eur: 'https://buy.stripe.com/your_link_here',
+            gbp: 'https://buy.stripe.com/your_link_here',
+        },
     },
     pricePeriod: "/ month",
     description: "For large-scale operations with expanded resources.",
     features: [
-      { text: "Up to 400 users" },
-      { text: "20 Production Lines" },
-      { text: "Up to 20 workstations per line" },
-      { text: "User Role Management" },
-      { text: "Advanced Reporting & Analytics" },
-      { text: "24/7 Priority Support" },
+      "Up to 400 users",
+      "20 Production Lines",
+      "Up to 20 workstations per line",
+      "User Role Management",
+      "Advanced Reporting & Analytics",
+      "24/7 Priority Support",
     ],
-    cta: "Sign up as Premium",
+    cta: "Choose Plan",
     badge: "Premium",
     premium: true,
   },
@@ -116,25 +190,6 @@ const customTier = {
     description: "For unique requirements and unlimited scale, our Custom plan offers dedicated support, custom integrations, and more. Contact us to design a plan that fits your exact needs.",
     cta: "Contact Sales"
 }
-
-const guarantees = [
-    {
-        icon: Headset,
-        title: "24/7 Support",
-        description: "Our support team is available around the clock to help you with any issues.",
-        note: "Available on the Enterprise plan."
-    },
-    {
-        icon: Shield,
-        title: "30-Day Money-Back Guarantee",
-        description: "Not satisfied? Get a full refund within the first 30 days of your subscription."
-    },
-    {
-        icon: BadgeCheck,
-        title: "Cancel Anytime",
-        description: "You can cancel your subscription at any time, no questions asked."
-    }
-]
 
 const servicesMenuItems = [
     { title: "Production Monitoring", description: "Get a live overview of your entire production line.", badge: "", href: "/services/monitoring" },
@@ -158,9 +213,6 @@ const servicesImage = PlaceHolderImages.find(p => p.id === 'mega-menu-services')
 const exploreImage = PlaceHolderImages.find(p => p.id === 'mega-menu-explore');
 const supportImage = PlaceHolderImages.find(p => p.id === 'mega-menu-support');
 
-type Duration = '1' | '12' | '24' | '48';
-type Currency = 'usd' | 'eur' | 'gbp';
-
 const MobileNavLink = ({ href, children }: { href: string; children: React.ReactNode }) => (
     <Link href={href} className="block py-2 text-muted-foreground hover:text-foreground">
         {children}
@@ -177,22 +229,12 @@ export default function PricingPage() {
     useEffect(() => {
         setYear(new Date().getFullYear());
     }, []);
-    const currencySymbols = {
-        usd: '$',
-        eur: '€',
-        gbp: '£',
-    }
+
+    const currencySymbols = { usd: '$', eur: '€', gbp: '£' };
     
     const formatPrice = (price: number, currency: Currency) => {
-        const locale = {
-            usd: 'en-US',
-            eur: 'de-DE',
-            gbp: 'en-GB'
-        }[currency];
-        return price.toLocaleString(locale, {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
-        });
+        const locale = { usd: 'en-US', eur: 'de-DE', gbp: 'en-GB' }[currency];
+        return price.toLocaleString(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     };
 
   return (
@@ -328,18 +370,17 @@ export default function PricingPage() {
                         const isStarter = tier.name === 'Starter';
                         const priceInfo = !isStarter ? tier.prices[duration][currency] : null;
                         const fullPriceInfo = !isStarter ? tier.prices['1'][currency] : null;
-                        const monthlyPrice = priceInfo ? priceInfo.price : 0;
-                        
+                        const monthlyPrice = priceInfo ? priceInfo : 0;
+
                         const linkHref = isStarter
-                            ? `/register?plan=starter`
-                            : `/checkout?plan=${tier.id}&duration=${duration}&currency=${currency}`;
+                            ? tier.href
+                            : currentUser 
+                              ? `${tier.paymentLinks[duration][currency]}?client_reference_id=${currentUser.orgId}&prefilled_email=${currentUser.email}`
+                              : tier.paymentLinks[duration][currency];
                         
                         const isProBestValue = tier.name === "Pro";
                         
                         let ctaText = tier.cta;
-                        if (!currentUser && !isStarter) {
-                            ctaText = "Choose Plan";
-                        }
                         
                         return (
                             <div key={tier.name} className="relative">
@@ -376,10 +417,10 @@ export default function PricingPage() {
                                     <CardContent className="flex-1">
                                         <ul className="space-y-4">
                                         {tier.features.map((feature) => (
-                                            <li key={feature.text} className="flex items-center">
+                                            <li key={feature} className="flex items-center">
                                                 <Badge variant="outline" className="border-0 font-medium text-green-600">
                                                     <CheckCircle className="h-5 w-5 mr-2" />
-                                                    <span>{feature.text}</span>
+                                                    <span>{feature}</span>
                                                 </Badge>
                                             </li>
                                         ))}
@@ -393,7 +434,7 @@ export default function PricingPage() {
                                         </Link>
                                          {!isStarter && fullPriceInfo && (
                                             <p className="text-xs text-muted-foreground mt-3 text-center">
-                                               Billed monthly. Renews at {currencySymbols[currency]}{formatPrice(fullPriceInfo.price, currency)}/mo after the first {duration} months.
+                                               Billed monthly. Renews at {currencySymbols[currency]}{formatPrice(fullPriceInfo, currency)}/mo after the first {duration} months.
                                             </p>
                                          )}
                                          {isStarter && (
@@ -403,52 +444,6 @@ export default function PricingPage() {
                                          )}
                                     </CardFooter>
                                 </Card>
-                            </div>
-                        )
-                    })}
-                </div>
-
-                <div className="mt-20">
-                    <Card className="bg-muted/50">
-                        <div className="grid md:grid-cols-3 items-center">
-                            <div className="p-8 md:col-span-2">
-                                <h2 className="text-2xl font-bold">{customTier.name}</h2>
-                                <p className="text-muted-foreground mt-2">
-                                    {customTier.description}
-                                </p>
-                            </div>
-                            <div className="p-8 text-center md:text-right border-t md:border-t-0 md:border-l">
-                                <Link href="/support/contact" className={cn(buttonVariants({ size: 'lg' }))}>
-                                    {customTier.cta} <ArrowRight className="ml-2 h-5 w-5" />
-                                </Link>
-                            </div>
-                        </div>
-                    </Card>
-                </div>
-            </div>
-        </section>
-
-        <section className="py-20 border-t bg-muted/50">
-            <div className="container">
-                <div className="text-center mb-12">
-                    <h2 className="text-3xl font-bold">Peace of Mind</h2>
-                    <p className="max-w-2xl mx-auto text-muted-foreground mt-4">
-                        We're committed to your success. Our plans come with guarantees to ensure you're always supported.
-                    </p>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-                    {guarantees.map((guarantee) => {
-                        const Icon = guarantee.icon;
-                        return (
-                            <div key={guarantee.title} className="flex flex-col items-center text-center">
-                                <div className="p-4 bg-background rounded-full border mb-4">
-                                    <Icon className="h-8 w-8 text-primary" />
-                                </div>
-                                <h3 className="font-semibold text-lg">{guarantee.title}</h3>
-                                <p className="text-muted-foreground mt-2 text-sm">{guarantee.description}</p>
-                                {guarantee.note && (
-                                    <p className="text-xs text-muted-foreground mt-1">({guarantee.note})</p>
-                                )}
                             </div>
                         )
                     })}
@@ -476,3 +471,5 @@ export default function PricingPage() {
     </div>
   );
 }
+
+    
