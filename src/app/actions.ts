@@ -136,11 +136,12 @@ export async function createCheckoutSession({
     }
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://andonpro.com';
     
-    const priceIdEnvVar = `STRIPE_PRICE_ID_${plan.toUpperCase()}_${duration}_${currency.toUpperCase()}`;
+    // Always use the base monthly price ID (duration '1')
+    const priceIdEnvVar = `STRIPE_PRICE_ID_${plan.toUpperCase()}_1_${currency.toUpperCase()}`;
     const priceId = process.env[priceIdEnvVar];
     
     if (!priceId) {
-      throw new Error(`Price ID for ${plan} (${duration}mo, ${currency}) is not configured. Looking for env var: ${priceIdEnvVar}`);
+      throw new Error(`Price ID for ${plan} (${currency}) is not configured. Looking for env var: ${priceIdEnvVar}`);
     }
 
     const couponMap: Record<string, string | undefined> = {
