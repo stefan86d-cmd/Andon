@@ -212,21 +212,21 @@ function CheckoutContent() {
       )
   }
   
-    const renewalText = useMemo(() => {
-        if (plan === 'starter' || !tiers[plan as Exclude<Plan, 'starter' | 'custom'>]) return "The Starter plan is always free.";
-        
+    let renewalText: string;
+    if (plan === 'starter' || !tiers[plan as Exclude<Plan, 'starter' | 'custom'>]) {
+        renewalText = "The Starter plan is always free.";
+    } else {
         const selectedTier = tiers[plan as Exclude<Plan, 'starter' | 'custom'>];
         const monthlyPrice = selectedTier.prices[duration][currency];
         const fullPrice = selectedTier.prices['1'][currency];
-        
         const symbol = currencySymbols[currency];
         const price = formatPrice(fullPrice, currency);
         const savingsText =
         parseInt(duration) > 1
             ? `That's only ${symbol}${formatPrice(monthlyPrice, currency)}/mo.`
             : "";
-        return `Billed monthly. Discount applies for the first ${duration} months. ${savingsText} Renews at ${symbol}${price}/mo. Cancel anytime.`;
-    }, [plan, duration, currency]);
+        renewalText = `Billed monthly. Discount applies for the first ${duration} months. ${savingsText} Renews at ${symbol}${price}/mo. Cancel anytime.`;
+    }
 
   return (
     <div className="bg-muted">
