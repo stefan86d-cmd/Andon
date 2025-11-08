@@ -135,14 +135,10 @@ export async function createCheckoutSession({
   returnPath?: string;
 }) {
   if (!customerId) throw new Error("Customer ID is required");
-  if (!plan) throw new Error("Plan is required");
+  if (!plan || plan === 'starter') throw new Error("A valid, non-starter plan is required.");
   if (!currency) throw new Error("Currency is required");
 
   try {
-    if (plan === 'starter') {
-      throw new Error("Cannot create a checkout session for the Starter plan.");
-    }
-
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
     if (!baseUrl) throw new Error("NEXT_PUBLIC_BASE_URL is not defined.");
 
@@ -150,23 +146,17 @@ export async function createCheckoutSession({
     const priceId = process.env[priceIdEnvVar];
 
     if (!priceId) {
-      throw new Error(
-        `Stripe price ID not found. Ensure the environment variable ${priceIdEnvVar} is set.`
-      );
+      throw new Error(`Stripe price ID for ${plan} in ${currency} not found. Ensure ${priceIdEnvVar} is set.`);
     }
 
     const couponMap: Record<string, string | undefined> = {
-      '1': undefined,
       '12': process.env.STRIPE_COUPON_20_OFF,
       '24': process.env.STRIPE_COUPON_30_OFF,
       '48': process.env.STRIPE_COUPON_40_OFF,
     };
-
+    
     const couponId = couponMap[duration];
-    const discounts = [];
-    if (couponId) {
-        discounts.push({ coupon: couponId });
-    }
+    const discounts = couponId ? [{ coupon: couponId }] : [];
 
     const returnUrl = returnPath
       ? `${baseUrl}${returnPath}`
@@ -176,18 +166,19 @@ export async function createCheckoutSession({
       mode: 'subscription',
       customer: customerId,
       line_items: [{ price: priceId, quantity: 1 }],
-      discounts: discounts.length > 0 ? discounts : undefined,
+      discounts: discounts,
       ui_mode: 'embedded',
       return_url: returnUrl,
       metadata,
       subscription_data: { metadata },
-      automatic_tax: { enabled: true },
       customer_update: { address: 'auto' },
     };
 
     const session = await stripe.checkout.sessions.create(sessionParams);
-    console.log(`✅ Stripe checkout session created: ${session.id}`);
+
+    console.log(`✅ Stripe checkout session created: ${session.id} with ${discounts.length > 0 ? `coupon ${couponId}` : 'no coupon'}`);
     return { clientSecret: session.client_secret };
+
   } catch (err: any) {
     console.error("❌ Stripe checkout session creation failed:", err);
     throw new Error(err.message || "Failed to create Stripe checkout session.");
