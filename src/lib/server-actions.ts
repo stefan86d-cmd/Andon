@@ -4,8 +4,7 @@
 import type { Issue, Plan, ProductionLine, Role, User } from '@/lib/types';
 import { handleFirestoreError } from '@/lib/firestore-helpers';
 import { sendEmail } from '@/lib/email';
-import { db as dbFn } from '@/firebase/server';
-import { adminAuth } from '@/firebase/admin';
+import { adminAuth, adminDb } from '@/firebase/admin';
 import { FieldValue, Firestore } from 'firebase-admin/firestore';
 import Stripe from 'stripe';
 
@@ -13,17 +12,8 @@ const stripe = new Stripe(process.env.NEXT_STRIPE_SECRET_KEY!, {
   apiVersion: '2024-06-20',
 });
 
-async function getDb(): Promise<Firestore> {
-  const db = dbFn();
-  if (!db) {
-    throw new Error('Firestore is not initialized.');
-  }
-  return db;
-}
-
-
 export async function getUserByEmail(email: string): Promise<User | null> {
-  const db = await getDb();
+  const db = adminDb();
   try {
     const snapshot = await db.collection('users').where('email', '==', email).get();
     if (snapshot.empty) return null;
@@ -36,7 +26,7 @@ export async function getUserByEmail(email: string): Promise<User | null> {
 }
 
 export async function getUserById(uid: string): Promise<User | null> {
-  const db = await getDb();
+  const db = adminDb();
   try {
     const docSnap = await db.collection('users').doc(uid).get();
     if (!docSnap.exists) return null;
@@ -55,9 +45,8 @@ export async function addUser(userData: {
   plan: Plan;
   orgId: string;
 }) {
-  const db = await getDb();
+  const db = adminDb();
   const auth = adminAuth();
-  if (!auth) return handleFirestoreError(new Error('Admin SDK not initialized'));
   try {
     const { email, firstName, lastName, role, plan, orgId } = userData;
     if (await getUserByEmail(email)) return { success: false, error: 'Email already exists' };
@@ -70,7 +59,7 @@ export async function addUser(userData: {
       lastName,
       email,
       role,
-      plan: userData.plan, // Correctly use the plan from the inviting admin
+      plan: userData.plan,
       orgId,
       notificationPreferences: { newIssue: false, issueResolved: false, muteSound: true },
       theme: 'light',
@@ -99,9 +88,8 @@ export async function addUser(userData: {
 }
 
 export async function editUser(userId: string, data: { firstName: string; lastName: string; email: string; role: Role }) {
-  const db = await getDb();
+  const db = adminDb();
   const auth = adminAuth();
-  if (!auth) return handleFirestoreError(new Error('Admin SDK not initialized'));
   try {
     await db.collection('users').doc(userId).update(data);
     const authUser = await auth.getUser(userId);
@@ -113,9 +101,8 @@ export async function editUser(userId: string, data: { firstName: string; lastNa
 }
 
 export async function deleteUser(userId: string) {
-  const db = await getDb();
+  const db = adminDb();
   const auth = adminAuth();
-  if (!auth) return handleFirestoreError(new Error('Admin SDK not initialized'));
   try {
     await db.collection('users').doc(userId).delete();
     // Also delete from Firebase Auth
@@ -127,7 +114,7 @@ export async function deleteUser(userId: string) {
 }
 
 export async function updateUserPlan(userId: string, newPlan: Plan, planData: Partial<User>) {
-  const db = await getDb();
+  const db = adminDb();
   try {
     const userRef = db.collection('users').doc(userId);
     const userSnap = await userRef.get();
@@ -168,7 +155,6 @@ export async function sendWelcomeEmail(userId: string) {
 
 export async function requestPasswordReset(email: string) {
   const auth = adminAuth();
-  if (!auth) return { success: false, message: 'Password reset service is unavailable.' };
   try {
     const link = await auth.generatePasswordResetLink(email);
     await sendEmail({ to: email, subject: "Reset your password", html: `<p>You can reset your password by clicking this link: <a href="${link}">${link}</a></p>` });
@@ -198,7 +184,7 @@ export async function sendPasswordChangedEmail(email: string) {
 // ---------------- Issue Actions ----------------
 
 export async function reportIssue(issueData: Omit<Issue, 'id' | 'reportedAt' | 'reportedBy' | 'status'>, userEmail: string) {
-  const db = await getDb();
+  const db = adminDb();
   try {
     const reporter = await getUserByEmail(userEmail);
     if (!reporter) return { success: false, error: 'Reporting user not found' };
@@ -224,7 +210,7 @@ export async function reportIssue(issueData: Omit<Issue, 'id' | 'reportedAt' | '
 }
 
 export async function updateIssue(issueId: string, data: { resolutionNotes?: string; status: 'in_progress' | 'resolved'; productionStopped: boolean }, userEmail: string) {
-  const db = await getDb();
+  const db = adminDb();
   try {
     const resolver = await getUserByEmail(userEmail);
     if (!resolver) return { success: false, error: 'Resolving user not found' };
@@ -259,7 +245,7 @@ export async function updateIssue(issueId: string, data: { resolutionNotes?: str
 // ---------------- Production Line Actions ----------------
 
 export async function getProductionLines(orgId: string): Promise<ProductionLine[]> {
-  const db = await getDb();
+  const db = adminDb();
   try {
     const snapshot = await db.collection('productionLines').where('orgId', '==', orgId).get();
     return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as ProductionLine));
@@ -270,7 +256,7 @@ export async function getProductionLines(orgId: string): Promise<ProductionLine[
 }
 
 export async function createProductionLine(name: string, orgId: string) {
-  const db = await getDb();
+  const db = adminDb();
   try {
     const snapshot = await db.collection('productionLines').where('name', '==', name).where('orgId', '==', orgId).get();
     if (!snapshot.empty) return { success: false, error: 'Production line exists' };
@@ -282,7 +268,7 @@ export async function createProductionLine(name: string, orgId: string) {
 }
 
 export async function editProductionLine(lineId: string, data: { name: string; workstations: { value: string }[] }) {
-  const db = await getDb();
+  const db = adminDb();
   try {
     await db.collection('productionLines').doc(lineId).update({ name: data.name, workstations: data.workstations.map(ws => ws.value) });
     return { success: true };
@@ -292,7 +278,7 @@ export async function editProductionLine(lineId: string, data: { name: string; w
 }
 
 export async function deleteProductionLine(lineId: string) {
-  const db = await getDb();
+  const db = adminDb();
   try {
     await db.collection('productionLines').doc(lineId).delete();
     return { success: true };
@@ -304,7 +290,7 @@ export async function deleteProductionLine(lineId: string) {
 // ---------------- Users List ----------------
 
 export async function getAllUsers(orgId: string): Promise<User[]> {
-  const db = await getDb();
+  const db = adminDb();
   try {
     const snapshot = await db.collection('users').where('orgId', '==', orgId).get();
     return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
@@ -318,7 +304,7 @@ export async function getAllUsers(orgId: string): Promise<User[]> {
 // ---------------- Subscription Actions ----------------
 
 export async function cancelSubscription(userId: string, subscriptionId: string) {
-    const db = await getDb();
+    const db = adminDb();
 
     try {
         const subscription = await stripe.subscriptions.update(subscriptionId, {
@@ -340,7 +326,6 @@ export async function cancelSubscription(userId: string, subscriptionId: string)
 // ---------------- Registration Actions ----------------
 export async function cancelRegistrationAndDeleteUser(userId: string) {
   const auth = adminAuth();
-  if (!auth) return handleFirestoreError(new Error('Admin SDK not initialized'));
   try {
     await auth.deleteUser(userId);
     return { success: true };

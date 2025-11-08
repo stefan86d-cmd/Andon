@@ -17,6 +17,7 @@ function initializeAdmin(): AdminInstances {
     return instances;
   }
 
+  // Check if the app is already initialized
   if (admin.apps.length > 0) {
     const app = admin.apps[0]!;
     instances = {
@@ -26,7 +27,8 @@ function initializeAdmin(): AdminInstances {
     };
     return instances;
   }
-
+  
+  // If not initialized, try to initialize it
   try {
     const serviceAccountString = process.env.SERVICE_ACCOUNT_ANDON_EF46A;
     if (!serviceAccountString) {
@@ -34,6 +36,8 @@ function initializeAdmin(): AdminInstances {
     }
 
     const serviceAccount = JSON.parse(serviceAccountString);
+    
+    // The replace is crucial for keys that have newlines in the env var
     if (serviceAccount.private_key) {
       serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
     }
@@ -58,15 +62,5 @@ function initializeAdmin(): AdminInstances {
 }
 
 // Export getters that ensure initialization
-// This pattern prevents the app from crashing if the module is imported but the instances aren't used.
-// The error will only be thrown when adminDb or adminAuth are actually accessed.
-
-const getAdminDb = (): Firestore => {
-  return initializeAdmin().db;
-}
-
-const getAdminAuth = (): Auth => {
-  return initializeAdmin().auth;
-}
-
-export { getAdminDb as adminDb, getAdminAuth as adminAuth };
+export const adminDb = (): Firestore => initializeAdmin().db;
+export const adminAuth = (): Auth => initializeAdmin().auth;

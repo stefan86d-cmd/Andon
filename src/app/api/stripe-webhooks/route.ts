@@ -26,10 +26,6 @@ export async function POST(req: Request) {
   }
   
   const db = adminDb();
-  if (!db) {
-    console.error("❌ Firebase Admin DB is not initialized.");
-    return new NextResponse("Internal Server Error: Firebase not configured.", { status: 500 });
-  }
 
   // ---------------------------------------------------------------------------
   // ✅ CHECKOUT COMPLETED (subscription start)

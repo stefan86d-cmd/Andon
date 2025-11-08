@@ -5,11 +5,6 @@ import type { Issue, Plan, ProductionLine, Role, User } from '@/lib/types';
 import { handleFirestoreError } from '@/lib/firestore-helpers';
 import { sendEmail } from '@/lib/email';
 import Stripe from 'stripe';
-import { db as dbFn } from '@/firebase/server';
-import { adminAuth } from '@/firebase/admin';
-import { FieldValue } from 'firebase-admin/firestore';
-import { getAuth, sendPasswordResetEmail } from "firebase/auth";
-import { getClientInstances } from "@/firebase/client"; 
 
 import {
     getUserByEmail,
@@ -59,9 +54,13 @@ const stripe = new Stripe(process.env.NEXT_STRIPE_SECRET_KEY!, {
 
 // ---------------- User / Firestore Actions ----------------
 
+async function getAdminDb() {
+  const { adminDb } = await import('@/firebase/admin');
+  return adminDb();
+}
+
 export async function getOrCreateStripeCustomer(userId: string, email: string): Promise<{ id: string }> {
-  const db = dbFn();
-  if (!db) throw new Error("Firestore not initialized");
+  const db = await getAdminDb();
 
   const userRef = db.collection('users').doc(userId);
   const userSnapshot = await userRef.get();
@@ -195,22 +194,6 @@ export async function createCheckoutSession({
   }
 };
 
-
-export async function sendWelcomeEmail(userId: string) {
-  try {
-    const user = await getUserById(userId);
-    if (!user) return { success: false, error: "User not found" };
-
-    await sendEmail({
-      to: user.email,
-      subject: "Welcome to AndonPro!",
-      html: `<h1>Welcome, ${user.firstName}!</h1><p>Your account is ready. <a href="${process.env.NEXT_PUBLIC_BASE_URL}/dashboard">Go to your dashboard</a>.</p>`
-    });
-    return { success: true };
-  } catch (err: any) {
-    return handleFirestoreError(err);
-  }
-}
 
 export async function sendContactEmail({ name, email, message }: { name: string; email: string; message: string; }) {
     const supportEmail = 'support@andonpro.com';
