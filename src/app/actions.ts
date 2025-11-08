@@ -176,7 +176,7 @@ export async function createCheckoutSession({
       mode: 'subscription',
       customer: customerId,
       line_items: [{ price: priceId, quantity: 1 }],
-      discounts,
+      discounts: discounts.length > 0 ? discounts : undefined,
       ui_mode: 'embedded',
       return_url: returnUrl,
       metadata,
