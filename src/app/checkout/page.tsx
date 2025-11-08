@@ -154,8 +154,7 @@ function CheckoutContent() {
   }
 
   const OrderSummary = () => {
-      const isFreePlan = plan === 'starter';
-      if (isFreePlan) {
+      if (plan === 'starter') {
            return (
               <div className="space-y-4">
                 <div className="flex justify-between"><span>Plan</span><span className="capitalize font-medium">Starter</span></div>
@@ -258,11 +257,9 @@ function CheckoutContent() {
                                     <SelectTrigger><SelectValue placeholder="Select plan" /></SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="starter">Starter</SelectItem>
-                                        {(Object.keys(tiers) as Array<keyof typeof tiers>).map((key) =>
-                                            key !== 'custom' && key !== 'starter' && (
-                                            <SelectItem key={key} value={key} className="capitalize">{tiers[key as Exclude<Plan, 'custom' | 'starter'>].name}</SelectItem>
-                                            )
-                                        )}
+                                        {(Object.keys(tiers) as Array<Exclude<Plan, 'custom' | 'starter'>>).map((key) => (
+                                            <SelectItem key={key} value={key} className="capitalize">{tiers[key].name}</SelectItem>
+                                        ))}
                                     </SelectContent>
                                 </Select>
 
@@ -341,3 +338,5 @@ export default function CheckoutPage() {
         </Suspense>
     )
 }
+
+    
