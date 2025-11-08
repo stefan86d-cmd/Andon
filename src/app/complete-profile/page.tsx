@@ -25,8 +25,19 @@ import { countries } from '@/lib/countries';
 import type { Plan, Role } from '@/lib/types';
 import { toast } from '@/hooks/use-toast';
 import { useUser } from '@/contexts/user-context';
-import { createCheckoutSession, sendWelcomeEmail, getOrCreateStripeCustomer } from '@/app/actions';
+import { createCheckoutSession, sendWelcomeEmail, getOrCreateStripeCustomer, cancelRegistrationAndDeleteUser } from '@/app/actions';
 import { EmbeddedCheckoutForm } from '@/components/checkout/embedded-checkout-form';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 
 const profileFormSchema = z.object({
@@ -45,9 +56,10 @@ type ProfileFormValues = z.infer<typeof profileFormSchema>;
 function CompleteProfileContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { currentUser, loading: userLoading, updateCurrentUser } = useUser();
+  const { currentUser, loading: userLoading, updateCurrentUser, logout } = useUser();
   
   const [isSubmitting, startTransition] = useTransition();
+  const [isCancelling, startCancellationTransition] = useTransition();
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [year, setYear] = useState(new Date().getFullYear());
 
@@ -177,6 +189,27 @@ function CompleteProfileContent() {
     });
   };
 
+  const handleCancelRegistration = () => {
+    if (!currentUser) return;
+    startCancellationTransition(async () => {
+      const result = await cancelRegistrationAndDeleteUser(currentUser.id);
+      if (result.success) {
+        // Logout will clear local state and onAuthStateChanged will handle redirection
+        await logout(); 
+        toast({
+          title: "Registration Canceled",
+          description: "Your registration has been successfully canceled.",
+        });
+      } else {
+        toast({
+          title: "Cancellation Failed",
+          description: result.error || "An unexpected error occurred. Please try again.",
+          variant: "destructive",
+        });
+      }
+    });
+  }
+
   if (userLoading || !currentUser) {
     return (
         <div className="flex h-screen items-center justify-center">
@@ -293,10 +326,32 @@ function CompleteProfileContent() {
                         <p className="text-sm text-muted-foreground text-center">
                             By clicking the button below, you agree to our <Link href="/terms" className="underline" target="_blank" rel="noopener noreferrer">Terms of Service</Link>.
                         </p>
-                        <Button onClick={handleSubmit} className="w-full" disabled={isSubmitting}>
-                            {isSubmitting && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
-                            {isStarterPlan ? 'Complete Registration' : 'Continue to Payment'}
-                        </Button>
+                        <div className="w-full flex flex-col sm:flex-row gap-2">
+                             <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                    <Button variant="outline" className="w-full sm:w-auto" disabled={isCancelling}>Cancel</Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                    <AlertDialogTitle>Are you sure you want to cancel?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        This will permanently delete your account and you will have to start over. This action cannot be undone.
+                                    </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                    <AlertDialogCancel>Go Back</AlertDialogCancel>
+                                    <AlertDialogAction onClick={handleCancelRegistration} disabled={isCancelling}>
+                                         {isCancelling && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
+                                        Yes, cancel
+                                    </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                </AlertDialogContent>
+                            </AlertDialog>
+                            <Button onClick={handleSubmit} className="w-full" disabled={isSubmitting || isCancelling}>
+                                {(isSubmitting || isCancelling) && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
+                                {isStarterPlan ? 'Complete Registration' : 'Continue to Payment'}
+                            </Button>
+                        </div>
                     </CardFooter>
                 </Card>
             </div>

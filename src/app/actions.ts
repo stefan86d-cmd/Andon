@@ -28,6 +28,7 @@ import {
     getAllUsers,
     requestPasswordReset,
     cancelSubscription,
+    cancelRegistrationAndDeleteUser,
 } from '@/lib/server-actions';
 
 
@@ -48,6 +49,7 @@ export {
     getAllUsers,
     requestPasswordReset,
     cancelSubscription,
+    cancelRegistrationAndDeleteUser,
 };
 
 
@@ -258,3 +260,4 @@ export async function sendContactEmail({ name, email, message }: { name: string;
     
 
     
+

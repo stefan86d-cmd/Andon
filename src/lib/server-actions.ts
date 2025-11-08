@@ -336,3 +336,15 @@ export async function cancelSubscription(userId: string, subscriptionId: string)
         return { success: false, error: error.message };
     }
 }
+
+
+// ---------------- Registration Actions ----------------
+export async function cancelRegistrationAndDeleteUser(userId: string) {
+  if (!adminAuth) return handleFirestoreError(new Error('Admin SDK not initialized'));
+  try {
+    await adminAuth.deleteUser(userId);
+    return { success: true };
+  } catch (err) {
+    return handleFirestoreError(err);
+  }
+}
