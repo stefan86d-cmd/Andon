@@ -66,13 +66,21 @@ function CheckoutContent() {
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [year, setYear] = useState(new Date().getFullYear());
 
+  // Use state to manage selections, initialized from URL params
+  const [plan, setPlan] = useState<Plan>((searchParams.get('plan') as Plan) || 'pro');
+  const [duration, setDuration] = useState<Duration>((searchParams.get('duration') as Duration) || '12');
+  const [currency, setCurrency] = useState<Currency>((searchParams.get('currency') as Currency) || 'usd');
+
+  // Effect to sync state with URL search params when they change
+  useEffect(() => {
+    setPlan((searchParams.get('plan') as Plan) || 'pro');
+    setDuration((searchParams.get('duration') as Duration) || '12');
+    setCurrency((searchParams.get('currency') as Currency) || 'usd');
+  }, [searchParams]);
+
   useEffect(() => {
     setYear(new Date().getFullYear());
   }, []);
-
-  const plan = (searchParams.get('plan') as Plan) || 'pro';
-  const duration = (searchParams.get('duration') as Duration) || '12';
-  const currency = (searchParams.get('currency') as Currency) || 'usd';
 
   const handleSelectionChange = (type: 'plan' | 'duration' | 'currency', value: string) => {
     const newParams = new URLSearchParams(searchParams.toString());
@@ -83,7 +91,7 @@ function CheckoutContent() {
   const isNewUser = !currentUser;
 
   const handleContinue = () => {
-     if (plan === 'starter') {
+    if (plan === 'starter') {
       router.push(`/register?plan=starter`);
       return;
     }
@@ -243,9 +251,9 @@ function CheckoutContent() {
                                 <Select value={plan} onValueChange={(v) => handleSelectionChange('plan', v)}>
                                     <SelectTrigger><SelectValue placeholder="Select plan" /></SelectTrigger>
                                     <SelectContent>
-                                    {Object.keys(tiers).map((key) =>
+                                    {(Object.keys(tiers) as Array<keyof typeof tiers>).map((key) =>
                                         key !== 'custom' && key !== 'starter' && (
-                                        <SelectItem key={key} value={key} className="capitalize">{tiers[key as keyof typeof tiers].name}</SelectItem>
+                                        <SelectItem key={key} value={key} className="capitalize">{tiers[key].name}</SelectItem>
                                         )
                                     )}
                                     </SelectContent>
@@ -324,3 +332,5 @@ export default function CheckoutPage() {
         </Suspense>
     )
 }
+
+    
