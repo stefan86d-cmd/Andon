@@ -70,6 +70,20 @@ function CompleteProfileContent() {
 
 
   useEffect(() => {
+    // If any param is missing, add it to the URL to ensure state is always complete
+    const params = new URLSearchParams(window.location.search);
+    let shouldUpdate = false;
+  
+    if (!params.get('plan')) { params.set('plan', 'starter'); shouldUpdate = true; }
+    if (!params.get('duration')) { params.set('duration', '1'); shouldUpdate = true; }
+    if (!params.get('currency')) { params.set('currency', 'usd'); shouldUpdate = true; }
+  
+    if (shouldUpdate) {
+      router.replace(`/complete-profile?${params.toString()}`);
+    }
+  }, [router, searchParams]);
+
+  useEffect(() => {
     setYear(new Date().getFullYear());
   }, []);
   
@@ -378,5 +392,3 @@ export default function CompleteProfilePage() {
         </Suspense>
     )
 }
-
-    
