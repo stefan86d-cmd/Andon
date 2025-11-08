@@ -19,7 +19,7 @@ function SettingsPageContent() {
     const { currentUser, updateCurrentUser } = useUser();
     const { theme, setTheme } = useTheme();
 
-    if (!currentUser) {
+    if (!currentUser || !currentUser.plan) {
         return <div>Loading...</div>;
     }
     
