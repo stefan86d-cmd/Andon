@@ -148,7 +148,6 @@ function CompleteProfileContent() {
         if (!profileSaved || !currentUser) return;
 
         if (isStarterPlan) {
-            // For starter plan, we can set the plan directly as there is no payment.
             await updateCurrentUser({ plan: 'starter', subscriptionStatus: 'active' });
             await sendWelcomeEmail(currentUser.id);
             toast({
@@ -193,7 +192,7 @@ function CompleteProfileContent() {
     startCancellationTransition(async () => {
       const result = await cancelRegistrationAndDeleteUser(currentUser.id);
       if (result.success) {
-        await logout(); 
+        await logout();
         toast({
           title: "Registration Canceled",
           description: "Your registration has been successfully canceled.",
@@ -201,12 +200,15 @@ function CompleteProfileContent() {
       } else {
         toast({
           title: "Cancellation Failed",
-          description: result.error || "An unexpected error occurred. Please try again.",
+          description:
+            "error" in result
+              ? result.error
+              : "An unexpected error occurred. Please try again.",
           variant: "destructive",
         });
       }
     });
-  }
+  };
 
   if (userLoading || !currentUser) {
     return (
@@ -373,5 +375,3 @@ export default function CompleteProfilePage() {
         </Suspense>
     )
 }
-
-    
