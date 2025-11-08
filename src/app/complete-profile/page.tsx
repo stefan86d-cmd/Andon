@@ -25,7 +25,7 @@ import { countries } from '@/lib/countries';
 import type { Plan, Role } from '@/lib/types';
 import { toast } from '@/hooks/use-toast';
 import { useUser } from '@/contexts/user-context';
-import { createCheckoutSession, sendWelcomeEmail, getOrCreateStripeCustomer, cancelRegistrationAndDeleteUser } from '@/app/actions';
+import { createCheckoutSession, getOrCreateStripeCustomer, cancelRegistrationAndDeleteUser, sendWelcomeEmail } from '@/app/actions';
 import { EmbeddedCheckoutForm } from '@/components/checkout/embedded-checkout-form';
 import {
   AlertDialog,
@@ -128,6 +128,7 @@ function CompleteProfileContent() {
         country: data.country,
         phone: data.phone,
         orgId: currentUser.id,
+        plan: 'starter' // ALWAYS start on starter, upgrade via webhook
       };
 
       await updateCurrentUser(userProfileData);
@@ -162,7 +163,7 @@ function CompleteProfileContent() {
           title: "Registration Complete!",
           description: `Welcome to the Starter plan. Your account is ready!`,
         });
-        router.push(`/dashboard${queryParams}`);
+        router.push(`/dashboard`);
       } else {
         try {
           if (!currentUser?.email) throw new Error("User email is not available.");
@@ -176,7 +177,7 @@ function CompleteProfileContent() {
             duration,
             currency,
             metadata,
-            returnPath: `/dashboard${queryParams}&payment_success=true&session_id={CHECKOUT_SESSION_ID}`,
+            returnPath: `/dashboard?payment_success=true&session_id={CHECKOUT_SESSION_ID}`,
           });
   
           if (result.clientSecret) {

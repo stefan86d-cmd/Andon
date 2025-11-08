@@ -44,7 +44,7 @@ export async function POST(req: Request) {
         const updates = {
           plan,
           subscriptionId: subscription.id,
-          subscriptionStatus: subscription.status,
+          subscriptionStatus: 'active' as const, // Ensure status is explicitly 'active'
           subscriptionStartsAt: Timestamp.fromMillis(subscription.current_period_start * 1000),
           subscriptionEndsAt: Timestamp.fromMillis(subscription.current_period_end * 1000),
           updatedAt: FieldValue.serverTimestamp(),
@@ -156,3 +156,5 @@ export async function POST(req: Request) {
 
   return new NextResponse(JSON.stringify({ received: true }), { status: 200 });
 }
+
+    
