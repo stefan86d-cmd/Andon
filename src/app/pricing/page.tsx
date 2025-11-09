@@ -400,7 +400,7 @@ function PricingPageContent() {
                 const registrationHref = `/register?plan=${tier.id}&duration=${duration}&currency=${currency}`;
                 
                 const priceInfo = (() => {
-                  if (isStarter || !('prices' in tier)) {
+                  if (isStarter || !('prices' in tier) || !tier.prices) {
                     return { price: 0, fullPrice: 0 };
                   }
                   const price = tier.prices[duration]?.[currency] ?? 0;
@@ -413,7 +413,7 @@ function PricingPageContent() {
                 if (currentUser) {
                   if (isStarter) {
                     finalHref = "/settings/billing";
-                  } else if ('paymentLinks' in tier) {
+                  } else if ('paymentLinks' in tier && tier.paymentLinks) {
                     const paymentLink = tier.paymentLinks[duration]?.[currency] ?? "#";
                     finalHref = `${paymentLink}?client_reference_id=${currentUser.orgId}&prefilled_email=${currentUser.email}&metadata[isNewUser]=false`;
                   } else {
@@ -599,5 +599,3 @@ export default function PricingPage() {
         </Suspense>
     );
 }
-
-    
