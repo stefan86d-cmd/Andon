@@ -26,30 +26,78 @@ const tiers: Record<Exclude<Plan, 'custom' | 'starter'>, any> = {
     name: "Standard", 
     prices: { '1': { usd: 39.99, eur: 36.99, gbp: 32.99 }, '12': { usd: 31.99, eur: 29.59, gbp: 26.39 }, '24': { usd: 27.99, eur: 25.89, gbp: 23.09 }, '48': { usd: 23.99, eur: 22.19, gbp: 19.79 } },
     paymentLinks: {
-        '1': { usd: 'https://buy.stripe.com/your_link_here', eur: 'https://buy.stripe.com/your_link_here', gbp: 'https://buy.stripe.com/your_link_here' },
-        '12': { usd: 'https://buy.stripe.com/your_link_here', eur: 'https://buy.stripe.com/your_link_here', gbp: 'https://buy.stripe.com/your_link_here' },
-        '24': { usd: 'https://buy.stripe.com/your_link_here', eur: 'https://buy.stripe.com/your_link_here', gbp: 'https://buy.stripe.com/your_link_here' },
-        '48': { usd: 'https://buy.stripe.com/your_link_here', eur: 'https://buy.stripe.com/your_link_here', gbp: 'https://buy.stripe.com/your_link_here' },
+        '1': {
+            usd: 'https://buy.stripe.com/4gM28q7nG9jM0sEd0O0Ny05',
+            eur: 'https://buy.stripe.com/7sY14mdM48fI6R2aSG0Ny08',
+            gbp: 'https://buy.stripe.com/bJe6oGgYggMea3e8Ky0Ny02',
+        },
+        '12': {
+            usd: 'https://buy.stripe.com/4gM28q7nG9jM0sEd0O0Ny05?prefilled_promo_code=YAPPQ2YO',
+            eur: 'https://buy.stripe.com/7sY14mdM48fI6R2aSG0Ny08?prefilled_promo_code=YAPPQ2YO',
+            gbp: 'https://buy.stripe.com/bJe6oGgYggMea3e8Ky0Ny02?prefilled_promo_code=YAPPQ2YO',
+        },
+        '24': {
+            usd: 'https://buy.stripe.com/4gM28q7nG9jM0sEd0O0Ny05?prefilled_promo_code=TQ4IVSRD',
+            eur: 'https://buy.stripe.com/7sY14mdM48fI6R2aSG0Ny08?prefilled_promo_code=TQ4IVSRD',
+            gbp: 'https://buy.stripe.com/bJe6oGgYggMea3e8Ky0Ny02?prefilled_promo_code=TQ4IVSRD',
+        },
+        '48': {
+            usd: 'https://buy.stripe.com/4gM28q7nG9jM0sEd0O0Ny05?prefilled_promo_code=ALRLAVQ8',
+            eur: 'https://buy.stripe.com/7sY14mdM48fI6R2aSG0Ny08?prefilled_promo_code=ALRLAVQ8',
+            gbp: 'https://buy.stripe.com/bJe6oGgYggMea3e8Ky0Ny02?prefilled_promo_code=ALRLAVQ8',
+        },
     }
   },
   pro: { 
     name: "Pro", 
     prices: { '1': { usd: 59.99, eur: 54.99, gbp: 49.99 }, '12': { usd: 47.99, eur: 43.99, gbp: 39.99 }, '24': { usd: 41.99, eur: 38.49, gbp: 34.99 }, '48': { usd: 35.99, eur: 32.99, gbp: 29.99 } },
     paymentLinks: {
-        '1': { usd: 'https://buy.stripe.com/your_link_here', eur: 'https://buy.stripe.com/your_link_here', gbp: 'https://buy.stripe.com/your_link_here' },
-        '12': { usd: 'https://buy.stripe.com/your_link_here', eur: 'https://buy.stripe.com/your_link_here', gbp: 'https://buy.stripe.com/your_link_here' },
-        '24': { usd: 'https://buy.stripe.com/your_link_here', eur: 'https://buy.stripe.com/your_link_here', gbp: 'https://buy.stripe.com/your_link_here' },
-        '48': { usd: 'https://buy.stripe.com/your_link_here', eur: 'https://buy.stripe.com/your_link_here', gbp: 'https://buy.stripe.com/your_link_here' },
+        '1': {
+            usd: 'https://buy.stripe.com/5kQdR8azS3Zseju4ui0Ny04',
+            eur: 'https://buy.stripe.com/eVq28q8rK53wejud0O0Ny07',
+            gbp: 'https://buy.stripe.com/28E00i8rK8fIfnye4S0Ny01',
+        },
+        '12': {
+            usd: 'https://buy.stripe.com/5kQdR8azS3Zseju4ui0Ny04?prefilled_promo_code=YAPPQ2YO',
+            eur: 'https://buy.stripe.com/eVq28q8rK53wejud0O0Ny07?prefilled_promo_code=YAPPQ2YO',
+            gbp: 'https://buy.stripe.com/28E00i8rK8fIfnye4S0Ny01?prefilled_promo_code=YAPPQ2YO',
+        },
+        '24': {
+            usd: 'https://buy.stripe.com/5kQdR8azS3Zseju4ui0Ny04?prefilled_promo_code=TQ4IVSRD',
+            eur: 'https://buy.stripe.com/eVq28q8rK53wejud0O0Ny07?prefilled_promo_code=TQ4IVSRD',
+            gbp: 'https://buy.stripe.com/28E00i8rK8fIfnye4S0Ny01?prefilled_promo_code=TQ4IVSRD',
+        },
+        '48': {
+            usd: 'https://buy.stripe.com/5kQdR8azS3Zseju4ui0Ny04?prefilled_promo_code=ALRLAVQ8',
+            eur: 'https://buy.stripe.com/eVq28q8rK53wejud0O0Ny07?prefilled_promo_code=ALRLAVQ8',
+            gbp: 'https://buy.stripe.com/28E00i8rK8fIfnye4S0Ny01?prefilled_promo_code=ALRLAVQ8',
+        },
     }
   },
   enterprise: { 
     name: "Enterprise", 
     prices: { '1': { usd: 149.99, eur: 139.99, gbp: 124.99 }, '12': { usd: 119.99, eur: 111.99, gbp: 99.99 }, '24': { usd: 104.99, eur: 97.99, gbp: 87.49 }, '48': { usd: 89.99, eur: 83.99, gbp: 74.99 } },
     paymentLinks: {
-        '1': { usd: 'https://buy.stripe.com/your_link_here', eur: 'https://buy.stripe.com/your_link_here', gbp: 'https://buy.stripe.com/your_link_here' },
-        '12': { usd: 'https://buy.stripe.com/your_link_here', eur: 'https://buy.stripe.com/your_link_here', gbp: 'https://buy.stripe.com/your_link_here' },
-        '24': { usd: 'https://buy.stripe.com/your_link_here', eur: 'https://buy.stripe.com/your_link_here', gbp: 'https://buy.stripe.com/your_link_here' },
-        '48': { usd: 'https://buy.stripe.com/your_link_here', eur: 'https://buy.stripe.com/your_link_here', gbp: 'https://buy.stripe.com/your_link_here' },
+        '1': {
+            usd: 'https://buy.stripe.com/4gM7sK8rKfIaeju0e20Ny03',
+            eur: 'https://buy.stripe.com/28EdR8azSfIa4IUf8W0Ny06',
+            gbp: 'https://buy.stripe.com/5kQ7sK37qanQ3EQ4ui0Ny00',
+        },
+        '12': {
+            usd: 'https://buy.stripe.com/4gM7sK8rKfIaeju0e20Ny03?prefilled_promo_code=YAPPQ2YO',
+            eur: 'https://buy.stripe.com/28EdR8azSfIa4IUf8W0Ny06?prefilled_promo_code=YAPPQ2YO',
+            gbp: 'https://buy.stripe.com/5kQ7sK37qanQ3EQ4ui0Ny00?prefilled_promo_code=YAPPQ2YO',
+        },
+        '24': {
+            usd: 'https://buy.stripe.com/4gM7sK8rKfIaeju0e20Ny03?prefilled_promo_code=TQ4IVSRD',
+            eur: 'https://buy.stripe.com/28EdR8azSfIa4IUf8W0Ny06?prefilled_promo_code=TQ4IVSRD',
+            gbp: 'https://buy.stripe.com/5kQ7sK37qanQ3EQ4ui0Ny00?prefilled_promo_code=TQ4IVSRD',
+        },
+        '48': {
+            usd: 'https://buy.stripe.com/4gM7sK8rKfIaeju0e20Ny03?prefilled_promo_code=ALRLAVQ8',
+            eur: 'https://buy.stripe.com/28EdR8azSfIa4IUf8W0Ny06?prefilled_promo_code=ALRLAVQ8',
+            gbp: 'https://buy.stripe.com/5kQ7sK37qanQ3EQ4ui0Ny00?prefilled_promo_code=ALRLAVQ8',
+        },
     }
   },
 };
@@ -252,3 +300,5 @@ export default function BillingPage() {
         </Suspense>
     )
 }
+
+    
