@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState, useEffect, useTransition } from "react";
+import React, { useState, useTransition } from "react";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -64,17 +64,12 @@ const MobileNavLink = ({ href, children }: { href: string; children: React.React
 
 
 export default function ContactPage() {
-    const [year, setYear] = useState(new Date().getFullYear());
     const [isSubmitting, startTransition] = useTransition();
 
     const form = useForm<ContactFormValues>({
         resolver: zodResolver(contactFormSchema),
         defaultValues: { name: "", email: "", message: "" },
     });
-
-    useEffect(() => {
-        setYear(new Date().getFullYear());
-    }, []);
 
     const onSubmit = (data: ContactFormValues) => {
         startTransition(async () => {
@@ -271,7 +266,7 @@ export default function ContactPage() {
               <FooterLogo />
             </div>
             <div className="text-center md:text-right">
-              <p>&copy; {year} AndonPro. All rights reserved.</p>
+              <p>&copy; {new Date().getFullYear()} AndonPro. All rights reserved.</p>
               <nav className="flex justify-center md:justify-end space-x-4 mt-2">
                 <Link href="/about/our-story" className="text-sm hover:text-white">Our Story</Link>
                 <Link href="/pricing" className="text-sm hover:text-white">Pricing</Link>

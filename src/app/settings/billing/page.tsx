@@ -117,11 +117,6 @@ function BillingPageContent() {
     const [currency, setCurrency] = useState<Currency>('usd');
     const [newPlan, setNewPlan] = useState<Plan | undefined>(currentUser?.plan);
     const [duration, setDuration] = useState<Duration>('12');
-    const [year, setYear] = useState(new Date().getFullYear());
-
-    useEffect(() => {
-        setYear(new Date().getFullYear());
-    }, []);
 
     if (!currentUser || !currentUser.plan) {
         return (
@@ -282,7 +277,7 @@ function BillingPageContent() {
                     </div>
                 </div>
                 <footer className="mt-8 text-center text-sm text-muted-foreground">
-                    © {year} AndonPro. All rights reserved.
+                    © {new Date().getFullYear()} AndonPro. All rights reserved.
                 </footer>
             </div>
         </div>

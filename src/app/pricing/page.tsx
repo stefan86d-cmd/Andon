@@ -10,12 +10,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { CheckCircle, Globe, Menu, Shield, Headset, BadgeCheck } from "lucide-react";
+import { CheckCircle, Globe, Menu, Shield, Headset, BadgeCheck, LoaderCircle } from "lucide-react";
 import Link from "next/link";
 import { Logo } from "@/components/layout/logo";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import {
   Select,
   SelectContent,
@@ -247,7 +247,7 @@ const MobileNavLink = ({ href, children }: { href: string; children: React.React
 );
 
 
-export default function PricingPage() {
+function PricingPageContent() {
   const [duration, setDuration] = useState<Duration>("12");
   const [currency, setCurrency] = useState<Currency>("usd");
   const { currentUser } = useUser();
@@ -414,12 +414,16 @@ export default function PricingPage() {
                       return { price, fullPrice };
                     })();
 
-                let finalHref = registrationHref;
-                if (currentUser && !isStarter && 'paymentLinks' in tier) {
-                    const paymentLink = tier.paymentLinks[duration]?.[currency] ?? '#';
-                    finalHref = `${paymentLink}?client_reference_id=${currentUser.orgId}&prefilled_email=${currentUser.email}&isNewUser=false`
-                } else if (currentUser && isStarter) {
-                    finalHref = `/settings/billing`;
+                let finalHref;
+                if (currentUser) {
+                  if (isStarter) {
+                    finalHref = "/settings/billing";
+                  } else {
+                    const paymentLink = tier.paymentLinks[duration]?.[currency] ?? "#";
+                    finalHref = `${paymentLink}?client_reference_id=${currentUser.orgId}&prefilled_email=${currentUser.email}&metadata[isNewUser]=false`;
+                  }
+                } else {
+                  finalHref = registrationHref;
                 }
 
                 const isProBestValue = tier.id === "pro";
@@ -585,4 +589,16 @@ export default function PricingPage() {
       </footer>
     </div>
   );
+}
+
+export default function PricingPage() {
+    return (
+        <Suspense fallback={
+            <div className="flex h-screen items-center justify-center">
+                <LoaderCircle className="h-8 w-8 animate-spin" />
+            </div>
+        }>
+            <PricingPageContent />
+        </Suspense>
+    );
 }

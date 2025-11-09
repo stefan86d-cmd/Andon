@@ -14,7 +14,6 @@ import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/s
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
-import { useState, useEffect } from "react";
 
 const servicesMenuItems = [
     { title: "Production Monitoring", description: "Get a live overview of your entire production line.", badge: "", href: "/services/monitoring" },
@@ -46,11 +45,6 @@ const MobileNavLink = ({ href, children }: { href: string; children: React.React
 
 
 export default function AnalyticsReportingPage() {
-    const [year, setYear] = useState(new Date().getFullYear());
-
-    useEffect(() => {
-        setYear(new Date().getFullYear());
-    }, []);
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -170,7 +164,7 @@ export default function AnalyticsReportingPage() {
               <FooterLogo />
             </div>
             <div className="text-center md:text-right">
-              <p>&copy; {year} AndonPro. All rights reserved.</p>
+              <p>&copy; {new Date().getFullYear()} AndonPro. All rights reserved.</p>
               <nav className="flex justify-center md:justify-end space-x-4 mt-2">
                 <Link href="/about/our-story" className="text-sm hover:text-white">Our Story</Link>
                 <Link href="/pricing" className="text-sm hover:text-white">Pricing</Link>
