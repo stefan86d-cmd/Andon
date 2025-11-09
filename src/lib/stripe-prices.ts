@@ -23,21 +23,27 @@ import type { Plan } from "./types";
 export const priceIdToPlan: Record<string, Plan> = {
   // --- Standard Plan ---
   // Example for Standard - Monthly - USD (using your provided ID)
-  'price_1SPNA1CKFYqU3Rzm2XZEmQFR': 'standard', 
+  'price_1SPNLkCKFYqU3RzmZhRSbLM9': 'standard', 
   // TODO: Add the Price ID for Standard - Monthly - EUR
-  'price_...': 'standard',
+  'price_1SPNA1CKFYqU3Rzm2XZEmQFR': 'standard',
+  //TODO: Add the Price ID for Standard - Monthly - GBP
+  'price_1SPNPJCKFYqU3Rzm5KFKS4l9': 'standard',
   
   // --- Pro Plan ---
   // TODO: Add the Price ID for Pro - Monthly - USD
-  'price_...': 'pro', 
+  'price_1SPNMSCKFYqU3Rzm6COoQBOC': 'pro', 
   // TODO: Add the Price ID for Pro - Monthly - EUR
-  'price_...': 'pro',
+  'price_1SPNBbCKFYqU3RzmrE3IRkyz': 'pro',
+// TODO: Add the Price ID for Pro - Monthly - GBP
+  'price_1SPNQ1CKFYqU3RzmjiwhweIL': 'pro',
 
   // --- Enterprise Plan ---
   // TODO: Add the Price ID for Enterprise - Monthly - USD
-  'price_...': 'enterprise', 
+  'price_1SPNNRCKFYqU3RzmJLR5wDnF': 'enterprise', 
   // TODO: Add the Price ID for Enterprise - Monthly - EUR
-  'price_...': 'enterprise',
+  'price_1SPNCdCKFYqU3RzmOsFnGBky': 'enterprise',
+// TODO: Add the Price ID for Enterprise - Monthly - GBP
+  'price_1SQoMYCKFYqU3RzmpzctK1XO': 'enterprise',
 
   // ... add all other price IDs for all currencies and durations here
 };
