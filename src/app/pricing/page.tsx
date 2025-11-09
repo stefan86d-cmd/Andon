@@ -73,24 +73,24 @@ const tiers = [
     },
     paymentLinks: {
         "1": {
-            usd: 'https://buy.stripe.com/4gM28q7nG9jM0sEd0O0Ny05',
-            eur: 'https://buy.stripe.com/7sY14mdM48fI6R2aSG0Ny08',
-            gbp: 'https://buy.stripe.com/bJe6oGgYggMea3e8Ky0Ny02',
+            usd: "https://buy.stripe.com/test_eVa3dsd2sg9J05q3co",
+            eur: "https://buy.stripe.com/test_28o4hwe6wg9J05q3cq",
+            gbp: "https://buy.stripe.com/test_4gw29o4zQ8Ntgh214e",
         },
         "12": {
-            usd: 'https://buy.stripe.com/4gM28q7nG9jM0sEd0O0Ny05?prefilled_promo_code=YAPPQ2YO',
-            eur: 'https://buy.stripe.com/7sY14mdM48fI6R2aSG0Ny08?prefilled_promo_code=YAPPQ2YO',
-            gbp: 'https://buy.stripe.com/bJe6oGgYggMea3e8Ky0Ny02?prefilled_promo_code=YAPPQ2YO',
+            usd: "https://buy.stripe.com/test_eVa3dsd2sg9J05q3co?prefilled_promo_code=test_123",
+            eur: "https://buy.stripe.com/test_28o4hwe6wg9J05q3cq?prefilled_promo_code=test_123",
+            gbp: "https://buy.stripe.com/test_4gw29o4zQ8Ntgh214e?prefilled_promo_code=test_123",
         },
         "24": {
-            usd: 'https://buy.stripe.com/4gM28q7nG9jM0sEd0O0Ny05?prefilled_promo_code=TQ4IVSRD',
-            eur: 'https://buy.stripe.com/7sY14mdM48fI6R2aSG0Ny08?prefilled_promo_code=TQ4IVSRD',
-            gbp: 'https://buy.stripe.com/bJe6oGgYggMea3e8Ky0Ny02?prefilled_promo_code=TQ4IVSRD',
+            usd: "https://buy.stripe.com/test_eVa3dsd2sg9J05q3co?prefilled_promo_code=test_456",
+            eur: "https://buy.stripe.com/test_28o4hwe6wg9J05q3cq?prefilled_promo_code=test_456",
+            gbp: "https://buy.stripe.com/test_4gw29o4zQ8Ntgh214e?prefilled_promo_code=test_456",
         },
         "48": {
-            usd: 'https://buy.stripe.com/4gM28q7nG9jM0sEd0O0Ny05?prefilled_promo_code=ALRLAVQ8',
-            eur: 'https://buy.stripe.com/7sY14mdM48fI6R2aSG0Ny08?prefilled_promo_code=ALRLAVQ8',
-            gbp: 'https://buy.stripe.com/bJe6oGgYggMea3e8Ky0Ny02?prefilled_promo_code=ALRLAVQ8',
+            usd: "https://buy.stripe.com/test_eVa3dsd2sg9J05q3co?prefilled_promo_code=test_789",
+            eur: "https://buy.stripe.com/test_28o4hwe6wg9J05q3cq?prefilled_promo_code=test_789",
+            gbp: "https://buy.stripe.com/test_4gw29o4zQ8Ntgh214e?prefilled_promo_code=test_789",
         },
     },
     pricePeriod: "/ month",
@@ -117,24 +117,24 @@ const tiers = [
     },
     paymentLinks: {
         "1": {
-            usd: 'https://buy.stripe.com/5kQdR8azS3Zseju4ui0Ny04',
-            eur: 'https://buy.stripe.com/eVq28q8rK53wejud0O0Ny07',
-            gbp: 'https://buy.stripe.com/28E00i8rK8fIfnye4S0Ny01',
+            usd: "https://buy.stripe.com/test_9AQg02bYo8NtdaUaEH",
+            eur: "https://buy.stripe.com/test_7sI01g0Hw1v9a2M5ko",
+            gbp: "https://buy.stripe.com/test_dR629o1LAg9J05q8wC",
         },
         "12": {
-            usd: 'https://buy.stripe.com/5kQdR8azS3Zseju4ui0Ny04?prefilled_promo_code=YAPPQ2YO',
-            eur: 'https://buy.stripe.com/eVq28q8rK53wejud0O0Ny07?prefilled_promo_code=YAPPQ2YO',
-            gbp: 'https://buy.stripe.com/28E00i8rK8fIfnye4S0Ny01?prefilled_promo_code=YAPPQ2YO',
+            usd: "https://buy.stripe.com/test_9AQg02bYo8NtdaUaEH?prefilled_promo_code=test_123",
+            eur: "https://buy.stripe.com/test_7sI01g0Hw1v9a2M5ko?prefilled_promo_code=test_123",
+            gbp: "https://buy.stripe.com/test_dR629o1LAg9J05q8wC?prefilled_promo_code=test_123",
         },
         "24": {
-            usd: 'https://buy.stripe.com/5kQdR8azS3Zseju4ui0Ny04?prefilled_promo_code=TQ4IVSRD',
-            eur: 'https://buy.stripe.com/eVq28q8rK53wejud0O0Ny07?prefilled_promo_code=TQ4IVSRD',
-            gbp: 'https://buy.stripe.com/28E00i8rK8fIfnye4S0Ny01?prefilled_promo_code=TQ4IVSRD',
+            usd: "https://buy.stripe.com/test_9AQg02bYo8NtdaUaEH?prefilled_promo_code=test_456",
+            eur: "https://buy.stripe.com/test_7sI01g0Hw1v9a2M5ko?prefilled_promo_code=test_456",
+            gbp: "https://buy.stripe.com/test_dR629o1LAg9J05q8wC?prefilled_promo_code=test_456",
         },
         "48": {
-            usd: 'https://buy.stripe.com/5kQdR8azS3Zseju4ui0Ny04?prefilled_promo_code=ALRLAVQ8',
-            eur: 'https://buy.stripe.com/eVq28q8rK53wejud0O0Ny07?prefilled_promo_code=ALRLAVQ8',
-            gbp: 'https://buy.stripe.com/28E00i8rK8fIfnye4S0Ny01?prefilled_promo_code=ALRLAVQ8',
+            usd: "https://buy.stripe.com/test_9AQg02bYo8NtdaUaEH?prefilled_promo_code=test_789",
+            eur: "https://buy.stripe.com/test_7sI01g0Hw1v9a2M5ko?prefilled_promo_code=test_789",
+            gbp: "https://buy.stripe.com/test_dR629o1LAg9J05q8wC?prefilled_promo_code=test_789",
         },
     },
     pricePeriod: "/ month",
@@ -163,24 +163,24 @@ const tiers = [
     },
     paymentLinks: {
         "1": {
-            usd: 'https://buy.stripe.com/4gM7sK8rKfIaeju0e20Ny03',
-            eur: 'https://buy.stripe.com/28EdR8azSfIa4IUf8W0Ny06',
-            gbp: 'https://buy.stripe.com/5kQ7sK37qanQ3EQ4ui0Ny00',
+            usd: "https://buy.stripe.com/test_7sI9AQg02aVBdaU8wB",
+            eur: "https://buy.stripe.com/test_8wM9AQd2sg9JdaUfZ6",
+            gbp: "https://buy.stripe.com/test_dR6g02e6w5Zpgh2fZ5",
         },
         "12": {
-            usd: 'https://buy.stripe.com/4gM7sK8rKfIaeju0e20Ny03?prefilled_promo_code=YAPPQ2YO',
-            eur: 'https://buy.stripe.com/28EdR8azSfIa4IUf8W0Ny06?prefilled_promo_code=YAPPQ2YO',
-            gbp: 'https://buy.stripe.com/5kQ7sK37qanQ3EQ4ui0Ny00?prefilled_promo_code=YAPPQ2YO',
+            usd: "https://buy.stripe.com/test_7sI9AQg02aVBdaU8wB?prefilled_promo_code=test_123",
+            eur: "https://buy.stripe.com/test_8wM9AQd2sg9JdaUfZ6?prefilled_promo_code=test_123",
+            gbp: "https://buy.stripe.com/test_dR6g02e6w5Zpgh2fZ5?prefilled_promo_code=test_123",
         },
         "24": {
-            usd: 'https://buy.stripe.com/4gM7sK8rKfIaeju0e20Ny03?prefilled_promo_code=TQ4IVSRD',
-            eur: 'https://buy.stripe.com/28EdR8azSfIa4IUf8W0Ny06?prefilled_promo_code=TQ4IVSRD',
-            gbp: 'https://buy.stripe.com/5kQ7sK37qanQ3EQ4ui0Ny00?prefilled_promo_code=TQ4IVSRD',
+            usd: "https://buy.stripe.com/test_7sI9AQg02aVBdaU8wB?prefilled_promo_code=test_456",
+            eur: "https://buy.stripe.com/test_8wM9AQd2sg9JdaUfZ6?prefilled_promo_code=test_456",
+            gbp: "https://buy.stripe.com/test_dR6g02e6w5Zpgh2fZ5?prefilled_promo_code=test_456",
         },
         "48": {
-            usd: 'https://buy.stripe.com/4gM7sK8rKfIaeju0e20Ny03?prefilled_promo_code=ALRLAVQ8',
-            eur: 'https://buy.stripe.com/28EdR8azSfIa4IUf8W0Ny06?prefilled_promo_code=ALRLAVQ8',
-            gbp: 'https://buy.stripe.com/5kQ7sK37qanQ3EQ4ui0Ny00?prefilled_promo_code=ALRLAVQ8',
+            usd: "https://buy.stripe.com/test_7sI9AQg02aVBdaU8wB?prefilled_promo_code=test_789",
+            eur: "https://buy.stripe.com/test_8wM9AQd2sg9JdaUfZ6?prefilled_promo_code=test_789",
+            gbp: "https://buy.stripe.com/test_dR6g02e6w5Zpgh2fZ5?prefilled_promo_code=test_789",
         },
     },
     pricePeriod: "/ month",
@@ -359,14 +359,6 @@ export default function PricingPage() {
           <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
             Start for free and scale as you grow. All plans include unlimited issue reports.
           </p>
-          <div className="mt-8 flex justify-center gap-4">
-            <Badge variant="secondary" className="items-center gap-1">
-                <LifeBuoy className="h-4 w-4" /> 24/7 customer service
-            </Badge>
-            <Badge variant="secondary" className="items-center gap-1">
-                <ShieldCheck className="h-4 w-4" /> 30-day money-back guarantee
-            </Badge>
-          </div>
           <div className="mt-10 flex items-center justify-center gap-4">
             <Select value={duration} onValueChange={(value) => setDuration(value as Duration)}>
               <SelectTrigger className="w-[180px]">
@@ -390,11 +382,6 @@ export default function PricingPage() {
                 <SelectItem value="gbp">GBP</SelectItem>
               </SelectContent>
             </Select>
-            <div className="flex gap-2 items-center">
-              {duration === '12' && <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~20%</Badge>}
-              {duration === '24' && <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~30%</Badge>}
-              {duration === '48' && <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~40%</Badge>}
-            </div>
           </div>
         </section>
 
@@ -404,13 +391,9 @@ export default function PricingPage() {
               {tiers.map((tier) => {
                 const isStarter = tier.name === "Starter";
                 
-                const priceInfo = !isStarter && tier.prices
-                  ? tier.prices[duration]?.[currency] ?? 0
-                  : 0;
+                const priceInfo = isStarter ? 0 : tier.prices?.[duration]?.[currency] ?? 0;
 
-                const fullPriceInfo = !isStarter && tier.prices
-                    ? tier.prices["1"]?.[currency] ?? 0
-                    : 0;
+                const fullPriceInfo = isStarter ? 0 : tier.prices?.["1"]?.[currency] ?? 0;
                 
                 const registrationHref = `/register?plan=${tier.id}&duration=${duration}&currency=${currency}`;
                 
@@ -475,6 +458,13 @@ export default function PricingPage() {
                             </span>
                           )}
                         </div>
+                         {!isStarter && (
+                          <div className="h-6 mt-1 flex justify-center">
+                            {duration === '12' && <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~20%</Badge>}
+                            {duration === '24' && <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~30%</Badge>}
+                            {duration === '48' && <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~40%</Badge>}
+                          </div>
+                        )}
                         <CardDescription>{tier.description}</CardDescription>
                       </CardHeader>
                       <CardContent className="flex-1">
