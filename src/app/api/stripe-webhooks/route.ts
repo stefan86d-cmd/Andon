@@ -35,9 +35,8 @@ export async function POST(req: Request) {
   if (event.type === "checkout.session.completed") {
     const session = event.data.object as Stripe.Checkout.Session;
     
-    // IMPORTANT: Get userId from client_reference_id, not metadata
     const userId = session.client_reference_id;
-    const isNewUser = session.metadata?.isNewUser === 'true'; // Keep metadata for this flag
+    const isNewUser = session.metadata?.isNewUser === 'true';
 
     if (!userId) {
       console.error("❌ checkout.session.completed: Missing client_reference_id (userId).");
@@ -50,15 +49,19 @@ export async function POST(req: Request) {
             console.error(`❌ checkout.session.completed: No subscription ID found for session ${session.id}`);
             return new NextResponse("Webhook Error: Could not find subscription ID", { status: 400 });
         }
-        const subscription = await stripe.subscriptions.retrieve(session.subscription as string);
         
-        const lineItems = await stripe.checkout.sessions.listLineItems(session.id);
-        const priceId = lineItems.data[0]?.price?.id;
+        // Retrieve the subscription object with the price expanded
+        const subscription = await stripe.subscriptions.retrieve(session.subscription as string, {
+          expand: ['items.data.price']
+        });
+        
+        const priceId = subscription.items.data[0]?.price?.id;
 
         if (!priceId) {
             console.error(`❌ checkout.session.completed: No price ID found for subscription ${subscription.id}`);
             return new NextResponse("Webhook Error: Could not determine plan from subscription", { status: 400 });
         }
+        
         const plan: Plan | undefined = priceIdToPlan[priceId];
 
         if (!plan) {
