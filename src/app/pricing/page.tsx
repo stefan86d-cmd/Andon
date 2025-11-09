@@ -10,7 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { CheckCircle, Globe, Menu, ShieldCheck, LifeBuoy } from "lucide-react";
+import { CheckCircle, Globe, Menu, ShieldCheck, LifeBuoy, Headset, Shield, BadgeCheck } from "lucide-react";
 import Link from "next/link";
 import { Logo } from "@/components/layout/logo";
 import { cn } from "@/lib/utils";
@@ -73,24 +73,24 @@ const tiers = [
     },
     paymentLinks: {
         "1": {
-            usd: 'https://buy.stripe.com/4gM28q7nG9jM0sEd0O',
-            eur: 'https://buy.stripe.com/7sY14mdM48fI6R2aSG',
-            gbp: 'https://buy.stripe.com/bJe6oGgYggMea3e8Ky',
+            usd: 'https://buy.stripe.com/4gM28q7nG9jM0sEd0O0Ny05',
+            eur: 'https://buy.stripe.com/7sY14mdM48fI6R2aSG0Ny08',
+            gbp: 'https://buy.stripe.com/bJe6oGgYggMea3e8Ky0Ny02',
         },
         "12": {
-            usd: 'https://buy.stripe.com/4gM28q7nG9jM0sEd0O?prefilled_promo_code=YAPPQ2YO',
-            eur: 'https://buy.stripe.com/7sY14mdM48fI6R2aSG?prefilled_promo_code=YAPPQ2YO',
-            gbp: 'https://buy.stripe.com/bJe6oGgYggMea3e8Ky?prefilled_promo_code=YAPPQ2YO',
+            usd: 'https://buy.stripe.com/4gM28q7nG9jM0sEd0O0Ny05?prefilled_promo_code=YAPPQ2YO',
+            eur: 'https://buy.stripe.com/7sY14mdM48fI6R2aSG0Ny08?prefilled_promo_code=YAPPQ2YO',
+            gbp: 'https://buy.stripe.com/bJe6oGgYggMea3e8Ky0Ny02?prefilled_promo_code=YAPPQ2YO',
         },
         "24": {
-            usd: 'https://buy.stripe.com/4gM28q7nG9jM0sEd0O?prefilled_promo_code=TQ4IVSRD',
-            eur: 'https://buy.stripe.com/7sY14mdM48fI6R2aSG?prefilled_promo_code=TQ4IVSRD',
-            gbp: 'https://buy.stripe.com/bJe6oGgYggMea3e8Ky?prefilled_promo_code=TQ4IVSRD',
+            usd: 'https://buy.stripe.com/4gM28q7nG9jM0sEd0O0Ny05?prefilled_promo_code=TQ4IVSRD',
+            eur: 'https://buy.stripe.com/7sY14mdM48fI6R2aSG0Ny08?prefilled_promo_code=TQ4IVSRD',
+            gbp: 'https://buy.stripe.com/bJe6oGgYggMea3e8Ky0Ny02?prefilled_promo_code=TQ4IVSRD',
         },
         "48": {
-            usd: 'https://buy.stripe.com/4gM28q7nG9jM0sEd0O?prefilled_promo_code=ALRLAVQ8',
-            eur: 'https://buy.stripe.com/7sY14mdM48fI6R2aSG?prefilled_promo_code=ALRLAVQ8',
-            gbp: 'https://buy.stripe.com/bJe6oGgYggMea3e8Ky?prefilled_promo_code=ALRLAVQ8',
+            usd: 'https://buy.stripe.com/4gM28q7nG9jM0sEd0O0Ny05?prefilled_promo_code=ALRLAVQ8',
+            eur: 'https://buy.stripe.com/7sY14mdM48fI6R2aSG0Ny08?prefilled_promo_code=ALRLAVQ8',
+            gbp: 'https://buy.stripe.com/bJe6oGgYggMea3e8Ky0Ny02?prefilled_promo_code=ALRLAVQ8',
         },
     },
     pricePeriod: "/ month",
@@ -117,24 +117,24 @@ const tiers = [
     },
     paymentLinks: {
         "1": {
-            usd: 'https://buy.stripe.com/5kQdR8azS3Zseju4ui',
-            eur: 'https://buy.stripe.com/eVq28q8rK53wejud0O',
-            gbp: 'https://buy.stripe.com/28E00i8rK8fIfnye4S',
+            usd: 'https://buy.stripe.com/5kQdR8azS3Zseju4ui0Ny04',
+            eur: 'https://buy.stripe.com/eVq28q8rK53wejud0O0Ny07',
+            gbp: 'https://buy.stripe.com/28E00i8rK8fIfnye4S0Ny01',
         },
         "12": {
-            usd: 'https://buy.stripe.com/5kQdR8azS3Zseju4ui?prefilled_promo_code=YAPPQ2YO',
-            eur: 'https://buy.stripe.com/eVq28q8rK53wejud0O?prefilled_promo_code=YAPPQ2YO',
-            gbp: 'https://buy.stripe.com/28E00i8rK8fIfnye4S?prefilled_promo_code=YAPPQ2YO',
+            usd: 'https://buy.stripe.com/5kQdR8azS3Zseju4ui0Ny04?prefilled_promo_code=YAPPQ2YO',
+            eur: 'https://buy.stripe.com/eVq28q8rK53wejud0O0Ny07?prefilled_promo_code=YAPPQ2YO',
+            gbp: 'https://buy.stripe.com/28E00i8rK8fIfnye4S0Ny01?prefilled_promo_code=YAPPQ2YO',
         },
         "24": {
-            usd: 'https://buy.stripe.com/5kQdR8azS3Zseju4ui?prefilled_promo_code=TQ4IVSRD',
-            eur: 'https://buy.stripe.com/eVq28q8rK53wejud0O?prefilled_promo_code=TQ4IVSRD',
-            gbp: 'https://buy.stripe.com/28E00i8rK8fIfnye4S?prefilled_promo_code=TQ4IVSRD',
+            usd: 'https://buy.stripe.com/5kQdR8azS3Zseju4ui0Ny04?prefilled_promo_code=TQ4IVSRD',
+            eur: 'https://buy.stripe.com/eVq28q8rK53wejud0O0Ny07?prefilled_promo_code=TQ4IVSRD',
+            gbp: 'https://buy.stripe.com/28E00i8rK8fIfnye4S0Ny01?prefilled_promo_code=TQ4IVSRD',
         },
         "48": {
-            usd: 'https://buy.stripe.com/5kQdR8azS3Zseju4ui?prefilled_promo_code=ALRLAVQ8',
-            eur: 'https://buy.stripe.com/eVq28q8rK53wejud0O?prefilled_promo_code=ALRLAVQ8',
-            gbp: 'https://buy.stripe.com/28E00i8rK8fIfnye4S?prefilled_promo_code=ALRLAVQ8',
+            usd: 'https://buy.stripe.com/5kQdR8azS3Zseju4ui0Ny04?prefilled_promo_code=ALRLAVQ8',
+            eur: 'https://buy.stripe.com/eVq28q8rK53wejud0O0Ny07?prefilled_promo_code=ALRLAVQ8',
+            gbp: 'https://buy.stripe.com/28E00i8rK8fIfnye4S0Ny01?prefilled_promo_code=ALRLAVQ8',
         },
     },
     pricePeriod: "/ month",
@@ -163,24 +163,24 @@ const tiers = [
     },
     paymentLinks: {
         "1": {
-            usd: 'https://buy.stripe.com/4gM7sK8rKfIaeju0e2',
-            eur: 'https://buy.stripe.com/28EdR8azSfIa4IUf8W',
-            gbp: 'https://buy.stripe.com/5kQ7sK37qanQ3EQ4ui',
+            usd: 'https://buy.stripe.com/4gM7sK8rKfIaeju0e20Ny03',
+            eur: 'https://buy.stripe.com/28EdR8azSfIa4IUf8W0Ny06',
+            gbp: 'https://buy.stripe.com/5kQ7sK37qanQ3EQ4ui0Ny00',
         },
         "12": {
-            usd: 'https://buy.stripe.com/4gM7sK8rKfIaeju0e2?prefilled_promo_code=YAPPQ2YO',
-            eur: 'https://buy.stripe.com/28EdR8azSfIa4IUf8W?prefilled_promo_code=YAPPQ2YO',
-            gbp: 'https://buy.stripe.com/5kQ7sK37qanQ3EQ4ui?prefilled_promo_code=YAPPQ2YO',
+            usd: 'https://buy.stripe.com/4gM7sK8rKfIaeju0e20Ny03?prefilled_promo_code=YAPPQ2YO',
+            eur: 'https://buy.stripe.com/28EdR8azSfIa4IUf8W0Ny06?prefilled_promo_code=YAPPQ2YO',
+            gbp: 'https://buy.stripe.com/5kQ7sK37qanQ3EQ4ui0Ny00?prefilled_promo_code=YAPPQ2YO',
         },
         "24": {
-            usd: 'https://buy.stripe.com/4gM7sK8rKfIaeju0e2?prefilled_promo_code=TQ4IVSRD',
-            eur: 'https://buy.stripe.com/28EdR8azSfIa4IUf8W?prefilled_promo_code=TQ4IVSRD',
-            gbp: 'https://buy.stripe.com/5kQ7sK37qanQ3EQ4ui?prefilled_promo_code=TQ4IVSRD',
+            usd: 'https://buy.stripe.com/4gM7sK8rKfIaeju0e20Ny03?prefilled_promo_code=TQ4IVSRD',
+            eur: 'https://buy.stripe.com/28EdR8azSfIa4IUf8W0Ny06?prefilled_promo_code=TQ4IVSRD',
+            gbp: 'https://buy.stripe.com/5kQ7sK37qanQ3EQ4ui0Ny00?prefilled_promo_code=TQ4IVSRD',
         },
         "48": {
-            usd: 'https://buy.stripe.com/4gM7sK8rKfIaeju0e2?prefilled_promo_code=ALRLAVQ8',
-            eur: 'https://buy.stripe.com/28EdR8azSfIa4IUf8W?prefilled_promo_code=ALRLAVQ8',
-            gbp: 'https://buy.stripe.com/5kQ7sK37qanQ3EQ4ui?prefilled_promo_code=ALRLAVQ8',
+            usd: 'https://buy.stripe.com/4gM7sK8rKfIaeju0e20Ny03?prefilled_promo_code=ALRLAVQ8',
+            eur: 'https://buy.stripe.com/28EdR8azSfIa4IUf8W0Ny06?prefilled_promo_code=ALRLAVQ8',
+            gbp: 'https://buy.stripe.com/5kQ7sK37qanQ3EQ4ui0Ny00?prefilled_promo_code=ALRLAVQ8',
         },
     },
     pricePeriod: "/ month",
@@ -199,6 +199,24 @@ const tiers = [
   },
 ];
 
+const guarantees = [
+    {
+        icon: Headset,
+        title: "24/7 Support",
+        description: "Our support team is available around the clock to help you with any issues.",
+        note: "Available on the Enterprise plan."
+    },
+    {
+        icon: Shield,
+        title: "30-Day Money-Back Guarantee",
+        description: "Not satisfied? Get a full refund within the first 30 days of your subscription."
+    },
+    {
+        icon: BadgeCheck,
+        title: "Cancel Anytime",
+        description: "You can cancel your subscription at any time, no questions asked."
+    }
+];
 
 const servicesMenuItems = [
     { title: "Production Monitoring", description: "Get a live overview of your entire production line.", badge: "", href: "/services/monitoring" },
@@ -513,6 +531,34 @@ export default function PricingPage() {
               })}
             </div>
           </div>
+        </section>
+        <section className="py-20 bg-muted">
+            <div className="container">
+                <div className="text-center mb-12">
+                    <h2 className="text-3xl font-bold">Our Guarantees</h2>
+                    <p className="max-w-2xl mx-auto text-muted-foreground mt-4">
+                        We stand by our product and are committed to your success.
+                    </p>
+                </div>
+                <div className="grid gap-8 md:grid-cols-3">
+                    {guarantees.map((guarantee) => (
+                        <Card key={guarantee.title} className="text-center border-0 bg-transparent shadow-none">
+                            <CardHeader>
+                                <div className="mx-auto bg-background rounded-full p-4 w-fit mb-4">
+                                    <guarantee.icon className="h-8 w-8 text-primary" />
+                                </div>
+                                <CardTitle>{guarantee.title}</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <p className="text-muted-foreground">{guarantee.description}</p>
+                                {guarantee.note && (
+                                    <p className="text-xs text-muted-foreground mt-2">{guarantee.note}</p>
+                                )}
+                            </CardContent>
+                        </Card>
+                    ))}
+                </div>
+            </div>
         </section>
       </main>
       <footer className="bg-gray-800 text-gray-300">
