@@ -15,7 +15,7 @@ import Link from "next/link";
 import { Logo } from "@/components/layout/logo";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
-import React, from "react";
+import React, { useState, useEffect } from "react";
 import {
   Select,
   SelectContent,
@@ -40,7 +40,6 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
-import { useState, useEffect } from "react";
 
 
 type Duration = "1" | "12" | "24" | "48";
@@ -73,10 +72,26 @@ const tiers = [
       "48": { usd: 23.99, eur: 22.19, gbp: 19.79 },
     },
     paymentLinks: {
-      "1": { usd: "https://buy.stripe.com/test_eVa02d1jY6jU7Cg5ko", eur: "https://buy.stripe.com/test_7sI56x5w62bE9Ko28a", gbp: "https://buy.stripe.com/test_7sIeXHg6q8s2bSwcMS" },
-      "12": { usd: "https://buy.stripe.com/test_eVa02d1jY6jU7Cg5ko?prefilled_promo_code=test_1GoA0s7qA9bI8aE28b", eur: "https://buy.stripe.com/test_7sI56x5w62bE9Ko28a?prefilled_promo_code=test_1GoA0s7qA9bI8aE28b", gbp: "https://buy.stripe.com/test_7sIeXHg6q8s2bSwcMS?prefilled_promo_code=test_1GoA0s7qA9bI8aE28b" },
-      "24": { usd: "https://buy.stripe.com/test_eVa02d1jY6jU7Cg5ko?prefilled_promo_code=test_28tF1n8uEcfQfyY3cd", eur: "https://buy.stripe.com/test_7sI56x5w62bE9Ko28a?prefilled_promo_code=test_28tF1n8uEcfQfyY3cd", gbp: "https://buy.stripe.com/test_7sIeXHg6q8s2bSwcMS?prefilled_promo_code=test_28tF1n8uEcfQfyY3cd" },
-      "48": { usd: "https://buy.stripe.com/test_eVa02d1jY6jU7Cg5ko?prefilled_promo_code=test_00g42t4lY7gY0pS148", eur: "https://buy.stripe.com/test_7sI56x5w62bE9Ko28a?prefilled_promo_code=test_00g42t4lY7gY0pS148", gbp: "https://buy.stripe.com/test_7sIeXHg6q8s2bSwcMS?prefilled_promo_code=test_00g42t4lY7gY0pS148" },
+        "1": {
+            usd: 'https://buy.stripe.com/4gM28q7nG9jM0sEd0O',
+            eur: 'https://buy.stripe.com/7sY14mdM48fI6R2aSG',
+            gbp: 'https://buy.stripe.com/bJe6oGgYggMea3e8Ky',
+        },
+        "12": {
+            usd: 'https://buy.stripe.com/4gM28q7nG9jM0sEd0O?prefilled_promo_code=YAPPQ2YO',
+            eur: 'https://buy.stripe.com/7sY14mdM48fI6R2aSG?prefilled_promo_code=YAPPQ2YO',
+            gbp: 'https://buy.stripe.com/bJe6oGgYggMea3e8Ky?prefilled_promo_code=YAPPQ2YO',
+        },
+        "24": {
+            usd: 'https://buy.stripe.com/4gM28q7nG9jM0sEd0O?prefilled_promo_code=TQ4IVSRD',
+            eur: 'https://buy.stripe.com/7sY14mdM48fI6R2aSG?prefilled_promo_code=TQ4IVSRD',
+            gbp: 'https://buy.stripe.com/bJe6oGgYggMea3e8Ky?prefilled_promo_code=TQ4IVSRD',
+        },
+        "48": {
+            usd: 'https://buy.stripe.com/4gM28q7nG9jM0sEd0O?prefilled_promo_code=ALRLAVQ8',
+            eur: 'https://buy.stripe.com/7sY14mdM48fI6R2aSG?prefilled_promo_code=ALRLAVQ8',
+            gbp: 'https://buy.stripe.com/bJe6oGgYggMea3e8Ky?prefilled_promo_code=ALRLAVQ8',
+        },
     },
     pricePeriod: "/ month",
     description: "For growing factories that need more power and insights.",
@@ -101,10 +116,26 @@ const tiers = [
       "48": { usd: 35.99, eur: 32.99, gbp: 29.99 },
     },
     paymentLinks: {
-      "1": { usd: "https://buy.stripe.com/test_28o3etg6q9w6dWEaEH", eur: "https://buy.stripe.com/test_eVa9CFdYidjUaOocMQ", gbp: "https://buy.stripe.com/test_3cs3et5w67nYdWE5kq" },
-      "12": { usd: "https://buy.stripe.com/test_28o3etg6q9w6dWEaEH?prefilled_promo_code=test_1GoA0s7qA9bI8aE28b", eur: "https://buy.stripe.com/test_eVa9CFdYidjUaOocMQ?prefilled_promo_code=test_1GoA0s7qA9bI8aE28b", gbp: "https://buy.stripe.com/test_3cs3et5w67nYdWE5kq?prefilled_promo_code=test_1GoA0s7qA9bI8aE28b" },
-      "24": { usd: "https://buy.stripe.com/test_28o3etg6q9w6dWEaEH?prefilled_promo_code=test_28tF1n8uEcfQfyY3cd", eur: "https://buy.stripe.com/test_eVa9CFdYidjUaOocMQ?prefilled_promo_code=test_28tF1n8uEcfQfyY3cd", gbp: "https://buy.stripe.com/test_3cs3et5w67nYdWE5kq?prefilled_promo_code=test_28tF1n8uEcfQfyY3cd" },
-      "48": { usd: "https://buy.stripe.com/test_28o3etg6q9w6dWEaEH?prefilled_promo_code=test_00g42t4lY7gY0pS148", eur: "https://buy.stripe.com/test_eVa9CFdYidjUaOocMQ?prefilled_promo_code=test_00g42t4lY7gY0pS148", gbp: "https://buy.stripe.com/test_3cs3et5w67nYdWE5kq?prefilled_promo_code=test_00g42t4lY7gY0pS148" },
+        "1": {
+            usd: 'https://buy.stripe.com/5kQdR8azS3Zseju4ui',
+            eur: 'https://buy.stripe.com/eVq28q8rK53wejud0O',
+            gbp: 'https://buy.stripe.com/28E00i8rK8fIfnye4S',
+        },
+        "12": {
+            usd: 'https://buy.stripe.com/5kQdR8azS3Zseju4ui?prefilled_promo_code=YAPPQ2YO',
+            eur: 'https://buy.stripe.com/eVq28q8rK53wejud0O?prefilled_promo_code=YAPPQ2YO',
+            gbp: 'https://buy.stripe.com/28E00i8rK8fIfnye4S?prefilled_promo_code=YAPPQ2YO',
+        },
+        "24": {
+            usd: 'https://buy.stripe.com/5kQdR8azS3Zseju4ui?prefilled_promo_code=TQ4IVSRD',
+            eur: 'https://buy.stripe.com/eVq28q8rK53wejud0O?prefilled_promo_code=TQ4IVSRD',
+            gbp: 'https://buy.stripe.com/28E00i8rK8fIfnye4S?prefilled_promo_code=TQ4IVSRD',
+        },
+        "48": {
+            usd: 'https://buy.stripe.com/5kQdR8azS3Zseju4ui?prefilled_promo_code=ALRLAVQ8',
+            eur: 'https://buy.stripe.com/eVq28q8rK53wejud0O?prefilled_promo_code=ALRLAVQ8',
+            gbp: 'https://buy.stripe.com/28E00i8rK8fIfnye4S?prefilled_promo_code=ALRLAVQ8',
+        },
     },
     pricePeriod: "/ month",
     description: "For scaling operations with expanded needs.",
@@ -131,10 +162,26 @@ const tiers = [
       "48": { usd: 89.99, eur: 83.99, gbp: 74.99 },
     },
     paymentLinks: {
-      "1": { usd: "https://buy.stripe.com/test_dR61695w617A0pS14b", eur: "https://buy.stripe.com/test_8wM169aI25fQdWE14a", gbp: "https://buy.stripe.com/test_8wM6aB3oY4bMfyYdQT" },
-      "12": { usd: "https://buy.stripe.com/test_dR61695w617A0pS14b?prefilled_promo_code=test_1GoA0s7qA9bI8aE28b", eur: "https://buy.stripe.com/test_8wM169aI25fQdWE14a?prefilled_promo_code=test_1GoA0s7qA9bI8aE28b", gbp: "https://buy.stripe.com/test_8wM6aB3oY4bMfyYdQT?prefilled_promo_code=test_1GoA0s7qA9bI8aE28b" },
-      "24": { usd: "https://buy.stripe.com/test_dR61695w617A0pS14b?prefilled_promo_code=test_28tF1n8uEcfQfyY3cd", eur: "https://buy.stripe.com/test_8wM169aI25fQdWE14a?prefilled_promo_code=test_28tF1n8uEcfQfyY3cd", gbp: "https://buy.stripe.com/test_8wM6aB3oY4bMfyYdQT?prefilled_promo_code=test_28tF1n8uEcfQfyY3cd" },
-      "48": { usd: "https://buy.stripe.com/test_dR61695w617A0pS14b?prefilled_promo_code=test_00g42t4lY7gY0pS148", eur: "https://buy.stripe.com/test_8wM169aI25fQdWE14a?prefilled_promo_code=test_00g42t4lY7gY0pS148", gbp: "https://buy.stripe.com/test_8wM6aB3oY4bMfyYdQT?prefilled_promo_code=test_00g42t4lY7gY0pS148" },
+        "1": {
+            usd: 'https://buy.stripe.com/4gM7sK8rKfIaeju0e2',
+            eur: 'https://buy.stripe.com/28EdR8azSfIa4IUf8W',
+            gbp: 'https://buy.stripe.com/5kQ7sK37qanQ3EQ4ui',
+        },
+        "12": {
+            usd: 'https://buy.stripe.com/4gM7sK8rKfIaeju0e2?prefilled_promo_code=YAPPQ2YO',
+            eur: 'https://buy.stripe.com/28EdR8azSfIa4IUf8W?prefilled_promo_code=YAPPQ2YO',
+            gbp: 'https://buy.stripe.com/5kQ7sK37qanQ3EQ4ui?prefilled_promo_code=YAPPQ2YO',
+        },
+        "24": {
+            usd: 'https://buy.stripe.com/4gM7sK8rKfIaeju0e2?prefilled_promo_code=TQ4IVSRD',
+            eur: 'https://buy.stripe.com/28EdR8azSfIa4IUf8W?prefilled_promo_code=TQ4IVSRD',
+            gbp: 'https://buy.stripe.com/5kQ7sK37qanQ3EQ4ui?prefilled_promo_code=TQ4IVSRD',
+        },
+        "48": {
+            usd: 'https://buy.stripe.com/4gM7sK8rKfIaeju0e2?prefilled_promo_code=ALRLAVQ8',
+            eur: 'https://buy.stripe.com/28EdR8azSfIa4IUf8W?prefilled_promo_code=ALRLAVQ8',
+            gbp: 'https://buy.stripe.com/5kQ7sK37qanQ3EQ4ui?prefilled_promo_code=ALRLAVQ8',
+        },
     },
     pricePeriod: "/ month",
     description: "For large-scale operations with expanded resources.",
