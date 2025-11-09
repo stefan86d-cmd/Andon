@@ -135,7 +135,7 @@ function CompleteProfileContent() {
         country: data.country,
         phone: data.phone,
         orgId: currentUser.id,
-        plan: 'starter' // ALWAYS start on starter, upgrade via webhook
+        plan: 'starter' as Plan, // ALWAYS start on starter, upgrade via webhook
       };
 
       await updateCurrentUser(userProfileData);
@@ -340,5 +340,3 @@ export default function CompleteProfilePage() {
   );
 }
 
-
-    
