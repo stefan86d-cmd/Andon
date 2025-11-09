@@ -22,22 +22,23 @@ import type { Plan } from "./types";
 
 export const priceIdToPlan: Record<string, Plan> = {
   // --- Standard Plan ---
-  // Example for Standard - Monthly - USD
-  'price_...': 'standard', 
-  // Example for Standard - Monthly - EUR
+  // Example for Standard - Monthly - USD (using your provided ID)
+  'price_1SPNA1CKFYqU3Rzm2XZEmQFR': 'standard', 
+  // TODO: Add the Price ID for Standard - Monthly - EUR
   'price_...': 'standard',
   
   // --- Pro Plan ---
-  // Example for Pro - Monthly - USD
+  // TODO: Add the Price ID for Pro - Monthly - USD
   'price_...': 'pro', 
-  // Example for Pro - Monthly - EUR
+  // TODO: Add the Price ID for Pro - Monthly - EUR
   'price_...': 'pro',
 
   // --- Enterprise Plan ---
-  // Example for Enterprise - Monthly - USD
+  // TODO: Add the Price ID for Enterprise - Monthly - USD
   'price_...': 'enterprise', 
-  // Example for Enterprise - Monthly - EUR
+  // TODO: Add the Price ID for Enterprise - Monthly - EUR
   'price_...': 'enterprise',
 
   // ... add all other price IDs for all currencies and durations here
 };
+
