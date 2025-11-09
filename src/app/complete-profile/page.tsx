@@ -25,8 +25,7 @@ import { countries } from '@/lib/countries';
 import type { Plan, Role } from '@/lib/types';
 import { toast } from '@/hooks/use-toast';
 import { useUser } from '@/contexts/user-context';
-import { createCheckoutSession, getOrCreateStripeCustomer, cancelRegistrationAndDeleteUser, sendWelcomeEmail } from '@/app/actions';
-import { EmbeddedCheckoutForm } from '@/components/checkout/embedded-checkout-form';
+import { cancelRegistrationAndDeleteUser, sendWelcomeEmail } from '@/app/actions';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -38,6 +37,15 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+
+// Define pricing tiers locally for this page
+type Duration = "1" | "12" | "24" | "48";
+type Currency = "usd" | "eur" | "gbp";
+const tiers = [
+  { name: "Standard", id: "standard", paymentLinks: { "1": { usd: "https://buy.stripe.com/4gM28q7nG9jM0sEd0O0Ny05", eur: "https://buy.stripe.com/7sY14mdM48fI6R2aSG0Ny08", gbp: "https://buy.stripe.com/bJe6oGgYggMea3e8Ky0Ny02" }, "12": { usd: "https://buy.stripe.com/4gM28q7nG9jM0sEd0O0Ny05?prefilled_promo_code=YAPPQ2YO", eur: "https://buy.stripe.com/7sY14mdM48fI6R2aSG0Ny08?prefilled_promo_code=YAPPQ2YO", gbp: "https://buy.stripe.com/bJe6oGgYggMea3e8Ky0Ny02?prefilled_promo_code=YAPPQ2YO" }, "24": { usd: "https://buy.stripe.com/4gM28q7nG9jM0sEd0O0Ny05?prefilled_promo_code=TQ4IVSRD", eur: "https://buy.stripe.com/7sY14mdM48fI6R2aSG0Ny08?prefilled_promo_code=TQ4IVSRD", gbp: "https://buy.stripe.com/bJe6oGgYggMea3e8Ky0Ny02?prefilled_promo_code=TQ4IVSRD" }, "48": { usd: "https://buy.stripe.com/4gM28q7nG9jM0sEd0O0Ny05?prefilled_promo_code=ALRLAVQ8", eur: "https://buy.stripe.com/7sY14mdM48fI6R2aSG0Ny08?prefilled_promo_code=ALRLAVQ8", gbp: "https://buy.stripe.com/bJe6oGgYggMea3e8Ky0Ny02?prefilled_promo_code=ALRLAVQ8" } } },
+  { name: "Pro", id: "pro", paymentLinks: { "1": { usd: "https://buy.stripe.com/5kQdR8azS3Zseju4ui0Ny04", eur: "https://buy.stripe.com/eVq28q8rK53wejud0O0Ny07", gbp: "https://buy.stripe.com/28E00i8rK8fIfnye4S0Ny01" }, "12": { usd: "https://buy.stripe.com/5kQdR8azS3Zseju4ui0Ny04?prefilled_promo_code=YAPPQ2YO", eur: "https://buy.stripe.com/eVq28q8rK53wejud0O0Ny07?prefilled_promo_code=YAPPQ2YO", gbp: "https://buy.stripe.com/28E00i8rK8fIfnye4S0Ny01?prefilled_promo_code=YAPPQ2YO" }, "24": { usd: "https://buy.stripe.com/5kQdR8azS3Zseju4ui0Ny04?prefilled_promo_code=TQ4IVSRD", eur: "https://buy.stripe.com/eVq28q8rK53wejud0O0Ny07?prefilled_promo_code=TQ4IVSRD", gbp: "https://buy.stripe.com/28E00i8rK8fIfnye4S0Ny01?prefilled_promo_code=TQ4IVSRD" }, "48": { usd: "https://buy.stripe.com/5kQdR8azS3Zseju4ui0Ny04?prefilled_promo_code=ALRLAVQ8", eur: "https://buy.stripe.com/eVq28q8rK53wejud0O0Ny07?prefilled_promo_code=ALRLAVQ8", gbp: "https://buy.stripe.com/28E00i8rK8fIfnye4S0Ny01?prefilled_promo_code=ALRLAVQ8" } } },
+  { name: "Enterprise", id: "enterprise", paymentLinks: { "1": { usd: "https://buy.stripe.com/4gM7sK8rKfIaeju0e20Ny03", eur: "https://buy.stripe.com/28EdR8azSfIa4IUf8W0Ny06", gbp: "https://buy.stripe.com/5kQ7sK37qanQ3EQ4ui0Ny00" }, "12": { usd: "https://buy.stripe.com/4gM7sK8rKfIaeju0e20Ny03?prefilled_promo_code=YAPPQ2YO", eur: "https://buy.stripe.com/28EdR8azSfIa4IUf8W0Ny06?prefilled_promo_code=YAPPQ2YO", gbp: "https://buy.stripe.com/5kQ7sK37qanQ3EQ4ui0Ny00?prefilled_promo_code=YAPPQ2YO" }, "24": { usd: "https://buy.stripe.com/4gM7sK8rKfIaeju0e20Ny03?prefilled_promo_code=TQ4IVSRD", eur: "https://buy.stripe.com/28EdR8azSfIa4IUf8W0Ny06?prefilled_promo_code=TQ4IVSRD", gbp: "https://buy.stripe.com/5kQ7sK37qanQ3EQ4ui0Ny00?prefilled_promo_code=TQ4IVSRD" }, "48": { usd: "https://buy.stripe.com/4gM7sK8rKfIaeju0e20Ny03?prefilled_promo_code=ALRLAVQ8", eur: "https://buy.stripe.com/28EdR8azSfIa4IUf8W0Ny06?prefilled_promo_code=ALRLAVQ8", gbp: "https://buy.stripe.com/5kQ7sK37qanQ3EQ4ui0Ny00?prefilled_promo_code=ALRLAVQ8" } } }
+];
 
 const profileFormSchema = z.object({
   firstName: z.string().min(1, "First name is required."),
@@ -58,12 +66,11 @@ function CompleteProfileContent() {
 
   const [isSubmitting, startTransition] = useTransition();
   const [isCancelling, startCancellationTransition] = useTransition();
-  const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [year, setYear] = useState(new Date().getFullYear());
 
   const plan = searchParams.get('plan') as Plan || 'starter';
-  const duration = searchParams.get('duration') || '1';
-  const currency = searchParams.get('currency') || 'usd';
+  const duration = (searchParams.get('duration') || '1') as Duration;
+  const currency = (searchParams.get('currency') || 'usd') as Currency;
   const isStarterPlan = plan === 'starter';
 
   const form = useForm<ProfileFormValues>({
@@ -153,11 +160,7 @@ function CompleteProfileContent() {
   
       if (!profileSaved || !currentUser) return;
   
-      const queryParams = `?plan=${plan}&duration=${duration}&currency=${currency}`;
-  
       if (isStarterPlan) {
-        // Starter plan: save profile and mark subscription active
-        await updateCurrentUser({ plan: 'starter', subscriptionStatus: 'active' });
         await sendWelcomeEmail(currentUser.id);
         toast({
           title: "Registration Complete!",
@@ -165,33 +168,21 @@ function CompleteProfileContent() {
         });
         router.push(`/dashboard`);
       } else {
-        try {
-          if (!currentUser?.email) throw new Error("User email is not available.");
-  
-          const customer = await getOrCreateStripeCustomer(currentUser.id, currentUser.email);
-          const metadata = { userId: currentUser.id, plan, duration, currency, isNewUser: 'true' };
-  
-          const result = await createCheckoutSession({
-            customerId: customer.id,
-            plan,
-            duration,
-            currency,
-            metadata,
-            returnPath: `/dashboard?payment_success=true&session_id={CHECKOUT_SESSION_ID}`,
-          });
-  
-          if (result.clientSecret) {
-            setClientSecret(result.clientSecret);
-          } else {
-            throw new Error("Could not create a checkout session.");
-          }
-        } catch(err: any) {
-          toast({
-            variant: "destructive",
-            title: "Checkout Error",
-            description: err.message || "Could not create a checkout session. Please try again.",
-          });
+        // Redirect to Stripe Payment Link for paid plans
+        const selectedTier = tiers.find(t => t.id === plan);
+        if (!selectedTier) {
+            toast({ variant: "destructive", title: "Checkout Error", description: "The selected plan could not be found." });
+            return;
         }
+
+        const paymentLink = selectedTier.paymentLinks[duration]?.[currency];
+        if (!paymentLink) {
+            toast({ variant: "destructive", title: "Checkout Error", description: "A payment link for the selected plan and currency is not available." });
+            return;
+        }
+
+        const finalUrl = `${paymentLink}?client_reference_id=${currentUser.id}&prefilled_email=${currentUser.email}`;
+        router.push(finalUrl);
       }
     });
   };
@@ -222,25 +213,6 @@ function CompleteProfileContent() {
 
   if (userLoading || !currentUser) {
     return <div className="flex h-screen items-center justify-center"><LoaderCircle className="h-8 w-8 animate-spin" /></div>;
-  }
-
-  if (clientSecret) {
-    return (
-      <div className="bg-muted min-h-screen flex flex-col items-center justify-center p-4">
-        <div className="w-full max-w-lg">
-          <div className="flex justify-center mb-8"><Logo /></div>
-          <Card>
-            <CardHeader>
-              <CardTitle>Complete Your Payment</CardTitle>
-              <CardDescription>Enter your payment details to start your subscription.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <EmbeddedCheckoutForm key={clientSecret} clientSecret={clientSecret} />
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
   }
 
   return (
@@ -367,5 +339,6 @@ export default function CompleteProfilePage() {
     </Suspense>
   );
 }
+
 
     
