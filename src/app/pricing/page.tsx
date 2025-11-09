@@ -251,11 +251,6 @@ function PricingPageContent() {
   const [duration, setDuration] = useState<Duration>("12");
   const [currency, setCurrency] = useState<Currency>("usd");
   const { currentUser } = useUser();
-  const [year, setYear] = useState(new Date().getFullYear());
-
-  useEffect(() => {
-    setYear(new Date().getFullYear());
-  }, []);
 
   useEffect(() => {
     const savedCurrency = localStorage.getItem('selectedCurrency') as Currency;
@@ -404,23 +399,25 @@ function PricingPageContent() {
                 const isStarter = tier.id === "starter";
                 const registrationHref = `/register?plan=${tier.id}&duration=${duration}&currency=${currency}`;
                 
-                const priceInfo = isStarter
-                  ? { price: 0, fullPrice: 0 }
-                  : (() => {
-                      const foundTier = tiers.find(t => t.id === tier.id);
-                      if (!foundTier || !('prices' in foundTier)) return { price: 0, fullPrice: 0 };
-                      const price = foundTier.prices[duration]?.[currency] ?? 0;
-                      const fullPrice = foundTier.prices["1"]?.[currency] ?? 0;
-                      return { price, fullPrice };
-                    })();
+                const priceInfo = (() => {
+                  if (isStarter || !('prices' in tier)) {
+                    return { price: 0, fullPrice: 0 };
+                  }
+                  const price = tier.prices[duration]?.[currency] ?? 0;
+                  const fullPrice = tier.prices["1"]?.[currency] ?? 0;
+                  return { price, fullPrice };
+                })();
 
-                let finalHref;
+
+                let finalHref: string;
                 if (currentUser) {
                   if (isStarter) {
                     finalHref = "/settings/billing";
-                  } else {
+                  } else if ('paymentLinks' in tier) {
                     const paymentLink = tier.paymentLinks[duration]?.[currency] ?? "#";
                     finalHref = `${paymentLink}?client_reference_id=${currentUser.orgId}&prefilled_email=${currentUser.email}&metadata[isNewUser]=false`;
+                  } else {
+                    finalHref = "#";
                   }
                 } else {
                   finalHref = registrationHref;
@@ -577,7 +574,7 @@ function PricingPageContent() {
               <FooterLogo />
             </div>
             <div className="text-center md:text-right">
-              <p>&copy; {year} AndonPro. All rights reserved.</p>
+              <p>&copy; {new Date().getFullYear()} AndonPro. All rights reserved.</p>
               <nav className="flex justify-center md:justify-end space-x-4 mt-2">
                 <Link href="/about/our-story" className="text-sm hover:text-white">Our Story</Link>
                 <Link href="/pricing" className="text-sm hover:text-white">Pricing</Link>
@@ -602,3 +599,5 @@ export default function PricingPage() {
         </Suspense>
     );
 }
+
+    
