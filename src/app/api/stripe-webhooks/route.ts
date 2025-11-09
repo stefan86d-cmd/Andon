@@ -4,6 +4,8 @@ import Stripe from "stripe";
 import { adminDb } from "@/firebase/admin";
 import { Timestamp, FieldValue } from "firebase-admin/firestore";
 import { sendWelcomeEmail } from "@/lib/server-actions";
+import { priceIdToPlan } from "@/lib/stripe-prices";
+import type { Plan } from "@/lib/types";
 
 const stripe = new Stripe(process.env.NEXT_STRIPE_SECRET_KEY!, {
   apiVersion: "2024-06-20",
@@ -32,19 +34,39 @@ export async function POST(req: Request) {
   // ---------------------------------------------------------------------------
   if (event.type === "checkout.session.completed") {
     const session = event.data.object as Stripe.Checkout.Session;
-    const userId = session.metadata?.userId;
-    const plan = session.metadata?.plan;
-    const isNewUser = session.metadata?.isNewUser === 'true';
+    
+    // IMPORTANT: Get userId from client_reference_id, not metadata
+    const userId = session.client_reference_id;
+    const isNewUser = session.metadata?.isNewUser === 'true'; // Keep metadata for this flag
 
-    if (userId && plan && session.mode === "subscription") {
+    if (!userId) {
+      console.error("❌ checkout.session.completed: Missing client_reference_id (userId).");
+      return new NextResponse("Webhook Error: Missing client_reference_id", { status: 400 });
+    }
+
+    if (session.mode === "subscription") {
       try {
-        const userRef = db.collection("users").doc(userId);
         const subscription = await stripe.subscriptions.retrieve(session.subscription as string);
+        
+        // Determine the plan from the price ID
+        const priceId = subscription.items.data[0]?.price.id;
+        if (!priceId) {
+            console.error(`❌ checkout.session.completed: No price ID found for subscription ${subscription.id}`);
+            return new NextResponse("Webhook Error: Could not determine plan from subscription", { status: 400 });
+        }
+        const plan: Plan | undefined = priceIdToPlan[priceId];
+
+        if (!plan) {
+            console.error(`❌ checkout.session.completed: Could not map price ID "${priceId}" to a known plan.`);
+            return new NextResponse("Webhook Error: Unknown price ID", { status: 400 });
+        }
+        
+        const userRef = db.collection("users").doc(userId);
 
         const updates = {
           plan,
           subscriptionId: subscription.id,
-          subscriptionStatus: 'active' as const, // Ensure status is explicitly 'active'
+          subscriptionStatus: 'active' as const,
           subscriptionStartsAt: Timestamp.fromMillis(subscription.current_period_start * 1000),
           subscriptionEndsAt: Timestamp.fromMillis(subscription.current_period_end * 1000),
           updatedAt: FieldValue.serverTimestamp(),
@@ -53,7 +75,6 @@ export async function POST(req: Request) {
         await userRef.update(updates);
         console.log(`✅ Subscription started for user ${userId} (${plan})`);
         
-        // Send a welcome email if this is a new user's first subscription
         if (isNewUser) {
           await sendWelcomeEmail(userId);
           console.log(`💌 Welcome email sent to new subscriber ${userId}`);
@@ -156,5 +177,3 @@ export async function POST(req: Request) {
 
   return new NextResponse(JSON.stringify({ received: true }), { status: 200 });
 }
-
-    
