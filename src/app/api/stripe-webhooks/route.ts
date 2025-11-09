@@ -46,10 +46,15 @@ export async function POST(req: Request) {
 
     if (session.mode === "subscription") {
       try {
+        if (!session.subscription) {
+            console.error(`❌ checkout.session.completed: No subscription ID found for session ${session.id}`);
+            return new NextResponse("Webhook Error: Could not find subscription ID", { status: 400 });
+        }
         const subscription = await stripe.subscriptions.retrieve(session.subscription as string);
         
-        // Determine the plan from the price ID
-        const priceId = subscription.items.data[0]?.price.id;
+        const lineItems = await stripe.checkout.sessions.listLineItems(session.id);
+        const priceId = lineItems.data[0]?.price?.id;
+
         if (!priceId) {
             console.error(`❌ checkout.session.completed: No price ID found for subscription ${subscription.id}`);
             return new NextResponse("Webhook Error: Could not determine plan from subscription", { status: 400 });
