@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -9,12 +10,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { CheckCircle, Globe, Menu } from "lucide-react";
+import { CheckCircle, Globe, Menu, ShieldCheck, LifeBuoy } from "lucide-react";
 import Link from "next/link";
 import { Logo } from "@/components/layout/logo";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
-import React, { useState, useEffect } from "react";
+import React, from "react";
 import {
   Select,
   SelectContent,
@@ -39,6 +40,8 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
+import { useState, useEffect } from "react";
+
 
 type Duration = "1" | "12" | "24" | "48";
 type Currency = "usd" | "eur" | "gbp";
@@ -70,26 +73,10 @@ const tiers = [
       "48": { usd: 23.99, eur: 22.19, gbp: 19.79 },
     },
     paymentLinks: {
-      "1": {
-        usd: "https://buy.stripe.com/4gM28q7nG9jM0sEd0O0Ny05",
-        eur: "https://buy.stripe.com/7sY14mdM48fI6R2aSG0Ny08",
-        gbp: "https://buy.stripe.com/bJe6oGgYggMea3e8Ky0Ny02",
-      },
-      "12": {
-        usd: "https://buy.stripe.com/4gM28q7nG9jM0sEd0O0Ny05?prefilled_promo_code=YAPPQ2YO",
-        eur: "https://buy.stripe.com/7sY14mdM48fI6R2aSG0Ny08?prefilled_promo_code=YAPPQ2YO",
-        gbp: "https://buy.stripe.com/bJe6oGgYggMea3e8Ky0Ny02?prefilled_promo_code=YAPPQ2YO",
-      },
-      "24": {
-        usd: "https://buy.stripe.com/4gM28q7nG9jM0sEd0O0Ny05?prefilled_promo_code=TQ4IVSRD",
-        eur: "https://buy.stripe.com/7sY14mdM48fI6R2aSG0Ny08?prefilled_promo_code=TQ4IVSRD",
-        gbp: "https://buy.stripe.com/bJe6oGgYggMea3e8Ky0Ny02?prefilled_promo_code=TQ4IVSRD",
-      },
-      "48": {
-        usd: "https://buy.stripe.com/4gM28q7nG9jM0sEd0O0Ny05?prefilled_promo_code=ALRLAVQ8",
-        eur: "https://buy.stripe.com/7sY14mdM48fI6R2aSG0Ny08?prefilled_promo_code=ALRLAVQ8",
-        gbp: "https://buy.stripe.com/bJe6oGgYggMea3e8Ky0Ny02?prefilled_promo_code=ALRLAVQ8",
-      },
+      "1": { usd: "https://buy.stripe.com/test_eVa02d1jY6jU7Cg5ko", eur: "https://buy.stripe.com/test_7sI56x5w62bE9Ko28a", gbp: "https://buy.stripe.com/test_7sIeXHg6q8s2bSwcMS" },
+      "12": { usd: "https://buy.stripe.com/test_eVa02d1jY6jU7Cg5ko?prefilled_promo_code=test_1GoA0s7qA9bI8aE28b", eur: "https://buy.stripe.com/test_7sI56x5w62bE9Ko28a?prefilled_promo_code=test_1GoA0s7qA9bI8aE28b", gbp: "https://buy.stripe.com/test_7sIeXHg6q8s2bSwcMS?prefilled_promo_code=test_1GoA0s7qA9bI8aE28b" },
+      "24": { usd: "https://buy.stripe.com/test_eVa02d1jY6jU7Cg5ko?prefilled_promo_code=test_28tF1n8uEcfQfyY3cd", eur: "https://buy.stripe.com/test_7sI56x5w62bE9Ko28a?prefilled_promo_code=test_28tF1n8uEcfQfyY3cd", gbp: "https://buy.stripe.com/test_7sIeXHg6q8s2bSwcMS?prefilled_promo_code=test_28tF1n8uEcfQfyY3cd" },
+      "48": { usd: "https://buy.stripe.com/test_eVa02d1jY6jU7Cg5ko?prefilled_promo_code=test_00g42t4lY7gY0pS148", eur: "https://buy.stripe.com/test_7sI56x5w62bE9Ko28a?prefilled_promo_code=test_00g42t4lY7gY0pS148", gbp: "https://buy.stripe.com/test_7sIeXHg6q8s2bSwcMS?prefilled_promo_code=test_00g42t4lY7gY0pS148" },
     },
     pricePeriod: "/ month",
     description: "For growing factories that need more power and insights.",
@@ -114,26 +101,10 @@ const tiers = [
       "48": { usd: 35.99, eur: 32.99, gbp: 29.99 },
     },
     paymentLinks: {
-      "1": {
-        usd: "https://buy.stripe.com/5kQdR8azS3Zseju4ui0Ny04",
-        eur: "https://buy.stripe.com/eVq28q8rK53wejud0O0Ny07",
-        gbp: "https://buy.stripe.com/28E00i8rK8fIfnye4S0Ny01",
-      },
-      "12": {
-        usd: "https://buy.stripe.com/5kQdR8azS3Zseju4ui0Ny04?prefilled_promo_code=YAPPQ2YO",
-        eur: "https://buy.stripe.com/eVq28q8rK53wejud0O0Ny07?prefilled_promo_code=YAPPQ2YO",
-        gbp: "https://buy.stripe.com/28E00i8rK8fIfnye4S0Ny01?prefilled_promo_code=YAPPQ2YO",
-      },
-      "24": {
-        usd: "https://buy.stripe.com/5kQdR8azS3Zseju4ui0Ny04?prefilled_promo_code=TQ4IVSRD",
-        eur: "https://buy.stripe.com/eVq28q8rK53wejud0O0Ny07?prefilled_promo_code=TQ4IVSRD",
-        gbp: "https://buy.stripe.com/28E00i8rK8fIfnye4S0Ny01?prefilled_promo_code=TQ4IVSRD",
-      },
-      "48": {
-        usd: "https://buy.stripe.com/5kQdR8azS3Zseju4ui0Ny04?prefilled_promo_code=ALRLAVQ8",
-        eur: "https://buy.stripe.com/eVq28q8rK53wejud0O0Ny07?prefilled_promo_code=ALRLAVQ8",
-        gbp: "https://buy.stripe.com/28E00i8rK8fIfnye4S0Ny01?prefilled_promo_code=ALRLAVQ8",
-      },
+      "1": { usd: "https://buy.stripe.com/test_28o3etg6q9w6dWEaEH", eur: "https://buy.stripe.com/test_eVa9CFdYidjUaOocMQ", gbp: "https://buy.stripe.com/test_3cs3et5w67nYdWE5kq" },
+      "12": { usd: "https://buy.stripe.com/test_28o3etg6q9w6dWEaEH?prefilled_promo_code=test_1GoA0s7qA9bI8aE28b", eur: "https://buy.stripe.com/test_eVa9CFdYidjUaOocMQ?prefilled_promo_code=test_1GoA0s7qA9bI8aE28b", gbp: "https://buy.stripe.com/test_3cs3et5w67nYdWE5kq?prefilled_promo_code=test_1GoA0s7qA9bI8aE28b" },
+      "24": { usd: "https://buy.stripe.com/test_28o3etg6q9w6dWEaEH?prefilled_promo_code=test_28tF1n8uEcfQfyY3cd", eur: "https://buy.stripe.com/test_eVa9CFdYidjUaOocMQ?prefilled_promo_code=test_28tF1n8uEcfQfyY3cd", gbp: "https://buy.stripe.com/test_3cs3et5w67nYdWE5kq?prefilled_promo_code=test_28tF1n8uEcfQfyY3cd" },
+      "48": { usd: "https://buy.stripe.com/test_28o3etg6q9w6dWEaEH?prefilled_promo_code=test_00g42t4lY7gY0pS148", eur: "https://buy.stripe.com/test_eVa9CFdYidjUaOocMQ?prefilled_promo_code=test_00g42t4lY7gY0pS148", gbp: "https://buy.stripe.com/test_3cs3et5w67nYdWE5kq?prefilled_promo_code=test_00g42t4lY7gY0pS148" },
     },
     pricePeriod: "/ month",
     description: "For scaling operations with expanded needs.",
@@ -160,26 +131,10 @@ const tiers = [
       "48": { usd: 89.99, eur: 83.99, gbp: 74.99 },
     },
     paymentLinks: {
-      "1": {
-        usd: "https://buy.stripe.com/4gM7sK8rKfIaeju0e20Ny03",
-        eur: "https://buy.stripe.com/28EdR8azSfIa4IUf8W0Ny06",
-        gbp: "https://buy.stripe.com/5kQ7sK37qanQ3EQ4ui0Ny00",
-      },
-      "12": {
-        usd: "https://buy.stripe.com/4gM7sK8rKfIaeju0e20Ny03?prefilled_promo_code=YAPPQ2YO",
-        eur: "https://buy.stripe.com/28EdR8azSfIa4IUf8W0Ny06?prefilled_promo_code=YAPPQ2YO",
-        gbp: "https://buy.stripe.com/5kQ7sK37qanQ3EQ4ui0Ny00?prefilled_promo_code=YAPPQ2YO",
-      },
-      "24": {
-        usd: "https://buy.stripe.com/4gM7sK8rKfIaeju0e20Ny03?prefilled_promo_code=TQ4IVSRD",
-        eur: "https://buy.stripe.com/28EdR8azSfIa4IUf8W0Ny06?prefilled_promo_code=TQ4IVSRD",
-        gbp: "https://buy.stripe.com/5kQ7sK37qanQ3EQ4ui0Ny00?prefilled_promo_code=TQ4IVSRD",
-      },
-      "48": {
-        usd: "https://buy.stripe.com/4gM7sK8rKfIaeju0e20Ny03?prefilled_promo_code=ALRLAVQ8",
-        eur: "https://buy.stripe.com/28EdR8azSfIa4IUf8W0Ny06?prefilled_promo_code=ALRLAVQ8",
-        gbp: "https://buy.stripe.com/5kQ7sK37qanQ3EQ4ui0Ny00?prefilled_promo_code=ALRLAVQ8",
-      },
+      "1": { usd: "https://buy.stripe.com/test_dR61695w617A0pS14b", eur: "https://buy.stripe.com/test_8wM169aI25fQdWE14a", gbp: "https://buy.stripe.com/test_8wM6aB3oY4bMfyYdQT" },
+      "12": { usd: "https://buy.stripe.com/test_dR61695w617A0pS14b?prefilled_promo_code=test_1GoA0s7qA9bI8aE28b", eur: "https://buy.stripe.com/test_8wM169aI25fQdWE14a?prefilled_promo_code=test_1GoA0s7qA9bI8aE28b", gbp: "https://buy.stripe.com/test_8wM6aB3oY4bMfyYdQT?prefilled_promo_code=test_1GoA0s7qA9bI8aE28b" },
+      "24": { usd: "https://buy.stripe.com/test_dR61695w617A0pS14b?prefilled_promo_code=test_28tF1n8uEcfQfyY3cd", eur: "https://buy.stripe.com/test_8wM169aI25fQdWE14a?prefilled_promo_code=test_28tF1n8uEcfQfyY3cd", gbp: "https://buy.stripe.com/test_8wM6aB3oY4bMfyYdQT?prefilled_promo_code=test_28tF1n8uEcfQfyY3cd" },
+      "48": { usd: "https://buy.stripe.com/test_dR61695w617A0pS14b?prefilled_promo_code=test_00g42t4lY7gY0pS148", eur: "https://buy.stripe.com/test_8wM169aI25fQdWE14a?prefilled_promo_code=test_00g42t4lY7gY0pS148", gbp: "https://buy.stripe.com/test_8wM6aB3oY4bMfyYdQT?prefilled_promo_code=test_00g42t4lY7gY0pS148" },
     },
     pricePeriod: "/ month",
     description: "For large-scale operations with expanded resources.",
@@ -197,6 +152,36 @@ const tiers = [
   },
 ];
 
+
+const servicesMenuItems = [
+    { title: "Production Monitoring", description: "Get a live overview of your entire production line.", badge: "", href: "/services/monitoring" },
+    { title: "Issue Tracking", description: "Report, track, and resolve issues in real-time.", badge: "", href: "/services/tracking" },
+    { title: "Analytics & Reporting", description: "Gain insights into your production efficiency.", badge: "", href: "/services/reporting" },
+];
+
+const exploreMenuItems = [
+    { title: "Our Story", description: "Learn about the mission and vision behind AndonPro.", badge: "", href: "/about/our-story" },
+    { title: "Latest News", description: "Read our latest product announcements and company news.", badge: "", href: "/about/news" },
+    { title: "Customer Stories", description: "See how other companies are succeeding with AndonPro.", badge: "", href: "/about/customer-stories" },
+];
+
+const supportMenuItems = [
+    { title: "FAQs", description: "Find answers to common questions about our platform.", badge: "", href: "/support/faq" },
+    { title: "Tutorials", description: "Explore step-by-step guides to get the most out of AndonPro.", badge: "", href: "/support/tutorials" },
+    { title: "Contact Us", description: "Get in touch with our team for personalized support.", badge: "", href: "/support/contact" },
+];
+
+const servicesImage = PlaceHolderImages.find(p => p.id === 'mega-menu-services');
+const exploreImage = PlaceHolderImages.find(p => p.id === 'mega-menu-explore');
+const supportImage = PlaceHolderImages.find(p => p.id === 'mega-menu-support');
+
+const MobileNavLink = ({ href, children }: { href: string; children: React.ReactNode }) => (
+    <Link href={href} className="block py-2 text-muted-foreground hover:text-foreground">
+        {children}
+    </Link>
+);
+
+
 export default function PricingPage() {
   const [duration, setDuration] = useState<Duration>("12");
   const [currency, setCurrency] = useState<Currency>("usd");
@@ -206,6 +191,7 @@ export default function PricingPage() {
   useEffect(() => {
     setYear(new Date().getFullYear());
   }, []);
+
 
   const currencySymbols = { usd: "$", eur: "€", gbp: "£" };
   const formatPrice = (price: number, currency: Currency) => {
@@ -218,26 +204,160 @@ export default function PricingPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
+       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container flex h-14 items-center">
+            <div className="flex items-center md:mr-6">
+                <Sheet>
+                    <SheetTrigger asChild>
+                        <Button variant="ghost" size="icon" className="md:hidden mr-2">
+                            <Menu className="h-5 w-5" />
+                            <span className="sr-only">Toggle Menu</span>
+                        </Button>
+                    </SheetTrigger>
+                    <SheetContent side="left" className="pr-0">
+                        <VisuallyHidden>
+                            <SheetTitle>Mobile Navigation Menu</SheetTitle>
+                        </VisuallyHidden>
+                        <div className="flex flex-col space-y-4">
+                            <Link href="/" className="mr-6 flex items-center space-x-2">
+                                <Logo />
+                            </Link>
+                            <Accordion type="single" collapsible className="w-full">
+                                <AccordionItem value="services">
+                                    <AccordionTrigger>Services</AccordionTrigger>
+                                    <AccordionContent>
+                                        <div className="flex flex-col pl-4">
+                                            {servicesMenuItems.map(item => <MobileNavLink key={item.href} href={item.href}>{item.title}</MobileNavLink>)}
+                                        </div>
+                                    </AccordionContent>
+                                </AccordionItem>
+                                <AccordionItem value="explore">
+                                    <AccordionTrigger>Explore</AccordionTrigger>
+                                    <AccordionContent>
+                                        <div className="flex flex-col pl-4">
+                                            {exploreMenuItems.map(item => <MobileNavLink key={item.href} href={item.href}>{item.title}</MobileNavLink>)}
+                                        </div>
+                                    </AccordionContent>
+                                </AccordionItem>
+                                <AccordionItem value="support">
+                                    <AccordionTrigger>Support</AccordionTrigger>
+                                    <AccordionContent>
+                                        <div className="flex flex-col pl-4">
+                                            {supportMenuItems.map(item => <MobileNavLink key={item.href} href={item.href}>{item.title}</MobileNavLink>)}
+                                        </div>
+                                    </AccordionContent>
+                                </AccordionItem>
+                            </Accordion>
+                        </div>
+                    </SheetContent>
+                </Sheet>
+                <Link href="/" className="flex items-center space-x-2">
+                    <Logo />
+                </Link>
+                <nav className="hidden md:flex items-center space-x-1 text-sm ml-6">
+                    <MegaMenu 
+                        triggerText="Services" 
+                        items={servicesMenuItems}
+                        image={servicesImage}
+                    />
+                    <MegaMenu 
+                        triggerText="Explore" 
+                        items={exploreMenuItems}
+                        image={exploreImage}
+                    />
+                    <MegaMenu 
+                        triggerText="Support" 
+                        items={supportMenuItems}
+                        image={supportImage}
+                    />
+                </nav>
+            </div>
+            
+            <div className="flex flex-1 items-center justify-end">
+                <nav className="flex items-center space-x-2">
+                    <Link href="/pricing" className={cn(buttonVariants({ variant: "ghost" }))}>
+                        Pricing
+                    </Link>
+                    <Link href="/login" className={cn(buttonVariants({ variant: "default" }))}>
+                        Login
+                    </Link>
+                </nav>
+            </div>
+        </div>
+      </header>
+
       <main className="flex-1">
-        <section className="py-20 border-t bg-background">
+        <section className="container py-20 text-center">
+          <h1 className="text-4xl md:text-5xl font-bold">
+            Find the perfect plan for your factory
+          </h1>
+          <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
+            Start for free and scale as you grow. All plans include unlimited issue reports.
+          </p>
+          <div className="mt-8 flex justify-center gap-4">
+            <Badge variant="secondary" className="items-center gap-1">
+                <LifeBuoy className="h-4 w-4" /> 24/7 customer service
+            </Badge>
+            <Badge variant="secondary" className="items-center gap-1">
+                <ShieldCheck className="h-4 w-4" /> 30-day money-back guarantee
+            </Badge>
+          </div>
+          <div className="mt-10 flex items-center justify-center gap-4">
+            <Select value={duration} onValueChange={(value) => setDuration(value as Duration)}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Select duration" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="1">1 Month</SelectItem>
+                <SelectItem value="12">12 Months</SelectItem>
+                <SelectItem value="24">24 Months</SelectItem>
+                <SelectItem value="48">48 Months</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={currency} onValueChange={(value) => setCurrency(value as Currency)}>
+              <SelectTrigger className="w-[120px]">
+                <div className="flex items-center gap-2"><Globe className="h-4 w-4" /><SelectValue placeholder="Currency" /></div>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="usd">USD</SelectItem>
+                <SelectItem value="eur">EUR</SelectItem>
+                <SelectItem value="gbp">GBP</SelectItem>
+              </SelectContent>
+            </Select>
+            <div className="flex gap-2 items-center">
+              {duration === '12' && <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~20%</Badge>}
+              {duration === '24' && <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~30%</Badge>}
+              {duration === '48' && <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~40%</Badge>}
+            </div>
+          </div>
+        </section>
+
+        <section className="py-20 border-t bg-muted">
           <div className="container">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
               {tiers.map((tier) => {
                 const isStarter = tier.name === "Starter";
-                const priceInfo = !isStarter
-                  ? tier.prices?.[duration]?.[currency] ?? 0
+                
+                const priceInfo = !isStarter && tier.prices
+                  ? tier.prices[duration]?.[currency] ?? 0
                   : 0;
-                const fullPriceInfo = !isStarter
-                  ? tier.prices?.["1"]?.[currency] ?? 0
-                  : 0;
-                const paymentLink = !isStarter
-                  ? tier.paymentLinks?.[duration]?.[currency] ?? "#"
-                  : "#";
 
+                const fullPriceInfo = !isStarter && tier.prices
+                    ? tier.prices["1"]?.[currency] ?? 0
+                    : 0;
+                
                 const registrationHref = `/register?plan=${tier.id}&duration=${duration}&currency=${currency}`;
-                const finalHref = currentUser
-                  ? `${paymentLink}?client_reference_id=${currentUser.orgId}&prefilled_email=${currentUser.email}`
-                  : registrationHref;
+                
+                const paymentLink = !isStarter && tier.paymentLinks
+                    ? tier.paymentLinks[duration]?.[currency] ?? "#"
+                    : "#";
+
+                const finalHref = isStarter
+                  ? registrationHref 
+                  : currentUser
+                    ? `${paymentLink}?client_reference_id=${currentUser.orgId}&prefilled_email=${currentUser.email}`
+                    : registrationHref;
 
                 const isProBestValue = tier.name === "Pro";
 
@@ -326,7 +446,7 @@ export default function PricingPage() {
                         >
                           {tier.cta}
                         </Link>
-                        {!isStarter && fullPriceInfo && (
+                        {!isStarter && fullPriceInfo > 0 && duration !== '1' && (
                           <p className="text-xs text-muted-foreground mt-3 text-center">
                             Billed monthly. Renews at{" "}
                             {currencySymbols[currency]}
@@ -348,6 +468,23 @@ export default function PricingPage() {
           </div>
         </section>
       </main>
+      <footer className="bg-gray-800 text-gray-300">
+        <div className="container py-8">
+          <div className="flex flex-col md:flex-row justify-between items-center">
+            <div className="mb-4 md:mb-0">
+              <FooterLogo />
+            </div>
+            <div className="text-center md:text-right">
+              <p>&copy; {year} AndonPro. All rights reserved.</p>
+              <nav className="flex justify-center md:justify-end space-x-4 mt-2">
+                <Link href="/about/our-story" className="text-sm hover:text-white">Our Story</Link>
+                <Link href="/pricing" className="text-sm hover:text-white">Pricing</Link>
+                <Link href="/support/contact" className="text-sm hover:text-white">Contact</Link>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
