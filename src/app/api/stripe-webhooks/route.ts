@@ -1,7 +1,7 @@
-
+// /app/api/stripe-webhooks/route.ts
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
-import { adminDb } from "@/firebase/admin";
+import { adminDb } from "@/firebase/admin"; // Firestore admin SDK instance
 import { Timestamp, FieldValue } from "firebase-admin/firestore";
 import { sendWelcomeEmail } from "@/lib/server-actions";
 import { priceIdToPlan } from "@/lib/stripe-prices";
@@ -26,7 +26,7 @@ export async function POST(req: Request) {
     console.error("❌ Webhook signature verification failed:", err.message);
     return new NextResponse(`Webhook Error: ${err.message}`, { status: 400 });
   }
-  
+
   const db = adminDb();
 
   // ---------------------------------------------------------------------------
@@ -34,47 +34,37 @@ export async function POST(req: Request) {
   // ---------------------------------------------------------------------------
   if (event.type === "checkout.session.completed") {
     const session = event.data.object as Stripe.Checkout.Session;
-    
     const userId = session.client_reference_id;
-    const isNewUser = session.metadata?.isNewUser === 'true';
+    const isNewUser = session.metadata?.isNewUser === "true";
 
     if (!userId) {
-      console.error("❌ checkout.session.completed: Missing client_reference_id (userId).");
+      console.error("❌ Missing client_reference_id");
       return new NextResponse("Webhook Error: Missing client_reference_id", { status: 400 });
     }
 
-    if (session.mode === "subscription") {
+    if (session.mode === "subscription" && session.subscription) {
       try {
-        if (!session.subscription) {
-            console.error(`❌ checkout.session.completed: No subscription ID found for session ${session.id}`);
-            return new NextResponse("Webhook Error: Could not find subscription ID", { status: 400 });
-        }
-        
-        // Retrieve the subscription object with the price expanded
         const subscription = await stripe.subscriptions.retrieve(session.subscription as string, {
-          expand: ['items.data.price']
+          expand: ["items.data.price"],
         });
-        
+
         const priceId = subscription.items.data[0]?.price?.id;
-
         if (!priceId) {
-            console.error(`❌ checkout.session.completed: No price ID found for subscription ${subscription.id}`);
-            return new NextResponse("Webhook Error: Could not determine plan from subscription", { status: 400 });
+          console.error(`❌ No price ID found for subscription ${subscription.id}`);
+          return new NextResponse("Webhook Error: Could not determine plan", { status: 400 });
         }
-        
+
         const plan: Plan | undefined = priceIdToPlan[priceId];
-
         if (!plan) {
-            console.error(`❌ checkout.session.completed: Could not map price ID "${priceId}" to a known plan.`);
-            return new NextResponse("Webhook Error: Unknown price ID", { status: 400 });
+          console.error(`❌ Unknown price ID: ${priceId}`);
+          return new NextResponse("Webhook Error: Unknown price ID", { status: 400 });
         }
-        
-        const userRef = db.collection("users").doc(userId);
 
+        const userRef = db.collection("users").doc(userId);
         const updates = {
           plan,
           subscriptionId: subscription.id,
-          subscriptionStatus: 'active' as const,
+          subscriptionStatus: "active" as const,
           subscriptionStartsAt: Timestamp.fromMillis(subscription.current_period_start * 1000),
           subscriptionEndsAt: Timestamp.fromMillis(subscription.current_period_end * 1000),
           updatedAt: FieldValue.serverTimestamp(),
@@ -82,19 +72,18 @@ export async function POST(req: Request) {
 
         await userRef.update(updates);
         console.log(`✅ Subscription started for user ${userId} (${plan})`);
-        
+
         if (isNewUser) {
           await sendWelcomeEmail(userId);
           console.log(`💌 Welcome email sent to new subscriber ${userId}`);
         }
-        
       } catch (error) {
-        console.error("❌ Firestore update failed for checkout.session.completed:", error);
+        console.error("❌ Firestore update failed:", error);
         return new NextResponse("Internal Server Error", { status: 500 });
       }
     }
   }
-  
+
   // ---------------------------------------------------------------------------
   // 🔄 SUBSCRIPTION RENEWAL / INVOICE PAID
   // ---------------------------------------------------------------------------
@@ -134,6 +123,7 @@ export async function POST(req: Request) {
   if (event.type === "invoice.payment_failed") {
     const invoice = event.data.object as Stripe.Invoice;
     const subscriptionId = invoice.subscription;
+
     if (subscriptionId) {
       const userSnapshot = await db
         .collection("users")
