@@ -10,12 +10,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { CheckCircle, Globe, Menu, Shield, Headset, BadgeCheck, LoaderCircle } from "lucide-react";
+import { CheckCircle, Globe, Menu, Shield, Headset, BadgeCheck } from "lucide-react";
 import Link from "next/link";
 import { Logo } from "@/components/layout/logo";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
-import React, { useState, useEffect, Suspense } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Select,
   SelectContent,
@@ -339,7 +339,7 @@ function PricingPageContent() {
           </div>
         </section>
 
-        <section className="py-20 border-t bg-muted">
+        <section className="py-20 border-t bg-background">
           <div className="container">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
               {tiers.map((tier) => {
@@ -350,7 +350,7 @@ function PricingPageContent() {
                 const priceInfo = (() => {
                   if (isStarter) return { price: 0, fullPrice: 0 };
                   const tierData = tiers.find(t => t.id === tier.id);
-                  if (!tierData || !('prices' in tierData)) return { price: 0, fullPrice: 0 };
+                  if (!tierData || !('prices' in tierData) || !tierData.prices) return { price: 0, fullPrice: 0 };
                   const price = tierData.prices[actualDuration]?.[currency] ?? 0;
                   const fullPrice = tierData.prices["1"]?.[currency] ?? 0;
                   return { price, fullPrice };
@@ -390,7 +390,7 @@ function PricingPageContent() {
                     )}
                     <Card
                       className={cn(
-                        "flex flex-col h-full relative overflow-hidden",
+                        "flex flex-col h-full relative overflow-hidden bg-background",
                         tier.popular &&
                           (isProBestValue
                             ? "border-destructive shadow-lg"
@@ -445,7 +445,7 @@ function PricingPageContent() {
                           ))}
                         </ul>
                       </CardContent>
-                      <CardFooter className="flex-col items-stretch">
+                      <CardFooter className="flex-col items-stretch bg-blue-500/10 dark:bg-blue-900/20 pt-6">
                         <Link
                           href={finalHref}
                           className={cn(
@@ -454,7 +454,7 @@ function PricingPageContent() {
                                 ? "destructive"
                                 : tier.popular
                                 ? "default"
-                                : "outline",
+                                : "primary",
                             }),
                             "w-full",
                             currentUser && currentUser.plan === tier.id && "pointer-events-none opacity-50"
@@ -535,12 +535,10 @@ function PricingPageContent() {
 
 export default function PricingPage() {
     return (
-        <Suspense fallback={
-            <div className="flex h-screen items-center justify-center">
-                <LoaderCircle className="h-8 w-8 animate-spin" />
-            </div>
-        }>
+        <React.Suspense>
             <PricingPageContent />
-        </Suspense>
+        </React.Suspense>
     );
 }
+
+    
