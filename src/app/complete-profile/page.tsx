@@ -38,13 +38,13 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
-// Define pricing tiers locally for this page
 type Duration = "1" | "12" | "24" | "48";
 type Currency = "usd" | "eur" | "gbp";
+
 const tiers = [
-  { name: "Standard", id: "standard", paymentLinks: { "1": { usd: "https://buy.stripe.com/4gM28q7nG9jM0sEd0O0Ny05", eur: "https://buy.stripe.com/7sY14mdM48fI6R2aSG0Ny08", gbp: "https://buy.stripe.com/bJe6oGgYggMea3e8Ky0Ny02" }, "12": { usd: "https://buy.stripe.com/4gM28q7nG9jM0sEd0O0Ny05?prefilled_promo_code=YAPPQ2YO", eur: "https://buy.stripe.com/7sY14mdM48fI6R2aSG0Ny08?prefilled_promo_code=YAPPQ2YO", gbp: "https://buy.stripe.com/bJe6oGgYggMea3e8Ky0Ny02?prefilled_promo_code=YAPPQ2YO" }, "24": { usd: "https://buy.stripe.com/4gM28q7nG9jM0sEd0O0Ny05?prefilled_promo_code=TQ4IVSRD", eur: "https://buy.stripe.com/7sY14mdM48fI6R2aSG0Ny08?prefilled_promo_code=TQ4IVSRD", gbp: "https://buy.stripe.com/bJe6oGgYggMea3e8Ky0Ny02?prefilled_promo_code=TQ4IVSRD" }, "48": { usd: "https://buy.stripe.com/4gM28q7nG9jM0sEd0O0Ny05?prefilled_promo_code=ALRLAVQ8", eur: "https://buy.stripe.com/7sY14mdM48fI6R2aSG0Ny08?prefilled_promo_code=ALRLAVQ8", gbp: "https://buy.stripe.com/bJe6oGgYggMea3e8Ky0Ny02?prefilled_promo_code=ALRLAVQ8" } } },
-  { name: "Pro", id: "pro", paymentLinks: { "1": { usd: "https://buy.stripe.com/5kQdR8azS3Zseju4ui0Ny04", eur: "https://buy.stripe.com/eVq28q8rK53wejud0O0Ny07", gbp: "https://buy.stripe.com/28E00i8rK8fIfnye4S0Ny01" }, "12": { usd: "https://buy.stripe.com/5kQdR8azS3Zseju4ui0Ny04?prefilled_promo_code=YAPPQ2YO", eur: "https://buy.stripe.com/eVq28q8rK53wejud0O0Ny07?prefilled_promo_code=YAPPQ2YO", gbp: "https://buy.stripe.com/28E00i8rK8fIfnye4S0Ny01?prefilled_promo_code=YAPPQ2YO" }, "24": { usd: "https://buy.stripe.com/5kQdR8azS3Zseju4ui0Ny04?prefilled_promo_code=TQ4IVSRD", eur: "https://buy.stripe.com/eVq28q8rK53wejud0O0Ny07?prefilled_promo_code=TQ4IVSRD", gbp: "https://buy.stripe.com/28E00i8rK8fIfnye4S0Ny01?prefilled_promo_code=TQ4IVSRD" }, "48": { usd: "https://buy.stripe.com/5kQdR8azS3Zseju4ui0Ny04?prefilled_promo_code=ALRLAVQ8", eur: "https://buy.stripe.com/eVq28q8rK53wejud0O0Ny07?prefilled_promo_code=ALRLAVQ8", gbp: "https://buy.stripe.com/28E00i8rK8fIfnye4S0Ny01?prefilled_promo_code=ALRLAVQ8" } } },
-  { name: "Enterprise", id: "enterprise", paymentLinks: { "1": { usd: "https://buy.stripe.com/4gM7sK8rKfIaeju0e20Ny03", eur: "https://buy.stripe.com/28EdR8azSfIa4IUf8W0Ny06", gbp: "https://buy.stripe.com/5kQ7sK37qanQ3EQ4ui0Ny00" }, "12": { usd: "https://buy.stripe.com/4gM7sK8rKfIaeju0e20Ny03?prefilled_promo_code=YAPPQ2YO", eur: "https://buy.stripe.com/28EdR8azSfIa4IUf8W0Ny06?prefilled_promo_code=YAPPQ2YO", gbp: "https://buy.stripe.com/5kQ7sK37qanQ3EQ4ui0Ny00?prefilled_promo_code=YAPPQ2YO" }, "24": { usd: "https://buy.stripe.com/4gM7sK8rKfIaeju0e20Ny03?prefilled_promo_code=TQ4IVSRD", eur: "https://buy.stripe.com/28EdR8azSfIa4IUf8W0Ny06?prefilled_promo_code=TQ4IVSRD", gbp: "https://buy.stripe.com/5kQ7sK37qanQ3EQ4ui0Ny00?prefilled_promo_code=TQ4IVSRD" }, "48": { usd: "https://buy.stripe.com/4gM7sK8rKfIaeju0e20Ny03?prefilled_promo_code=ALRLAVQ8", eur: "https://buy.stripe.com/28EdR8azSfIa4IUf8W0Ny06?prefilled_promo_code=ALRLAVQ8", gbp: "https://buy.stripe.com/5kQ7sK37qanQ3EQ4ui0Ny00?prefilled_promo_code=ALRLAVQ8" } } }
+  { name: "Standard", id: "standard", paymentLinks: { "1": { usd: "https://buy.stripe.com/4gM28q7nG9jM0sEd0O0Ny05", eur: "https://buy.stripe.com/7sY14mdM48fI6R2aSG0Ny08", gbp: "https://buy.stripe.com/bJe6oGgYggMea3e8Ky0Ny02" }, "12": { usd: "https://buy.stripe.com/4gM28q7nG9jM0sEd0O0Ny05", eur: "https://buy.stripe.com/7sY14mdM48fI6R2aSG0Ny08", gbp: "https://buy.stripe.com/bJe6oGgYggMea3e8Ky0Ny02" }, "24": { usd: "https://buy.stripe.com/4gM28q7nG9jM0sEd0O0Ny05", eur: "https://buy.stripe.com/7sY14mdM48fI6R2aSG0Ny08", gbp: "https://buy.stripe.com/bJe6oGgYggMea3e8Ky0Ny02" }, "48": { usd: "https://buy.stripe.com/4gM28q7nG9jM0sEd0O0Ny05", eur: "https://buy.stripe.com/7sY14mdM48fI6R2aSG0Ny08", gbp: "https://buy.stripe.com/bJe6oGgYggMea3e8Ky0Ny02" } } },
+  { name: "Pro", id: "pro", paymentLinks: { "1": { usd: "https://buy.stripe.com/5kQdR8azS3Zseju4ui0Ny04", eur: "https://buy.stripe.com/eVq28q8rK53wejud0O0Ny07", gbp: "https://buy.stripe.com/28E00i8rK8fIfnye4S0Ny01" }, "12": { usd: "https://buy.stripe.com/5kQdR8azS3Zseju4ui0Ny04", eur: "https://buy.stripe.com/eVq28q8rK53wejud0O0Ny07", gbp: "https://buy.stripe.com/28E00i8rK8fIfnye4S0Ny01" }, "24": { usd: "https://buy.stripe.com/5kQdR8azS3Zseju4ui0Ny04", eur: "https://buy.stripe.com/eVq28q8rK53wejud0O0Ny07", gbp: "https://buy.stripe.com/28E00i8rK8fIfnye4S0Ny01" }, "48": { usd: "https://buy.stripe.com/5kQdR8azS3Zseju4ui0Ny04", eur: "https://buy.stripe.com/eVq28q8rK53wejud0O0Ny07", gbp: "https://buy.stripe.com/28E00i8rK8fIfnye4S0Ny01" } } },
+  { name: "Enterprise", id: "enterprise", paymentLinks: { "1": { usd: "https://buy.stripe.com/4gM7sK8rKfIaeju0e20Ny03", eur: "https://buy.stripe.com/28EdR8azSfIa4IUf8W0Ny06", gbp: "https://buy.stripe.com/5kQ7sK37qanQ3EQ4ui0Ny00" }, "12": { usd: "https://buy.stripe.com/4gM7sK8rKfIaeju0e20Ny03", eur: "https://buy.stripe.com/28EdR8azSfIa4IUf8W0Ny06", gbp: "https://buy.stripe.com/5kQ7sK37qanQ3EQ4ui0Ny00" }, "24": { usd: "https://buy.stripe.com/4gM7sK8rKfIaeju0e20Ny03", eur: "https://buy.stripe.com/28EdR8azSfIa4IUf8W0Ny06", gbp: "https://buy.stripe.com/5kQ7sK37qanQ3EQ4ui0Ny00" }, "48": { usd: "https://buy.stripe.com/4gM7sK8rKfIaeju0e20Ny03", eur: "https://buy.stripe.com/28EdR8azSfIa4IUf8W0Ny06", gbp: "https://buy.stripe.com/5kQ7sK37qanQ3EQ4ui0Ny00" } } }
 ];
 
 const profileFormSchema = z.object({
@@ -66,7 +66,6 @@ function CompleteProfileContent() {
 
   const [isSubmitting, startTransition] = useTransition();
   const [isCancelling, startCancellationTransition] = useTransition();
-  const [year, setYear] = useState(new Date().getFullYear());
 
   const plan = searchParams.get('plan') as Plan || 'starter';
   const duration = (searchParams.get('duration') || '1') as Duration;
@@ -80,23 +79,6 @@ function CompleteProfileContent() {
     },
   });
 
-  // Ensure query params exist in URL as a failsafe
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    let shouldUpdate = false;
-  
-    if (!params.get('plan')) { params.set('plan', 'starter'); shouldUpdate = true; }
-    if (!params.get('duration')) { params.set('duration', '1'); shouldUpdate = true; }
-    if (!params.get('currency')) { params.set('currency', 'usd'); shouldUpdate = true; }
-  
-    if (shouldUpdate) {
-      router.replace(`/complete-profile?${params.toString()}`);
-    }
-  }, [router]);
-
-  useEffect(() => setYear(new Date().getFullYear()), []);
-
-  // Populate form with current user data
   useEffect(() => {
     if (!userLoading && !currentUser) {
       toast({ title: "Not Authenticated", description: "You must be signed in to complete your profile.", variant: "destructive" });
@@ -168,7 +150,6 @@ function CompleteProfileContent() {
         });
         router.push(`/dashboard`);
       } else {
-        // Redirect to Stripe Payment Link for paid plans
         const selectedTier = tiers.find(t => t.id === plan);
         if (!selectedTier) {
             toast({ variant: "destructive", title: "Checkout Error", description: "The selected plan could not be found." });
@@ -325,7 +306,7 @@ function CompleteProfileContent() {
           </Card>
         </div>
         <footer className="mt-8 text-center text-sm text-muted-foreground">
-          © {year} AndonPro. All rights reserved.
+          © {new Date().getFullYear()} AndonPro. All rights reserved.
         </footer>
       </div>
     </div>
@@ -339,4 +320,3 @@ export default function CompleteProfilePage() {
     </Suspense>
   );
 }
-

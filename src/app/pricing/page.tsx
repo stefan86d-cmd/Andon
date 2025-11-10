@@ -71,28 +71,6 @@ const tiers = [
       "24": { usd: 27.99, eur: 25.89, gbp: 23.09 },
       "48": { usd: 23.99, eur: 22.19, gbp: 19.79 },
     },
-    paymentLinks: {
-        "1": {
-            usd: "https://buy.stripe.com/4gM28q7nG9jM0sEd0O0Ny05",
-            eur: "https://buy.stripe.com/7sY14mdM48fI6R2aSG0Ny08",
-            gbp: "https://buy.stripe.com/bJe6oGgYggMea3e8Ky0Ny02",
-        },
-        "12": {
-            usd: "https://buy.stripe.com/4gM28q7nG9jM0sEd0O0Ny05?prefilled_promo_code=YAPPQ2YO",
-            eur: "https://buy.stripe.com/7sY14mdM48fI6R2aSG0Ny08?prefilled_promo_code=YAPPQ2YO",
-            gbp: "https://buy.stripe.com/bJe6oGgYggMea3e8Ky0Ny02?prefilled_promo_code=YAPPQ2YO",
-        },
-        "24": {
-            usd: "https://buy.stripe.com/4gM28q7nG9jM0sEd0O0Ny05?prefilled_promo_code=TQ4IVSRD",
-            eur: "https://buy.stripe.com/7sY14mdM48fI6R2aSG0Ny08?prefilled_promo_code=TQ4IVSRD",
-            gbp: "https://buy.stripe.com/bJe6oGgYggMea3e8Ky0Ny02?prefilled_promo_code=TQ4IVSRD",
-        },
-        "48": {
-            usd: "https://buy.stripe.com/4gM28q7nG9jM0sEd0O0Ny05?prefilled_promo_code=ALRLAVQ8",
-            eur: "https://buy.stripe.com/7sY14mdM48fI6R2aSG0Ny08?prefilled_promo_code=ALRLAVQ8",
-            gbp: "https://buy.stripe.com/bJe6oGgYggMea3e8Ky0Ny02?prefilled_promo_code=ALRLAVQ8",
-        },
-    },
     pricePeriod: "/ month",
     description: "For growing factories that need more power and insights.",
     features: [
@@ -114,28 +92,6 @@ const tiers = [
       "12": { usd: 47.99, eur: 43.99, gbp: 39.99 },
       "24": { usd: 41.99, eur: 38.49, gbp: 34.99 },
       "48": { usd: 35.99, eur: 32.99, gbp: 29.99 },
-    },
-     paymentLinks: {
-        "1": {
-            usd: "https://buy.stripe.com/5kQdR8azS3Zseju4ui0Ny04",
-            eur: "https://buy.stripe.com/eVq28q8rK53wejud0O0Ny07",
-            gbp: "https://buy.stripe.com/28E00i8rK8fIfnye4S0Ny01",
-        },
-        "12": {
-            usd: "https://buy.stripe.com/5kQdR8azS3Zseju4ui0Ny04?prefilled_promo_code=YAPPQ2YO",
-            eur: "https://buy.stripe.com/eVq28q8rK53wejud0O0Ny07?prefilled_promo_code=YAPPQ2YO",
-            gbp: "https://buy.stripe.com/28E00i8rK8fIfnye4S0Ny01?prefilled_promo_code=YAPPQ2YO",
-        },
-        "24": {
-            usd: "https://buy.stripe.com/5kQdR8azS3Zseju4ui0Ny04?prefilled_promo_code=TQ4IVSRD",
-            eur: "https://buy.stripe.com/eVq28q8rK53wejud0O0Ny07?prefilled_promo_code=TQ4IVSRD",
-            gbp: "https://buy.stripe.com/28E00i8rK8fIfnye4S0Ny01?prefilled_promo_code=TQ4IVSRD",
-        },
-        "48": {
-            usd: "https://buy.stripe.com/5kQdR8azS3Zseju4ui0Ny04?prefilled_promo_code=ALRLAVQ8",
-            eur: "https://buy.stripe.com/eVq28q8rK53wejud0O0Ny07?prefilled_promo_code=ALRLAVQ8",
-            gbp: "https://buy.stripe.com/28E00i8rK8fIfnye4S0Ny01?prefilled_promo_code=ALRLAVQ8",
-        },
     },
     pricePeriod: "/ month",
     description: "For scaling operations with expanded needs.",
@@ -160,28 +116,6 @@ const tiers = [
       "12": { usd: 119.99, eur: 111.99, gbp: 99.99 },
       "24": { usd: 104.99, eur: 97.99, gbp: 87.49 },
       "48": { usd: 89.99, eur: 83.99, gbp: 74.99 },
-    },
-    paymentLinks: {
-        "1": {
-            usd: "https://buy.stripe.com/4gM7sK8rKfIaeju0e20Ny03",
-            eur: "https://buy.stripe.com/28EdR8azSfIa4IUf8W0Ny06",
-            gbp: "https://buy.stripe.com/5kQ7sK37qanQ3EQ4ui0Ny00",
-        },
-        "12": {
-            usd: "https://buy.stripe.com/4gM7sK8rKfIaeju0e20Ny03?prefilled_promo_code=YAPPQ2YO",
-            eur: "https://buy.stripe.com/28EdR8azSfIa4IUf8W0Ny06?prefilled_promo_code=YAPPQ2YO",
-            gbp: "https://buy.stripe.com/5kQ7sK37qanQ3EQ4ui0Ny00?prefilled_promo_code=YAPPQ2YO",
-        },
-        "24": {
-            usd: "https://buy.stripe.com/4gM7sK8rKfIaeju0e20Ny03?prefilled_promo_code=TQ4IVSRD",
-            eur: "https://buy.stripe.com/28EdR8azSfIa4IUf8W0Ny06?prefilled_promo_code=TQ4IVSRD",
-            gbp: "https://buy.stripe.com/5kQ7sK37qanQ3EQ4ui0Ny00?prefilled_promo_code=TQ4IVSRD",
-        },
-        "48": {
-            usd: "https://buy.stripe.com/4gM7sK8rKfIaeju0e20Ny03?prefilled_promo_code=ALRLAVQ8",
-            eur: "https://buy.stripe.com/28EdR8azSfIa4IUf8W0Ny06?prefilled_promo_code=ALRLAVQ8",
-            gbp: "https://buy.stripe.com/5kQ7sK37qanQ3EQ4ui0Ny00?prefilled_promo_code=ALRLAVQ8",
-        },
     },
     pricePeriod: "/ month",
     description: "For large-scale operations with expanded resources.",
@@ -397,7 +331,7 @@ function PricingPageContent() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
               {tiers.map((tier) => {
                 const isStarter = tier.id === "starter";
-                const registrationHref = `/register?plan=${tier.id}&duration=${duration}&currency=${currency}`;
+                const checkoutHref = `/checkout?plan=${tier.id}&duration=${duration}&currency=${currency}`;
                 
                 const priceInfo = (() => {
                   if (isStarter || !('prices' in tier) || !tier.prices) {
@@ -408,19 +342,13 @@ function PricingPageContent() {
                   return { price, fullPrice };
                 })();
 
-
                 let finalHref: string;
                 if (currentUser) {
-                  if (isStarter) {
-                    finalHref = "/settings/billing";
-                  } else if ('paymentLinks' in tier && tier.paymentLinks) {
-                    const paymentLink = tier.paymentLinks[duration]?.[currency] ?? "#";
-                    finalHref = `${paymentLink}?client_reference_id=${currentUser.orgId}&prefilled_email=${currentUser.email}&metadata[isNewUser]=false`;
-                  } else {
-                    finalHref = "#";
-                  }
+                  // If user is logged in, and it's not their current plan, link to change plan.
+                  // For now, we point to billing page where they can manage it.
+                  finalHref = "/settings/billing";
                 } else {
-                  finalHref = registrationHref;
+                  finalHref = isStarter ? tier.href : checkoutHref;
                 }
 
                 const isProBestValue = tier.id === "pro";
@@ -512,7 +440,8 @@ function PricingPageContent() {
                                 ? "default"
                                 : "outline",
                             }),
-                            "w-full"
+                            "w-full",
+                            currentUser && currentUser.plan === tier.id && "pointer-events-none opacity-50"
                           )}
                         >
                           {currentUser && currentUser.plan === tier.id ? 'Current Plan' : tier.cta}

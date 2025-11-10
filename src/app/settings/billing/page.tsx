@@ -32,19 +32,19 @@ const tiers: Record<Exclude<Plan, 'custom' | 'starter'>, any> = {
             gbp: 'https://buy.stripe.com/bJe6oGgYggMea3e8Ky0Ny02',
         },
         '12': {
-            usd: 'https://buy.stripe.com/4gM28q7nG9jM0sEd0O0Ny05?prefilled_promo_code=YAPPQ2YO',
-            eur: 'https://buy.stripe.com/7sY14mdM48fI6R2aSG0Ny08?prefilled_promo_code=YAPPQ2YO',
-            gbp: 'https://buy.stripe.com/bJe6oGgYggMea3e8Ky0Ny02?prefilled_promo_code=YAPPQ2YO',
+            usd: 'https://buy.stripe.com/4gM28q7nG9jM0sEd0O0Ny05',
+            eur: 'https://buy.stripe.com/7sY14mdM48fI6R2aSG0Ny08',
+            gbp: 'https://buy.stripe.com/bJe6oGgYggMea3e8Ky0Ny02',
         },
         '24': {
-            usd: 'https://buy.stripe.com/4gM28q7nG9jM0sEd0O0Ny05?prefilled_promo_code=TQ4IVSRD',
-            eur: 'https://buy.stripe.com/7sY14mdM48fI6R2aSG0Ny08?prefilled_promo_code=TQ4IVSRD',
-            gbp: 'https://buy.stripe.com/bJe6oGgYggMea3e8Ky0Ny02?prefilled_promo_code=TQ4IVSRD',
+            usd: 'https://buy.stripe.com/4gM28q7nG9jM0sEd0O0Ny05',
+            eur: 'https://buy.stripe.com/7sY14mdM48fI6R2aSG0Ny08',
+            gbp: 'https://buy.stripe.com/bJe6oGgYggMea3e8Ky0Ny02',
         },
         '48': {
-            usd: 'https://buy.stripe.com/4gM28q7nG9jM0sEd0O0Ny05?prefilled_promo_code=ALRLAVQ8',
-            eur: 'https://buy.stripe.com/7sY14mdM48fI6R2aSG0Ny08?prefilled_promo_code=ALRLAVQ8',
-            gbp: 'https://buy.stripe.com/bJe6oGgYggMea3e8Ky0Ny02?prefilled_promo_code=ALRLAVQ8',
+            usd: 'https://buy.stripe.com/4gM28q7nG9jM0sEd0O0Ny05',
+            eur: 'https://buy.stripe.com/7sY14mdM48fI6R2aSG0Ny08',
+            gbp: 'https://buy.stripe.com/bJe6oGgYggMea3e8Ky0Ny02',
         },
     }
   },
@@ -58,19 +58,19 @@ const tiers: Record<Exclude<Plan, 'custom' | 'starter'>, any> = {
             gbp: 'https://buy.stripe.com/28E00i8rK8fIfnye4S0Ny01',
         },
         '12': {
-            usd: 'https://buy.stripe.com/5kQdR8azS3Zseju4ui0Ny04?prefilled_promo_code=YAPPQ2YO',
-            eur: 'https://buy.stripe.com/eVq28q8rK53wejud0O0Ny07?prefilled_promo_code=YAPPQ2YO',
-            gbp: 'https://buy.stripe.com/28E00i8rK8fIfnye4S0Ny01?prefilled_promo_code=YAPPQ2YO',
+            usd: 'https://buy.stripe.com/5kQdR8azS3Zseju4ui0Ny04',
+            eur: 'https://buy.stripe.com/eVq28q8rK53wejud0O0Ny07',
+            gbp: 'https://buy.stripe.com/28E00i8rK8fIfnye4S0Ny01',
         },
         '24': {
-            usd: 'https://buy.stripe.com/5kQdR8azS3Zseju4ui0Ny04?prefilled_promo_code=TQ4IVSRD',
-            eur: 'https://buy.stripe.com/eVq28q8rK53wejud0O0Ny07?prefilled_promo_code=TQ4IVSRD',
-            gbp: 'https://buy.stripe.com/28E00i8rK8fIfnye4S0Ny01?prefilled_promo_code=TQ4IVSRD',
+            usd: 'https://buy.stripe.com/5kQdR8azS3Zseju4ui0Ny04',
+            eur: 'https://buy.stripe.com/eVq28q8rK53wejud0O0Ny07',
+            gbp: 'https://buy.stripe.com/28E00i8rK8fIfnye4S0Ny01',
         },
         '48': {
-            usd: 'https://buy.stripe.com/5kQdR8azS3Zseju4ui0Ny04?prefilled_promo_code=ALRLAVQ8',
-            eur: 'https://buy.stripe.com/eVq28q8rK53wejud0O0Ny07?prefilled_promo_code=ALRLAVQ8',
-            gbp: 'https://buy.stripe.com/28E00i8rK8fIfnye4S0Ny01?prefilled_promo_code=ALRLAVQ8',
+            usd: 'https://buy.stripe.com/5kQdR8azS3Zseju4ui0Ny04',
+            eur: 'https://buy.stripe.com/eVq28q8rK53wejud0O0Ny07',
+            gbp: 'https://buy.stripe.com/28E00i8rK8fIfnye4S0Ny01',
         },
     }
   },
@@ -84,19 +84,19 @@ const tiers: Record<Exclude<Plan, 'custom' | 'starter'>, any> = {
             gbp: 'https://buy.stripe.com/5kQ7sK37qanQ3EQ4ui0Ny00',
         },
         '12': {
-            usd: 'https://buy.stripe.com/4gM7sK8rKfIaeju0e20Ny03?prefilled_promo_code=YAPPQ2YO',
-            eur: 'https://buy.stripe.com/28EdR8azSfIa4IUf8W0Ny06?prefilled_promo_code=YAPPQ2YO',
-            gbp: 'https://buy.stripe.com/5kQ7sK37qanQ3EQ4ui0Ny00?prefilled_promo_code=YAPPQ2YO',
+            usd: 'https://buy.stripe.com/4gM7sK8rKfIaeju0e20Ny03',
+            eur: 'https://buy.stripe.com/28EdR8azSfIa4IUf8W0Ny06',
+            gbp: 'https://buy.stripe.com/5kQ7sK37qanQ3EQ4ui0Ny00',
         },
         '24': {
-            usd: 'https://buy.stripe.com/4gM7sK8rKfIaeju0e20Ny03?prefilled_promo_code=TQ4IVSRD',
-            eur: 'https://buy.stripe.com/28EdR8azSfIa4IUf8W0Ny06?prefilled_promo_code=TQ4IVSRD',
-            gbp: 'https://buy.stripe.com/5kQ7sK37qanQ3EQ4ui0Ny00?prefilled_promo_code=TQ4IVSRD',
+            usd: 'https://buy.stripe.com/4gM7sK8rKfIaeju0e20Ny03',
+            eur: 'https://buy.stripe.com/28EdR8azSfIa4IUf8W0Ny06',
+            gbp: 'https://buy.stripe.com/5kQ7sK37qanQ3EQ4ui0Ny00',
         },
         '48': {
-            usd: 'https://buy.stripe.com/4gM7sK8rKfIaeju0e20Ny03?prefilled_promo_code=ALRLAVQ8',
-            eur: 'https://buy.stripe.com/28EdR8azSfIa4IUf8W0Ny06?prefilled_promo_code=ALRLAVQ8',
-            gbp: 'https://buy.stripe.com/5kQ7sK37qanQ3EQ4ui0Ny00?prefilled_promo_code=ALRLAVQ8',
+            usd: 'https://buy.stripe.com/4gM7sK8rKfIaeju0e20Ny03',
+            eur: 'https://buy.stripe.com/28EdR8azSfIa4IUf8W0Ny06',
+            gbp: 'https://buy.stripe.com/5kQ7sK37qanQ3EQ4ui0Ny00',
         },
     }
   },
@@ -251,9 +251,9 @@ function BillingPageContent() {
                             )}
                             
                             <div className="flex gap-2 items-center">
-                                <Button asChild disabled={!newPlan || newPlan === currentUser.plan}>
+                                 <Button asChild disabled={!newPlan || newPlan === currentUser.plan || !selectedTier}>
                                     <Link href={paymentLink}>
-                                        {newPlan === currentUser.plan ? 'Current Plan' : (newPlan ? `Update Plan` : 'Select a Plan')}
+                                        {newPlan === currentUser.plan ? 'Current Plan' : (newPlan ? `Update to ${selectedTier?.name}` : 'Select a Plan')}
                                     </Link>
                                 </Button>
                             </div>
