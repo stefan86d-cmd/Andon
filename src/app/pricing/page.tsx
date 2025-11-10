@@ -306,7 +306,7 @@ function PricingPageContent() {
       <main className="flex-1">
         <section className="container py-20 text-center">
           <h1 className="text-4xl md:text-5xl font-bold">
-            Find the perfect plan for your factory
+            Find the right plan that suits your needs
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
             Start for free and scale as you grow. All plans include unlimited issue reports.
