@@ -306,10 +306,10 @@ function PricingPageContent() {
       <main className="flex-1">
         <section className="container py-20 text-center">
           <h1 className="text-4xl md:text-5xl font-bold">
-            Find the right plan that suits your needs
+            Pricing
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
-            Start for free and scale as you grow. All plans include unlimited issue reports.
+            Find the right plan that exactly matches your team's needs. Start for free and scale as you grow.
           </p>
           <div className="mt-10 flex items-center justify-center gap-4">
             {showDurationSelector && (
@@ -349,14 +349,18 @@ function PricingPageContent() {
                 
                 const priceInfo = (() => {
                   if (isStarter || !('prices' in tier)) return { price: 0, fullPrice: 0 };
-                  const price = tier.prices?.[actualDuration]?.[currency] ?? 0;
-                  const fullPrice = tier.prices?.["1"]?.[currency] ?? 0;
+                  const price = tier.prices[actualDuration]?.[currency] ?? 0;
+                  const fullPrice = tier.prices["1"]?.[currency] ?? 0;
                   return { price, fullPrice };
                 })();
 
                 let finalHref: string;
                 if (currentUser) {
-                  finalHref = "/settings/billing";
+                  if (currentUser.plan === 'starter') {
+                    finalHref = isStarter ? "/dashboard" : checkoutHref;
+                  } else {
+                    finalHref = "/settings/billing";
+                  }
                 } else {
                   finalHref = isStarter ? tier.href : checkoutHref;
                 }
@@ -454,7 +458,7 @@ function PricingPageContent() {
                             currentUser && currentUser.plan === tier.id && "pointer-events-none opacity-50"
                           )}
                         >
-                          {currentUser && currentUser.plan === tier.id ? 'Current Plan' : tier.cta}
+                          {currentUser && currentUser.plan === tier.id ? 'Current Plan' : (isStarter && currentUser ? 'Go to Dashboard' : tier.cta)}
                         </Link>
                         {!isStarter && priceInfo.fullPrice > 0 && duration !== '1' && showDurationSelector && (
                           <p className="text-xs text-muted-foreground mt-3 text-center">
