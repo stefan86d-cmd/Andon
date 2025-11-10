@@ -25,17 +25,14 @@ const tiers: Record<Exclude<Plan, 'custom' | 'starter'>, any> = {
   standard: { 
     name: "Standard", 
     prices: { '1': { usd: 39.99, eur: 36.99, gbp: 32.99 }, '12': { usd: 31.99, eur: 29.59, gbp: 26.39 }, '24': { usd: 27.99, eur: 25.89, gbp: 23.09 }, '48': { usd: 23.99, eur: 22.19, gbp: 19.79 } },
-    paymentLinks: { "1": { usd: "https://buy.stripe.com/test_dR601ZgQL8lK3f2aEG", eur: "https://buy.stripe.com/test_dR601ZgQL8lK3f2aEG", gbp: "https://buy.stripe.com/test_dR601ZgQL8lK3f2aEG" }, "12": { usd: "https://buy.stripe.com/test_dR601ZgQL8lK3f2aEG", eur: "https://buy.stripe.com/test_dR601ZgQL8lK3f2aEG", gbp: "https://buy.stripe.com/test_dR601ZgQL8lK3f2aEG" }, "24": { usd: "https://buy.stripe.com/test_dR601ZgQL8lK3f2aEG", eur: "https://buy.stripe.com/test_dR601ZgQL8lK3f2aEG", gbp: "https://buy.stripe.com/test_dR601ZgQL8lK3f2aEG" }, "48": { usd: "https://buy.stripe.com/test_dR601ZgQL8lK3f2aEG", eur: "https://buy.stripe.com/test_dR601ZgQL8lK3f2aEG", gbp: "https://buy.stripe.com/test_dR601ZgQL8lK3f2aEG" } }
   },
   pro: { 
     name: "Pro", 
     prices: { '1': { usd: 59.99, eur: 54.99, gbp: 49.99 }, '12': { usd: 47.99, eur: 43.99, gbp: 39.99 }, '24': { usd: 41.99, eur: 38.49, gbp: 34.99 }, '48': { usd: 35.99, eur: 32.99, gbp: 29.99 } },
-    paymentLinks: { "1": { usd: "https://buy.stripe.com/test_dR601ZgQL8lK3f2aEG", eur: "https://buy.stripe.com/test_dR601ZgQL8lK3f2aEG", gbp: "https://buy.stripe.com/test_dR601ZgQL8lK3f2aEG" }, "12": { usd: "https://buy.stripe.com/test_dR601ZgQL8lK3f2aEG", eur: "https://buy.stripe.com/test_dR601ZgQL8lK3f2aEG", gbp: "https://buy.stripe.com/test_dR601ZgQL8lK3f2aEG" }, "24": { usd: "https://buy.stripe.com/test_dR601ZgQL8lK3f2aEG", eur: "https://buy.stripe.com/test_dR601ZgQL8lK3f2aEG", gbp: "https://buy.stripe.com/test_dR601ZgQL8lK3f2aEG" }, "48": { usd: "https://buy.stripe.com/test_dR601ZgQL8lK3f2aEG", eur: "https://buy.stripe.com/test_dR601ZgQL8lK3f2aEG", gbp: "https://buy.stripe.com/test_dR601ZgQL8lK3f2aEG" } }
   },
   enterprise: { 
     name: "Enterprise", 
     prices: { '1': { usd: 149.99, eur: 139.99, gbp: 124.99 }, '12': { usd: 119.99, eur: 111.99, gbp: 99.99 }, '24': { usd: 104.99, eur: 97.99, gbp: 87.49 }, '48': { usd: 89.99, eur: 83.99, gbp: 74.99 } },
-    paymentLinks: { "1": { usd: "https://buy.stripe.com/test_dR601ZgQL8lK3f2aEG", eur: "https://buy.stripe.com/test_dR601ZgQL8lK3f2aEG", gbp: "https://buy.stripe.com/test_dR601ZgQL8lK3f2aEG" }, "12": { usd: "https://buy.stripe.com/test_dR601ZgQL8lK3f2aEG", eur: "https://buy.stripe.com/test_dR601ZgQL8lK3f2aEG", gbp: "https://buy.stripe.com/test_dR601ZgQL8lK3f2aEG" }, "24": { usd: "https://buy.stripe.com/test_dR601ZgQL8lK3f2aEG", eur: "https://buy.stripe.com/test_dR601ZgQL8lK3f2aEG", gbp: "https://buy.stripe.com/test_dR601ZgQL8lK3f2aEG" }, "48": { usd: "https://buy.stripe.com/test_dR601ZgQL8lK3f2aEG", eur: "https://buy.stripe.com/test_dR601ZgQL8lK3f2aEG", gbp: "https://buy.stripe.com/test_dR601ZgQL8lK3f2aEG" } }
   },
 };
 
@@ -51,6 +48,20 @@ const formatPrice = (price: number, currency: Currency) => {
     const locale = { usd: 'en-US', eur: 'de-DE', gbp: 'en-GB' }[currency];
     return price.toLocaleString(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 };
+
+function getStripePriceId(planId: Plan, duration: Duration, currency: Currency) {
+    if (planId === 'starter' || planId === 'custom') return null;
+
+    const planUpper = planId.toUpperCase();
+    const currencyUpper = currency.toUpperCase();
+    
+    // The duration '1' corresponds to monthly billing which doesn't have a number in the env var name.
+    const durationString = duration === '1' ? '1' : `_${duration}`;
+
+    const envVarName = `NEXT_PUBLIC_STRIPE_PRICE_ID_${planUpper}${durationString}_${currencyUpper}`;
+    
+    return (process.env as any)[envVarName];
+}
 
 
 function BillingPageContent() {
@@ -125,9 +136,8 @@ function BillingPageContent() {
         return null;
     };
 
-    const paymentLink = selectedTier 
-        ? `${selectedTier.paymentLinks[actualDuration][currency]}?client_reference_id=${currentUser.orgId}&prefilled_email=${currentUser.email}`
-        : "#";
+    const priceId = selectedTier ? getStripePriceId(newPlan!, actualDuration, currency) : null;
+    const paymentLink = priceId ? `https://buy.stripe.com/${priceId}?client_reference_id=${currentUser.orgId}&prefilled_email=${currentUser.email}` : "#";
         
     const copyToClipboard = () => {
         if (promoCode) {
@@ -272,5 +282,3 @@ export default function BillingPage() {
         </Suspense>
     )
 }
-
-    

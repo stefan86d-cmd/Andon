@@ -54,11 +54,19 @@ const profileFormSchema = z.object({
 
 type ProfileFormValues = z.infer<typeof profileFormSchema>;
 
-function getStripeLink(planId: Plan, duration: Duration, currency: Currency, priceData: any) {
-  const priceId = priceData[planId]?.[duration]?.[currency];
-  return priceId ? `https://buy.stripe.com/${priceId}` : null;
-}
+function getStripePriceId(planId: Plan, duration: Duration, currency: Currency) {
+    if (planId === 'starter' || planId === 'custom') return null;
 
+    const planUpper = planId.toUpperCase();
+    const currencyUpper = currency.toUpperCase();
+    
+    // The duration '1' corresponds to monthly billing which doesn't have a number in the env var name.
+    const durationString = duration === '1' ? '1' : `_${duration}`;
+
+    const envVarName = `NEXT_PUBLIC_STRIPE_PRICE_ID_${planUpper}${durationString}_${currencyUpper}`;
+    
+    return (process.env as any)[envVarName];
+}
 
 function CompleteProfileContent() {
   const router = useRouter();
@@ -151,7 +159,7 @@ function CompleteProfileContent() {
         });
         router.push(`/dashboard`);
       } else {
-        const priceId = (process.env as any)[`NEXT_PUBLIC_STRIPE_PRICE_ID_${plan.toUpperCase()}_${duration}_${currency.toUpperCase()}`];
+        const priceId = getStripePriceId(plan, duration, currency);
 
         if (!priceId) {
              toast({ variant: "destructive", title: "Checkout Error", description: `Price ID for ${plan} (${duration}mo, ${currency}) not found.` });
@@ -159,11 +167,6 @@ function CompleteProfileContent() {
         }
 
         const paymentLink = `https://buy.stripe.com/${priceId}`;
-
-        if (!paymentLink) {
-            toast({ variant: "destructive", title: "Checkout Error", description: "A payment link for the selected plan and currency is not available." });
-            return;
-        }
 
         const finalUrl = `${paymentLink}?client_reference_id=${currentUser.id}&prefilled_email=${currentUser.email}&metadata[isNewUser]=true`;
         router.push(finalUrl);
@@ -323,5 +326,3 @@ export default function CompleteProfilePage() {
     </Suspense>
   );
 }
-
-    
