@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -15,15 +14,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useUser } from "@/contexts/user-context";
-
-type Currency = "usd" | "eur" | "gbp";
-type Duration = "1" | "12" | "24" | "48";
+import { stripePayLinks } from "@/lib/stripe-pay-links";
+import type { Currency } from "@/lib/types";
 
 interface Tier {
   id: "standard" | "pro" | "enterprise" | "starter";
   name: string;
-  prices: { [key in Duration]: { [key in Currency]: number } };
+  price: { [key in Currency]: number };
   description: string;
   features: string[];
   cta: string;
@@ -34,12 +31,7 @@ const tiers: Tier[] = [
   {
     id: "starter",
     name: "Starter",
-    prices: {
-      "1": { usd: 0, eur: 0, gbp: 0 },
-      "12": { usd: 0, eur: 0, gbp: 0 },
-      "24": { usd: 0, eur: 0, gbp: 0 },
-      "48": { usd: 0, eur: 0, gbp: 0 },
-    },
+    price: { usd: 0, eur: 0, gbp: 0 },
     description: "For small teams to get started.",
     features: ["Up to 5 users", "1 production line", "Basic analytics"],
     cta: "Get Started Free",
@@ -47,12 +39,7 @@ const tiers: Tier[] = [
   {
     id: "standard",
     name: "Standard",
-    prices: {
-      "1": { usd: 39.99, eur: 36.99, gbp: 32.99 },
-      "12": { usd: 31.99, eur: 29.59, gbp: 26.39 },
-      "24": { usd: 27.99, eur: 25.89, gbp: 23.09 },
-      "48": { usd: 23.99, eur: 22.19, gbp: 19.79 },
-    },
+    price: { usd: 39.99, eur: 36.99, gbp: 32.99 },
     description: "For growing teams and factories.",
     features: [
       "Up to 80 users",
@@ -66,12 +53,7 @@ const tiers: Tier[] = [
   {
     id: "pro",
     name: "Pro",
-    prices: {
-      "1": { usd: 59.99, eur: 54.99, gbp: 49.99 },
-      "12": { usd: 47.99, eur: 43.99, gbp: 39.99 },
-      "24": { usd: 41.99, eur: 38.49, gbp: 34.99 },
-      "48": { usd: 35.99, eur: 32.99, gbp: 29.99 },
-    },
+    price: { usd: 59.99, eur: 54.99, gbp: 49.99 },
     description: "For larger operations needing more.",
     features: [
       "Up to 150 users",
@@ -84,12 +66,7 @@ const tiers: Tier[] = [
   {
     id: "enterprise",
     name: "Enterprise",
-    prices: {
-      "1": { usd: 149.99, eur: 139.99, gbp: 124.99 },
-      "12": { usd: 119.99, eur: 111.99, gbp: 99.99 },
-      "24": { usd: 104.99, eur: 97.99, gbp: 87.49 },
-      "48": { usd: 89.99, eur: 83.99, gbp: 74.99 },
-    },
+    price: { usd: 149.99, eur: 139.99, gbp: 124.99 },
     description: "For large-scale, complex needs.",
     features: [
       "Up to 400 users",
@@ -127,8 +104,6 @@ const currencySymbols: Record<Currency, string> = {
 
 export default function PricingPage() {
   const [currency, setCurrency] = useState<Currency>("usd");
-  const [duration, setDuration] = useState<Duration>("12");
-  const { currentUser } = useUser();
 
   useEffect(() => {
     const savedCurrency = localStorage.getItem("selectedCurrency") as Currency;
@@ -143,19 +118,6 @@ export default function PricingPage() {
     localStorage.setItem("selectedCurrency", newCurrency);
   };
 
-  const handleDurationChange = (value: string) => {
-    setDuration(value as Duration);
-  };
-
-  const getDiscountText = (d: Duration) => {
-    switch (d) {
-      case "12": return "Save 20%";
-      case "24": return "Save 30%";
-      case "48": return "Save 40%";
-      default: return "";
-    }
-  };
-
   return (
     <div className="min-h-screen bg-muted py-24 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto text-center">
@@ -167,7 +129,7 @@ export default function PricingPage() {
           Pricing
         </motion.h1>
         <motion.p
-          className="text-gray-600 mb-12 max-w-2xl mx-auto"
+          className="text-muted-foreground mb-12 max-w-2xl mx-auto"
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
@@ -187,34 +149,16 @@ export default function PricingPage() {
               <SelectItem value="gbp">GBP (£)</SelectItem>
             </SelectContent>
           </Select>
-
-          <Select value={duration} onValueChange={handleDurationChange}>
-            <SelectTrigger className="w-full sm:w-[200px]">
-              <SelectValue placeholder="Billing Duration" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="1">Monthly</SelectItem>
-              <SelectItem value="12">12 Months (Save 20%)</SelectItem>
-              <SelectItem value="24">24 Months (Save 30%)</SelectItem>
-              <SelectItem value="48">48 Months (Save 40%)</SelectItem>
-            </SelectContent>
-          </Select>
         </div>
 
         {/* Pricing Tiers */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {tiers.map((tier, index) => {
             const isStarter = tier.id === "starter";
-            const price = isStarter ? 0 : tier.prices[duration][currency];
-            
+            const price = tier.price[currency];
             const checkoutHref = isStarter
               ? `/register?plan=starter`
-              : `/checkout?plan=${tier.id}&duration=${duration}&currency=${currency}`;
-            
-            if (currentUser && currentUser.role && !isStarter) {
-                // If user is logged in, send them to billing page to change plan
-                // checkoutHref = '/settings/billing'; 
-            }
+              : `/checkout?plan=${tier.id}&duration=1&currency=${currency}`;
 
             return (
               <motion.div
@@ -244,23 +188,15 @@ export default function PricingPage() {
                     {isStarter ? (
                          <div className="text-4xl font-bold">Free</div>
                     ) : (
-                        <>
-                            <div className="text-4xl font-bold">
-                                {currencySymbols[currency]}
-                                {price.toFixed(2)}
-                                <span className="text-lg font-normal text-muted-foreground">
-                                /mo
-                                </span>
-                            </div>
-                            {duration !== "1" && (
-                                <div className="text-sm font-semibold text-green-600 h-5 mt-1">
-                                    {getDiscountText(duration)}
-                                </div>
-                            )}
-                        </>
+                        <div className="text-4xl font-bold">
+                            {currencySymbols[currency]}
+                            {price.toFixed(2)}
+                            <span className="text-lg font-normal text-muted-foreground">
+                            /mo
+                            </span>
+                        </div>
                     )}
                   </div>
-
 
                   <ul className="text-left mb-8 space-y-3 flex-1">
                     {tier.features.map((feature) => (
@@ -300,6 +236,3 @@ export default function PricingPage() {
     </div>
   );
 }
-
-
-    

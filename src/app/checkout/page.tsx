@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { Suspense } from 'react';
@@ -16,22 +15,14 @@ import {
 import { LoaderCircle, Copy, Check } from 'lucide-react';
 import { Logo } from '@/components/layout/logo';
 import { toast } from '@/hooks/use-toast';
-import { Badge } from '@/components/ui/badge';
-
-type Duration = "1" | "12" | "24" | "48";
-type Currency = "usd" | "eur" | "gbp";
+import { stripePayLinks } from '@/lib/stripe-pay-links';
+import type { Currency } from '@/lib/types';
 
 const tiers = [
-  { name: "Standard", id: "standard", prices: { "1": { usd: 39.99, eur: 36.99, gbp: 32.99 }, "12": { usd: 31.99, eur: 29.59, gbp: 26.39 }, "24": { usd: 27.99, eur: 25.89, gbp: 23.09 }, "48": { usd: 23.99, eur: 22.19, gbp: 19.79 } } },
-  { name: "Pro", id: "pro", prices: { "1": { usd: 59.99, eur: 54.99, gbp: 49.99 }, "12": { usd: 47.99, eur: 43.99, gbp: 39.99 }, "24": { usd: 41.99, eur: 38.49, gbp: 34.99 }, "48": { usd: 35.99, eur: 32.99, gbp: 29.99 } } },
-  { name: "Enterprise", id: "enterprise", prices: { "1": { usd: 149.99, eur: 139.99, gbp: 124.99 }, "12": { usd: 119.99, eur: 111.99, gbp: 99.99 }, "24": { usd: 104.99, eur: 97.99, gbp: 87.49 }, "48": { usd: 89.99, eur: 83.99, gbp: 74.99 } } }
+  { name: "Standard", id: "standard", price: { usd: 29, eur: 27, gbp: 24 } },
+  { name: "Pro", id: "pro", price: { usd: 59, eur: 54, gbp: 48 } },
+  { name: "Enterprise", id: "enterprise", price: { usd: 99, eur: 92, gbp: 82 } },
 ];
-
-const promotionCodes: { [key in Duration]?: string } = {
-  "12": "YAPPQ2YO",
-  "24": "TQ4IVSRD",
-  "48": "ALRLAVQ8",
-};
 
 const currencySymbols: Record<Currency, string> = {
   "usd": "$",
@@ -42,26 +33,11 @@ const currencySymbols: Record<Currency, string> = {
 function CheckoutPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [copied, setCopied] = React.useState(false);
 
   const planId = searchParams.get('plan') as string;
-  const duration = (searchParams.get('duration') || '1') as Duration;
   const currency = (searchParams.get('currency') || 'usd') as Currency;
 
   const tier = tiers.find(t => t.id === planId);
-  const promoCode = promotionCodes[duration];
-
-  const copyToClipboard = () => {
-    if (promoCode) {
-      navigator.clipboard.writeText(promoCode).then(() => {
-        setCopied(true);
-        toast({ title: "Copied!", description: "Promotion code copied to clipboard." });
-        setTimeout(() => setCopied(false), 2000);
-      }, () => {
-        toast({ title: "Failed to copy", description: "Could not copy code. Please copy it manually.", variant: "destructive" });
-      });
-    }
-  };
 
   if (!tier) {
     return (
@@ -75,12 +51,9 @@ function CheckoutPageContent() {
     );
   }
 
-  const price = tier.prices[duration]?.[currency] ?? 0;
-  const registrationHref = `/register?plan=${planId}&duration=${duration}&currency=${currency}`;
-  const getDurationText = () => {
-      if (duration === '1') return 'Monthly';
-      return `${duration} Months`;
-  }
+  const price = tier.price[currency] ?? 0;
+  const registrationHref = `/register?plan=${planId}&currency=${currency}`;
+  const directPayLink = stripePayLinks[tier.id]?.[currency];
 
   return (
     <div className="bg-muted min-h-screen flex flex-col items-center justify-center py-12 px-4">
@@ -97,31 +70,23 @@ function CheckoutPageContent() {
             <div className="flex justify-between items-center p-4 border rounded-lg">
               <div>
                 <h3 className="font-semibold">{tier.name} Plan</h3>
-                <p className="text-sm text-muted-foreground">{getDurationText()}</p>
+                <p className="text-sm text-muted-foreground">Monthly</p>
               </div>
               <div className="text-right">
                 <p className="text-xl font-bold">{currencySymbols[currency]}{price.toFixed(2)}</p>
                 <p className="text-sm text-muted-foreground">/ month</p>
               </div>
             </div>
-
-            {promoCode && (
-              <div className="space-y-3 text-center">
-                <p className="text-sm text-muted-foreground">
-                  You've selected a multi-month plan! Use the code below on the Stripe checkout page to get your discount.
-                </p>
-                <div className="flex items-center justify-center gap-2 p-3 border-2 border-dashed rounded-lg">
-                  <span className="font-mono text-lg font-semibold">{promoCode}</span>
-                  <Button variant="ghost" size="icon" onClick={copyToClipboard}>
-                    {copied ? <Check className="h-5 w-5 text-green-500" /> : <Copy className="h-5 w-5" />}
-                  </Button>
-                </div>
-              </div>
-            )}
           </CardContent>
-          <CardFooter>
+          <CardFooter className="flex-col gap-4">
             <Button asChild className="w-full">
               <Link href={registrationHref}>Proceed to Registration</Link>
+            </Button>
+            <p className="text-xs text-muted-foreground">Or, if you already have an account:</p>
+            <Button asChild variant="outline" className="w-full">
+                <a href={directPayLink} target="_blank" rel="noopener noreferrer">
+                    Pay with Stripe
+                </a>
             </Button>
           </CardFooter>
         </Card>
@@ -145,5 +110,3 @@ export default function CheckoutPage() {
         </Suspense>
     )
 }
-
-    

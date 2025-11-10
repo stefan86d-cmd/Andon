@@ -2,6 +2,7 @@
 export type Role = "admin" | "supervisor" | "operator";
 export type Plan = "starter" | "standard" | "pro" | "enterprise" | "custom";
 export type Theme = "light" | "dark" | "system";
+export type Currency = "usd" | "eur" | "gbp";
 
 export type User = {
   id: string; // This is the Firebase Auth UID
