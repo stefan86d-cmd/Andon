@@ -207,6 +207,9 @@ function PricingPageContent() {
       maximumFractionDigits: 2,
     });
   };
+  
+  const showDurationSelector = !currentUser || currentUser.plan === 'starter';
+
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
@@ -281,12 +284,20 @@ function PricingPageContent() {
             
             <div className="flex flex-1 items-center justify-end">
                 <nav className="flex items-center space-x-2">
-                    <Link href="/pricing" className={cn(buttonVariants({ variant: "ghost" }))}>
-                        Pricing
-                    </Link>
-                    <Link href="/login" className={cn(buttonVariants({ variant: "default" }))}>
-                        Login
-                    </Link>
+                    {currentUser ? (
+                         <Link href="/dashboard" className={cn(buttonVariants({ variant: "default" }))}>
+                            Dashboard
+                        </Link>
+                    ) : (
+                        <>
+                            <Link href="/pricing" className={cn(buttonVariants({ variant: "ghost" }))}>
+                                Pricing
+                            </Link>
+                            <Link href="/login" className={cn(buttonVariants({ variant: "default" }))}>
+                                Login
+                            </Link>
+                        </>
+                    )}
                 </nav>
             </div>
         </div>
@@ -301,17 +312,19 @@ function PricingPageContent() {
             Start for free and scale as you grow. All plans include unlimited issue reports.
           </p>
           <div className="mt-10 flex items-center justify-center gap-4">
-            <Select value={duration} onValueChange={(value) => setDuration(value as Duration)}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Select duration" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="1">1 Month</SelectItem>
-                <SelectItem value="12">12 Months</SelectItem>
-                <SelectItem value="24">24 Months</SelectItem>
-                <SelectItem value="48">48 Months</SelectItem>
-              </SelectContent>
-            </Select>
+            {showDurationSelector && (
+              <Select value={duration} onValueChange={(value) => setDuration(value as Duration)}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Select duration" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1">1 Month</SelectItem>
+                  <SelectItem value="12">12 Months</SelectItem>
+                  <SelectItem value="24">24 Months</SelectItem>
+                  <SelectItem value="48">48 Months</SelectItem>
+                </SelectContent>
+              </Select>
+            )}
 
             <Select value={currency} onValueChange={(value) => handleCurrencyChange(value as Currency)}>
               <SelectTrigger className="w-[120px]">
@@ -331,21 +344,18 @@ function PricingPageContent() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
               {tiers.map((tier) => {
                 const isStarter = tier.id === "starter";
-                const checkoutHref = `/checkout?plan=${tier.id}&duration=${duration}&currency=${currency}`;
+                const actualDuration = showDurationSelector ? duration : '1';
+                const checkoutHref = `/checkout?plan=${tier.id}&duration=${actualDuration}&currency=${currency}`;
                 
                 const priceInfo = (() => {
-                  if (isStarter || !('prices' in tier) || !tier.prices) {
-                    return { price: 0, fullPrice: 0 };
-                  }
-                  const price = tier.prices[duration]?.[currency] ?? 0;
-                  const fullPrice = tier.prices["1"]?.[currency] ?? 0;
+                  if (isStarter || !('prices' in tier)) return { price: 0, fullPrice: 0 };
+                  const price = tier.prices?.[actualDuration]?.[currency] ?? 0;
+                  const fullPrice = tier.prices?.["1"]?.[currency] ?? 0;
                   return { price, fullPrice };
                 })();
 
                 let finalHref: string;
                 if (currentUser) {
-                  // If user is logged in, and it's not their current plan, link to change plan.
-                  // For now, we point to billing page where they can manage it.
                   finalHref = "/settings/billing";
                 } else {
                   finalHref = isStarter ? tier.href : checkoutHref;
@@ -383,7 +393,7 @@ function PricingPageContent() {
                           "border-2 border-gray-300 dark:border-gray-700 shadow-lg"
                       )}
                     >
-                       {!isStarter && (
+                       {!isStarter && showDurationSelector && (
                           <div className="absolute top-4 right-4">
                             {duration === '12' && <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~20%</Badge>}
                             {duration === '24' && <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~30%</Badge>}
@@ -446,7 +456,7 @@ function PricingPageContent() {
                         >
                           {currentUser && currentUser.plan === tier.id ? 'Current Plan' : tier.cta}
                         </Link>
-                        {!isStarter && priceInfo.fullPrice > 0 && duration !== '1' && (
+                        {!isStarter && priceInfo.fullPrice > 0 && duration !== '1' && showDurationSelector && (
                           <p className="text-xs text-muted-foreground mt-3 text-center">
                             Billed monthly. Renews at{" "}
                             {currencySymbols[currency]}

@@ -3,7 +3,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { LoaderCircle, Globe } from "lucide-react";
+import { LoaderCircle, Globe, Copy, Check } from "lucide-react";
 import { useUser } from "@/contexts/user-context";
 import { useState, useEffect, useTransition, Suspense } from "react";
 import Link from "next/link";
@@ -25,81 +25,24 @@ const tiers: Record<Exclude<Plan, 'custom' | 'starter'>, any> = {
   standard: { 
     name: "Standard", 
     prices: { '1': { usd: 39.99, eur: 36.99, gbp: 32.99 }, '12': { usd: 31.99, eur: 29.59, gbp: 26.39 }, '24': { usd: 27.99, eur: 25.89, gbp: 23.09 }, '48': { usd: 23.99, eur: 22.19, gbp: 19.79 } },
-    paymentLinks: {
-        '1': {
-            usd: 'https://buy.stripe.com/4gM28q7nG9jM0sEd0O0Ny05',
-            eur: 'https://buy.stripe.com/7sY14mdM48fI6R2aSG0Ny08',
-            gbp: 'https://buy.stripe.com/bJe6oGgYggMea3e8Ky0Ny02',
-        },
-        '12': {
-            usd: 'https://buy.stripe.com/4gM28q7nG9jM0sEd0O0Ny05',
-            eur: 'https://buy.stripe.com/7sY14mdM48fI6R2aSG0Ny08',
-            gbp: 'https://buy.stripe.com/bJe6oGgYggMea3e8Ky0Ny02',
-        },
-        '24': {
-            usd: 'https://buy.stripe.com/4gM28q7nG9jM0sEd0O0Ny05',
-            eur: 'https://buy.stripe.com/7sY14mdM48fI6R2aSG0Ny08',
-            gbp: 'https://buy.stripe.com/bJe6oGgYggMea3e8Ky0Ny02',
-        },
-        '48': {
-            usd: 'https://buy.stripe.com/4gM28q7nG9jM0sEd0O0Ny05',
-            eur: 'https://buy.stripe.com/7sY14mdM48fI6R2aSG0Ny08',
-            gbp: 'https://buy.stripe.com/bJe6oGgYggMea3e8Ky0Ny02',
-        },
-    }
+    paymentLinks: { '1': { usd: "https://buy.stripe.com/test_eVa3cseuV8s0cLe00a", eur: "https://buy.stripe.com/test_eVa3cseuV8s0cLe00a", gbp: "https://buy.stripe.com/test_eVa3cseuV8s0cLe00a" }, '12': { usd: "https://buy.stripe.com/test_eVa3cseuV8s0cLe00a", eur: "https://buy.stripe.com/test_eVa3cseuV8s0cLe00a", gbp: "https://buy.stripe.com/test_eVa3cseuV8s0cLe00a" }, '24': { usd: "https://buy.stripe.com/test_eVa3cseuV8s0cLe00a", eur: "https://buy.stripe.com/test_eVa3cseuV8s0cLe00a", gbp: "https://buy.stripe.com/test_eVa3cseuV8s0cLe00a" }, '48': { usd: "https://buy.stripe.com/test_eVa3cseuV8s0cLe00a", eur: "https://buy.stripe.com/test_eVa3cseuV8s0cLe00a", gbp: "https://buy.stripe.com/test_eVa3cseuV8s0cLe00a" } }
   },
   pro: { 
     name: "Pro", 
     prices: { '1': { usd: 59.99, eur: 54.99, gbp: 49.99 }, '12': { usd: 47.99, eur: 43.99, gbp: 39.99 }, '24': { usd: 41.99, eur: 38.49, gbp: 34.99 }, '48': { usd: 35.99, eur: 32.99, gbp: 29.99 } },
-    paymentLinks: {
-        '1': {
-            usd: 'https://buy.stripe.com/5kQdR8azS3Zseju4ui0Ny04',
-            eur: 'https://buy.stripe.com/eVq28q8rK53wejud0O0Ny07',
-            gbp: 'https://buy.stripe.com/28E00i8rK8fIfnye4S0Ny01',
-        },
-        '12': {
-            usd: 'https://buy.stripe.com/5kQdR8azS3Zseju4ui0Ny04',
-            eur: 'https://buy.stripe.com/eVq28q8rK53wejud0O0Ny07',
-            gbp: 'https://buy.stripe.com/28E00i8rK8fIfnye4S0Ny01',
-        },
-        '24': {
-            usd: 'https://buy.stripe.com/5kQdR8azS3Zseju4ui0Ny04',
-            eur: 'https://buy.stripe.com/eVq28q8rK53wejud0O0Ny07',
-            gbp: 'https://buy.stripe.com/28E00i8rK8fIfnye4S0Ny01',
-        },
-        '48': {
-            usd: 'https://buy.stripe.com/5kQdR8azS3Zseju4ui0Ny04',
-            eur: 'https://buy.stripe.com/eVq28q8rK53wejud0O0Ny07',
-            gbp: 'https://buy.stripe.com/28E00i8rK8fIfnye4S0Ny01',
-        },
-    }
+    paymentLinks: { '1': { usd: "https://buy.stripe.com/test_eVa3cseuV8s0cLe00a", eur: "https://buy.stripe.com/test_eVa3cseuV8s0cLe00a", gbp: "https://buy.stripe.com/test_eVa3cseuV8s0cLe00a" }, '12': { usd: "https://buy.stripe.com/test_eVa3cseuV8s0cLe00a", eur: "https://buy.stripe.com/test_eVa3cseuV8s0cLe00a", gbp: "https://buy.stripe.com/test_eVa3cseuV8s0cLe00a" }, '24': { usd: "https://buy.stripe.com/test_eVa3cseuV8s0cLe00a", eur: "https://buy.stripe.com/test_eVa3cseuV8s0cLe00a", gbp: "https://buy.stripe.com/test_eVa3cseuV8s0cLe00a" }, '48': { usd: "https://buy.stripe.com/test_eVa3cseuV8s0cLe00a", eur: "https://buy.stripe.com/test_eVa3cseuV8s0cLe00a", gbp: "https://buy.stripe.com/test_eVa3cseuV8s0cLe00a" } }
   },
   enterprise: { 
     name: "Enterprise", 
     prices: { '1': { usd: 149.99, eur: 139.99, gbp: 124.99 }, '12': { usd: 119.99, eur: 111.99, gbp: 99.99 }, '24': { usd: 104.99, eur: 97.99, gbp: 87.49 }, '48': { usd: 89.99, eur: 83.99, gbp: 74.99 } },
-    paymentLinks: {
-        '1': {
-            usd: 'https://buy.stripe.com/4gM7sK8rKfIaeju0e20Ny03',
-            eur: 'https://buy.stripe.com/28EdR8azSfIa4IUf8W0Ny06',
-            gbp: 'https://buy.stripe.com/5kQ7sK37qanQ3EQ4ui0Ny00',
-        },
-        '12': {
-            usd: 'https://buy.stripe.com/4gM7sK8rKfIaeju0e20Ny03',
-            eur: 'https://buy.stripe.com/28EdR8azSfIa4IUf8W0Ny06',
-            gbp: 'https://buy.stripe.com/5kQ7sK37qanQ3EQ4ui0Ny00',
-        },
-        '24': {
-            usd: 'https://buy.stripe.com/4gM7sK8rKfIaeju0e20Ny03',
-            eur: 'https://buy.stripe.com/28EdR8azSfIa4IUf8W0Ny06',
-            gbp: 'https://buy.stripe.com/5kQ7sK37qanQ3EQ4ui0Ny00',
-        },
-        '48': {
-            usd: 'https://buy.stripe.com/4gM7sK8rKfIaeju0e20Ny03',
-            eur: 'https://buy.stripe.com/28EdR8azSfIa4IUf8W0Ny06',
-            gbp: 'https://buy.stripe.com/5kQ7sK37qanQ3EQ4ui0Ny00',
-        },
-    }
+    paymentLinks: { '1': { usd: "https://buy.stripe.com/test_eVa3cseuV8s0cLe00a", eur: "https://buy.stripe.com/test_eVa3cseuV8s0cLe00a", gbp: "https://buy.stripe.com/test_eVa3cseuV8s0cLe00a" }, '12': { usd: "https://buy.stripe.com/test_eVa3cseuV8s0cLe00a", eur: "https://buy.stripe.com/test_eVa3cseuV8s0cLe00a", gbp: "https://buy.stripe.com/test_eVa3cseuV8s0cLe00a" }, '24': { usd: "https://buy.stripe.com/test_eVa3cseuV8s0cLe00a", eur: "https://buy.stripe.com/test_eVa3cseuV8s0cLe00a", gbp: "https://buy.stripe.com/test_eVa3cseuV8s0cLe00a" }, '48': { usd: "https://buy.stripe.com/test_eVa3cseuV8s0cLe00a", eur: "https://buy.stripe.com/test_eVa3cseuV8s0cLe00a", gbp: "https://buy.stripe.com/test_eVa3cseuV8s0cLe00a" } }
   },
+};
+
+const promotionCodes: { [key in Duration]?: string } = {
+  "12": "YAPPQ2YO",
+  "24": "TQ4IVSRD",
+  "48": "ALRLAVQ8",
 };
 
 const currencySymbols = { usd: '$', eur: '€', gbp: '£' };
@@ -113,6 +56,7 @@ const formatPrice = (price: number, currency: Currency) => {
 function BillingPageContent() {
     const { currentUser, refreshCurrentUser } = useUser();
     const [isCancelling, startCancellationTransition] = useTransition();
+    const [copied, setCopied] = useState(false);
 
     const [currency, setCurrency] = useState<Currency>('usd');
     const [newPlan, setNewPlan] = useState<Plan | undefined>(currentUser?.plan);
@@ -152,9 +96,13 @@ function BillingPageContent() {
 
     const planName = currentUser.plan.charAt(0).toUpperCase() + currentUser.plan.slice(1);
     const availablePlans = Object.keys(tiers).filter(p => p !== currentUser?.plan) as (keyof typeof tiers)[];
+    const isStarterPlan = currentUser.plan === 'starter';
+    
+    const actualDuration = isStarterPlan ? duration : '1';
+    const promoCode = isStarterPlan ? promotionCodes[duration] : undefined;
 
     const selectedTier = newPlan && newPlan !== 'starter' && newPlan !== 'custom' ? tiers[newPlan] : null;
-    const monthlyPrice = selectedTier ? selectedTier.prices[duration][currency] : 0;
+    const monthlyPrice = selectedTier ? selectedTier.prices[actualDuration][currency] : 0;
     
     const endDate = currentUser.subscriptionEndsAt && isValid(new Date(currentUser.subscriptionEndsAt))
         ? format(new Date(currentUser.subscriptionEndsAt), "MMMM d, yyyy")
@@ -171,8 +119,21 @@ function BillingPageContent() {
     };
 
     const paymentLink = selectedTier 
-        ? `${selectedTier.paymentLinks[duration][currency]}?client_reference_id=${currentUser.orgId}&prefilled_email=${currentUser.email}`
+        ? `${selectedTier.paymentLinks[actualDuration][currency]}?client_reference_id=${currentUser.orgId}&prefilled_email=${currentUser.email}`
         : "#";
+        
+    const copyToClipboard = () => {
+        if (promoCode) {
+            navigator.clipboard.writeText(promoCode).then(() => {
+                setCopied(true);
+                toast({ title: "Copied!", description: "Promotion code copied to clipboard." });
+                setTimeout(() => setCopied(false), 2000);
+            }, () => {
+                toast({ title: "Failed to copy", description: "Could not copy code. Please copy it manually.", variant: "destructive" });
+            });
+        }
+    };
+
 
     return (
         <div className="bg-muted">
@@ -218,35 +179,44 @@ function BillingPageContent() {
                                         </SelectContent>
                                     </Select>
                                 </div>
-                                <div className="pt-2">
-                                    <Select value={duration} onValueChange={(value) => setDuration(value as Duration)}>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Select duration" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="1">1 Month</SelectItem>
-                                            <SelectItem value="12">12 Months</SelectItem>
-                                            <SelectItem value="24">24 Months</SelectItem>
-                                            <SelectItem value="48">48 Months</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                <div className="flex gap-2 items-center pt-2">
-                                    {duration === '12' && <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~20%</Badge>}
-                                    {duration === '24' && <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~30%</Badge>}
-                                    {duration === '48' && <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~40%</Badge>}
-                                </div>
-                                 <p className="text-sm text-muted-foreground">Plan changes will be billed based on selection.</p>
+                                {isStarterPlan && (
+                                    <div className="pt-2">
+                                        <Select value={duration} onValueChange={(value) => setDuration(value as Duration)}>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Select duration" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="1">1 Month (No Discount)</SelectItem>
+                                                <SelectItem value="12">12 Months (20% off)</SelectItem>
+                                                <SelectItem value="24">24 Months (30% off)</SelectItem>
+                                                <SelectItem value="48">48 Months (40% off)</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                )}
                             </div>
 
                              {selectedTier && newPlan !== currentUser.plan && (
-                                 <div className="space-y-2 rounded-lg border bg-card-foreground/5 p-4">
+                                 <div className="space-y-4 rounded-lg border bg-card-foreground/5 p-4">
                                     <div className="space-y-1">
                                         <div className="flex justify-between items-center font-semibold text-lg">
                                             <span>New Monthly Price</span>
                                             <span>{currencySymbols[currency]}{formatPrice(monthlyPrice, currency)}</span>
                                         </div>
                                     </div>
+                                    {promoCode && (
+                                        <div className="space-y-3 text-center pt-2">
+                                            <p className="text-sm text-muted-foreground">
+                                                Use this one-time code on the Stripe checkout page to get your discount.
+                                            </p>
+                                            <div className="flex items-center justify-center gap-2 p-3 border-2 border-dashed rounded-lg">
+                                                <span className="font-mono text-lg font-semibold">{promoCode}</span>
+                                                <Button variant="ghost" size="icon" onClick={copyToClipboard}>
+                                                    {copied ? <Check className="h-5 w-5 text-green-500" /> : <Copy className="h-5 w-5" />}
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             )}
                             
