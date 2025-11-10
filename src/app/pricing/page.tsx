@@ -15,7 +15,7 @@ import Link from "next/link";
 import { Logo } from "@/components/layout/logo";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Select,
   SelectContent,
@@ -186,6 +186,13 @@ function PricingPageContent() {
   const [currency, setCurrency] = useState<Currency>("usd");
   const { currentUser } = useUser();
 
+  useEffect(() => {
+    const savedCurrency = localStorage.getItem('selectedCurrency');
+    if (savedCurrency && (savedCurrency === 'usd' || savedCurrency === 'eur' || savedCurrency === 'gbp')) {
+      setCurrency(savedCurrency as Currency);
+    }
+  }, []);
+
   const handleCurrencyChange = (value: Currency) => {
     setCurrency(value);
     localStorage.setItem('selectedCurrency', value);
@@ -345,9 +352,12 @@ function PricingPageContent() {
                 }
 
                 const priceInfo = (() => {
-                  if (isStarter || !('prices' in tier) || !tier.prices) return { price: 0, fullPrice: 0 };
-                  const price = tier.prices[actualDuration]?.[currency] ?? 0;
-                  const fullPrice = tier.prices["1"]?.[currency] ?? 0;
+                  if (isStarter) return { price: 0, fullPrice: 0 };
+                  const tierPrices = 'prices' in tier ? tier.prices : undefined;
+                  if (!tierPrices) return { price: 0, fullPrice: 0 };
+
+                  const price = tierPrices[actualDuration]?.[currency] ?? 0;
+                  const fullPrice = tierPrices["1"]?.[currency] ?? 0;
                   return { price, fullPrice };
                 })();
 
@@ -376,7 +386,7 @@ function PricingPageContent() {
                           className={cn(
                             "text-sm",
                             tier.premium &&
-                              "text-foreground border-border"
+                              "border-border"
                           )}
                         >
                           {tier.badge}
@@ -536,3 +546,5 @@ export default function PricingPage() {
         </React.Suspense>
     );
 }
+
+    
