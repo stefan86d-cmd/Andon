@@ -15,7 +15,7 @@ import Link from "next/link";
 import { Logo } from "@/components/layout/logo";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   Select,
   SelectContent,
@@ -186,13 +186,6 @@ function PricingPageContent() {
   const [currency, setCurrency] = useState<Currency>("usd");
   const { currentUser } = useUser();
 
-  useEffect(() => {
-    const savedCurrency = localStorage.getItem('selectedCurrency') as Currency;
-    if (savedCurrency && ['usd', 'eur', 'gbp'].includes(savedCurrency)) {
-      setCurrency(savedCurrency);
-    }
-  }, []);
-
   const handleCurrencyChange = (value: Currency) => {
     setCurrency(value);
     localStorage.setItem('selectedCurrency', value);
@@ -344,9 +337,13 @@ function PricingPageContent() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
               {tiers.map((tier) => {
                 const isStarter = tier.id === "starter";
-                const actualDuration = showDurationSelector ? duration : '1';
-                const checkoutHref = `/checkout?plan=${tier.id}&duration=${actualDuration}&currency=${currency}`;
                 
+                const actualDuration = showDurationSelector ? duration : '1';
+                let checkoutHref = '#';
+                if (!isStarter) {
+                    checkoutHref = `/checkout?plan=${tier.id}&duration=${actualDuration}&currency=${currency}`;
+                }
+
                 const priceInfo = (() => {
                   if (isStarter || !('prices' in tier) || !tier.prices) return { price: 0, fullPrice: 0 };
                   const price = tier.prices[actualDuration]?.[currency] ?? 0;
@@ -448,13 +445,16 @@ function PricingPageContent() {
                           href={finalHref}
                           className={cn(
                             buttonVariants({
-                              variant: isProBestValue
-                                ? "destructive"
-                                : tier.popular
-                                ? "default"
-                                : "outline",
+                                variant: isProBestValue 
+                                  ? 'destructive' 
+                                  : tier.popular 
+                                    ? 'default' 
+                                    : tier.premium
+                                      ? 'outline'
+                                      : 'outline',
                             }),
                             "w-full",
+                            tier.premium && "border-gray-300 dark:border-gray-700",
                             currentUser && currentUser.plan === tier.id && "pointer-events-none opacity-50"
                           )}
                         >
@@ -538,5 +538,3 @@ export default function PricingPage() {
         </React.Suspense>
     );
 }
-
-    
