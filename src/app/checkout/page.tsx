@@ -1,8 +1,8 @@
 "use client";
 
-import React, { Suspense, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import Link from 'next/link';
+import React, { Suspense, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -12,11 +12,11 @@ import {
   CardTitle,
   CardFooter,
 } from "@/components/ui/card";
-import { LoaderCircle } from 'lucide-react';
-import { Logo } from '@/components/layout/logo';
-import { toast } from '@/hooks/use-toast';
-import type { Currency } from '@/lib/types';
-import { useAuth } from '@/hooks/use-auth'; // ✅ assumes you have a user context hook
+import { LoaderCircle } from "lucide-react";
+import { Logo } from "@/components/layout/logo";
+import { toast } from "@/hooks/use-toast";
+import type { Currency } from "@/lib/types";
+import { useUser } from "@/contexts/user-context"; // Use your custom user context
 
 const tiers = [
   { name: "Standard", id: "standard", price: { usd: 29, eur: 27, gbp: 24 } },
@@ -33,7 +33,7 @@ const currencySymbols: Record<Currency, string> = {
 function CheckoutPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { user } = useAuth(); // ✅ current Firebase user
+  const { currentUser } = useUser(); // your user context
   const [loading, setLoading] = useState(false);
 
   const planId = searchParams.get("plan") as string;
@@ -57,9 +57,8 @@ function CheckoutPageContent() {
   const price = tier.price[currency] ?? 0;
   const registrationHref = `/register?plan=${planId}&currency=${currency}`;
 
-  // ✅ Use dynamic checkout session for existing users
   const handleStripeCheckout = async () => {
-    if (!user) {
+    if (!currentUser) {
       toast({
         title: "Please sign in first",
         description: "You need an account to subscribe.",
@@ -74,7 +73,7 @@ function CheckoutPageContent() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          userId: user.uid,
+          userId: currentUser.id, // ✅ use `id` from your context
           plan: planId,
           currency,
         }),
@@ -131,7 +130,6 @@ function CheckoutPageContent() {
           </CardContent>
 
           <CardFooter className="flex-col gap-4">
-            {/* Register flow */}
             <Button asChild className="w-full">
               <Link href={registrationHref}>Proceed to Registration</Link>
             </Button>
