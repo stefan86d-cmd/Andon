@@ -130,6 +130,7 @@ export function IssuesDataTable({ issues, title, description, loading, onIssueUp
               <TableHead>Priority</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Reported By</TableHead>
+              <TableHead>Handled By</TableHead>
               <TableHead className="text-right">Time</TableHead>
             </TableRow>
           </TableHeader>
@@ -137,7 +138,7 @@ export function IssuesDataTable({ issues, title, description, loading, onIssueUp
             {loading ? (
               Array.from({ length: 5 }).map((_, i) => (
                 <TableRow key={i}>
-                  <TableCell colSpan={7}>
+                  <TableCell colSpan={8}>
                     <Skeleton className="h-8" />
                   </TableCell>
                 </TableRow>
@@ -184,6 +185,12 @@ export function IssuesDataTable({ issues, title, description, loading, onIssueUp
                   <TableCell>
                     <div className="font-medium">{issue.reportedBy.name}</div>
                   </TableCell>
+                  <TableCell>
+                    <div className="font-medium">
+                        {issue.status === 'in_progress' && issue.assignedTo?.name}
+                        {issue.status === 'resolved' && issue.resolvedBy?.name}
+                    </div>
+                  </TableCell>
                   <TableCell className="text-right">
                     <SafeHydrate>
                         <span>{formatDistanceToNow(issue.reportedAt, { addSuffix: true })}</span>
@@ -193,7 +200,7 @@ export function IssuesDataTable({ issues, title, description, loading, onIssueUp
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={7} className="h-24 text-center">
+                <TableCell colSpan={8} className="h-24 text-center">
                   No issues found.
                 </TableCell>
               </TableRow>

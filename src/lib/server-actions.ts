@@ -1,7 +1,7 @@
 
 'use server';
 
-import type { Issue, Plan, ProductionLine, Role, User } from '@/lib/types';
+import type { Issue, Plan, ProductionLine, Role, User, UserRef } from '@/lib/types';
 import { handleFirestoreError } from '@/lib/firestore-helpers';
 import { sendEmail } from '@/lib/email';
 import { adminAuth, adminDb } from '@/firebase/admin';
@@ -205,7 +205,7 @@ export async function reportIssue(issueData: Omit<Issue, 'id' | 'reportedAt' | '
   }
 }
 
-export async function updateIssue(issueId: string, data: { resolutionNotes?: string; status: 'in_progress' | 'resolved'; productionStopped: boolean }, userEmail: string) {
+export async function updateIssue(issueId: string, data: { resolutionNotes?: string; status: 'in_progress' | 'resolved'; productionStopped: boolean, assignedTo?: UserRef | null }, userEmail: string) {
   const db = adminDb();
   try {
     const resolver = await getUserByEmail(userEmail);
@@ -217,9 +217,15 @@ export async function updateIssue(issueId: string, data: { resolutionNotes?: str
     const issue = issueSnap.data() as Issue;
 
     const updateData: any = { ...data };
+    
     if (data.status === 'resolved') {
       updateData.resolvedAt = FieldValue.serverTimestamp();
       updateData.resolvedBy = { name: `${resolver.firstName} ${resolver.lastName}`, email: resolver.email };
+      updateData.assignedTo = FieldValue.delete();
+    } else if (data.status === 'in_progress') {
+       if (data.assignedTo) {
+        updateData.assignedTo = data.assignedTo;
+      }
     }
 
     await issueRef.update(updateData);

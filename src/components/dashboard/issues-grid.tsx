@@ -112,6 +112,7 @@ export function IssuesGrid({ issues, title, description, loading, onIssueUpdate 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {issues.map((issue) => {
                 const categoryStyle = categoryInfo[issue.category] || categoryInfo.other;
+                const handler = issue.status === 'resolved' ? issue.resolvedBy : issue.assignedTo;
                 return (
                     <Card 
                         key={issue.id} 
@@ -152,7 +153,7 @@ export function IssuesGrid({ issues, title, description, loading, onIssueUpdate 
                             <Badge variant="outline" className={cn(`capitalize border-0 font-medium`, priorityColors[issue.priority])}>
                                 {React.createElement(priorityIcons[issue.priority], { className: "h-4 w-4" })}
                             </Badge>
-                            <span>{issue.reportedBy.name}</span>
+                             <span>{handler ? handler.name : issue.reportedBy.name}</span>
                         </div>
                         <SafeHydrate>
                             <span>{formatDistanceToNow(issue.reportedAt, { addSuffix: true })}</span>

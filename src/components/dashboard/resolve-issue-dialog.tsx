@@ -91,7 +91,11 @@ export function ResolveIssueDialog({ isOpen, onOpenChange, issue, onIssueUpdate 
     }
 
     startTransition(async () => {
-        const result = await updateIssue(issue.id, data, currentUser.email!);
+        const assignedTo = data.status === 'in_progress' && !issue.assignedTo 
+            ? { name: `${currentUser.firstName} ${currentUser.lastName}`, email: currentUser.email }
+            : issue.assignedTo;
+
+        const result = await updateIssue(issue.id, { ...data, assignedTo: assignedTo || null }, currentUser.email!);
         if (result.success) {
             toast({
                 title: "Issue Updated",
