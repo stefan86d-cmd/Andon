@@ -359,7 +359,7 @@ function PricingPageContent() {
                     finalHref = "/settings/billing";
                   }
                 } else {
-                  finalHref = isStarter ? tier.href : checkoutHref;
+                  finalHref = isStarter ? (tier.href || '#') : checkoutHref;
                 }
 
                 const isProBestValue = tier.id === "pro";
@@ -447,11 +447,9 @@ function PricingPageContent() {
                             buttonVariants({
                                 variant: isProBestValue 
                                   ? 'destructive' 
-                                  : tier.popular 
+                                  : tier.popular && !tier.premium
                                     ? 'default' 
-                                    : tier.premium
-                                      ? 'outline'
-                                      : 'outline',
+                                    : 'outline',
                             }),
                             "w-full",
                             tier.premium && "border-gray-300 dark:border-gray-700",
