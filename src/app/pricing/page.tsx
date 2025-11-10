@@ -2,10 +2,37 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
-import { Check } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Logo } from "@/components/layout/logo";
+import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
+import React, { useState } from "react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { MegaMenu } from "@/components/layout/mega-menu";
+import FooterLogo from "@/components/layout/footer-logo";
+import { useUser } from "@/contexts/user-context";
+import { PlaceHolderImages } from "@/lib/placeholder-images";
+import {
+  Sheet,
+  SheetContent,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 
+
+type Duration = "1" | "12" | "24" | "48";
 type Currency = "usd" | "eur" | "gbp";
 
 interface Tier {
@@ -101,12 +128,7 @@ export default function PricingPage() {
 
 function PricingPageContent() {
   const [currency, setCurrency] = useState<Currency>("usd");
-  const [duration, setDuration] = useState<"monthly" | "yearly">("monthly");
-
-  useEffect(() => {
-    const savedCurrency = localStorage.getItem("selectedCurrency") as Currency;
-    if (savedCurrency) setCurrency(savedCurrency);
-  }, []);
+  const { currentUser } = useUser();
 
   const handleCurrencyChange = (value: Currency) => {
     setCurrency(value);
@@ -114,93 +136,328 @@ function PricingPageContent() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto text-center">
-      <motion.h1
-        className="text-4xl font-bold mb-4"
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
-        Simple, Transparent Pricing
-      </motion.h1>
-      <p className="text-gray-600 mb-12">
-        Choose the plan that best fits your operation.
-      </p>
-
-      {/* Currency Switcher */}
-      <div className="flex justify-center gap-4 mb-12">
-        {(["usd", "eur", "gbp"] as Currency[]).map((c) => (
-          <Button
-            key={c}
-            onClick={() => handleCurrencyChange(c)}
-            variant={currency === c ? "default" : "outline"}
-          >
-            {c.toUpperCase()}
-          </Button>
-        ))}
-      </div>
-
-      {/* Pricing Tiers */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-        {tiers.map((tier, index) => {
-          const isStarter = tier.id === "starter";
-          const planLinks = stripePayLinks[tier.id];
-          let checkoutHref = "#";
-          if (!isStarter && planLinks && planLinks[currency]) {
-            checkoutHref = planLinks[currency];
-          }
-
-          const currencySymbol =
-            currency === "usd" ? "$" : currency === "eur" ? "€" : "£";
-
-          return (
-            <motion.div
-              key={tier.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              className={`rounded-2xl border bg-white p-8 shadow-sm ${
-                tier.popular ? "border-blue-500 ring-2 ring-blue-200" : ""
-              }`}
-            >
-              {tier.popular && (
-                <span className="inline-block px-3 py-1 mb-3 text-sm font-semibold text-blue-600 bg-blue-100 rounded-full">
-                  Most Popular
-                </span>
-              )}
-
-              <h3 className="text-xl font-semibold mb-2">{tier.name}</h3>
-              <p className="text-gray-500 mb-6">{tier.description}</p>
-
-              <div className="text-4xl font-bold mb-6">
-                {currencySymbol}
-                {tier.price[currency]}
-                <span className="text-lg font-normal text-gray-500">/mo</span>
-              </div>
-
-              <ul className="text-left mb-8 space-y-2">
-                {tier.features.map((feature) => (
-                  <li key={feature} className="flex items-start gap-2">
-                    <Check className="w-5 h-5 text-blue-600 flex-shrink-0" />
-                    <span>{feature}</span>
-                  </li>
-                ))}
-              </ul>
-
-              {isStarter ? (
-                <Link href="/register">
-                  <Button className="w-full">{tier.cta}</Button>
+    <div className="flex flex-col min-h-screen bg-background">
+       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container flex h-14 items-center">
+            <div className="flex items-center md:mr-6">
+                <Sheet>
+                    <SheetTrigger asChild>
+                        <Button variant="ghost" size="icon" className="md:hidden mr-2">
+                            <Menu className="h-5 w-5" />
+                            <span className="sr-only">Toggle Menu</span>
+                        </Button>
+                    </SheetTrigger>
+                    <SheetContent side="left" className="pr-0">
+                        <VisuallyHidden>
+                            <SheetTitle>Mobile Navigation Menu</SheetTitle>
+                        </VisuallyHidden>
+                        <div className="flex flex-col space-y-4">
+                            <Link href="/" className="mr-6 flex items-center space-x-2">
+                                <Logo />
+                            </Link>
+                            <Accordion type="single" collapsible className="w-full">
+                                <AccordionItem value="services">
+                                    <AccordionTrigger>Services</AccordionTrigger>
+                                    <AccordionContent>
+                                        <div className="flex flex-col pl-4">
+                                            {servicesMenuItems.map(item => <MobileNavLink key={item.href} href={item.href}>{item.title}</MobileNavLink>)}
+                                        </div>
+                                    </AccordionContent>
+                                </AccordionItem>
+                                <AccordionItem value="explore">
+                                    <AccordionTrigger>Explore</AccordionTrigger>
+                                    <AccordionContent>
+                                        <div className="flex flex-col pl-4">
+                                            {exploreMenuItems.map(item => <MobileNavLink key={item.href} href={item.href}>{item.title}</MobileNavLink>)}
+                                        </div>
+                                    </AccordionContent>
+                                </AccordionItem>
+                                <AccordionItem value="support">
+                                    <AccordionTrigger>Support</AccordionTrigger>
+                                    <AccordionContent>
+                                        <div className="flex flex-col pl-4">
+                                            {supportMenuItems.map(item => <MobileNavLink key={item.href} href={item.href}>{item.title}</MobileNavLink>)}
+                                        </div>
+                                    </AccordionContent>
+                                </AccordionItem>
+                            </Accordion>
+                        </div>
+                    </SheetContent>
+                </Sheet>
+                <Link href="/" className="flex items-center space-x-2">
+                    <Logo />
                 </Link>
-              ) : (
-                <a href={checkoutHref} target="_blank" rel="noopener noreferrer">
-                  <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
-                    {tier.cta}
-                  </Button>
-                </a>
-              )}
-            </motion.div>
-          );
-        })}
-      </div>
+                <nav className="hidden md:flex items-center space-x-1 text-sm ml-6">
+                    <MegaMenu 
+                        triggerText="Services" 
+                        items={servicesMenuItems}
+                        image={servicesImage}
+                    />
+                    <MegaMenu 
+                        triggerText="Explore" 
+                        items={exploreMenuItems}
+                        image={exploreImage}
+                    />
+                    <MegaMenu 
+                        triggerText="Support" 
+                        items={supportMenuItems}
+                        image={supportImage}
+                    />
+                </nav>
+            </div>
+            
+            <div className="flex flex-1 items-center justify-end">
+                <nav className="flex items-center space-x-2">
+                    {currentUser ? (
+                         <Link href="/dashboard" className={cn(buttonVariants({ variant: "default" }))}>
+                            Dashboard
+                        </Link>
+                    ) : (
+                        <>
+                            <Link href="/pricing" className={cn(buttonVariants({ variant: "ghost" }))}>
+                                Pricing
+                            </Link>
+                            <Link href="/login" className={cn(buttonVariants({ variant: "default" }))}>
+                                Login
+                            </Link>
+                        </>
+                    )}
+                </nav>
+            </div>
+        </div>
+      </header>
+
+      <main className="flex-1">
+        <section className="container py-20 text-center">
+          <h1 className="text-4xl md:text-5xl font-bold">
+            Pricing
+          </h1>
+          <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
+            Find the right plan that exactly matches your team's needs. Start for free and scale as you grow.
+          </p>
+          <div className="mt-10 flex items-center justify-center gap-4">
+            {showDurationSelector && (
+              <Select value={duration} onValueChange={(value) => setDuration(value as Duration)}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Select duration" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1">1 Month</SelectItem>
+                  <SelectItem value="12">12 Months</SelectItem>
+                  <SelectItem value="24">24 Months</SelectItem>
+                  <SelectItem value="48">48 Months</SelectItem>
+                </SelectContent>
+              </Select>
+            )}
+
+            <Select value={currency} onValueChange={(value) => handleCurrencyChange(value as Currency)}>
+              <SelectTrigger className="w-[120px]">
+                <div className="flex items-center gap-2"><Globe className="h-4 w-4" /><SelectValue placeholder="Currency" /></div>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="usd">USD</SelectItem>
+                <SelectItem value="eur">EUR</SelectItem>
+                <SelectItem value="gbp">GBP</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </section>
+
+        <section className="py-20 border-t bg-muted">
+          <div className="container">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+              {tiers.map((tier) => {
+                const isStarter = tier.id === "starter";
+                
+                const actualDuration = showDurationSelector ? duration : '1';
+                let checkoutHref = '#';
+                if (!isStarter) {
+                    checkoutHref = `/checkout?plan=${tier.id}&duration=${actualDuration}&currency=${currency}`;
+                }
+
+                const priceInfo = (() => {
+                  if (isStarter || !('prices' in tier) || !tier.prices) return { price: 0, fullPrice: 0 };
+                  const price = tier.prices[actualDuration]?.[currency] ?? 0;
+                  const fullPrice = tier.prices["1"]?.[currency] ?? 0;
+                  return { price, fullPrice };
+                })();
+
+                let finalHref: string;
+                if (currentUser) {
+                  if (currentUser.plan === 'starter') {
+                    finalHref = isStarter ? "/dashboard" : checkoutHref;
+                  } else {
+                    finalHref = "/settings/billing";
+                  }
+                } else {
+                  finalHref = isStarter ? (tier.href || '#') : checkoutHref;
+                }
+
+                const isProBestValue = tier.id === "pro";
+
+                return (
+                  <div key={tier.id} className="relative">
+                    {tier.badge && (
+                      <div className="absolute -top-5 left-1/2 -translate-x-1/2">
+                        <Badge
+                          variant={
+                            tier.badgeVariant ||
+                            (tier.premium ? "secondary" : "default")
+                          }
+                          className={cn(
+                            "text-sm",
+                            tier.premium &&
+                              "text-foreground border-border"
+                          )}
+                        >
+                          {tier.badge}
+                        </Badge>
+                      </div>
+                    )}
+                    <Card
+                      className={cn(
+                        "flex flex-col h-full relative overflow-hidden bg-background",
+                        tier.popular &&
+                          (isProBestValue
+                            ? "border-destructive shadow-lg"
+                            : "border-primary shadow-lg"),
+                        tier.premium &&
+                          "border-2 border-gray-300 dark:border-gray-700 shadow-lg"
+                      )}
+                    >
+                       {!isStarter && showDurationSelector && (
+                          <div className="absolute top-4 right-4">
+                            {duration === '12' && <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~20%</Badge>}
+                            {duration === '24' && <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~30%</Badge>}
+                            {duration === '48' && <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~40%</Badge>}
+                          </div>
+                        )}
+                      <CardHeader className="text-center">
+                        <CardTitle className="text-2xl pt-4">
+                          {tier.name}
+                        </CardTitle>
+                        <div className="flex items-baseline justify-center gap-1 h-10">
+                          <span className="text-4xl font-bold">
+                            {isStarter
+                              ? "Free"
+                              : `${currencySymbols[currency]}${formatPrice(
+                                  priceInfo.price,
+                                  currency
+                                )}`}
+                          </span>
+                          {tier.pricePeriod && !isStarter && (
+                            <span className="text-muted-foreground">
+                              {tier.pricePeriod}
+                            </span>
+                          )}
+                        </div>
+                        <CardDescription>{tier.description}</CardDescription>
+                      </CardHeader>
+                      <CardContent className="flex-1">
+                        <ul className="space-y-4">
+                          {tier.features.map((feature) => (
+                            <li
+                              key={feature}
+                              className="flex items-center"
+                            >
+                              <Badge
+                                variant="outline"
+                                className="border-0 font-medium text-green-600"
+                              >
+                                <CheckCircle className="h-5 w-5 mr-2" />
+                                <span>{feature}</span>
+                              </Badge>
+                            </li>
+                          ))}
+                        </ul>
+                      </CardContent>
+                      <CardFooter className="flex-col items-stretch pt-6">
+                        <Link
+                          href={finalHref}
+                          className={cn(
+                            buttonVariants({
+                                variant: isProBestValue 
+                                  ? 'destructive' 
+                                  : tier.popular && !tier.premium
+                                    ? 'default' 
+                                    : 'outline',
+                            }),
+                            "w-full",
+                            tier.premium && "border-gray-300 dark:border-gray-700",
+                            currentUser && currentUser.plan === tier.id && "pointer-events-none opacity-50"
+                          )}
+                        >
+                          {currentUser && currentUser.plan === tier.id ? 'Current Plan' : (isStarter && currentUser ? 'Go to Dashboard' : tier.cta)}
+                        </Link>
+                        {!isStarter && priceInfo.fullPrice > 0 && duration !== '1' && showDurationSelector && (
+                          <p className="text-xs text-muted-foreground mt-3 text-center">
+                            Billed monthly. Renews at{" "}
+                            {currencySymbols[currency]}
+                            {formatPrice(priceInfo.fullPrice, currency)}/mo after the
+                            first {duration} months.
+                          </p>
+                        )}
+                        {isStarter && (
+                          <p className="text-xs text-muted-foreground mt-3 text-center h-8">
+                            No credit card required.
+                          </p>
+                        )}
+                      </CardFooter>
+                    </Card>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+        <section className="py-20 bg-background">
+            <div className="container">
+                <div className="text-center mb-12">
+                    <h2 className="text-3xl font-bold">Our Guarantees</h2>
+                    <p className="max-w-2xl mx-auto text-muted-foreground mt-4">
+                        We stand by our product and are committed to your success.
+                    </p>
+                </div>
+                <div className="grid gap-8 md:grid-cols-3">
+                    {guarantees.map((guarantee) => (
+                        <Card key={guarantee.title} className="text-center border-0 bg-transparent shadow-none">
+                            <CardHeader>
+                                <div className="mx-auto bg-muted rounded-full p-3 w-fit mb-3">
+                                    <guarantee.icon className="h-6 w-6 text-primary" />
+                                </div>
+                                <CardTitle className="text-xl">{guarantee.title}</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <p className="text-sm text-muted-foreground">{guarantee.description}</p>
+                                {guarantee.note && (
+                                    <p className="text-xs text-muted-foreground mt-2">{guarantee.note}</p>
+                                )}
+                            </CardContent>
+                        </Card>
+                    ))}
+                </div>
+            </div>
+        </section>
+      </main>
+      <footer className="bg-gray-800 text-gray-300">
+        <div className="container py-8">
+          <div className="flex flex-col md:flex-row justify-between items-center">
+            <div className="mb-4 md:mb-0">
+              <FooterLogo />
+            </div>
+            <div className="text-center md:text-right">
+              <p>&copy; {new Date().getFullYear()} AndonPro. All rights reserved.</p>
+              <nav className="flex justify-center md:justify-end space-x-4 mt-2">
+                <Link href="/about/our-story" className="text-sm hover:text-white">Our Story</Link>
+                <Link href="/pricing" className="text-sm hover:text-white">Pricing</Link>
+                <Link href="/support/contact" className="text-sm hover:text-white">Contact</Link>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
+
+    
