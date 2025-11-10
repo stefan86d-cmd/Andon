@@ -339,7 +339,7 @@ function PricingPageContent() {
           </div>
         </section>
 
-        <section className="py-20 border-t bg-background">
+        <section className="py-20 border-t bg-muted">
           <div className="container">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
               {tiers.map((tier) => {
@@ -348,11 +348,9 @@ function PricingPageContent() {
                 const checkoutHref = `/checkout?plan=${tier.id}&duration=${actualDuration}&currency=${currency}`;
                 
                 const priceInfo = (() => {
-                  if (isStarter) return { price: 0, fullPrice: 0 };
-                  const tierData = tiers.find(t => t.id === tier.id);
-                  if (!tierData || !('prices' in tierData) || !tierData.prices) return { price: 0, fullPrice: 0 };
-                  const price = tierData.prices[actualDuration]?.[currency] ?? 0;
-                  const fullPrice = tierData.prices["1"]?.[currency] ?? 0;
+                  if (isStarter || !('prices' in tier) || !tier.prices) return { price: 0, fullPrice: 0 };
+                  const price = tier.prices[actualDuration]?.[currency] ?? 0;
+                  const fullPrice = tier.prices["1"]?.[currency] ?? 0;
                   return { price, fullPrice };
                 })();
 
@@ -445,7 +443,7 @@ function PricingPageContent() {
                           ))}
                         </ul>
                       </CardContent>
-                      <CardFooter className="flex-col items-stretch bg-blue-500/10 dark:bg-blue-900/20 pt-6">
+                      <CardFooter className="flex-col items-stretch pt-6">
                         <Link
                           href={finalHref}
                           className={cn(
@@ -454,7 +452,7 @@ function PricingPageContent() {
                                 ? "destructive"
                                 : tier.popular
                                 ? "default"
-                                : "primary",
+                                : "outline",
                             }),
                             "w-full",
                             currentUser && currentUser.plan === tier.id && "pointer-events-none opacity-50"
@@ -483,7 +481,7 @@ function PricingPageContent() {
             </div>
           </div>
         </section>
-        <section className="py-20 bg-muted">
+        <section className="py-20 bg-background">
             <div className="container">
                 <div className="text-center mb-12">
                     <h2 className="text-3xl font-bold">Our Guarantees</h2>
@@ -495,7 +493,7 @@ function PricingPageContent() {
                     {guarantees.map((guarantee) => (
                         <Card key={guarantee.title} className="text-center border-0 bg-transparent shadow-none">
                             <CardHeader>
-                                <div className="mx-auto bg-background rounded-full p-3 w-fit mb-3">
+                                <div className="mx-auto bg-muted rounded-full p-3 w-fit mb-3">
                                     <guarantee.icon className="h-6 w-6 text-primary" />
                                 </div>
                                 <CardTitle className="text-xl">{guarantee.title}</CardTitle>
