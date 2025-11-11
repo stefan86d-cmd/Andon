@@ -63,15 +63,6 @@ type ProfileFormValues = z.infer<typeof profileFormSchema>;
 
 
 function TermsOfServiceDialog() {
-    const [scrolledToBottom, setScrolledToBottom] = useState(false);
-
-    const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-        const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
-        if (scrollHeight - scrollTop <= clientHeight + 1) { // +1 for pixel-perfect precision
-            setScrolledToBottom(true);
-        }
-    };
-
     return (
         <Dialog>
             <DialogTrigger asChild>
@@ -81,7 +72,7 @@ function TermsOfServiceDialog() {
                 <DialogHeader>
                     <DialogTitle>Terms of Service</DialogTitle>
                 </DialogHeader>
-                <ScrollArea className="h-[60vh] pr-6" onScroll={handleScroll}>
+                <ScrollArea className="h-[60vh] pr-6">
                     <div className="prose dark:prose-invert max-w-none">
                         <p className='text-sm text-muted-foreground'>Last Updated: September 27, 2025</p>
                         <p>Welcome to AndonPro. These Terms of Service ("Terms") govern your access to and use of the AndonPro application, website, and services (collectively, the "Service"). Please read them carefully.</p>
@@ -116,9 +107,7 @@ function TermsOfServiceDialog() {
                 </ScrollArea>
                 <DialogFooter>
                     <DialogClose asChild>
-                        <Button disabled={!scrolledToBottom}>
-                            {scrolledToBottom ? 'Close' : 'Scroll to the bottom to close'}
-                        </Button>
+                        <Button>Close</Button>
                     </DialogClose>
                 </DialogFooter>
             </DialogContent>
