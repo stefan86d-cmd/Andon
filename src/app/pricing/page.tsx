@@ -10,7 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Check, Globe, Menu, Shield, Headset, BadgeCheck, ArrowRight } from "lucide-react";
+import { Check, Globe, Menu, Shield, Headset, BadgeCheck, ArrowRight, Users } from "lucide-react";
 import Link from "next/link";
 import { Logo } from "@/components/layout/logo";
 import { cn } from "@/lib/utils";
@@ -179,6 +179,14 @@ const MobileNavLink = ({ href, children }: { href: string; children: React.React
         {children}
     </Link>
 );
+
+function getFeatureIcon(feature: string, tierId: string) {
+    if (feature.includes("user")) {
+        const isEnterprise = tierId === 'enterprise';
+        return <Users className={cn("h-5 w-5 mr-2", isEnterprise ? "text-muted-foreground" : "text-green-500")} />;
+    }
+    return <Check className="h-5 w-5 mr-2 text-green-500" />;
+}
 
 
 function PricingPageContent() {
@@ -418,8 +426,8 @@ function PricingPageContent() {
                             {tier.badge}
                           </div>
                         )}
-                        <div className="flex flex-col flex-1">
-                           <CardHeader className="text-center">
+                        <div className="flex flex-col flex-1 p-6">
+                           <CardHeader className="text-center p-0">
                             <CardTitle className={cn("text-2xl", !tier.badge && "pt-8")}>
                               {tier.name}
                             </CardTitle>
@@ -444,21 +452,21 @@ function PricingPageContent() {
                             </div>
                             <CardDescription>{tier.description}</CardDescription>
                           </CardHeader>
-                          <CardContent>
+                          <CardContent className="p-0 mt-6">
                             <ul className="space-y-4 text-sm">
                               {tier.features.map((feature) => (
                                 <li
                                   key={feature}
                                   className="flex items-center"
                                 >
-                                    <Check className="h-5 w-5 mr-2 text-green-500" />
+                                    {getFeatureIcon(feature, tier.id)}
                                     <span className="text-muted-foreground">{feature}</span>
                                 </li>
                               ))}
                             </ul>
                           </CardContent>
                           <div className="flex-grow" />
-                          <CardFooter className="flex-col items-stretch pt-6">
+                          <CardFooter className="flex-col items-stretch pt-6 p-0 mt-4">
                             <Link
                               href={finalHref}
                               className={cn(
