@@ -358,6 +358,9 @@ function PricingPageContent() {
                   const fullPrice = pricesForDuration["1"]?.[currency] ?? 0;
                   return { price, fullPrice };
                 })();
+                
+                const totalSavings = (priceInfo.fullPrice - priceInfo.price) * parseInt(actualDuration);
+
 
                 let finalHref: string;
                 if (currentUser) {
@@ -413,19 +416,26 @@ function PricingPageContent() {
                         <CardTitle className="text-2xl pt-4">
                           {tier.name}
                         </CardTitle>
-                        <div className="flex items-baseline justify-center gap-1 h-10">
-                          <span className="text-4xl font-bold">
-                            {isStarter
-                              ? "Free"
-                              : `${currencySymbols[currency]}${formatPrice(
+                        <div className="flex items-baseline justify-center gap-1 min-h-[40px]">
+                          {isStarter ? (
+                            <span className="text-4xl font-bold">Free</span>
+                          ) : (
+                            <>
+                              {duration !== '1' && showDurationSelector && (
+                                <span className="text-lg text-muted-foreground line-through mr-2">
+                                  {currencySymbols[currency]}{formatPrice(priceInfo.fullPrice, currency)}
+                                </span>
+                              )}
+                              <span className="text-4xl font-bold">
+                                {currencySymbols[currency]}{formatPrice(
                                   priceInfo.price,
                                   currency
-                                )}`}
-                          </span>
-                          {tier.pricePeriod && !isStarter && (
-                            <span className="text-muted-foreground">
-                              {tier.pricePeriod}
-                            </span>
+                                )}
+                              </span>
+                              <span className="text-muted-foreground">
+                                {tier.pricePeriod}
+                              </span>
+                            </>
                           )}
                         </div>
                         <CardDescription>{tier.description}</CardDescription>
@@ -468,16 +478,13 @@ function PricingPageContent() {
                         >
                           {currentUser && currentUser.plan === tier.id ? 'Current Plan' : (isStarter && currentUser ? 'Go to Dashboard' : tier.cta)}
                         </Link>
-                        {!isStarter && priceInfo.fullPrice > 0 && duration !== '1' && showDurationSelector && (
-                          <p className="text-xs text-muted-foreground mt-3 text-center">
-                            Billed monthly. Renews at{" "}
-                            {currencySymbols[currency]}
-                            {formatPrice(priceInfo.fullPrice, currency)}/mo after the
-                            first {duration} months.
-                          </p>
+                         {!isStarter && duration !== '1' && showDurationSelector && (
+                            <p className="text-xs text-green-600 font-semibold mt-3 text-center">
+                                Save {currencySymbols[currency]}{totalSavings.toFixed(2)} over {duration} months
+                            </p>
                         )}
                         {isStarter && (
-                          <p className="text-xs text-muted-foreground mt-3 text-center h-8">
+                          <p className="text-xs text-muted-foreground mt-3 text-center h-[18px]">
                             No credit card required.
                           </p>
                         )}
@@ -546,5 +553,3 @@ export default function PricingPage() {
         </React.Suspense>
     );
 }
-
-    

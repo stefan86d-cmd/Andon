@@ -107,6 +107,7 @@ function CheckoutPageContent() {
   const currentPrice = tier.prices[duration]?.[currency] ?? 0;
   const originalPrice = tier.prices["1"]?.[currency] ?? 0;
   const showDiscount = duration !== "1" && currentPrice < originalPrice;
+  const totalSavings = showDiscount ? (originalPrice - currentPrice) * parseInt(duration) : 0;
 
   const registrationHref = `/register?plan=${planId}&duration=${duration}&currency=${currency}`;
   const loginHref = `/login?redirect=/settings/billing?plan=${planId}&duration=${duration}&currency=${currency}`;
@@ -154,6 +155,11 @@ function CheckoutPageContent() {
                   <p className="text-sm text-muted-foreground">/ month</p>
                 </div>
               </div>
+              {showDiscount && (
+                  <div className="text-right mt-1 text-xs font-semibold text-green-600">
+                      Save {currencySymbols[currency]}{totalSavings.toFixed(2)} over {duration} months
+                  </div>
+              )}
               <ul className="space-y-2 mt-4 pt-4 border-t">
                   {tier.features.map((feature) => (
                     <li
