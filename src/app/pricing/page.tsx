@@ -432,11 +432,6 @@ function PricingPageContent() {
                                   {tier.pricePeriod}
                                 </span>
                               </div>
-                              {duration !== '1' && showDurationSelector && (
-                                <span className="text-sm text-muted-foreground line-through">
-                                  {currencySymbols[currency]}{formatPrice(priceInfo.fullPrice, currency)}
-                                </span>
-                              )}
                             </>
                           )}
                         </div>
