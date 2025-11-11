@@ -101,7 +101,12 @@ function BillingPageContent() {
 
   const [currency, setCurrency] = useState<Currency>(initialCurrency);
   const [newPlan, setNewPlan] = useState<Plan | undefined>(initialPlan);
-  const [duration, setDuration] = useState<Duration>(initialDuration);
+  
+  const isNewUserFlow = searchParams.has('new_user');
+  const isStarterPlan = currentUser?.plan === "starter";
+  const showDurationSelector = isNewUserFlow || isStarterPlan;
+
+  const [duration, setDuration] = useState<Duration>(showDurationSelector ? initialDuration : '1');
   
   useEffect(() => {
     if (searchParams.get('payment_success') === 'true') {
@@ -165,10 +170,6 @@ function BillingPageContent() {
   const planName = currentUser.plan.charAt(0).toUpperCase() + currentUser.plan.slice(1);
   const availablePlans = Object.keys(tiers).filter((p) => p !== currentUser?.plan) as (keyof typeof tiers)[];
   
-  const isNewUserFlow = searchParams.has('new_user');
-  const isStarterPlan = currentUser.plan === "starter";
-
-
   const endDate = currentUser.subscriptionEndsAt && isValid(new Date(currentUser.subscriptionEndsAt))
       ? format(new Date(currentUser.subscriptionEndsAt), "MMMM d, yyyy")
       : "N/A";
@@ -187,6 +188,7 @@ function BillingPageContent() {
   const currentPrice = selectedTier ? selectedTier.prices[duration]?.[currency] ?? 0 : 0;
   const originalPrice = selectedTier ? selectedTier.prices["1"]?.[currency] ?? 0 : 0;
   const showDiscount = duration !== "1" && currentPrice < originalPrice;
+  const totalSavings = showDiscount ? (originalPrice - currentPrice) * parseInt(duration) : 0;
   
   const getButtonText = () => {
     if (isSessionLoading) return "Processing...";
@@ -287,22 +289,24 @@ function BillingPageContent() {
                   </Select>
                 </div>
 
-                <div className="pt-2">
-                    <Select
-                      value={duration}
-                      onValueChange={(value) => setDuration(value as Duration)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select duration" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="1">1 Month (No Discount)</SelectItem>
-                        <SelectItem value="12">12 Months (20% off)</SelectItem>
-                        <SelectItem value="24">24 Months (30% off)</SelectItem>
-                        <SelectItem value="48">48 Months (40% off)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                {showDurationSelector && (
+                  <div className="pt-2">
+                      <Select
+                        value={duration}
+                        onValueChange={(value) => setDuration(value as Duration)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select duration" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="1">1 Month (No Discount)</SelectItem>
+                          <SelectItem value="12">12 Months (20% off)</SelectItem>
+                          <SelectItem value="24">24 Months (30% off)</SelectItem>
+                          <SelectItem value="48">48 Months (40% off)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                )}
               </div>
               
               {selectedTier && (
@@ -332,6 +336,11 @@ function BillingPageContent() {
                       <p className="text-sm text-muted-foreground">/ month</p>
                     </div>
                   </div>
+                   {showDiscount && (
+                        <div className="text-right mt-1 text-xs font-semibold text-green-600">
+                            Save {currencySymbols[currency]}{totalSavings.toFixed(2)} over {duration} months
+                        </div>
+                    )}
                    <ul className="space-y-2 mt-4 pt-4 border-t">
                       {selectedTier.features.map((feature: string) => (
                         <li
