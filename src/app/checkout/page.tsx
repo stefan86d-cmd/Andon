@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { Suspense, useState, useEffect } from "react";
+import React, { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -15,9 +15,7 @@ import {
 } from "@/components/ui/card";
 import { LoaderCircle } from "lucide-react";
 import { Logo } from "@/components/layout/logo";
-import { toast } from "@/hooks/use-toast";
 import type { Currency, Plan } from "@/lib/types";
-import { useUser } from "@/contexts/user-context";
 import { Badge } from "@/components/ui/badge";
 
 type Duration = "1" | "12" | "24" | "48";
@@ -62,21 +60,12 @@ const currencySymbols: Record<Currency, string> = {
 };
 
 function CheckoutPageContent() {
-  const router = useRouter();
   const searchParams = useSearchParams();
-  const { currentUser } = useUser();
-
+  
   const planId = searchParams.get("plan") as Plan;
   const currency = (searchParams.get("currency") || "usd") as Currency;
   const duration = (searchParams.get("duration") || "1") as Duration;
   const tier = tiers.find((t) => t.id === planId);
-
-  useEffect(() => {
-    // If a logged-in user somehow lands here, redirect them to the proper billing page.
-    if (currentUser) {
-      router.replace(`/settings/billing?plan=${planId}&duration=${duration}&currency=${currency}`);
-    }
-  }, [currentUser, router, planId, duration, currency]);
 
   if (!tier) {
     return (
@@ -92,7 +81,10 @@ function CheckoutPageContent() {
     );
   }
 
-  const price = tier.prices[duration]?.[currency] ?? 0;
+  const currentPrice = tier.prices[duration]?.[currency] ?? 0;
+  const originalPrice = tier.prices["1"]?.[currency] ?? 0;
+  const showDiscount = duration !== "1" && currentPrice < originalPrice;
+
   const registrationHref = `/register?plan=${planId}&duration=${duration}&currency=${currency}`;
   const loginHref = `/login?redirect=/settings/billing?plan=${planId}&duration=${duration}&currency=${currency}`;
 
@@ -116,16 +108,25 @@ function CheckoutPageContent() {
             <div className="flex justify-between items-center p-4 border rounded-lg">
               <div>
                 <h3 className="font-semibold">{tier.name} Plan</h3>
-                <p className="text-sm text-muted-foreground">Billed monthly</p>
-                 {duration === '12' && <Badge variant="secondary" className="mt-2 bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~20%</Badge>}
+                <p className="text-sm text-muted-foreground">
+                  Billed monthly
+                  {duration !== '1' && `, for ${duration} months`}
+                </p>
+                {duration === '12' && <Badge variant="secondary" className="mt-2 bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~20%</Badge>}
                 {duration === '24' && <Badge variant="secondary" className="mt-2 bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~30%</Badge>}
                 {duration === '48' && <Badge variant="secondary" className="mt-2 bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~40%</Badge>}
               </div>
               <div className="text-right">
-                <p className="text-xl font-bold">
-                  {currencySymbols[currency]}
-                  {price.toFixed(2)}
-                </p>
+                <div className="flex items-center justify-end gap-2">
+                    {showDiscount && (
+                         <span className="text-muted-foreground line-through">
+                            {currencySymbols[currency]}{originalPrice.toFixed(2)}
+                         </span>
+                    )}
+                    <p className="text-xl font-bold">
+                        {currencySymbols[currency]}{currentPrice.toFixed(2)}
+                    </p>
+                </div>
                 <p className="text-sm text-muted-foreground">/ month</p>
               </div>
             </div>

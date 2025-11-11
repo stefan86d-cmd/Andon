@@ -2,13 +2,13 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { LoaderCircle, Globe, Copy, Check } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from "@/components/ui/card";
+import { LoaderCircle, Globe } from "lucide-react";
 import { useUser } from "@/contexts/user-context";
 import { useState, useEffect, useTransition, Suspense, useCallback } from "react";
 import Link from "next/link";
 import { toast } from "@/hooks/use-toast";
-import type { Plan } from "@/lib/types";
+import type { Currency, Plan } from "@/lib/types";
 import {
   Select,
   SelectContent,
@@ -20,58 +20,22 @@ import { Separator } from "@/components/ui/separator";
 import { CancelSubscriptionDialog } from "@/components/settings/cancel-subscription-dialog";
 import { Logo } from "@/components/layout/logo";
 import { format, isValid } from "date-fns";
-import { cancelSubscription } from "@/app/actions";
+import { cancelSubscription, createCheckoutSession } from "@/app/actions";
 import { useSearchParams } from 'next/navigation';
-import { stripePayLinks } from "@/lib/stripe-pay-links";
-import { Badge } from "@/components/ui/badge";
+import { EmbeddedCheckoutForm } from "@/components/checkout/embedded-checkout-form";
 
 type Duration = "1" | "12" | "24" | "48";
-type Currency = "usd" | "eur" | "gbp";
 
 const tiers: Record<Exclude<Plan, "custom" | "starter">, any> = {
   standard: {
     name: "Standard",
-    prices: {
-      "1": { usd: 39.99, eur: 36.99, gbp: 32.99 },
-      "12": { usd: 31.99, eur: 29.59, gbp: 26.39 },
-      "24": { usd: 27.99, eur: 25.89, gbp: 23.09 },
-      "48": { usd: 23.99, eur: 22.19, gbp: 19.79 },
-    },
   },
   pro: {
     name: "Pro",
-    prices: {
-      "1": { usd: 59.99, eur: 54.99, gbp: 49.99 },
-      "12": { usd: 47.99, eur: 43.99, gbp: 39.99 },
-      "24": { usd: 41.99, eur: 38.49, gbp: 34.99 },
-      "48": { usd: 35.99, eur: 32.99, gbp: 29.99 },
-    },
   },
   enterprise: {
     name: "Enterprise",
-    prices: {
-      "1": { usd: 149.99, eur: 139.99, gbp: 124.99 },
-      "12": { usd: 119.99, eur: 111.99, gbp: 99.99 },
-      "24": { usd: 104.99, eur: 97.99, gbp: 87.49 },
-      "48": { usd: 89.99, eur: 83.99, gbp: 74.99 },
-    },
   },
-};
-
-const promotionCodes: { [key in Duration]?: string | undefined } = {
-  "12": process.env.NEXT_PUBLIC_STRIPE_COUPON_20_OFF,
-  "24": process.env.NEXT_PUBLIC_STRIPE_COUPON_30_OFF,
-  "48": process.env.NEXT_PUBLIC_STRIPE_COUPON_40_OFF,
-};
-
-
-const currencySymbols = { usd: "$", eur: "€", gbp: "£" };
-const formatPrice = (price: number, currency: Currency) => {
-  const locale = { usd: "en-US", eur: "de-DE", gbp: "en-GB" }[currency];
-  return price.toLocaleString(locale, {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
 };
 
 function BillingPageContent() {
@@ -79,56 +43,53 @@ function BillingPageContent() {
   const searchParams = useSearchParams();
   
   const [isCancelling, startCancellationTransition] = useTransition();
-  const [copied, setCopied] = useState(false);
+  const [isSessionLoading, startSessionLoadingTransition] = useTransition();
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
   
   const [currency, setCurrency] = useState<Currency>((searchParams.get('currency') as Currency) || "usd");
-  const [newPlan, setNewPlan] = useState<Plan | undefined>((searchParams.get('plan') as Plan) || currentUser?.plan);
-  const [duration, setDuration] = useState<Duration>((searchParams.get('duration') as Duration) || "12");
-
-  const [isReadyToPay, setIsReadyToPay] = useState(false);
-
+  const [newPlan, setNewPlan] = useState<Plan | undefined>((searchParams.get('plan') as Plan) || undefined);
+  const [duration, setDuration] = useState<Duration>((searchParams.get('duration') as Duration) || "1");
 
   useEffect(() => {
-    // If it's a new user flow, set the state from URL params
-    if (searchParams.get('new_user') === 'true') {
-        const planFromUrl = searchParams.get('plan') as Plan;
-        const currencyFromUrl = searchParams.get('currency') as Currency;
-        const durationFromUrl = searchParams.get('duration') as Duration;
-        if(planFromUrl) setNewPlan(planFromUrl);
-        if(currencyFromUrl) setCurrency(currencyFromUrl);
-        if(durationFromUrl) setDuration(durationFromUrl);
-        setIsReadyToPay(true);
+    // If it's a new user flow, automatically trigger session creation
+    if (searchParams.get('new_user') === 'true' && currentUser) {
+      if (newPlan && newPlan !== 'starter' && newPlan !== 'custom') {
+        handleGetSession();
+      }
     }
-  }, [searchParams]);
-
-  useEffect(() => {
-    // This effect triggers the checkout for a new user once everything is loaded
-    if (isReadyToPay && currentUser) {
-        handlePayment();
-        setIsReadyToPay(false); // Prevent re-triggering
+    // If it's a payment success, refresh user and clear params
+    if (searchParams.get('payment_success') === 'true') {
+        toast({
+            title: "Payment Successful!",
+            description: "Your subscription has been activated.",
+        });
+        refreshCurrentUser();
+        window.history.replaceState(null, '', '/settings/billing');
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isReadyToPay, currentUser]);
+  }, [currentUser]);
 
+  const handleGetSession = useCallback(() => {
+    if (!currentUser || !newPlan || newPlan === 'starter' || newPlan === 'custom') {
+      toast({ variant: "destructive", title: "Cannot process payment", description: "Invalid user or plan selected." });
+      return;
+    }
 
-  const handlePayment = useCallback(() => {
-      if (!currentUser || !newPlan || newPlan === 'starter' || newPlan === 'custom') {
-          toast({ variant: "destructive", title: "Cannot process payment", description: "Invalid user or plan selected." });
-          return;
+    startSessionLoadingTransition(async () => {
+      const result = await createCheckoutSession(
+        currentUser.id,
+        currentUser.email,
+        newPlan as Exclude<Plan, 'starter' | 'custom'>,
+        duration,
+        currency
+      );
+      if (result.success && result.clientSecret) {
+        setClientSecret(result.clientSecret);
+      } else {
+        toast({ variant: "destructive", title: "Checkout Error", description: result.error || "Could not create checkout session." });
       }
-      
-      const paymentLink = stripePayLinks[newPlan]?.[currency];
-      if (!paymentLink) {
-          toast({ variant: "destructive", title: "Checkout Error", description: `Payment link for plan ${newPlan} in ${currency.toUpperCase()} could not be found.` });
-          return;
-      }
-
-      const isNewUser = searchParams.get('new_user') === 'true';
-
-      const finalUrl = `${paymentLink}?client_reference_id=${currentUser.id}&prefilled_email=${currentUser.email}${isNewUser ? '&metadata[isNewUser]=true' : ''}`;
-      
-      window.location.href = finalUrl;
-  }, [currentUser, newPlan, currency, searchParams]);
+    });
+  }, [currentUser, newPlan, duration, currency]);
 
   if (!currentUser || !currentUser.plan) {
     return (
@@ -140,57 +101,26 @@ function BillingPageContent() {
 
   const handleCancelConfirm = () => {
     if (!currentUser?.subscriptionId) {
-      toast({
-        title: "Error",
-        description: "No active subscription found to cancel.",
-      });
+      toast({ title: "Error", description: "No active subscription found to cancel." });
       return;
     }
 
     startCancellationTransition(async () => {
-      const result = await cancelSubscription(
-        currentUser.id,
-        currentUser.subscriptionId!
-      );
+      const result = await cancelSubscription(currentUser.id, currentUser.subscriptionId!);
       if (result.success) {
         await refreshCurrentUser();
-        toast({
-          title: "Subscription Cancellation Initiated",
-          description:
-            "Your subscription will be canceled at the end of the current billing period.",
-        });
+        toast({ title: "Subscription Cancellation Initiated", description: "Your subscription will be canceled at the end of the current billing period." });
       } else {
-        toast({
-          variant: "destructive",
-          title: "Cancellation Failed",
-          description:
-            result.error ||
-            "Could not cancel your subscription. Please try again.",
-        });
+        toast({ variant: "destructive", title: "Cancellation Failed", description: result.error || "Could not cancel your subscription. Please try again." });
       }
     });
   };
 
-  const planName =
-    currentUser.plan.charAt(0).toUpperCase() + currentUser.plan.slice(1);
-  const availablePlans = Object.keys(tiers).filter(
-    (p) => p !== currentUser?.plan
-  ) as (keyof typeof tiers)[];
+  const planName = currentUser.plan.charAt(0).toUpperCase() + currentUser.plan.slice(1);
+  const availablePlans = Object.keys(tiers).filter((p) => p !== currentUser?.plan) as (keyof typeof tiers)[];
   const isStarterPlan = currentUser.plan === "starter";
 
-  const actualDuration = isStarterPlan ? duration : "1";
-  const promoCode = isStarterPlan ? promotionCodes[duration] : undefined;
-  const selectedTier =
-    newPlan && newPlan !== "starter" && newPlan !== "custom"
-      ? tiers[newPlan]
-      : null;
-  const monthlyPrice = selectedTier
-    ? selectedTier.prices[actualDuration][currency]
-    : 0;
-
-  const endDate =
-    currentUser.subscriptionEndsAt &&
-    isValid(new Date(currentUser.subscriptionEndsAt))
+  const endDate = currentUser.subscriptionEndsAt && isValid(new Date(currentUser.subscriptionEndsAt))
       ? format(new Date(currentUser.subscriptionEndsAt), "MMMM d, yyyy")
       : "N/A";
 
@@ -203,19 +133,27 @@ function BillingPageContent() {
     }
     return null;
   };
-
-  const copyToClipboard = () => {
-    if (promoCode) {
-      navigator.clipboard.writeText(promoCode).then(() => {
-        setCopied(true);
-        toast({
-          title: "Copied!",
-          description: "Promotion code copied to clipboard.",
-        });
-        setTimeout(() => setCopied(false), 2000);
-      });
-    }
-  };
+  
+  if (clientSecret) {
+    return (
+        <div className="bg-muted">
+            <div className="container mx-auto flex min-h-screen flex-col items-center justify-center py-12">
+                 <div className="w-full max-w-2xl">
+                    <div className="flex justify-center mb-8"><Link href="/dashboard"><Logo /></Link></div>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Complete Your Payment</CardTitle>
+                            <CardDescription>Enter your payment details below to start your subscription.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                             <EmbeddedCheckoutForm clientSecret={clientSecret} />
+                        </CardContent>
+                    </Card>
+                 </div>
+            </div>
+        </div>
+    );
+  }
 
   return (
     <div className="bg-muted">
@@ -303,56 +241,18 @@ function BillingPageContent() {
                 )}
               </div>
 
-              {selectedTier && newPlan !== currentUser.plan && (
-                <div className="space-y-4 rounded-lg border bg-card-foreground/5 p-4">
-                  <div className="space-y-1">
-                    <div className="flex justify-between items-center font-semibold text-lg">
-                      <span>New Monthly Price</span>
-                      <span>
-                        {currencySymbols[currency]}
-                        {formatPrice(monthlyPrice, currency)}
-                      </span>
-                    </div>
-                  </div>
-
-                  {promoCode && (
-                    <div className="space-y-3 text-center pt-2">
-                      <p className="text-sm text-muted-foreground">
-                        Use this one-time code on the Stripe checkout page to
-                        get your discount.
-                      </p>
-                      <div className="flex items-center justify-center gap-2 p-3 border-2 border-dashed rounded-lg">
-                        <span className="font-mono text-lg font-semibold">
-                          {promoCode}
-                        </span>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={copyToClipboard}
-                        >
-                          {copied ? (
-                            <Check className="h-5 w-5 text-green-500" />
-                          ) : (
-                            <Copy className="h-5 w-5" />
-                          )}
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-
               <div className="flex gap-2 items-center">
                 <Button
-                  onClick={handlePayment}
+                  onClick={handleGetSession}
                   disabled={
-                    !newPlan || newPlan === currentUser.plan || !selectedTier
+                    !newPlan || newPlan === currentUser.plan || isSessionLoading
                   }
                 >
+                  {isSessionLoading && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
                   {newPlan === currentUser.plan
                     ? "Current Plan"
                     : newPlan
-                    ? `Update to ${selectedTier?.name}`
+                    ? `Update to ${tiers[newPlan as keyof typeof tiers]?.name}`
                     : "Select a Plan"}
                 </Button>
               </div>

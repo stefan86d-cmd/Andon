@@ -26,4 +26,3 @@ export function EmbeddedCheckoutForm({ clientSecret }: { clientSecret: string })
     </div>
   );
 }
-

@@ -1,7 +1,7 @@
 
 'use server';
 
-import type { Issue, Plan, ProductionLine, Role, User, UserRef } from '@/lib/types';
+import type { Issue, Plan, ProductionLine, Role, User, UserRef, Currency } from '@/lib/types';
 import { handleFirestoreError } from '@/lib/firestore-helpers';
 import { sendEmail } from '@/lib/email';
 import { adminAuth, adminDb } from '@/firebase/admin';
@@ -304,6 +304,82 @@ export async function getAllUsers(orgId: string): Promise<User[]> {
 
 
 // ---------------- Subscription Actions ----------------
+
+const getStripePriceId = (plan: Exclude<Plan, 'starter' | 'custom'>, duration: "1", currency: Currency): string | null => {
+    const envVarName = `STRIPE_PRICE_ID_${plan.toUpperCase()}_${duration}_${currency.toUpperCase()}`;
+    const priceId = process.env[envVarName];
+
+    if (!priceId) {
+        console.error(`Stripe Price ID not found for env var: ${envVarName}`);
+        return null;
+    }
+    
+    return priceId;
+}
+
+const getCouponId = (duration: "12" | "24" | "48"): string | null => {
+  let couponVarName: string | undefined;
+  if (duration === "12") couponVarName = "STRIPE_COUPON_20_OFF";
+  else if (duration === "24") couponVarName = "STRIPE_COUPON_30_OFF";
+  else if (duration === "48") couponVarName = "STRIPE_COUPON_40_OFF";
+
+  if (!couponVarName) return null;
+
+  const couponId = process.env[couponVarName];
+  if (!couponId) {
+      console.error(`Stripe Coupon ID not found for env var: ${couponVarName}`);
+      return null;
+  }
+  return couponId;
+};
+
+export async function createCheckoutSession(
+  userId: string,
+  userEmail: string,
+  plan: Exclude<Plan, 'starter' | 'custom'>,
+  duration: "1" | "12" | "24" | "48",
+  currency: Currency
+) {
+  if (!process.env.NEXT_STRIPE_SECRET_KEY) {
+    return { success: false, error: 'Stripe secret key is not set.' };
+  }
+  const stripe = new Stripe(process.env.NEXT_STRIPE_SECRET_KEY);
+  
+  const priceId = getStripePriceId(plan, "1", currency);
+  if (!priceId) {
+      return { success: false, error: `Price for ${plan} in ${currency.toUpperCase()} not found.` };
+  }
+  
+  const couponId = duration !== "1" ? getCouponId(duration) : null;
+  const discounts = couponId ? [{ coupon: couponId }] : [];
+
+  const successUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/settings/billing?payment_success=true&session_id={CHECKOUT_SESSION_ID}`;
+  const cancelUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/settings/billing`;
+
+  try {
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      mode: 'subscription',
+      client_reference_id: userId,
+      customer_email: userEmail,
+      line_items: [{ price: priceId, quantity: 1 }],
+      discounts: discounts,
+      subscription_data: {
+        trial_period_days: duration !== "1" ? undefined : undefined, 
+        metadata: { userId, plan }
+      },
+      ui_mode: 'embedded',
+      return_url: successUrl,
+    });
+    
+    return { success: true, clientSecret: session.client_secret };
+
+  } catch (error: any) {
+    console.error("Stripe session creation error:", error);
+    return { success: false, error: error.message };
+  }
+}
+
 
 export async function cancelSubscription(userId: string, subscriptionId: string) {
     const db = adminDb();
