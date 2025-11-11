@@ -446,7 +446,7 @@ function PricingPageContent() {
                             <CardDescription>{tier.description}</CardDescription>
                           </CardHeader>
                           <CardContent className="flex-1">
-                            <ul className="space-y-4">
+                            <ul className="space-y-4 min-h-[170px]">
                               {tier.features.map((feature) => (
                                 <li
                                   key={feature}
@@ -574,5 +574,3 @@ export default function PricingPage() {
         </React.Suspense>
     );
 }
-
-    
