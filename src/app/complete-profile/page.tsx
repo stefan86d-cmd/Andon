@@ -107,7 +107,7 @@ function CompleteProfileContent() {
         country: data.country,
         phone: data.phone,
         orgId: currentUser.id,
-        plan: isStarterPlan ? 'starter' : plan, // Set final plan for starter, or temp for paid
+        plan: 'starter' as Plan, // Always assign starter plan on profile completion
       };
 
       await updateCurrentUser(userProfileData);
