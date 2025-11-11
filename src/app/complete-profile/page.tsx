@@ -45,6 +45,7 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { X } from 'lucide-react';
 
 type Duration = "1" | "12" | "24" | "48";
 
@@ -76,7 +77,7 @@ function TermsOfServiceDialog() {
             <DialogTrigger asChild>
                 <button type="button" className="underline">Terms of Service</button>
             </DialogTrigger>
-            <DialogContent className="max-w-3xl">
+            <DialogContent className="max-w-3xl" hideCloseButton>
                 <DialogHeader>
                     <DialogTitle>Terms of Service</DialogTitle>
                 </DialogHeader>
@@ -374,5 +375,3 @@ export default function CompleteProfilePage() {
     </Suspense>
   );
 }
-
-    
