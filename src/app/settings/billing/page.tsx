@@ -95,19 +95,18 @@ function BillingPageContent() {
   const [isSessionLoading, startSessionLoadingTransition] = useTransition();
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   
-  const initialPlan = searchParams.get('plan') as Plan | undefined;
+  const initialPlan = (searchParams.get('plan') as Plan) || currentUser?.plan || 'starter';
   const initialCurrency = (searchParams.get('currency') as Currency) || 'eur';
   const initialDuration = (searchParams.get('duration') as Duration) || '1';
 
   const [currency, setCurrency] = useState<Currency>(initialCurrency);
-  const [newPlan, setNewPlan] = useState<Plan | undefined>(initialPlan);
+  const [newPlan, setNewPlan] = useState<Plan>(initialPlan);
+  const [duration, setDuration] = useState<Duration>(initialDuration);
   
   const isNewUserFlow = searchParams.has('new_user');
   const isStarterPlan = currentUser?.plan === "starter";
   const showDurationSelector = isNewUserFlow || isStarterPlan;
 
-  const [duration, setDuration] = useState<Duration>(showDurationSelector ? initialDuration : '1');
-  
   useEffect(() => {
     if (searchParams.get('payment_success') === 'true') {
         toast({
