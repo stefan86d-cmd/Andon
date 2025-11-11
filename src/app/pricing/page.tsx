@@ -14,7 +14,6 @@ import { CheckCircle, Globe, Menu, Shield, Headset, BadgeCheck, ArrowRight } fro
 import Link from "next/link";
 import { Logo } from "@/components/layout/logo";
 import { cn } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
 import React, { useState, useEffect } from "react";
 import {
   Select,
@@ -385,24 +384,7 @@ function PricingPageContent() {
                 const isProBestValue = tier.id === "pro";
 
                 return (
-                  <div key={tier.id} className="relative z-0">
-                    {tier.badge && (
-                      <div className="absolute -top-5 left-1/2 -translate-x-1/2 z-10">
-                        <Badge
-                          variant={
-                            (tier as any).badgeVariant ||
-                            (tier.premium ? "secondary" : "default")
-                          }
-                          className={cn(
-                            "text-sm",
-                            tier.premium &&
-                              "text-foreground border-border"
-                          )}
-                        >
-                          {tier.badge}
-                        </Badge>
-                      </div>
-                    )}
+                  <div key={tier.id} className="relative">
                     <Card
                       className={cn(
                         "flex flex-col h-full relative overflow-hidden bg-card transition-all duration-300 ease-in-out hover:-translate-y-2 hover:shadow-xl",
@@ -414,15 +396,20 @@ function PricingPageContent() {
                           "border-2 border-gray-300 dark:border-gray-700 shadow-lg"
                       )}
                     >
-                       {!isStarter && showDurationSelector && (
-                          <div className="absolute top-4 right-4">
-                            {duration === '12' && <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~20%</Badge>}
-                            {duration === '24' && <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~30%</Badge>}
-                            {duration === '48' && <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~40%</Badge>}
+                        {tier.badge && (
+                          <div
+                            className={cn(
+                              "py-2 text-center text-sm font-semibold text-white",
+                              isProBestValue
+                                ? "bg-destructive"
+                                : "bg-primary"
+                            )}
+                          >
+                            {tier.badge}
                           </div>
                         )}
-                      <CardHeader className="text-center">
-                        <CardTitle className="text-2xl pt-4">
+                       <CardHeader className="text-center">
+                        <CardTitle className={cn("text-2xl", !tier.badge && "pt-8")}>
                           {tier.name}
                         </CardTitle>
                         <div className="flex flex-col items-center justify-center min-h-[60px]">
@@ -453,13 +440,8 @@ function PricingPageContent() {
                               key={feature}
                               className="flex items-center"
                             >
-                              <Badge
-                                variant="outline"
-                                className="border-0 font-medium text-green-600"
-                              >
-                                <CheckCircle className="h-5 w-5 mr-2" />
+                                <CheckCircle className="h-5 w-5 mr-2 text-green-500" />
                                 <span>{feature}</span>
-                              </Badge>
                             </li>
                           ))}
                         </ul>
@@ -579,3 +561,5 @@ export default function PricingPage() {
         </React.Suspense>
     );
 }
+
+    
