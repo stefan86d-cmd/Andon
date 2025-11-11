@@ -384,13 +384,13 @@ function PricingPageContent() {
                   <div key={tier.id} className="relative z-10">
                     <Card
                       className={cn(
-                        "flex flex-col h-full relative overflow-hidden bg-card transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-2",
+                        "flex flex-col h-full relative overflow-hidden transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-2",
                         tier.popular &&
                           (isProBestValue
                             ? "border-destructive shadow-lg"
                             : "border-primary shadow-lg"),
                         tier.premium &&
-                          "border-2 border-gray-300 dark:border-gray-700 shadow-lg"
+                          "border-2 border-gray-800 dark:border-gray-700 shadow-lg"
                       )}
                     >
                         {tier.badge && (
@@ -399,7 +399,7 @@ function PricingPageContent() {
                               "py-2 text-center text-sm font-semibold text-white",
                               isProBestValue
                                 ? "bg-destructive"
-                                : "bg-primary"
+                                : tier.premium ? "bg-gray-800 dark:bg-gray-900" : "bg-primary"
                             )}
                           >
                             {tier.badge}
@@ -438,7 +438,7 @@ function PricingPageContent() {
                               className="flex items-center text-sm"
                             >
                                 <CheckCircle className="h-5 w-5 mr-2 text-green-500" />
-                                <span>{feature}</span>
+                                <span className="text-muted-foreground">{feature}</span>
                             </li>
                           ))}
                         </ul>
@@ -453,11 +453,11 @@ function PricingPageContent() {
                                   : tier.popular 
                                     ? 'default' 
                                     : tier.premium
-                                      ? 'outline'
+                                      ? 'default'
                                       : 'outline',
                             }),
                             "w-full",
-                            (tier as any).premium && "border-gray-300 dark:border-gray-700",
+                            tier.premium && "bg-gray-800 hover:bg-gray-900 dark:bg-foreground dark:hover:bg-foreground/90 dark:text-background",
                             currentUser && currentUser.plan === tier.id && "pointer-events-none opacity-50"
                           )}
                         >
