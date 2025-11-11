@@ -418,8 +418,7 @@ function PricingPageContent() {
                             {tier.badge}
                           </div>
                         )}
-                        <div className="relative">
-                           
+                        <div className="flex flex-col flex-1">
                            <CardHeader className="text-center">
                             <CardTitle className={cn("text-2xl", !tier.badge && "pt-8")}>
                               {tier.name}
@@ -445,12 +444,12 @@ function PricingPageContent() {
                             </div>
                             <CardDescription>{tier.description}</CardDescription>
                           </CardHeader>
-                          <CardContent className="flex-1">
-                            <ul className="space-y-4 min-h-[170px]">
+                          <CardContent>
+                            <ul className="space-y-4 text-sm">
                               {tier.features.map((feature) => (
                                 <li
                                   key={feature}
-                                  className="flex items-center text-sm"
+                                  className="flex items-center"
                                 >
                                     <CheckCircle className="h-5 w-5 mr-2 text-green-500" />
                                     <span className="text-muted-foreground">{feature}</span>
@@ -458,6 +457,7 @@ function PricingPageContent() {
                               ))}
                             </ul>
                           </CardContent>
+                          <div className="flex-grow" />
                           <CardFooter className="flex-col items-stretch pt-6">
                             <Link
                               href={finalHref}
