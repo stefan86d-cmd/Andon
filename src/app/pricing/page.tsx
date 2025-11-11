@@ -402,7 +402,7 @@ function PricingPageContent() {
                             ? "border-destructive shadow-lg"
                             : "border-primary shadow-lg"),
                         tier.premium &&
-                          "border-2 border-gray-800 dark:border-gray-700 shadow-lg"
+                          "border-gray-800 dark:border-gray-700 shadow-lg"
                       )}
                     >
                         {tier.badge && (
