@@ -385,9 +385,9 @@ function PricingPageContent() {
                 const isProBestValue = tier.id === "pro";
 
                 return (
-                  <div key={tier.id} className="relative">
+                  <div key={tier.id} className="relative z-0">
                     {tier.badge && (
-                      <div className="absolute -top-5 left-1/2 -translate-x-1/2">
+                      <div className="absolute -top-5 left-1/2 -translate-x-1/2 z-10">
                         <Badge
                           variant={
                             (tier as any).badgeVariant ||
