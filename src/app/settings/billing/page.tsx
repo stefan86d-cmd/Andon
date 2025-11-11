@@ -35,7 +35,7 @@ function getStripePriceId(planId: Plan, duration: Duration, currency: Currency) 
     // The duration '1' corresponds to monthly billing which doesn't have a number in the env var name.
     const durationString = duration === '1' ? '_1' : `_${duration}`;
 
-    const envVarName = `STRIPE_PRICE_ID_${planUpper}${durationString}_${currencyUpper}`;
+    const envVarName = `NEXT_PUBLIC_STRIPE_PRICE_ID_${planUpper}${durationString}_${currencyUpper}`;
     
     const priceId = process.env[envVarName];
 
@@ -79,9 +79,9 @@ const tiers: Record<Exclude<Plan, "custom" | "starter">, any> = {
 };
 
 const promotionCodes: { [key in Duration]?: string } = {
-  "12": process.env.STRIPE_COUPON_20_OFF,
-  "24": process.env.STRIPE_COUPON_30_OFF,
-  "48": process.env.STRIPE_COUPON_40_OFF,
+  "12": process.env.NEXT_PUBLIC_STRIPE_COUPON_20_OFF,
+  "24": process.env.NEXT_PUBLIC_STRIPE_COUPON_30_OFF,
+  "48": process.env.NEXT_PUBLIC_STRIPE_COUPON_40_OFF,
 };
 
 const currencySymbols = { usd: "$", eur: "€", gbp: "£" };
