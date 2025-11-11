@@ -39,6 +39,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
+import { Badge } from "@/components/ui/badge";
 
 
 type Duration = "1" | "12" | "24" | "48";
@@ -347,7 +348,7 @@ function PricingPageContent() {
           </div>
         </section>
 
-        <section className="py-20 border-t bg-background">
+        <section className="py-20 bg-background">
           <div className="container">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
               {tiers.map((tier) => {
@@ -380,11 +381,18 @@ function PricingPageContent() {
 
                 const isProBestValue = tier.id === "pro";
 
+                const savingsBadge = (() => {
+                    if (actualDuration === '12') return "Save 20%";
+                    if (actualDuration === '24') return "Save 30%";
+                    if (actualDuration === '48') return "Save 40%";
+                    return null;
+                })();
+
                 return (
                   <div key={tier.id} className="relative z-10">
                     <Card
                       className={cn(
-                        "flex flex-col h-full relative overflow-hidden transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-2",
+                        "flex flex-col h-full relative overflow-hidden transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-2 z-10",
                         tier.popular &&
                           (isProBestValue
                             ? "border-destructive shadow-lg"
@@ -404,6 +412,11 @@ function PricingPageContent() {
                           >
                             {tier.badge}
                           </div>
+                        )}
+                        {showDurationSelector && savingsBadge && (
+                             <Badge variant="secondary" className="absolute top-2 right-2 bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">
+                                {savingsBadge}
+                             </Badge>
                         )}
                        <CardHeader className="text-center">
                         <CardTitle className={cn("text-2xl", !tier.badge && "pt-8")}>
@@ -457,7 +470,7 @@ function PricingPageContent() {
                                       : 'outline',
                             }),
                             "w-full",
-                            tier.premium && "bg-gray-800 hover:bg-gray-900 dark:bg-foreground dark:hover:bg-foreground/90 dark:text-background",
+                             tier.premium && "bg-gray-800 hover:bg-gray-900 dark:bg-foreground dark:hover:bg-foreground/90 dark:text-background",
                             currentUser && currentUser.plan === tier.id && "pointer-events-none opacity-50"
                           )}
                         >
