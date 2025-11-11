@@ -311,38 +311,40 @@ function PricingPageContent() {
       </header>
 
       <main className="flex-1">
-        <section className="container py-20 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold">
-            Pricing
-          </h1>
-          <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
-            Find the right plan that exactly matches your team's needs. Start for free and scale as you grow.
-          </p>
-          <div className="mt-10 flex items-center justify-center gap-4">
-            {showDurationSelector && (
-              <Select value={duration} onValueChange={(value) => setDuration(value as Duration)}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Select duration" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="1">1 Month</SelectItem>
-                  <SelectItem value="12">12 Months</SelectItem>
-                  <SelectItem value="24">24 Months</SelectItem>
-                  <SelectItem value="48">48 Months</SelectItem>
-                </SelectContent>
-              </Select>
-            )}
+        <section className="py-20 text-center bg-muted">
+          <div className="container">
+              <h1 className="text-4xl md:text-5xl font-bold">
+                Pricing
+              </h1>
+              <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
+                Find the right plan that exactly matches your team's needs. Start for free and scale as you grow.
+              </p>
+              <div className="mt-10 flex items-center justify-center gap-4">
+                {showDurationSelector && (
+                  <Select value={duration} onValueChange={(value) => setDuration(value as Duration)}>
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Select duration" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1">1 Month</SelectItem>
+                      <SelectItem value="12">12 Months</SelectItem>
+                      <SelectItem value="24">24 Months</SelectItem>
+                      <SelectItem value="48">48 Months</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
 
-            <Select value={currency} onValueChange={(value) => handleCurrencyChange(value as Currency)}>
-              <SelectTrigger className="w-[120px]">
-                <div className="flex items-center gap-2"><Globe className="h-4 w-4" /><SelectValue placeholder="Currency" /></div>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="usd">USD</SelectItem>
-                <SelectItem value="eur">EUR</SelectItem>
-                <SelectItem value="gbp">GBP</SelectItem>
-              </SelectContent>
-            </Select>
+                <Select value={currency} onValueChange={(value) => handleCurrencyChange(value as Currency)}>
+                  <SelectTrigger className="w-[120px]">
+                    <div className="flex items-center gap-2"><Globe className="h-4 w-4" /><SelectValue placeholder="Currency" /></div>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="usd">USD</SelectItem>
+                    <SelectItem value="eur">EUR</SelectItem>
+                    <SelectItem value="gbp">GBP</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
           </div>
         </section>
 
@@ -577,5 +579,7 @@ export default function PricingPage() {
         </React.Suspense>
     );
 }
+
+    
 
     
