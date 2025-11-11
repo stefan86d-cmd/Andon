@@ -183,7 +183,7 @@ const MobileNavLink = ({ href, children }: { href: string; children: React.React
 
 function PricingPageContent() {
   const [duration, setDuration] = useState<Duration>("12");
-  const [currency, setCurrency] = useState<Currency>("usd");
+  const [currency, setCurrency] = useState<Currency>("eur");
   const { currentUser } = useUser();
 
   useEffect(() => {
