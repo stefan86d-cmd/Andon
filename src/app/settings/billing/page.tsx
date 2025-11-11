@@ -23,20 +23,46 @@ import { format, isValid } from "date-fns";
 import { cancelSubscription, createCheckoutSession } from "@/app/actions";
 import { useSearchParams } from 'next/navigation';
 import { EmbeddedCheckoutForm } from "@/components/checkout/embedded-checkout-form";
+import { Badge } from "@/components/ui/badge";
 
 type Duration = "1" | "12" | "24" | "48";
 
 const tiers: Record<Exclude<Plan, "custom" | "starter">, any> = {
   standard: {
     name: "Standard",
+    prices: {
+      "1": { usd: 39.99, eur: 36.99, gbp: 32.99 },
+      "12": { usd: 31.99, eur: 29.59, gbp: 26.39 },
+      "24": { usd: 27.99, eur: 25.89, gbp: 23.09 },
+      "48": { usd: 23.99, eur: 22.19, gbp: 19.79 },
+    },
   },
   pro: {
     name: "Pro",
+    prices: {
+      "1": { usd: 59.99, eur: 54.99, gbp: 49.99 },
+      "12": { usd: 47.99, eur: 43.99, gbp: 39.99 },
+      "24": { usd: 41.99, eur: 38.49, gbp: 34.99 },
+      "48": { usd: 35.99, eur: 32.99, gbp: 29.99 },
+    },
   },
   enterprise: {
     name: "Enterprise",
+     prices: {
+      "1": { usd: 149.99, eur: 139.99, gbp: 124.99 },
+      "12": { usd: 119.99, eur: 111.99, gbp: 99.99 },
+      "24": { usd: 104.99, eur: 97.99, gbp: 87.49 },
+      "48": { usd: 89.99, eur: 83.99, gbp: 74.99 },
+    },
   },
 };
+
+const currencySymbols: Record<Currency, string> = {
+  usd: "$",
+  eur: "€",
+  gbp: "£",
+};
+
 
 function BillingPageContent() {
   const { currentUser, refreshCurrentUser } = useUser();
@@ -46,9 +72,14 @@ function BillingPageContent() {
   const [isSessionLoading, startSessionLoadingTransition] = useTransition();
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   
-  const [currency, setCurrency] = useState<Currency>((searchParams.get('currency') as Currency) || "usd");
-  const [newPlan, setNewPlan] = useState<Plan | undefined>((searchParams.get('plan') as Plan) || undefined);
-  const [duration, setDuration] = useState<Duration>((searchParams.get('duration') as Duration) || "1");
+  // Get initial values from URL, with fallback for existing users
+  const initialPlan = searchParams.get('plan') as Plan | undefined;
+  const initialCurrency = (searchParams.get('currency') as Currency) || 'usd';
+  const initialDuration = (searchParams.get('duration') as Duration) || '1';
+
+  const [currency, setCurrency] = useState<Currency>(initialCurrency);
+  const [newPlan, setNewPlan] = useState<Plan | undefined>(initialPlan);
+  const [duration, setDuration] = useState<Duration>(initialDuration);
   
   useEffect(() => {
     if (searchParams.get('payment_success') === 'true') {
@@ -113,7 +144,10 @@ function BillingPageContent() {
 
   const planName = currentUser.plan.charAt(0).toUpperCase() + currentUser.plan.slice(1);
   const availablePlans = Object.keys(tiers).filter((p) => p !== currentUser?.plan) as (keyof typeof tiers)[];
+  
+  const isNewUserFlow = searchParams.has('new_user');
   const isStarterPlan = currentUser.plan === "starter";
+
 
   const endDate = currentUser.subscriptionEndsAt && isValid(new Date(currentUser.subscriptionEndsAt))
       ? format(new Date(currentUser.subscriptionEndsAt), "MMMM d, yyyy")
@@ -128,6 +162,11 @@ function BillingPageContent() {
     }
     return null;
   };
+
+  const selectedTier = newPlan && newPlan !== 'starter' && newPlan !== 'custom' ? tiers[newPlan] : null;
+  const currentPrice = selectedTier ? selectedTier.prices[duration]?.[currency] ?? 0 : 0;
+  const originalPrice = selectedTier ? selectedTier.prices["1"]?.[currency] ?? 0 : 0;
+  const showDiscount = duration !== "1" && currentPrice < originalPrice;
   
   if (clientSecret) {
     return (
@@ -173,7 +212,7 @@ function BillingPageContent() {
 
           <Card className="mt-8">
             <CardHeader>
-              <CardTitle>Change Plan</CardTitle>
+              <CardTitle>{isNewUserFlow || isStarterPlan ? "Select a Plan" : "Change Plan"}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-2">
@@ -216,8 +255,7 @@ function BillingPageContent() {
                   </Select>
                 </div>
 
-                {isStarterPlan && (
-                  <div className="pt-2">
+                <div className="pt-2">
                     <Select
                       value={duration}
                       onValueChange={(value) => setDuration(value as Duration)}
@@ -233,8 +271,35 @@ function BillingPageContent() {
                       </SelectContent>
                     </Select>
                   </div>
-                )}
               </div>
+              
+              {selectedTier && (
+                <div className="flex justify-between items-center p-4 border rounded-lg bg-background">
+                  <div>
+                    <h3 className="font-semibold">{selectedTier.name} Plan</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Billed monthly
+                      {duration !== '1' && `, for ${duration} months`}
+                    </p>
+                    {duration === '12' && <Badge variant="secondary" className="mt-2 bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~20%</Badge>}
+                    {duration === '24' && <Badge variant="secondary" className="mt-2 bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~30%</Badge>}
+                    {duration === '48' && <Badge variant="secondary" className="mt-2 bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~40%</Badge>}
+                  </div>
+                  <div className="text-right">
+                    <div className="flex items-center justify-end gap-2">
+                        {showDiscount && (
+                            <span className="text-muted-foreground line-through">
+                                {currencySymbols[currency]}{originalPrice.toFixed(2)}
+                            </span>
+                        )}
+                        <p className="text-xl font-bold">
+                            {currencySymbols[currency]}{currentPrice.toFixed(2)}
+                        </p>
+                    </div>
+                    <p className="text-sm text-muted-foreground">/ month</p>
+                  </div>
+                </div>
+              )}
 
               <div className="flex gap-2 items-center">
                 <Button
@@ -252,38 +317,41 @@ function BillingPageContent() {
                 </Button>
               </div>
 
-              <Separator />
-
-              <div>
-                <h3 className="text-sm font-semibold mb-2">
-                  Cancel Subscription
-                </h3>
-                <p className="text-sm text-muted-foreground mb-4">
-                  If you cancel, you will lose access to your plan's features at
-                  the end of your billing period on {endDate}.
-                </p>
-                <CancelSubscriptionDialog
-                  onConfirm={handleCancelConfirm}
-                  disabled={isCancelling}
-                >
-                  <Button
-                    variant="destructive"
-                    className="w-full sm:w-auto"
-                    disabled={
-                      currentUser.plan === "starter" ||
-                      isCancelling ||
-                      currentUser.subscriptionStatus === "canceled"
-                    }
-                  >
-                    {isCancelling && (
-                      <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
-                    )}
-                    {currentUser.subscriptionStatus === "canceled"
-                      ? "Cancellation Pending"
-                      : "Cancel Subscription"}
-                  </Button>
-                </CancelSubscriptionDialog>
-              </div>
+              {!isStarterPlan && (
+                <>
+                  <Separator />
+                  <div>
+                    <h3 className="text-sm font-semibold mb-2">
+                      Cancel Subscription
+                    </h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      If you cancel, you will lose access to your plan's features at
+                      the end of your billing period on {endDate}.
+                    </p>
+                    <CancelSubscriptionDialog
+                      onConfirm={handleCancelConfirm}
+                      disabled={isCancelling}
+                    >
+                      <Button
+                        variant="destructive"
+                        className="w-full sm:w-auto"
+                        disabled={
+                          currentUser.plan === "starter" ||
+                          isCancelling ||
+                          currentUser.subscriptionStatus === "canceled"
+                        }
+                      >
+                        {isCancelling && (
+                          <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+                        )}
+                        {currentUser.subscriptionStatus === "canceled"
+                          ? "Cancellation Pending"
+                          : "Cancel Subscription"}
+                      </Button>
+                    </CancelSubscriptionDialog>
+                  </div>
+                </>
+              )}
             </CardContent>
           </Card>
 
