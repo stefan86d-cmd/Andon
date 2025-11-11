@@ -168,6 +168,18 @@ function BillingPageContent() {
   const originalPrice = selectedTier ? selectedTier.prices["1"]?.[currency] ?? 0 : 0;
   const showDiscount = duration !== "1" && currentPrice < originalPrice;
   
+  const getButtonText = () => {
+    if (isSessionLoading) return <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />;
+    
+    if (isNewUserFlow) {
+        return newPlan ? "Complete Payment" : "Select a Plan";
+    }
+
+    if (newPlan === currentUser.plan) return "Current Plan";
+    return newPlan ? `Update to ${tiers[newPlan as keyof typeof tiers]?.name}` : "Select a Plan";
+  };
+
+
   if (clientSecret) {
     return (
         <div className="bg-muted">
@@ -308,12 +320,8 @@ function BillingPageContent() {
                     !newPlan || newPlan === currentUser.plan || isSessionLoading
                   }
                 >
-                  {isSessionLoading && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
-                  {newPlan === currentUser.plan
-                    ? "Current Plan"
-                    : newPlan
-                    ? `Update to ${tiers[newPlan as keyof typeof tiers]?.name}`
-                    : "Select a Plan"}
+                   {isSessionLoading && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
+                  {getButtonText()}
                 </Button>
               </div>
 
