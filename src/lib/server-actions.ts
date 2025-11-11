@@ -364,6 +364,7 @@ export async function createCheckoutSession(
       customer_email: userEmail,
       line_items: [{ price: priceId, quantity: 1 }],
       discounts: discounts,
+      automatic_tax: { enabled: true },
       subscription_data: {
         trial_period_days: duration !== "1" ? undefined : undefined, 
         metadata: { userId, plan }
