@@ -59,9 +59,9 @@ function CompleteProfileContent() {
   const [isSubmitting, startTransition] = useTransition();
   const [isCancelling, startCancellationTransition] = useTransition();
 
-  const plan = (searchParams.get('plan') as Plan) || 'starter';
-  const duration = (searchParams.get('duration') as Duration) || '1';
-  const currency = (searchParams.get('currency') as Currency) || 'usd';
+  const plan = searchParams.get('plan') as Plan || 'starter';
+  const duration = searchParams.get('duration') as Duration || '1';
+  const currency = searchParams.get('currency') as Currency || 'usd';
   const isStarterPlan = plan === 'starter';
 
   const form = useForm<ProfileFormValues>({
