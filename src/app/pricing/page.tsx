@@ -405,7 +405,7 @@ function PricingPageContent() {
                     )}
                     <Card
                       className={cn(
-                        "flex flex-col h-full relative overflow-hidden bg-background",
+                        "flex flex-col h-full relative overflow-hidden bg-card",
                         tier.popular &&
                           (isProBestValue
                             ? "border-destructive shadow-lg"
@@ -522,7 +522,7 @@ function PricingPageContent() {
             </div>
           </div>
         </section>
-        <section className="py-20 bg-muted">
+        <section className="py-20 bg-muted border-t">
             <div className="container">
                 <div className="text-center mb-12">
                     <h2 className="text-3xl font-bold">Our Guarantees</h2>
@@ -534,7 +534,7 @@ function PricingPageContent() {
                     {guarantees.map((guarantee) => (
                         <Card key={guarantee.title} className="text-center border-0 bg-transparent shadow-none">
                             <CardHeader>
-                                <div className="mx-auto bg-muted rounded-full p-3 w-fit mb-3">
+                                <div className="mx-auto bg-background rounded-full p-3 w-fit mb-3">
                                     <guarantee.icon className="h-6 w-6 text-primary" />
                                 </div>
                                 <CardTitle className="text-xl">{guarantee.title}</CardTitle>
@@ -579,7 +579,3 @@ export default function PricingPage() {
         </React.Suspense>
     );
 }
-
-    
-
-    
