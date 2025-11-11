@@ -416,25 +416,27 @@ function PricingPageContent() {
                         <CardTitle className="text-2xl pt-4">
                           {tier.name}
                         </CardTitle>
-                        <div className="flex items-baseline justify-center gap-1 min-h-[40px]">
+                        <div className="flex flex-col items-center justify-center min-h-[60px]">
                           {isStarter ? (
                             <span className="text-4xl font-bold">Free</span>
                           ) : (
                             <>
+                              <div className="flex items-baseline gap-1">
+                                <span className="text-4xl font-bold">
+                                  {currencySymbols[currency]}{formatPrice(
+                                    priceInfo.price,
+                                    currency
+                                  )}
+                                </span>
+                                <span className="text-muted-foreground">
+                                  {tier.pricePeriod}
+                                </span>
+                              </div>
                               {duration !== '1' && showDurationSelector && (
-                                <span className="text-lg text-muted-foreground line-through mr-2">
+                                <span className="text-sm text-muted-foreground line-through">
                                   {currencySymbols[currency]}{formatPrice(priceInfo.fullPrice, currency)}
                                 </span>
                               )}
-                              <span className="text-4xl font-bold">
-                                {currencySymbols[currency]}{formatPrice(
-                                  priceInfo.price,
-                                  currency
-                                )}
-                              </span>
-                              <span className="text-muted-foreground">
-                                {tier.pricePeriod}
-                              </span>
                             </>
                           )}
                         </div>
