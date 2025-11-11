@@ -10,7 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Check, Globe, Menu, Shield, Headset, BadgeCheck, ArrowRight, Users } from "lucide-react";
+import { Check, Globe, Menu, Shield, Headset, BadgeCheck, ArrowRight, Users, Factory, MonitorSmartphone } from "lucide-react";
 import Link from "next/link";
 import { Logo } from "@/components/layout/logo";
 import { cn } from "@/lib/utils";
@@ -181,11 +181,19 @@ const MobileNavLink = ({ href, children }: { href: string; children: React.React
 );
 
 function getFeatureIcon(feature: string, tierId: string) {
+    const isEnterprise = tierId === 'enterprise';
+    const iconColor = isEnterprise ? "text-muted-foreground" : "text-green-500";
+
     if (feature.includes("user")) {
-        const isEnterprise = tierId === 'enterprise';
-        return <Users className={cn("h-5 w-5 mr-2", isEnterprise ? "text-muted-foreground" : "text-green-500")} />;
+        return <Users className={cn("h-5 w-5 mr-2", iconColor)} />;
     }
-    return <Check className="h-5 w-5 mr-2 text-green-500" />;
+    if (feature.includes("Production Line")) {
+        return <Factory className={cn("h-5 w-5 mr-2", iconColor)} />;
+    }
+    if (feature.includes("workstation")) {
+        return <MonitorSmartphone className={cn("h-5 w-5 mr-2", iconColor)} />;
+    }
+    return <Check className={cn("h-5 w-5 mr-2", iconColor)} />;
 }
 
 
@@ -326,7 +334,7 @@ function PricingPageContent() {
       </header>
 
       <main className="flex-1">
-        <section className="py-20 text-center bg-muted">
+        <section className="py-20 text-center bg-primary/10">
           <div className="container">
               <h1 className="text-4xl md:text-5xl font-bold">
                 Pricing
@@ -582,5 +590,3 @@ export default function PricingPage() {
         </React.Suspense>
     );
 }
-
-    
