@@ -1,5 +1,7 @@
+
 import type { Currency } from './types';
 
+// ✅ Stripe-hosted payment links
 export const stripePayLinks: Record<string, Record<Currency, string>> = {
   standard: {
     eur: "https://buy.stripe.com/7sY14mdM48fI6R2aSG",

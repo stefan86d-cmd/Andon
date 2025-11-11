@@ -18,6 +18,7 @@ import { Logo } from "@/components/layout/logo";
 import { toast } from "@/hooks/use-toast";
 import type { Currency, Plan } from "@/lib/types";
 import { useUser } from "@/contexts/user-context";
+import { Badge } from "@/components/ui/badge";
 
 type Duration = "1" | "12" | "24" | "48";
 
@@ -116,6 +117,9 @@ function CheckoutPageContent() {
               <div>
                 <h3 className="font-semibold">{tier.name} Plan</h3>
                 <p className="text-sm text-muted-foreground">Billed monthly</p>
+                 {duration === '12' && <Badge variant="secondary" className="mt-2 bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~20%</Badge>}
+                {duration === '24' && <Badge variant="secondary" className="mt-2 bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~30%</Badge>}
+                {duration === '48' && <Badge variant="secondary" className="mt-2 bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~40%</Badge>}
               </div>
               <div className="text-right">
                 <p className="text-xl font-bold">

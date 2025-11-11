@@ -22,31 +22,11 @@ import { Logo } from "@/components/layout/logo";
 import { format, isValid } from "date-fns";
 import { cancelSubscription } from "@/app/actions";
 import { useSearchParams } from 'next/navigation';
+import { stripePayLinks } from "@/lib/stripe-pay-links";
+import { Badge } from "@/components/ui/badge";
 
 type Duration = "1" | "12" | "24" | "48";
 type Currency = "usd" | "eur" | "gbp";
-
-function getStripePriceId(planId: Plan, duration: Duration, currency: Currency) {
-    if (planId === 'starter' || planId === 'custom') return null;
-
-    const planUpper = planId.toUpperCase();
-    const currencyUpper = currency.toUpperCase();
-    
-    // The duration '1' corresponds to monthly billing which doesn't have a number in the env var name.
-    const durationString = duration === '1' ? '_1' : `_${duration}`;
-
-    const envVarName = `NEXT_PUBLIC_STRIPE_PRICE_ID_${planUpper}${durationString}_${currencyUpper}`;
-    
-    const priceId = process.env[envVarName];
-
-    if (!priceId) {
-        console.error(`Stripe Price ID not found for env var: ${envVarName}`);
-        return null;
-    }
-    
-    return priceId;
-}
-
 
 const tiers: Record<Exclude<Plan, "custom" | "starter">, any> = {
   standard: {
@@ -78,11 +58,12 @@ const tiers: Record<Exclude<Plan, "custom" | "starter">, any> = {
   },
 };
 
-const promotionCodes: { [key in Duration]?: string } = {
+const promotionCodes: { [key in Duration]?: string | undefined } = {
   "12": process.env.NEXT_PUBLIC_STRIPE_COUPON_20_OFF,
   "24": process.env.NEXT_PUBLIC_STRIPE_COUPON_30_OFF,
   "48": process.env.NEXT_PUBLIC_STRIPE_COUPON_40_OFF,
 };
+
 
 const currencySymbols = { usd: "$", eur: "€", gbp: "£" };
 const formatPrice = (price: number, currency: Currency) => {
@@ -136,19 +117,18 @@ function BillingPageContent() {
           return;
       }
       
-      const priceId = getStripePriceId(newPlan, duration, currency);
-      if (!priceId) {
-          toast({ variant: "destructive", title: "Checkout Error", description: `Price ID for plan ${newPlan} could not be found.` });
+      const paymentLink = stripePayLinks[newPlan]?.[currency];
+      if (!paymentLink) {
+          toast({ variant: "destructive", title: "Checkout Error", description: `Payment link for plan ${newPlan} in ${currency.toUpperCase()} could not be found.` });
           return;
       }
 
       const isNewUser = searchParams.get('new_user') === 'true';
 
-      const paymentLink = `https://buy.stripe.com/${priceId}`;
       const finalUrl = `${paymentLink}?client_reference_id=${currentUser.id}&prefilled_email=${currentUser.email}${isNewUser ? '&metadata[isNewUser]=true' : ''}`;
       
       window.location.href = finalUrl;
-  }, [currentUser, newPlan, duration, currency, searchParams]);
+  }, [currentUser, newPlan, currency, searchParams]);
 
   if (!currentUser || !currentUser.plan) {
     return (
