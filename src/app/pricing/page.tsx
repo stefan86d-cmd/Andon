@@ -10,7 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { CheckCircle, Globe, Menu, Shield, Headset, BadgeCheck, ArrowRight } from "lucide-react";
+import { Check, Globe, Menu, Shield, Headset, BadgeCheck, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { Logo } from "@/components/layout/logo";
 import { cn } from "@/lib/utils";
@@ -451,7 +451,7 @@ function PricingPageContent() {
                                   key={feature}
                                   className="flex items-center"
                                 >
-                                    <CheckCircle className="h-5 w-5 mr-2 text-green-500" />
+                                    <Check className="h-5 w-5 mr-2 text-green-500" />
                                     <span className="text-muted-foreground">{feature}</span>
                                 </li>
                               ))}
@@ -574,3 +574,5 @@ export default function PricingPage() {
         </React.Suspense>
     );
 }
+
+    
