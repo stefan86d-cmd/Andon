@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { Suspense, useState } from "react";
+import React, { Suspense, useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -64,12 +64,18 @@ function CheckoutPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { currentUser } = useUser();
-  const [loading, setLoading] = useState(false);
 
   const planId = searchParams.get("plan") as Plan;
   const currency = (searchParams.get("currency") || "usd") as Currency;
   const duration = (searchParams.get("duration") || "1") as Duration;
   const tier = tiers.find((t) => t.id === planId);
+
+  useEffect(() => {
+    // If a logged-in user somehow lands here, redirect them to the proper billing page.
+    if (currentUser) {
+      router.replace(`/settings/billing?plan=${planId}&duration=${duration}&currency=${currency}`);
+    }
+  }, [currentUser, router, planId, duration, currency]);
 
   if (!tier) {
     return (
@@ -87,23 +93,7 @@ function CheckoutPageContent() {
 
   const price = tier.prices[duration]?.[currency] ?? 0;
   const registrationHref = `/register?plan=${planId}&duration=${duration}&currency=${currency}`;
-
-  const handleStripeCheckout = async () => {
-    if (!currentUser) {
-      toast({
-        title: "Please sign in first",
-        description: "You need an account to subscribe.",
-      });
-      router.push(`/login?redirect=/checkout?plan=${planId}&duration=${duration}&currency=${currency}`);
-      return;
-    }
-
-    // Logic for existing users to pay is not implemented here as they go through billing page
-    // This is primarily for the new user registration flow continuation.
-    // However, if an existing user lands here, we should redirect them to the registration flow
-    // which handles both new and existing users for payment.
-    router.push(registrationHref);
-  };
+  const loginHref = `/login?redirect=/settings/billing?plan=${planId}&duration=${duration}&currency=${currency}`;
 
   return (
     <div className="bg-muted min-h-screen flex flex-col items-center justify-center py-12 px-4">
@@ -142,22 +132,12 @@ function CheckoutPageContent() {
               <Link href={registrationHref}>Proceed to Registration</Link>
             </Button>
 
-            <p className="text-xs text-muted-foreground">
-              Or, if you already have an account:
+            <p className="text-xs text-muted-foreground text-center">
+              Already have an account?{' '}
+              <Link href={loginHref} className="underline">
+                Sign in to complete your purchase
+              </Link>
             </p>
-
-            <Button
-              onClick={handleStripeCheckout}
-              variant="outline"
-              className="w-full"
-              disabled={loading}
-            >
-              {loading ? (
-                <LoaderCircle className="w-4 h-4 animate-spin" />
-              ) : (
-                "Continue with Existing Account"
-              )}
-            </Button>
           </CardFooter>
         </Card>
       </div>

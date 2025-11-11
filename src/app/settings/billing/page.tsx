@@ -1,10 +1,11 @@
+
 "use client";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LoaderCircle, Globe, Copy, Check } from "lucide-react";
 import { useUser } from "@/contexts/user-context";
-import { useState, useEffect, useTransition, Suspense } from "react";
+import { useState, useEffect, useTransition, Suspense, useCallback } from "react";
 import Link from "next/link";
 import { toast } from "@/hooks/use-toast";
 import type { Plan } from "@/lib/types";
@@ -20,9 +21,32 @@ import { CancelSubscriptionDialog } from "@/components/settings/cancel-subscript
 import { Logo } from "@/components/layout/logo";
 import { format, isValid } from "date-fns";
 import { cancelSubscription } from "@/app/actions";
+import { useSearchParams } from 'next/navigation';
 
 type Duration = "1" | "12" | "24" | "48";
 type Currency = "usd" | "eur" | "gbp";
+
+function getStripePriceId(planId: Plan, duration: Duration, currency: Currency) {
+    if (planId === 'starter' || planId === 'custom') return null;
+
+    const planUpper = planId.toUpperCase();
+    const currencyUpper = currency.toUpperCase();
+    
+    // The duration '1' corresponds to monthly billing which doesn't have a number in the env var name.
+    const durationString = duration === '1' ? '_1' : `_${duration}`;
+
+    const envVarName = `STRIPE_PRICE_ID_${planUpper}${durationString}_${currencyUpper}`;
+    
+    const priceId = process.env[envVarName];
+
+    if (!priceId) {
+        console.error(`Stripe Price ID not found for env var: ${envVarName}`);
+        return null;
+    }
+    
+    return priceId;
+}
+
 
 const tiers: Record<Exclude<Plan, "custom" | "starter">, any> = {
   standard: {
@@ -55,9 +79,9 @@ const tiers: Record<Exclude<Plan, "custom" | "starter">, any> = {
 };
 
 const promotionCodes: { [key in Duration]?: string } = {
-  "12": "YAPPQ2YO",
-  "24": "TQ4IVSRD",
-  "48": "ALRLAVQ8",
+  "12": process.env.STRIPE_COUPON_20_OFF,
+  "24": process.env.STRIPE_COUPON_30_OFF,
+  "48": process.env.STRIPE_COUPON_40_OFF,
 };
 
 const currencySymbols = { usd: "$", eur: "€", gbp: "£" };
@@ -69,39 +93,62 @@ const formatPrice = (price: number, currency: Currency) => {
   });
 };
 
-// ✅ Stripe-hosted payment links
-const stripePayLinks: Record<string, Record<Currency, string>> = {
-  standard: {
-    eur: "https://buy.stripe.com/7sY14mdM48fI6R2aSG0Ny08",
-    usd: "https://buy.stripe.com/4gM28q7nG9jM0sEd0O0Ny05",
-    gbp: "https://buy.stripe.com/bJe6oGgYggMea3e8Ky0Ny02",
-  },
-  pro: {
-    eur: "https://buy.stripe.com/eVq28q8rK53wejud0O0Ny07",
-    usd: "https://buy.stripe.com/5kQdR8azS3Zseju4ui0Ny04",
-    gbp: "https://buy.stripe.com/28E00i8rK8fIfnye4S0Ny01",
-  },
-  enterprise: {
-    eur: "https://buy.stripe.com/28EdR8azSfIa4IUf8W0Ny06",
-    usd: "https://buy.stripe.com/4gM7sK8rKfIaeju0e20Ny03",
-    gbp: "https://buy.stripe.com/5kQ7sK37qanQ3EQ4ui0Ny00",
-  },
-};
-
 function BillingPageContent() {
   const { currentUser, refreshCurrentUser } = useUser();
+  const searchParams = useSearchParams();
+  
   const [isCancelling, startCancellationTransition] = useTransition();
   const [copied, setCopied] = useState(false);
-  const [currency, setCurrency] = useState<Currency>("usd");
-  const [newPlan, setNewPlan] = useState<Plan | undefined>(currentUser?.plan);
-  const [duration, setDuration] = useState<Duration>("12");
+  
+  const [currency, setCurrency] = useState<Currency>((searchParams.get('currency') as Currency) || "usd");
+  const [newPlan, setNewPlan] = useState<Plan | undefined>((searchParams.get('plan') as Plan) || currentUser?.plan);
+  const [duration, setDuration] = useState<Duration>((searchParams.get('duration') as Duration) || "12");
+
+  const [isReadyToPay, setIsReadyToPay] = useState(false);
+
 
   useEffect(() => {
-    const savedCurrency = localStorage.getItem("selectedCurrency");
-    if (savedCurrency && ["usd", "eur", "gbp"].includes(savedCurrency)) {
-      setCurrency(savedCurrency as Currency);
+    // If it's a new user flow, set the state from URL params
+    if (searchParams.get('new_user') === 'true') {
+        const planFromUrl = searchParams.get('plan') as Plan;
+        const currencyFromUrl = searchParams.get('currency') as Currency;
+        const durationFromUrl = searchParams.get('duration') as Duration;
+        if(planFromUrl) setNewPlan(planFromUrl);
+        if(currencyFromUrl) setCurrency(currencyFromUrl);
+        if(durationFromUrl) setDuration(durationFromUrl);
+        setIsReadyToPay(true);
     }
-  }, []);
+  }, [searchParams]);
+
+  useEffect(() => {
+    // This effect triggers the checkout for a new user once everything is loaded
+    if (isReadyToPay && currentUser) {
+        handlePayment();
+        setIsReadyToPay(false); // Prevent re-triggering
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isReadyToPay, currentUser]);
+
+
+  const handlePayment = useCallback(() => {
+      if (!currentUser || !newPlan || newPlan === 'starter' || newPlan === 'custom') {
+          toast({ variant: "destructive", title: "Cannot process payment", description: "Invalid user or plan selected." });
+          return;
+      }
+      
+      const priceId = getStripePriceId(newPlan, duration, currency);
+      if (!priceId) {
+          toast({ variant: "destructive", title: "Checkout Error", description: `Price ID for plan ${newPlan} could not be found.` });
+          return;
+      }
+
+      const isNewUser = searchParams.get('new_user') === 'true';
+
+      const paymentLink = `https://buy.stripe.com/${priceId}`;
+      const finalUrl = `${paymentLink}?client_reference_id=${currentUser.id}&prefilled_email=${currentUser.email}${isNewUser ? '&metadata[isNewUser]=true' : ''}`;
+      
+      window.location.href = finalUrl;
+  }, [currentUser, newPlan, duration, currency, searchParams]);
 
   if (!currentUser || !currentUser.plan) {
     return (
@@ -176,11 +223,6 @@ function BillingPageContent() {
     }
     return null;
   };
-
-  const paymentLink =
-    newPlan && stripePayLinks[newPlan]?.[currency]
-      ? stripePayLinks[newPlan][currency]
-      : "#";
 
   const copyToClipboard = () => {
     if (promoCode) {
@@ -322,18 +364,16 @@ function BillingPageContent() {
 
               <div className="flex gap-2 items-center">
                 <Button
-                  asChild
+                  onClick={handlePayment}
                   disabled={
                     !newPlan || newPlan === currentUser.plan || !selectedTier
                   }
                 >
-                  <Link href={paymentLink} target="_blank">
-                    {newPlan === currentUser.plan
-                      ? "Current Plan"
-                      : newPlan
-                      ? `Update to ${selectedTier?.name}`
-                      : "Select a Plan"}
-                  </Link>
+                  {newPlan === currentUser.plan
+                    ? "Current Plan"
+                    : newPlan
+                    ? `Update to ${selectedTier?.name}`
+                    : "Select a Plan"}
                 </Button>
               </div>
 

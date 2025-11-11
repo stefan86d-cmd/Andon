@@ -22,9 +22,9 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
   const publicPages = ['/', '/pricing', '/about', '/services', '/support', '/terms'];
   const isPublicPage = publicPages.some(page => pathname === '/' || (page !== '/' && pathname.startsWith(page)));
   
-  const unauthedFlowPages = ['/complete-profile', '/checkout', '/checkout/success'];
+  // Adjusted to include billing page for new users
+  const unauthedFlowPages = ['/complete-profile', '/checkout'];
   const isUnauthedFlowPage = unauthedFlowPages.some(page => pathname.startsWith(page));
-
 
   useEffect(() => {
     if (loading) {
@@ -45,7 +45,13 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
            router.replace(`/complete-profile?plan=${plan}`);
         }
         return; // Stop further checks until profile is complete
-      } 
+      }
+
+      // Allow a newly registered user (with role but no subscription) to access the billing page
+      const isNewUserOnBilling = searchParams.get('new_user') === 'true' && pathname.startsWith('/settings/billing');
+      if(isNewUserOnBilling) {
+        return;
+      }
 
       // If the user is an operator, ensure they are always on the line-status page.
       if (currentUser.role === 'operator' && pathname !== '/line-status') {
@@ -85,9 +91,11 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
       </div>
     );
   }
+  
+  const isNewUserOnBilling = searchParams.get('new_user') === 'true' && pathname.startsWith('/settings/billing');
 
   // Determine if the main app header should be shown.
-  const showHeader = currentUser && currentUser.role && !isAuthPage && !isPublicPage && !isUnauthedFlowPage;
+  const showHeader = currentUser && currentUser.role && !isAuthPage && !isPublicPage && !isUnauthedFlowPage && !isNewUserOnBilling;
 
   if (showHeader) {
     return (
@@ -100,7 +108,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // For public pages or auth pages, just render the content.
+  // For public pages, auth pages, or the new user billing flow, just render the content.
   return <>{children}</>;
 }
 

@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { Suspense, useState, useEffect, useTransition } from 'react';
+import React, { Suspense, useEffect, useTransition } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -13,7 +13,6 @@ import {
   CardHeader,
   CardTitle,
   CardFooter,
-  CardDescription
 } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -37,10 +36,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { priceIdToPlan } from '@/lib/stripe-prices';
-
-type Duration = "1" | "12" | "24" | "48";
-type Currency = "usd" | "eur" | "gbp";
 
 const profileFormSchema = z.object({
   firstName: z.string().min(1, "First name is required."),
@@ -54,20 +49,6 @@ const profileFormSchema = z.object({
 
 type ProfileFormValues = z.infer<typeof profileFormSchema>;
 
-function getStripePriceId(planId: Plan, duration: Duration, currency: Currency) {
-    if (planId === 'starter' || planId === 'custom') return null;
-
-    const planUpper = planId.toUpperCase();
-    const currencyUpper = currency.toUpperCase();
-    
-    // The duration '1' corresponds to monthly billing which doesn't have a number in the env var name.
-    const durationString = duration === '1' ? '1' : `_${duration}`;
-
-    const envVarName = `NEXT_PUBLIC_STRIPE_PRICE_ID_${planUpper}${durationString}_${currencyUpper}`;
-    
-    return (process.env as any)[envVarName];
-}
-
 function CompleteProfileContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -77,8 +58,8 @@ function CompleteProfileContent() {
   const [isCancelling, startCancellationTransition] = useTransition();
 
   const plan = searchParams.get('plan') as Plan || 'starter';
-  const duration = (searchParams.get('duration') || '1') as Duration;
-  const currency = (searchParams.get('currency') || 'usd') as Currency;
+  const duration = searchParams.get('duration') || '1';
+  const currency = searchParams.get('currency') || 'usd';
   const isStarterPlan = plan === 'starter';
 
   const form = useForm<ProfileFormValues>({
@@ -126,7 +107,7 @@ function CompleteProfileContent() {
         country: data.country,
         phone: data.phone,
         orgId: currentUser.id,
-        plan: 'starter' as Plan, // ALWAYS start on starter, upgrade via webhook
+        plan: isStarterPlan ? 'starter' : plan, // Set final plan for starter, or temp for paid
       };
 
       await updateCurrentUser(userProfileData);
@@ -159,21 +140,12 @@ function CompleteProfileContent() {
         });
         router.push(`/dashboard`);
       } else {
-        const priceId = getStripePriceId(plan, duration, currency);
-
-        if (!priceId) {
-             toast({ variant: "destructive", title: "Checkout Error", description: `Price ID for ${plan} (${duration}mo, ${currency}) not found.` });
-             return;
-        }
-
-        const paymentLink = `https://buy.stripe.com/${priceId}`;
-
-        const finalUrl = `${paymentLink}?client_reference_id=${currentUser.id}&prefilled_email=${currentUser.email}&metadata[isNewUser]=true`;
-        router.push(finalUrl);
+        // Redirect to the in-app billing page to complete payment
+        const billingUrl = `/settings/billing?plan=${plan}&duration=${duration}&currency=${currency}&new_user=true`;
+        router.push(billingUrl);
       }
     });
   };
-  
 
   const handleCancelRegistration = () => {
     if (!currentUser) return;
