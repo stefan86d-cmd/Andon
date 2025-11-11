@@ -178,7 +178,17 @@ function CheckoutPageContent() {
             <Button asChild className="w-full">
               <Link href={registrationHref}>Proceed to Registration</Link>
             </Button>
-
+            <div className="text-xs text-muted-foreground mt-3 text-center min-h-[36px]">
+              {duration !== '1' ? (
+                  <>
+                      Renews at {currencySymbols[currency]}{originalPrice.toFixed(2)}/month after {duration} months.
+                      <br/>
+                      Promotional pricing applies to the initial term only.
+                  </>
+              ) : (
+                  "Billed monthly. Cancel anytime."
+              )}
+            </div>
             <p className="text-xs text-muted-foreground text-center">
               Already have an account?{' '}
               <Link href={loginHref} className="underline">

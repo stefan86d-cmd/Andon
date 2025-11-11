@@ -96,7 +96,7 @@ function BillingPageContent() {
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   
   const initialPlan = searchParams.get('plan') as Plan | undefined;
-  const initialCurrency = (searchParams.get('currency') as Currency) || 'usd';
+  const initialCurrency = (searchParams.get('currency') as Currency) || 'eur';
   const initialDuration = (searchParams.get('duration') as Duration) || '1';
 
   const [currency, setCurrency] = useState<Currency>(initialCurrency);
@@ -352,6 +352,17 @@ function BillingPageContent() {
                         </li>
                       ))}
                   </ul>
+                  <div className="text-xs text-muted-foreground mt-4 text-center min-h-[36px] border-t pt-4">
+                    {duration !== '1' ? (
+                        <>
+                            Renews at {currencySymbols[currency]}{originalPrice.toFixed(2)}/month after {duration} months.
+                            <br/>
+                            Promotional pricing applies to the initial term only.
+                        </>
+                    ) : (
+                        "Billed monthly. Cancel anytime."
+                    )}
+                  </div>
                 </div>
               )}
 
