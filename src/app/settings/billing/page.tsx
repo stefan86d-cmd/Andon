@@ -107,23 +107,24 @@ function BillingPageContent() {
     const durationParam = searchParams.get('duration') as Duration | null;
 
     // Prefer URL params first, then user’s plan if available
-    if (planParam && planParam !== newPlan) {
+    if (planParam) {
       setNewPlan(planParam);
-    } else if (!planParam && currentUser?.plan && currentUser.plan !== newPlan) {
+    } else if (currentUser?.plan) {
       setNewPlan(currentUser.plan);
     }
 
-    if (currencyParam && currencyParam !== currency) {
+    if (currencyParam) {
       setCurrency(currencyParam);
     }
 
-    if (durationParam && durationParam !== duration) {
+    if (durationParam) {
       setDuration(durationParam);
     }
-  }, [searchParams, currentUser, newPlan, currency, duration]);
+  }, [searchParams, currentUser]);
   
   const isNewUserFlow = searchParams.has('new_user');
   const isStarterPlan = currentUser?.plan === "starter";
+  const isPaidPlan = currentUser?.plan && ['standard', 'pro', 'enterprise'].includes(currentUser.plan);
   const showDurationSelector = isNewUserFlow || isStarterPlan;
 
   useEffect(() => {
@@ -145,12 +146,15 @@ function BillingPageContent() {
       return;
     }
 
+    // For existing paid users, force duration to 1 month.
+    const finalDuration = isPaidPlan ? '1' : duration;
+
     startSessionLoadingTransition(async () => {
       const result = await createCheckoutSession(
         currentUser.id,
         currentUser.email,
         newPlan as Exclude<Plan, 'starter' | 'custom'>,
-        duration,
+        finalDuration,
         currency
       );
       if (result.success && result.clientSecret) {
@@ -159,7 +163,7 @@ function BillingPageContent() {
         toast({ variant: "destructive", title: "Checkout Error", description: result.error || "Could not create checkout session." });
       }
     });
-  }, [currentUser, newPlan, duration, currency]);
+  }, [currentUser, newPlan, duration, currency, isPaidPlan]);
 
   if (!currentUser || !currentUser.plan) {
     return (
@@ -204,10 +208,11 @@ function BillingPageContent() {
   };
 
   const selectedTier = newPlan && newPlan !== 'starter' && newPlan !== 'custom' ? tiers[newPlan] : null;
-  const currentPrice = selectedTier ? selectedTier.prices[duration]?.[currency] ?? 0 : 0;
+  const finalDuration = isPaidPlan ? '1' : duration;
+  const currentPrice = selectedTier ? selectedTier.prices[finalDuration]?.[currency] ?? 0 : 0;
   const originalPrice = selectedTier ? selectedTier.prices["1"]?.[currency] ?? 0 : 0;
-  const showDiscount = duration !== "1" && currentPrice < originalPrice;
-  const totalSavings = showDiscount ? (originalPrice - currentPrice) * parseInt(duration) : 0;
+  const showDiscount = finalDuration !== "1" && currentPrice < originalPrice;
+  const totalSavings = showDiscount ? (originalPrice - currentPrice) * parseInt(finalDuration) : 0;
   
   const getButtonText = () => {
     if (isSessionLoading) return "Processing...";
@@ -335,11 +340,11 @@ function BillingPageContent() {
                       <h3 className="font-semibold">{selectedTier.name} Plan</h3>
                       <p className="text-sm text-muted-foreground">
                         Billed monthly
-                        {duration !== '1' && `, for ${duration} months`}
+                        {finalDuration !== '1' && `, for ${finalDuration} months`}
                       </p>
-                       {duration === '12' && <Badge variant="secondary" className="mt-2 bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~20%</Badge>}
-                        {duration === '24' && <Badge variant="secondary" className="mt-2 bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~30%</Badge>}
-                        {duration === '48' && <Badge variant="secondary" className="mt-2 bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~40%</Badge>}
+                       {finalDuration === '12' && <Badge variant="secondary" className="mt-2 bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~20%</Badge>}
+                        {finalDuration === '24' && <Badge variant="secondary" className="mt-2 bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~30%</Badge>}
+                        {finalDuration === '48' && <Badge variant="secondary" className="mt-2 bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~40%</Badge>}
                     </div>
                     <div className="text-right">
                       <div className="flex items-center justify-end gap-2">
@@ -357,7 +362,7 @@ function BillingPageContent() {
                   </div>
                    {showDiscount && (
                         <div className="text-right mt-1 text-xs font-semibold text-green-600">
-                            Save {currencySymbols[currency]}{totalSavings.toFixed(2)} over {duration} months
+                            Save {currencySymbols[currency]}{totalSavings.toFixed(2)} over {finalDuration} months
                         </div>
                     )}
                    <ul className="space-y-2 mt-4 pt-4 border-t">
@@ -372,9 +377,9 @@ function BillingPageContent() {
                       ))}
                   </ul>
                   <div className="text-xs text-muted-foreground mt-4 text-center min-h-[36px] border-t pt-4">
-                    {duration !== '1' ? (
+                    {finalDuration !== '1' ? (
                         <>
-                            Renews at {currencySymbols[currency]}{originalPrice.toFixed(2)}/month after {duration} months.
+                            Renews at {currencySymbols[currency]}{originalPrice.toFixed(2)}/month after {finalDuration} months.
                             <br/>
                             Promotional pricing applies to the initial term only.
                         </>
@@ -389,7 +394,7 @@ function BillingPageContent() {
                 <Button
                   onClick={handleGetSession}
                   disabled={
-                    !newPlan || newPlan === currentUser.plan || isSessionLoading
+                    !newPlan || newPlan === 'starter' || newPlan === currentUser.plan || isSessionLoading
                   }
                 >
                    {isSessionLoading && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
