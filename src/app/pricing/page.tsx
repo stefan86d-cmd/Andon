@@ -352,7 +352,7 @@ function PricingPageContent() {
                   </SelectContent>
                 </Select>
                  {showDurationSelector && savingsBadge && (
-                    <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">
+                    <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80 px-3 py-1 text-sm">
                         {savingsBadge}
                     </Badge>
                 )}
@@ -394,7 +394,7 @@ function PricingPageContent() {
                 const isProBestValue = tier.id === "pro";
 
                 return (
-                  <div key={tier.id} className="relative">
+                  <div key={tier.id} className="relative z-10">
                     <Card
                       className={cn(
                         "flex flex-col h-full relative overflow-hidden transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-2",
