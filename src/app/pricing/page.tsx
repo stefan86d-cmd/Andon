@@ -317,7 +317,7 @@ function PricingPageContent() {
       </header>
 
       <main className="flex-1">
-        <section className="py-20 text-center bg-primary/10">
+        <section className="py-20 text-center bg-muted">
           <div className="container">
               <h1 className="text-4xl md:text-5xl font-bold">
                 Pricing
@@ -573,5 +573,3 @@ export default function PricingPage() {
         </React.Suspense>
     );
 }
-
-    
