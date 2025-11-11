@@ -10,7 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { CheckCircle, Globe, Menu, Shield, Headset, BadgeCheck } from "lucide-react";
+import { CheckCircle, Globe, Menu, Shield, Headset, BadgeCheck, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { Logo } from "@/components/layout/logo";
 import { cn } from "@/lib/utils";
@@ -209,6 +209,13 @@ function PricingPageContent() {
   };
   
   const showDurationSelector = !currentUser || currentUser.plan === 'starter';
+  
+  const customTier = {
+    name: "Custom",
+    id: "custom",
+    description: "For unique requirements and unlimited scale, our Custom plan offers dedicated support, custom integrations, and more. Contact us to design a plan that fits your exact needs.",
+    cta: "Contact Sales"
+  }
 
 
   return (
@@ -493,6 +500,23 @@ function PricingPageContent() {
                   </div>
                 );
               })}
+            </div>
+             <div className="mt-20">
+                <Card className="bg-muted/50">
+                    <div className="grid md:grid-cols-3 items-center">
+                        <div className="p-8 md:col-span-2">
+                            <h2 className="text-2xl font-bold">{customTier.name}</h2>
+                            <p className="text-muted-foreground mt-2">
+                                {customTier.description}
+                            </p>
+                        </div>
+                        <div className="p-8 text-center md:text-right border-t md:border-t-0 md:border-l">
+                            <Link href="/support/contact" className={cn(buttonVariants({ size: 'lg' }))}>
+                                {customTier.cta} <ArrowRight className="ml-2 h-5 w-5" />
+                            </Link>
+                        </div>
+                    </div>
+                </Card>
             </div>
           </div>
         </section>
