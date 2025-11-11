@@ -154,7 +154,12 @@ function RegisterContent() {
       </Card>
 
       <footer className="mt-8 text-center text-sm text-muted-foreground">
-        © {year} AndonPro. All rights reserved.
+        <p>© {year} AndonPro. All rights reserved.</p>
+         <p className="mt-2">
+            <Link href="/" className="underline">
+              Back to Home
+            </Link>
+        </p>
       </footer>
     </div>
   );
@@ -171,5 +176,3 @@ export default function RegisterPage() {
     </Suspense>
   );
 }
-
-    
