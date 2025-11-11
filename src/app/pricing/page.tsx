@@ -405,7 +405,7 @@ function PricingPageContent() {
                     )}
                     <Card
                       className={cn(
-                        "flex flex-col h-full relative overflow-hidden bg-card",
+                        "flex flex-col h-full relative overflow-hidden bg-card transition-all duration-300 ease-in-out hover:-translate-y-2 hover:shadow-xl",
                         tier.popular &&
                           (isProBestValue
                             ? "border-destructive shadow-lg"
