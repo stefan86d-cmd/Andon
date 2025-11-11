@@ -478,16 +478,19 @@ function PricingPageContent() {
                         >
                           {currentUser && currentUser.plan === tier.id ? 'Current Plan' : (isStarter && currentUser ? 'Go to Dashboard' : tier.cta)}
                         </Link>
-                         {!isStarter && duration !== '1' && showDurationSelector && (
-                            <p className="text-xs text-green-600 font-semibold mt-3 text-center">
-                                Save {currencySymbols[currency]}{totalSavings.toFixed(2)} over {duration} months
-                            </p>
-                        )}
-                        {isStarter && (
-                          <p className="text-xs text-muted-foreground mt-3 text-center h-[18px]">
-                            No credit card required.
-                          </p>
-                        )}
+                         <div className="text-xs text-muted-foreground mt-3 text-center min-h-[36px]">
+                            {!isStarter && duration !== '1' && showDurationSelector ? (
+                                <>
+                                    Renews at {currencySymbols[currency]}{formatPrice(priceInfo.fullPrice, currency)}/month after {duration} months.
+                                    <br/>
+                                    Promotional pricing applies to the initial term only.
+                                </>
+                            ) : isStarter ? (
+                                "No credit card required."
+                            ) : (
+                                "Billed monthly. Cancel anytime."
+                            )}
+                        </div>
                       </CardFooter>
                     </Card>
                   </div>
