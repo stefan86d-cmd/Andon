@@ -217,6 +217,13 @@ function PricingPageContent() {
     cta: "Contact Sales"
   }
 
+  const savingsBadge = (() => {
+    if (duration === '12') return "Save ~20%";
+    if (duration === '24') return "Save ~30%";
+    if (duration === '48') return "Save ~40%";
+    return null;
+  })();
+
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
@@ -344,6 +351,11 @@ function PricingPageContent() {
                     <SelectItem value="gbp">GBP</SelectItem>
                   </SelectContent>
                 </Select>
+                 {showDurationSelector && savingsBadge && (
+                    <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">
+                        {savingsBadge}
+                    </Badge>
+                )}
               </div>
           </div>
         </section>
@@ -381,18 +393,11 @@ function PricingPageContent() {
 
                 const isProBestValue = tier.id === "pro";
 
-                const savingsBadge = (() => {
-                    if (actualDuration === '12') return "Save 20%";
-                    if (actualDuration === '24') return "Save 30%";
-                    if (actualDuration === '48') return "Save 40%";
-                    return null;
-                })();
-
                 return (
                   <div key={tier.id} className="relative">
                     <Card
                       className={cn(
-                        "flex flex-col h-full relative overflow-hidden transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-2 z-10",
+                        "flex flex-col h-full relative overflow-hidden transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-2",
                         tier.popular &&
                           (isProBestValue
                             ? "border-destructive shadow-lg"
@@ -414,11 +419,7 @@ function PricingPageContent() {
                           </div>
                         )}
                         <div className="relative">
-                           {showDurationSelector && savingsBadge && (
-                                <Badge variant="secondary" className="absolute top-2 right-2 z-20 bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">
-                                    {savingsBadge}
-                                </Badge>
-                            )}
+                           
                            <CardHeader className="text-center">
                             <CardTitle className={cn("text-2xl", !tier.badge && "pt-8")}>
                               {tier.name}
@@ -497,7 +498,7 @@ function PricingPageContent() {
                 );
               })}
             </div>
-             <div className="mt-20">
+            <div className="mt-20">
                 <Card className="bg-muted/50">
                     <div className="grid md:grid-cols-3 items-center">
                         <div className="p-8 md:col-span-2">
