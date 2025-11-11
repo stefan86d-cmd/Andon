@@ -49,25 +49,20 @@ function BillingPageContent() {
   const [currency, setCurrency] = useState<Currency>((searchParams.get('currency') as Currency) || "usd");
   const [newPlan, setNewPlan] = useState<Plan | undefined>((searchParams.get('plan') as Plan) || undefined);
   const [duration, setDuration] = useState<Duration>((searchParams.get('duration') as Duration) || "1");
-
+  
   useEffect(() => {
-    // If it's a new user flow, automatically trigger session creation
-    if (searchParams.get('new_user') === 'true' && currentUser) {
-      if (newPlan && newPlan !== 'starter' && newPlan !== 'custom') {
-        handleGetSession();
-      }
-    }
-    // If it's a payment success, refresh user and clear params
     if (searchParams.get('payment_success') === 'true') {
         toast({
             title: "Payment Successful!",
             description: "Your subscription has been activated.",
         });
         refreshCurrentUser();
+        // Clean the URL of query params
         window.history.replaceState(null, '', '/settings/billing');
     }
+  // We only want this to run once on mount when the payment_success param is present
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentUser]);
+  }, []);
 
   const handleGetSession = useCallback(() => {
     if (!currentUser || !newPlan || newPlan === 'starter' || newPlan === 'custom') {
