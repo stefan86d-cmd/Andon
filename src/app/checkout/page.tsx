@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { Suspense, useState } from "react";
@@ -15,13 +16,42 @@ import {
 import { LoaderCircle } from "lucide-react";
 import { Logo } from "@/components/layout/logo";
 import { toast } from "@/hooks/use-toast";
-import type { Currency } from "@/lib/types";
-import { useUser } from "@/contexts/user-context"; // Use your custom user context
+import type { Currency, Plan } from "@/lib/types";
+import { useUser } from "@/contexts/user-context";
+
+type Duration = "1" | "12" | "24" | "48";
 
 const tiers = [
-  { name: "Standard", id: "standard", price: { usd: 29, eur: 27, gbp: 24 } },
-  { name: "Pro", id: "pro", price: { usd: 59, eur: 54, gbp: 48 } },
-  { name: "Enterprise", id: "enterprise", price: { usd: 99, eur: 92, gbp: 82 } },
+  {
+    name: "Standard",
+    id: "standard",
+    prices: {
+      "1": { usd: 39.99, eur: 36.99, gbp: 32.99 },
+      "12": { usd: 31.99, eur: 29.59, gbp: 26.39 },
+      "24": { usd: 27.99, eur: 25.89, gbp: 23.09 },
+      "48": { usd: 23.99, eur: 22.19, gbp: 19.79 },
+    },
+  },
+  {
+    name: "Pro",
+    id: "pro",
+    prices: {
+      "1": { usd: 59.99, eur: 54.99, gbp: 49.99 },
+      "12": { usd: 47.99, eur: 43.99, gbp: 39.99 },
+      "24": { usd: 41.99, eur: 38.49, gbp: 34.99 },
+      "48": { usd: 35.99, eur: 32.99, gbp: 29.99 },
+    },
+  },
+  {
+    name: "Enterprise",
+    id: "enterprise",
+    prices: {
+      "1": { usd: 149.99, eur: 139.99, gbp: 124.99 },
+      "12": { usd: 119.99, eur: 111.99, gbp: 99.99 },
+      "24": { usd: 104.99, eur: 97.99, gbp: 87.49 },
+      "48": { usd: 89.99, eur: 83.99, gbp: 74.99 },
+    },
+  },
 ];
 
 const currencySymbols: Record<Currency, string> = {
@@ -33,11 +63,12 @@ const currencySymbols: Record<Currency, string> = {
 function CheckoutPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { currentUser } = useUser(); // your user context
+  const { currentUser } = useUser();
   const [loading, setLoading] = useState(false);
 
-  const planId = searchParams.get("plan") as string;
+  const planId = searchParams.get("plan") as Plan;
   const currency = (searchParams.get("currency") || "usd") as Currency;
+  const duration = (searchParams.get("duration") || "1") as Duration;
   const tier = tiers.find((t) => t.id === planId);
 
   if (!tier) {
@@ -54,8 +85,8 @@ function CheckoutPageContent() {
     );
   }
 
-  const price = tier.price[currency] ?? 0;
-  const registrationHref = `/register?plan=${planId}&currency=${currency}`;
+  const price = tier.prices[duration]?.[currency] ?? 0;
+  const registrationHref = `/register?plan=${planId}&duration=${duration}&currency=${currency}`;
 
   const handleStripeCheckout = async () => {
     if (!currentUser) {
@@ -63,38 +94,15 @@ function CheckoutPageContent() {
         title: "Please sign in first",
         description: "You need an account to subscribe.",
       });
-      router.push(`/login?redirect=/checkout?plan=${planId}&currency=${currency}`);
+      router.push(`/login?redirect=/checkout?plan=${planId}&duration=${duration}&currency=${currency}`);
       return;
     }
 
-    setLoading(true);
-    try {
-      const res = await fetch("/api/create-checkout-link", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: currentUser.id, // ✅ use `id` from your context
-          plan: planId,
-          currency,
-        }),
-      });
-
-      const data = await res.json();
-      if (data.url) {
-        window.location.href = data.url;
-      } else {
-        throw new Error(data.error || "Failed to create Stripe checkout link.");
-      }
-    } catch (err: any) {
-      console.error("Stripe Checkout Error:", err);
-      toast({
-        title: "Checkout error",
-        description: err.message,
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
+    // Logic for existing users to pay is not implemented here as they go through billing page
+    // This is primarily for the new user registration flow continuation.
+    // However, if an existing user lands here, we should redirect them to the registration flow
+    // which handles both new and existing users for payment.
+    router.push(registrationHref);
   };
 
   return (
@@ -117,7 +125,7 @@ function CheckoutPageContent() {
             <div className="flex justify-between items-center p-4 border rounded-lg">
               <div>
                 <h3 className="font-semibold">{tier.name} Plan</h3>
-                <p className="text-sm text-muted-foreground">Monthly</p>
+                <p className="text-sm text-muted-foreground">Billed monthly</p>
               </div>
               <div className="text-right">
                 <p className="text-xl font-bold">
@@ -147,7 +155,7 @@ function CheckoutPageContent() {
               {loading ? (
                 <LoaderCircle className="w-4 h-4 animate-spin" />
               ) : (
-                "Pay with Stripe"
+                "Continue with Existing Account"
               )}
             </Button>
           </CardFooter>
