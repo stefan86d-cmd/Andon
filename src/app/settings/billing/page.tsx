@@ -3,7 +3,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from "@/components/ui/card";
-import { LoaderCircle, Globe } from "lucide-react";
+import { LoaderCircle, Globe, CheckCircle } from "lucide-react";
 import { useUser } from "@/contexts/user-context";
 import { useState, useEffect, useTransition, Suspense, useCallback } from "react";
 import Link from "next/link";
@@ -36,6 +36,13 @@ const tiers: Record<Exclude<Plan, "custom" | "starter">, any> = {
       "24": { usd: 27.99, eur: 25.89, gbp: 23.09 },
       "48": { usd: 23.99, eur: 22.19, gbp: 19.79 },
     },
+    features: [
+      "Up to 80 users",
+      "Up to 5 Production Lines",
+      "Up to 10 workstations per line",
+      "Advanced Reporting & Analytics",
+      "User Role Management",
+    ],
   },
   pro: {
     name: "Pro",
@@ -45,6 +52,14 @@ const tiers: Record<Exclude<Plan, "custom" | "starter">, any> = {
       "24": { usd: 41.99, eur: 38.49, gbp: 34.99 },
       "48": { usd: 35.99, eur: 32.99, gbp: 29.99 },
     },
+    features: [
+      "Up to 150 users",
+      "Up to 10 Production Lines",
+      "Up to 15 workstations per line",
+      "Advanced Reporting & Analytics",
+      "User Role Management",
+      "Priority Support",
+    ],
   },
   enterprise: {
     name: "Enterprise",
@@ -54,6 +69,14 @@ const tiers: Record<Exclude<Plan, "custom" | "starter">, any> = {
       "24": { usd: 104.99, eur: 97.99, gbp: 87.49 },
       "48": { usd: 89.99, eur: 83.99, gbp: 74.99 },
     },
+    features: [
+      "Up to 400 users",
+      "20 Production Lines",
+      "Up to 20 workstations per line",
+      "User Role Management",
+      "Advanced Reporting & Analytics",
+      "24/7 Priority Support",
+    ],
   },
 };
 
@@ -72,7 +95,6 @@ function BillingPageContent() {
   const [isSessionLoading, startSessionLoadingTransition] = useTransition();
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   
-  // Get initial values from URL, with fallback for existing users
   const initialPlan = searchParams.get('plan') as Plan | undefined;
   const initialCurrency = (searchParams.get('currency') as Currency) || 'usd';
   const initialDuration = (searchParams.get('duration') as Duration) || '1';
@@ -88,10 +110,8 @@ function BillingPageContent() {
             description: "Your subscription has been activated.",
         });
         refreshCurrentUser();
-        // Clean the URL of query params
         window.history.replaceState(null, '', '/settings/billing');
     }
-  // We only want this to run once on mount when the payment_success param is present
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -169,7 +189,7 @@ function BillingPageContent() {
   const showDiscount = duration !== "1" && currentPrice < originalPrice;
   
   const getButtonText = () => {
-    if (isSessionLoading) return <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />;
+    if (isSessionLoading) return "Processing...";
     
     if (isNewUserFlow) {
         return newPlan ? "Complete Payment" : "Select a Plan";
@@ -286,30 +306,43 @@ function BillingPageContent() {
               </div>
               
               {selectedTier && (
-                <div className="flex justify-between items-center p-4 border rounded-lg bg-background">
-                  <div>
-                    <h3 className="font-semibold">{selectedTier.name} Plan</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Billed monthly
-                      {duration !== '1' && `, for ${duration} months`}
-                    </p>
-                    {duration === '12' && <Badge variant="secondary" className="mt-2 bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~20%</Badge>}
-                    {duration === '24' && <Badge variant="secondary" className="mt-2 bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~30%</Badge>}
-                    {duration === '48' && <Badge variant="secondary" className="mt-2 bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~40%</Badge>}
-                  </div>
-                  <div className="text-right">
-                    <div className="flex items-center justify-end gap-2">
-                        {showDiscount && (
-                            <span className="text-muted-foreground line-through">
-                                {currencySymbols[currency]}{originalPrice.toFixed(2)}
-                            </span>
-                        )}
-                        <p className="text-xl font-bold">
-                            {currencySymbols[currency]}{currentPrice.toFixed(2)}
-                        </p>
+                <div className="p-4 border rounded-lg bg-background/50">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h3 className="font-semibold">{selectedTier.name} Plan</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Billed monthly
+                        {duration !== '1' && `, for ${duration} months`}
+                      </p>
+                       {duration === '12' && <Badge variant="secondary" className="mt-2 bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~20%</Badge>}
+                        {duration === '24' && <Badge variant="secondary" className="mt-2 bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~30%</Badge>}
+                        {duration === '48' && <Badge variant="secondary" className="mt-2 bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~40%</Badge>}
                     </div>
-                    <p className="text-sm text-muted-foreground">/ month</p>
+                    <div className="text-right">
+                      <div className="flex items-center justify-end gap-2">
+                          {showDiscount && (
+                              <span className="text-muted-foreground line-through">
+                                  {currencySymbols[currency]}{originalPrice.toFixed(2)}
+                              </span>
+                          )}
+                          <p className="text-xl font-bold">
+                              {currencySymbols[currency]}{currentPrice.toFixed(2)}
+                          </p>
+                      </div>
+                      <p className="text-sm text-muted-foreground">/ month</p>
+                    </div>
                   </div>
+                   <ul className="space-y-2 mt-4 pt-4 border-t">
+                      {selectedTier.features.map((feature: string) => (
+                        <li
+                          key={feature}
+                          className="flex items-center text-sm text-muted-foreground"
+                        >
+                          <CheckCircle className="h-4 w-4 mr-2 text-green-500" />
+                          <span>{feature}</span>
+                        </li>
+                      ))}
+                  </ul>
                 </div>
               )}
 

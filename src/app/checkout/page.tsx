@@ -13,7 +13,7 @@ import {
   CardTitle,
   CardFooter,
 } from "@/components/ui/card";
-import { LoaderCircle } from "lucide-react";
+import { LoaderCircle, CheckCircle } from "lucide-react";
 import { Logo } from "@/components/layout/logo";
 import type { Currency, Plan } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
@@ -30,6 +30,13 @@ const tiers = [
       "24": { usd: 27.99, eur: 25.89, gbp: 23.09 },
       "48": { usd: 23.99, eur: 22.19, gbp: 19.79 },
     },
+    features: [
+      "Up to 80 users",
+      "Up to 5 Production Lines",
+      "Up to 10 workstations per line",
+      "Advanced Reporting & Analytics",
+      "User Role Management",
+    ],
   },
   {
     name: "Pro",
@@ -40,6 +47,14 @@ const tiers = [
       "24": { usd: 41.99, eur: 38.49, gbp: 34.99 },
       "48": { usd: 35.99, eur: 32.99, gbp: 29.99 },
     },
+     features: [
+      "Up to 150 users",
+      "Up to 10 Production Lines",
+      "Up to 15 workstations per line",
+      "Advanced Reporting & Analytics",
+      "User Role Management",
+      "Priority Support",
+    ],
   },
   {
     name: "Enterprise",
@@ -50,6 +65,14 @@ const tiers = [
       "24": { usd: 104.99, eur: 97.99, gbp: 87.49 },
       "48": { usd: 89.99, eur: 83.99, gbp: 74.99 },
     },
+    features: [
+      "Up to 400 users",
+      "20 Production Lines",
+      "Up to 20 workstations per line",
+      "User Role Management",
+      "Advanced Reporting & Analytics",
+      "24/7 Priority Support",
+    ],
   },
 ];
 
@@ -105,30 +128,43 @@ function CheckoutPageContent() {
           </CardHeader>
 
           <CardContent className="space-y-6">
-            <div className="flex justify-between items-center p-4 border rounded-lg">
-              <div>
-                <h3 className="font-semibold">{tier.name} Plan</h3>
-                <p className="text-sm text-muted-foreground">
-                  Billed monthly
-                  {duration !== '1' && `, for ${duration} months`}
-                </p>
-                {duration === '12' && <Badge variant="secondary" className="mt-2 bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~20%</Badge>}
-                {duration === '24' && <Badge variant="secondary" className="mt-2 bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~30%</Badge>}
-                {duration === '48' && <Badge variant="secondary" className="mt-2 bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~40%</Badge>}
-              </div>
-              <div className="text-right">
-                <div className="flex items-center justify-end gap-2">
-                    {showDiscount && (
-                         <span className="text-muted-foreground line-through">
-                            {currencySymbols[currency]}{originalPrice.toFixed(2)}
-                         </span>
-                    )}
-                    <p className="text-xl font-bold">
-                        {currencySymbols[currency]}{currentPrice.toFixed(2)}
-                    </p>
+            <div className="p-4 border rounded-lg bg-background/50">
+              <div className="flex justify-between items-start">
+                <div>
+                  <h3 className="font-semibold">{tier.name} Plan</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Billed monthly
+                    {duration !== '1' && `, for ${duration} months`}
+                  </p>
+                  {duration === '12' && <Badge variant="secondary" className="mt-2 bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~20%</Badge>}
+                  {duration === '24' && <Badge variant="secondary" className="mt-2 bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~30%</Badge>}
+                  {duration === '48' && <Badge variant="secondary" className="mt-2 bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">Save ~40%</Badge>}
                 </div>
-                <p className="text-sm text-muted-foreground">/ month</p>
+                <div className="text-right">
+                  <div className="flex items-center justify-end gap-2">
+                      {showDiscount && (
+                           <span className="text-muted-foreground line-through">
+                              {currencySymbols[currency]}{originalPrice.toFixed(2)}
+                           </span>
+                      )}
+                      <p className="text-xl font-bold">
+                          {currencySymbols[currency]}{currentPrice.toFixed(2)}
+                      </p>
+                  </div>
+                  <p className="text-sm text-muted-foreground">/ month</p>
+                </div>
               </div>
+              <ul className="space-y-2 mt-4 pt-4 border-t">
+                  {tier.features.map((feature) => (
+                    <li
+                      key={feature}
+                      className="flex items-center text-sm text-muted-foreground"
+                    >
+                      <CheckCircle className="h-4 w-4 mr-2 text-green-500" />
+                      <span>{feature}</span>
+                    </li>
+                  ))}
+              </ul>
             </div>
           </CardContent>
 
