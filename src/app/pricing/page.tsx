@@ -353,8 +353,9 @@ function PricingPageContent() {
 
                 const priceInfo = (() => {
                   if (isStarter || !('prices' in tier) || !tier.prices) return { price: 0, fullPrice: 0 };
-                  const price = tier.prices[actualDuration as keyof typeof tier.prices]?.[currency] ?? 0;
-                  const fullPrice = tier.prices["1" as keyof typeof tier.prices]?.[currency] ?? 0;
+                  const pricesForDuration = tier.prices as { [key in Duration]?: { [key in Currency]?: number } };
+                  const price = pricesForDuration[actualDuration as keyof typeof pricesForDuration]?.[currency] ?? 0;
+                  const fullPrice = pricesForDuration["1"]?.[currency] ?? 0;
                   return { price, fullPrice };
                 })();
 
@@ -366,7 +367,7 @@ function PricingPageContent() {
                     finalHref = "/settings/billing";
                   }
                 } else {
-                  finalHref = isStarter ? tier.href : checkoutHref;
+                  finalHref = isStarter ? (tier.href || '#') : checkoutHref;
                 }
 
                 const isProBestValue = tier.id === "pro";
@@ -545,3 +546,5 @@ export default function PricingPage() {
         </React.Suspense>
     );
 }
+
+    
