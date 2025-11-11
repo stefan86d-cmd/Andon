@@ -366,9 +366,6 @@ function PricingPageContent() {
                   const fullPrice = pricesForDuration["1"]?.[currency] ?? 0;
                   return { price, fullPrice };
                 })();
-                
-                const totalSavings = (priceInfo.fullPrice - priceInfo.price) * parseInt(actualDuration);
-
 
                 let finalHref: string;
                 if (currentUser) {
@@ -384,10 +381,10 @@ function PricingPageContent() {
                 const isProBestValue = tier.id === "pro";
 
                 return (
-                  <div key={tier.id} className="relative">
+                  <div key={tier.id} className="relative z-10">
                     <Card
                       className={cn(
-                        "flex flex-col h-full relative overflow-hidden bg-card transition-all duration-300 ease-in-out hover:-translate-y-2 hover:shadow-xl",
+                        "flex flex-col h-full relative overflow-hidden bg-card transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-2",
                         tier.popular &&
                           (isProBestValue
                             ? "border-destructive shadow-lg"
@@ -438,7 +435,7 @@ function PricingPageContent() {
                           {tier.features.map((feature) => (
                             <li
                               key={feature}
-                              className="flex items-center"
+                              className="flex items-center text-sm"
                             >
                                 <CheckCircle className="h-5 w-5 mr-2 text-green-500" />
                                 <span>{feature}</span>
@@ -561,5 +558,3 @@ export default function PricingPage() {
         </React.Suspense>
     );
 }
-
-    
