@@ -21,7 +21,7 @@ import { LoaderCircle } from 'lucide-react';
 import Link from 'next/link';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { countries } from '@/lib/countries';
-import type { Plan, Role } from '@/lib/types';
+import type { Plan, Role, Currency } from '@/lib/types';
 import { toast } from '@/hooks/use-toast';
 import { useUser } from '@/contexts/user-context';
 import { cancelRegistrationAndDeleteUser, sendWelcomeEmail } from '@/app/actions';
@@ -36,6 +36,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+
+type Duration = "1" | "12" | "24" | "48";
 
 const profileFormSchema = z.object({
   firstName: z.string().min(1, "First name is required."),
@@ -57,9 +59,9 @@ function CompleteProfileContent() {
   const [isSubmitting, startTransition] = useTransition();
   const [isCancelling, startCancellationTransition] = useTransition();
 
-  const plan = searchParams.get('plan') as Plan || 'starter';
-  const duration = searchParams.get('duration') || '1';
-  const currency = searchParams.get('currency') || 'usd';
+  const plan = (searchParams.get('plan') as Plan) || 'starter';
+  const duration = (searchParams.get('duration') as Duration) || '1';
+  const currency = (searchParams.get('currency') as Currency) || 'usd';
   const isStarterPlan = plan === 'starter';
 
   const form = useForm<ProfileFormValues>({
