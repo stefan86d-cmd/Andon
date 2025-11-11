@@ -346,7 +346,7 @@ function PricingPageContent() {
           </div>
         </section>
 
-        <section className="py-20 border-t bg-muted">
+        <section className="py-20 border-t bg-background">
           <div className="container">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
               {tiers.map((tier) => {
@@ -520,7 +520,7 @@ function PricingPageContent() {
             </div>
           </div>
         </section>
-        <section className="py-20 bg-background">
+        <section className="py-20 bg-muted">
             <div className="container">
                 <div className="text-center mb-12">
                     <h2 className="text-3xl font-bold">Our Guarantees</h2>
@@ -577,3 +577,5 @@ export default function PricingPage() {
         </React.Suspense>
     );
 }
+
+    
