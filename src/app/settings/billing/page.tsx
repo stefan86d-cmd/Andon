@@ -95,13 +95,32 @@ function BillingPageContent() {
   const [isSessionLoading, startSessionLoadingTransition] = useTransition();
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   
-  const initialPlan = (searchParams.get('plan') as Plan) || currentUser?.plan || 'starter';
-  const initialCurrency = (searchParams.get('currency') as Currency) || 'eur';
-  const initialDuration = (searchParams.get('duration') as Duration) || '1';
+  // Set safe defaults
+  const [currency, setCurrency] = useState<Currency>('eur');
+  const [newPlan, setNewPlan] = useState<Plan>('starter');
+  const [duration, setDuration] = useState<Duration>('1');
 
-  const [currency, setCurrency] = useState<Currency>(initialCurrency);
-  const [newPlan, setNewPlan] = useState<Plan>(initialPlan);
-  const [duration, setDuration] = useState<Duration>(initialDuration);
+  // Sync state from URL parameters or user data
+  useEffect(() => {
+    const planParam = searchParams.get('plan') as Plan | null;
+    const currencyParam = searchParams.get('currency') as Currency | null;
+    const durationParam = searchParams.get('duration') as Duration | null;
+
+    // Prefer URL params first, then user’s plan if available
+    if (planParam && planParam !== newPlan) {
+      setNewPlan(planParam);
+    } else if (!planParam && currentUser?.plan && currentUser.plan !== newPlan) {
+      setNewPlan(currentUser.plan);
+    }
+
+    if (currencyParam && currencyParam !== currency) {
+      setCurrency(currencyParam);
+    }
+
+    if (durationParam && durationParam !== duration) {
+      setDuration(durationParam);
+    }
+  }, [searchParams, currentUser, newPlan, currency, duration]);
   
   const isNewUserFlow = searchParams.has('new_user');
   const isStarterPlan = currentUser?.plan === "starter";
@@ -119,22 +138,6 @@ function BillingPageContent() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Keep state in sync with URL params if present
-  useEffect(() => {
-    const planParam = searchParams.get('plan') as Plan | null;
-    const currencyParam = searchParams.get('currency') as Currency | null;
-    const durationParam = searchParams.get('duration') as Duration | null;
-
-    if (planParam && planParam !== newPlan) {
-      setNewPlan(planParam);
-    }
-    if (currencyParam && currencyParam !== currency) {
-      setCurrency(currencyParam);
-    }
-    if (durationParam && durationParam !== duration) {
-      setDuration(durationParam);
-    }
-  }, [searchParams, newPlan, currency, duration]);
 
   const handleGetSession = useCallback(() => {
     if (!currentUser || !newPlan || newPlan === 'starter' || newPlan === 'custom') {
