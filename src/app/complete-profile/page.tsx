@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { Suspense, useEffect, useTransition } from 'react';
+import React, { Suspense, useEffect, useTransition, useState, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -18,7 +18,6 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Logo } from "@/components/layout/logo";
 import { LoaderCircle } from 'lucide-react';
-import Link from 'next/link';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { countries } from '@/lib/countries';
 import type { Plan, Role, Currency } from '@/lib/types';
@@ -36,6 +35,16 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog";
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 type Duration = "1" | "12" | "24" | "48";
 
@@ -50,6 +59,71 @@ const profileFormSchema = z.object({
 });
 
 type ProfileFormValues = z.infer<typeof profileFormSchema>;
+
+
+function TermsOfServiceDialog() {
+    const [scrolledToBottom, setScrolledToBottom] = useState(false);
+
+    const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+        const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
+        if (scrollHeight - scrollTop <= clientHeight + 1) { // +1 for pixel-perfect precision
+            setScrolledToBottom(true);
+        }
+    };
+
+    return (
+        <Dialog>
+            <DialogTrigger asChild>
+                <button type="button" className="underline">Terms of Service</button>
+            </DialogTrigger>
+            <DialogContent className="max-w-3xl">
+                <DialogHeader>
+                    <DialogTitle>Terms of Service</DialogTitle>
+                </DialogHeader>
+                <ScrollArea className="h-[60vh] pr-6" onScroll={handleScroll}>
+                    <div className="prose dark:prose-invert max-w-none">
+                        <p className='text-sm text-muted-foreground'>Last Updated: September 27, 2025</p>
+                        <p>Welcome to AndonPro. These Terms of Service ("Terms") govern your access to and use of the AndonPro application, website, and services (collectively, the "Service"). Please read them carefully.</p>
+
+                        <h3>1. Acceptance of Terms</h3>
+                        <p>By creating an account or by using our Service, you agree to be bound by these Terms and our Privacy Policy. If you do not agree to these Terms, you may not use the Service.</p>
+                        
+                        <h3>2. Use of the Service</h3>
+                        <p>You agree to use the Service only for lawful purposes and in accordance with these Terms. You are responsible for all data and information you input into the Service ("User Data") and for any consequences thereof.</p>
+
+                        <h3>3. User Accounts</h3>
+                        <p>To use the Service, you must create an account. You are responsible for safeguarding your account password and for all activities that occur under your account. You must notify us immediately of any unauthorized use of your account. The first user to register for an organization is designated as the "Admin" and is responsible for managing other users within that organization.</p>
+
+                        <h3>4. Subscriptions and Billing</h3>
+                        <p>The Service is billed on a subscription basis. You will be billed in advance on a recurring, periodic basis (such as monthly or annually), depending on the subscription plan you select. All subscriptions will automatically renew under the then-current rates unless you cancel your subscription through your account management page.</p>
+
+                        <h3>5. User Data and Intellectual Property</h3>
+                        <p>You retain all ownership rights to your User Data. We do not claim any ownership over your data. However, you grant us a worldwide, royalty-free license to use, reproduce, modify, and display the User Data solely for the purpose of providing and improving the Service. Our own materials, including our logo, design, software, and content ("AndonPro IP"), are protected by intellectual property laws and are our exclusive property.</p>
+
+                        <h3>6. Limitation of Liability</h3>
+                        <p>To the fullest extent permitted by law, AndonPro shall not be liable for any indirect, incidental, special, consequential, or punitive damages, or any loss of profits or revenues, whether incurred directly or indirectly, or any loss of data, use, goodwill, or other intangible losses, resulting from (a) your access to or use of or inability to access or use the Service; (b) any conduct or content of any third party on the Service.</p>
+
+                        <h3>7. Termination</h3>
+                        <p>We may suspend or terminate your account and access to the Service at our sole discretion, without prior notice, for conduct that we believe violates these Terms or is otherwise harmful to other users of the Service, us, or third parties. You may cancel your account at any time.</p>
+
+                        <h3>8. Governing Law</h3>
+                        <p>These Terms shall be governed by the laws of Finland, without respect to its conflict of laws principles.</p>
+
+                        <h3>9. Changes to Terms</h3>
+                        <p>We reserve the right to modify these Terms at any time. We will provide notice of any significant changes by posting the new Terms on our site. Your continued use of the Service after any such change constitutes your acceptance of the new Terms.</p>
+                    </div>
+                </ScrollArea>
+                <DialogFooter>
+                    <DialogClose asChild>
+                        <Button disabled={!scrolledToBottom}>
+                            {scrolledToBottom ? 'Close' : 'Scroll to the bottom to close'}
+                        </Button>
+                    </DialogClose>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    );
+}
 
 function CompleteProfileContent() {
   const router = useRouter();
@@ -180,7 +254,7 @@ function CompleteProfileContent() {
     <div className="bg-muted">
       <div className="container mx-auto flex min-h-screen flex-col items-center justify-center py-12">
         <div className="w-full max-w-lg">
-          <div className="flex justify-center mb-8"><Link href="/"><Logo /></Link></div>
+          <div className="flex justify-center mb-8"><a href="/"><Logo /></a></div>
           <Card>
             <CardHeader className="text-center">
               <h2 className="text-2xl font-bold">Complete Your Profile</h2>
@@ -254,7 +328,7 @@ function CompleteProfileContent() {
             </CardContent>
             <CardFooter className="flex flex-col gap-4">
               <p className="text-sm text-muted-foreground text-center">
-                By clicking the button below, you agree to our <Link href="/terms" className="underline" target="_blank" rel="noopener noreferrer">Terms of Service</Link>.
+                By clicking the button below, you agree to our <TermsOfServiceDialog />.
               </p>
               <div className="w-full flex flex-col sm:flex-row gap-2">
                 <AlertDialog>
@@ -300,3 +374,5 @@ export default function CompleteProfilePage() {
     </Suspense>
   );
 }
+
+    
