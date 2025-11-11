@@ -389,7 +389,7 @@ function PricingPageContent() {
                 })();
 
                 return (
-                  <div key={tier.id} className="relative z-10">
+                  <div key={tier.id} className="relative">
                     <Card
                       className={cn(
                         "flex flex-col h-full relative overflow-hidden transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-2 z-10",
@@ -413,83 +413,85 @@ function PricingPageContent() {
                             {tier.badge}
                           </div>
                         )}
-                        {showDurationSelector && savingsBadge && (
-                             <Badge variant="secondary" className="absolute top-2 right-2 bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">
-                                {savingsBadge}
-                             </Badge>
-                        )}
-                       <CardHeader className="text-center">
-                        <CardTitle className={cn("text-2xl", !tier.badge && "pt-8")}>
-                          {tier.name}
-                        </CardTitle>
-                        <div className="flex flex-col items-center justify-center min-h-[60px]">
-                          {isStarter ? (
-                            <span className="text-4xl font-bold">Free</span>
-                          ) : (
-                            <>
-                              <div className="flex items-baseline gap-1">
-                                <span className="text-4xl font-bold">
-                                  {currencySymbols[currency]}{formatPrice(
-                                    priceInfo.price,
-                                    currency
-                                  )}
-                                </span>
-                                <span className="text-muted-foreground">
-                                  {tier.pricePeriod}
-                                </span>
-                              </div>
-                            </>
-                          )}
-                        </div>
-                        <CardDescription>{tier.description}</CardDescription>
-                      </CardHeader>
-                      <CardContent className="flex-1">
-                        <ul className="space-y-4">
-                          {tier.features.map((feature) => (
-                            <li
-                              key={feature}
-                              className="flex items-center text-sm"
-                            >
-                                <CheckCircle className="h-5 w-5 mr-2 text-green-500" />
-                                <span className="text-muted-foreground">{feature}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </CardContent>
-                      <CardFooter className="flex-col items-stretch pt-6">
-                        <Link
-                          href={finalHref}
-                          className={cn(
-                            buttonVariants({
-                                variant: isProBestValue 
-                                  ? 'destructive' 
-                                  : tier.popular 
-                                    ? 'default' 
-                                    : tier.premium
-                                      ? 'default'
-                                      : 'outline',
-                            }),
-                            "w-full",
-                             tier.premium && "bg-gray-800 hover:bg-gray-900 dark:bg-foreground dark:hover:bg-foreground/90 dark:text-background",
-                            currentUser && currentUser.plan === tier.id && "pointer-events-none opacity-50"
-                          )}
-                        >
-                          {currentUser && currentUser.plan === tier.id ? 'Current Plan' : (isStarter && currentUser ? 'Go to Dashboard' : tier.cta)}
-                        </Link>
-                         <div className="text-xs text-muted-foreground mt-3 text-center min-h-[36px]">
-                            {!isStarter && duration !== '1' && showDurationSelector ? (
-                                <>
-                                    Renews at {currencySymbols[currency]}{formatPrice(priceInfo.fullPrice, currency)}/month after {duration} months.
-                                    <br/>
-                                    Promotional pricing applies to the initial term only.
-                                </>
-                            ) : isStarter ? (
-                                "No credit card required."
-                            ) : (
-                                "Billed monthly. Cancel anytime."
+                        <div className="relative">
+                           {showDurationSelector && savingsBadge && (
+                                <Badge variant="secondary" className="absolute top-2 right-2 z-20 bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 hover:bg-green-100/80">
+                                    {savingsBadge}
+                                </Badge>
                             )}
+                           <CardHeader className="text-center">
+                            <CardTitle className={cn("text-2xl", !tier.badge && "pt-8")}>
+                              {tier.name}
+                            </CardTitle>
+                            <div className="flex flex-col items-center justify-center min-h-[60px]">
+                              {isStarter ? (
+                                <span className="text-4xl font-bold">Free</span>
+                              ) : (
+                                <>
+                                  <div className="flex items-baseline gap-1">
+                                    <span className="text-4xl font-bold">
+                                      {currencySymbols[currency]}{formatPrice(
+                                        priceInfo.price,
+                                        currency
+                                      )}
+                                    </span>
+                                    <span className="text-muted-foreground">
+                                      {tier.pricePeriod}
+                                    </span>
+                                  </div>
+                                </>
+                              )}
+                            </div>
+                            <CardDescription>{tier.description}</CardDescription>
+                          </CardHeader>
+                          <CardContent className="flex-1">
+                            <ul className="space-y-4">
+                              {tier.features.map((feature) => (
+                                <li
+                                  key={feature}
+                                  className="flex items-center text-sm"
+                                >
+                                    <CheckCircle className="h-5 w-5 mr-2 text-green-500" />
+                                    <span className="text-muted-foreground">{feature}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </CardContent>
+                          <CardFooter className="flex-col items-stretch pt-6">
+                            <Link
+                              href={finalHref}
+                              className={cn(
+                                buttonVariants({
+                                    variant: isProBestValue 
+                                      ? 'destructive' 
+                                      : tier.popular 
+                                        ? 'default' 
+                                        : tier.premium
+                                          ? 'default'
+                                          : 'outline',
+                                }),
+                                "w-full",
+                                 tier.premium && "bg-gray-800 hover:bg-gray-900 dark:bg-foreground dark:hover:bg-foreground/90 dark:text-background",
+                                currentUser && currentUser.plan === tier.id && "pointer-events-none opacity-50"
+                              )}
+                            >
+                              {currentUser && currentUser.plan === tier.id ? 'Current Plan' : (isStarter && currentUser ? 'Go to Dashboard' : tier.cta)}
+                            </Link>
+                             <div className="text-xs text-muted-foreground mt-3 text-center min-h-[36px]">
+                                {!isStarter && duration !== '1' && showDurationSelector ? (
+                                    <>
+                                        Renews at {currencySymbols[currency]}{formatPrice(priceInfo.fullPrice, currency)}/month after {duration} months.
+                                        <br/>
+                                        Promotional pricing applies to the initial term only.
+                                    </>
+                                ) : isStarter ? (
+                                    "No credit card required."
+                                ) : (
+                                    "Billed monthly. Cancel anytime."
+                                )}
+                            </div>
+                          </CardFooter>
                         </div>
-                      </CardFooter>
                     </Card>
                   </div>
                 );
@@ -571,3 +573,5 @@ export default function PricingPage() {
         </React.Suspense>
     );
 }
+
+    
