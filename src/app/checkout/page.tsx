@@ -13,7 +13,7 @@ import {
   CardTitle,
   CardFooter,
 } from "@/components/ui/card";
-import { LoaderCircle, CheckCircle } from "lucide-react";
+import { LoaderCircle, Check } from "lucide-react";
 import { Logo } from "@/components/layout/logo";
 import type { Currency, Plan } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
@@ -166,7 +166,7 @@ function CheckoutPageContent() {
                       key={feature}
                       className="flex items-center text-sm text-muted-foreground"
                     >
-                      <CheckCircle className="h-4 w-4 mr-2 text-green-500" />
+                      <Check className="h-4 w-4 mr-2 text-green-500" />
                       <span>{feature}</span>
                     </li>
                   ))}
