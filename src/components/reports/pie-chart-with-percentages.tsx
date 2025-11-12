@@ -122,7 +122,7 @@ export function PieChartWithPercentages({ data }: PieChartWithPercentagesProps) 
           nameKey="name"
         >
           {data.map((entry, index) => (
-            <Cell key={`cell-${index}`} fill={entry.fill || entry.color || defaultColor} />
+            <Cell key={`cell-${index}`} fill={entry.color || entry.fill || defaultColor} />
           ))}
         </Pie>
       </PieChart>
