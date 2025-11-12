@@ -141,7 +141,14 @@ export default function AnalyticsReportingPage() {
             alt="Analytics & Reporting Screenshot"
             width={1200}
             height={675}
-            className="rounded-lg shadow-xl mx-auto"
+            className="rounded-lg shadow-xl mx-auto hidden md:block"
+          />
+           <Image
+            src="/Reports.png"
+            alt="Analytics & Reporting Screenshot"
+            width={400}
+            height={225}
+            className="rounded-lg shadow-xl mx-auto md:hidden"
           />
         </section>
 

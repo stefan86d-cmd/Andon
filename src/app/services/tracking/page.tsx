@@ -141,7 +141,14 @@ export default function IssueTrackingPage() {
             alt="Issue Tracking Screenshot"
             width={1200}
             height={675}
-            className="rounded-lg shadow-xl mx-auto"
+            className="rounded-lg shadow-xl mx-auto hidden md:block"
+          />
+           <Image
+            src="/Active_issue.png"
+            alt="Issue Tracking Screenshot"
+            width={400}
+            height={225}
+            className="rounded-lg shadow-xl mx-auto md:hidden"
           />
         </section>
 
