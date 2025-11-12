@@ -131,7 +131,7 @@ function SettingsPageContent() {
                                             </div>
                                             <Switch 
                                                 id="new-issue-reported" 
-                                                checked={currentUser.notificationPreferences?.newIssue ?? true}
+                                                checked={currentUser.notificationPreferences?.newIssue ?? false}
                                                 onCheckedChange={(checked) => handleNotificationChange('newIssue', checked)}
                                             />
                                         </div>
