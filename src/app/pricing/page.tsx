@@ -212,7 +212,7 @@ function PricingPageContent() {
   const customTier = {
     name: "Custom",
     id: "custom",
-    description: "For unique requirements and unlimited scale, our Custom plan offers dedicated support, custom integrations, and more. Contact us to design a plan that fits your exact needs.",
+    description: "Need more than the Enterprise plan offers? The Custom plan provides dedicated support and flexible limits for users, production lines, and workstations. Contact us to design a plan that fits your exact needs.",
     cta: "Contact Sales"
   }
 
