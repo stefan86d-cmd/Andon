@@ -3,7 +3,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from "@/components/ui/card";
-import { LoaderCircle, Globe, CheckCircle } from "lucide-react";
+import { LoaderCircle, Globe, Check } from "lucide-react";
 import { useUser } from "@/contexts/user-context";
 import { useState, useEffect, useTransition, Suspense, useCallback } from "react";
 import Link from "next/link";
@@ -371,7 +371,7 @@ function BillingPageContent() {
                           key={feature}
                           className="flex items-center text-sm text-muted-foreground"
                         >
-                          <CheckCircle className="h-4 w-4 mr-2 text-green-500" />
+                          <Check className="h-4 w-4 mr-2 text-green-500" />
                           <span>{feature}</span>
                         </li>
                       ))}
