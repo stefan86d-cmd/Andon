@@ -6,7 +6,7 @@ import { Logo } from "@/components/layout/logo";
 import { cn } from "@/lib/utils";
 import { MegaMenu } from "@/components/layout/mega-menu";
 import { buttonVariants } from "@/components/ui/button";
-import { ArrowRight, Menu } from "lucide-react";
+import { ArrowRight, Menu, MonitorSmartphone } from "lucide-react";
 import Image from "next/image";
 import FooterLogo from "@/components/layout/footer-logo";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
@@ -143,13 +143,9 @@ export default function ProductionMonitoringPage() {
             height={675}
             className="rounded-lg shadow-xl mx-auto hidden md:block"
           />
-          <Image
-            src="/Dashboard.png"
-            alt="AndonPro Dashboard Screenshot"
-            width={400}
-            height={225}
-            className="rounded-lg shadow-xl mx-auto md:hidden"
-          />
+          <div className="md:hidden flex justify-center items-center p-8">
+            <MonitorSmartphone className="h-32 w-32 text-primary/80" />
+          </div>
         </section>
 
         <section className="py-20 bg-muted">
