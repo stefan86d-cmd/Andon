@@ -17,6 +17,7 @@ interface PieDataItem {
   value: number;
   percentage: number;
   color?: string;
+  fill?: string;
 }
 
 interface PieChartWithPercentagesProps {
@@ -121,7 +122,7 @@ export function PieChartWithPercentages({ data }: PieChartWithPercentagesProps) 
           nameKey="name"
         >
           {data.map((entry, index) => (
-            <Cell key={`cell-${index}`} fill={entry.color || defaultColor} />
+            <Cell key={`cell-${index}`} fill={entry.fill || entry.color || defaultColor} />
           ))}
         </Pie>
       </PieChart>
