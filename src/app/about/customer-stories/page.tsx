@@ -6,7 +6,7 @@ import { Logo } from "@/components/layout/logo";
 import { cn } from "@/lib/utils";
 import { MegaMenu } from "@/components/layout/mega-menu";
 import { buttonVariants } from "@/components/ui/button";
-import { Construction, Menu } from "lucide-react";
+import { Menu, Mail } from "lucide-react";
 import FooterLogo from "@/components/layout/footer-logo";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -41,6 +41,17 @@ const MobileNavLink = ({ href, children }: { href: string; children: React.React
         {children}
     </Link>
 );
+
+const XIcon = (props: React.SVGProps<SVGSVGElement>) => (
+    <svg
+      role="img"
+      viewBox="0 0 24 24"
+      xmlns="http://www.w3.org/2000/svg"
+      {...props}
+    >
+      <path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z" />
+    </svg>
+  );
 
 
 export default function CustomerStoriesPage() {
@@ -137,12 +148,24 @@ export default function CustomerStoriesPage() {
         </section>
         <section className="py-20 bg-muted">
             <div className="container text-center">
-                <div className="max-w-md mx-auto">
-                    <Construction className="h-16 w-16 mx-auto text-primary mb-4" />
-                    <h2 className="text-2xl font-semibold mb-2">Coming Soon!</h2>
-                    <p className="text-muted-foreground">
-                        We've just launched and are busy helping our first customers achieve amazing results. Check back soon to read their success stories!
+                <div className="max-w-2xl mx-auto">
+                    <h2 className="text-2xl font-semibold mb-2">Be Our First Success Story!</h2>
+                    <p className="text-muted-foreground mb-6">
+                        We've just launched and are looking for our first partners to achieve amazing results with. As an early adopter, you have a unique opportunity to receive free testing of our software and help shape its future.
                     </p>
+                    <p className="text-muted-foreground mb-8">
+                       Follow us on X for the latest news, and get in touch to become one of our first customers.
+                    </p>
+                    <div className="flex justify-center items-center gap-4">
+                        <a href="https://x.com/AndonPro/status/1988545489017438394?s=20" target="_blank" rel="noopener noreferrer" className={cn(buttonVariants({ variant: 'outline' }), "gap-2")}>
+                            <XIcon className="h-4 w-4 fill-current" />
+                            Follow on X
+                        </a>
+                        <a href="mailto:support@andonpro.com" className={cn(buttonVariants({ variant: 'outline' }), "gap-2")}>
+                            <Mail className="h-4 w-4" />
+                            Contact via Email
+                        </a>
+                    </div>
                 </div>
             </div>
         </section>
