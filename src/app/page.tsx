@@ -203,6 +203,18 @@ export default function HomePage() {
             </div>
           </div>
         </section>
+        
+        {/* Quick Setup Section */}
+        <section className="py-20 bg-background">
+          <div className="container">
+            <div className="text-center">
+              <h2 className="text-3xl md:text-4xl font-bold">Get Up and Running in Minutes</h2>
+              <p className="max-w-2xl mx-auto text-muted-foreground mt-4">
+                Our intuitive setup process means you can configure your production lines and invite your team in no time. Go from sign-up to a fully operational system in just a few clicks.
+              </p>
+            </div>
+          </div>
+        </section>
 
         {/* Call to Action Section */}
         <section className="py-20">
