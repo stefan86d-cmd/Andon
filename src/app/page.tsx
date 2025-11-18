@@ -31,6 +31,11 @@ const features = [
     title: 'Insightful Reporting',
     description: 'Track key performance indicators, analyze downtime, and identify recurring problems with our comprehensive reports.',
   },
+  {
+    icon: <HandCoins className="h-10 w-10 text-primary" />,
+    title: 'Affordable Pricing',
+    description: 'Get started for free and scale with flexible, transparent pricing plans that fit teams and factories of all sizes.',
+  },
 ];
 
 const servicesMenuItems = [
