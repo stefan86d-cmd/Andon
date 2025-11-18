@@ -4,7 +4,7 @@
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
-import { ArrowRight, Factory, BarChart3, Wrench, HandCoins, Menu } from 'lucide-react';
+import { ArrowRight, Factory, BarChart3, Wrench, HandCoins, Menu, Settings, MessageSquareWarning, PieChart, UserCog, ShieldCheck, User as UserIcon } from 'lucide-react';
 import { Logo } from "@/components/layout/logo";
 import { cn } from "@/lib/utils";
 import FooterLogo from "@/components/layout/footer-logo";
@@ -203,7 +203,93 @@ export default function HomePage() {
             </div>
           </div>
         </section>
+
+        {/* How It Works Section */}
+        <section className="py-20 bg-background">
+            <div className="container">
+                <div className="text-center mb-12">
+                    <h2 className="text-3xl md:text-4xl font-bold">How It Works</h2>
+                    <p className="max-w-2xl mx-auto text-muted-foreground mt-4">
+                        A simple, 3-step process to get you up and running in minutes.
+                    </p>
+                </div>
+                <div className="grid gap-10 md:grid-cols-3">
+                    <div className="text-center">
+                        <div className="flex items-center justify-center h-16 w-16 rounded-full bg-primary/10 text-primary mx-auto mb-4">
+                            <Settings className="h-8 w-8" />
+                        </div>
+                        <h3 className="text-xl font-semibold mb-2">1. Configure Your Lines</h3>
+                        <p className="text-muted-foreground">Quickly set up your production lines and workstations to match your factory floor.</p>
+                    </div>
+                     <div className="text-center">
+                        <div className="flex items-center justify-center h-16 w-16 rounded-full bg-primary/10 text-primary mx-auto mb-4">
+                            <MessageSquareWarning className="h-8 w-8" />
+                        </div>
+                        <h3 className="text-xl font-semibold mb-2">2. Report Issues Instantly</h3>
+                        <p className="text-muted-foreground">Operators report problems from any device in seconds, notifying supervisors immediately.</p>
+                    </div>
+                     <div className="text-center">
+                        <div className="flex items-center justify-center h-16 w-16 rounded-full bg-primary/10 text-primary mx-auto mb-4">
+                            <PieChart className="h-8 w-8" />
+                        </div>
+                        <h3 className="text-xl font-semibold mb-2">3. Resolve and Analyze</h3>
+                        <p className="text-muted-foreground">Supervisors manage issues, resolve them, and use reports to track performance.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
         
+        {/* Who Is It For? Section */}
+        <section className="py-20 bg-muted">
+            <div className="container">
+                <div className="text-center mb-12">
+                    <h2 className="text-3xl md:text-4xl font-bold">Built for Your Team</h2>
+                    <p className="max-w-2xl mx-auto text-muted-foreground mt-4">
+                        The right tools for everyone, from the factory floor to the manager's office.
+                    </p>
+                </div>
+                <div className="grid gap-8 md:grid-cols-3">
+                    <Card>
+                        <CardHeader className="flex-row items-center gap-4">
+                             <div className="p-3 bg-primary/10 rounded-full text-primary"><UserCog className="h-6 w-6"/></div>
+                            <CardTitle>Admins</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-muted-foreground">Configure production lines, manage users, and oversee the entire organization with powerful administrative tools.</p>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader className="flex-row items-center gap-4">
+                            <div className="p-3 bg-primary/10 rounded-full text-primary"><ShieldCheck className="h-6 w-6"/></div>
+                            <CardTitle>Supervisors</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-muted-foreground">Monitor the factory floor, respond to issues in real-time, and analyze performance reports to drive efficiency.</p>
+                        </CardContent>
+                    </Card>
+                     <Card>
+                        <CardHeader className="flex-row items-center gap-4">
+                            <div className="p-3 bg-primary/10 rounded-full text-primary"><UserIcon className="h-6 w-6"/></div>
+                            <CardTitle>Operators</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-muted-foreground">Instantly report issues from any workstation using a simple, intuitive interface, minimizing downtime.</p>
+                        </CardContent>
+                    </Card>
+                </div>
+            </div>
+        </section>
+        
+        {/* Testimonial Section */}
+        <section className="py-20 bg-background">
+            <div className="container max-w-3xl mx-auto text-center">
+                 <blockquote className="border-l-4 border-primary pl-6 italic text-muted-foreground">
+                    "AndonPro was designed to be powerful yet simple, putting real-time data directly into the hands of the people who need it most to keep production moving."
+                </blockquote>
+                <p className="mt-4 font-semibold">- Founder of AndonPro</p>
+            </div>
+        </section>
+
         {/* Call to Action Section */}
         <section className="py-20">
           <div className="container text-center">
