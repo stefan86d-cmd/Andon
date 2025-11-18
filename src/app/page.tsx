@@ -4,7 +4,7 @@
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
-import { ArrowRight, Factory, BarChart3, Wrench, HandCoins, Menu } from 'lucide-react';
+import { ArrowRight, Factory, BarChart3, Wrench, HandCoins, Menu, Timer } from 'lucide-react';
 import { Logo } from "@/components/layout/logo";
 import { cn } from "@/lib/utils";
 import FooterLogo from "@/components/layout/footer-logo";
@@ -32,9 +32,9 @@ const features = [
     description: 'Track key performance indicators, analyze downtime, and identify recurring problems with our comprehensive reports.',
   },
   {
-    icon: <HandCoins className="h-10 w-10 text-primary" />,
-    title: 'Affordable Pricing',
-    description: 'Get started for free and scale with flexible, transparent pricing plans that fit teams and factories of all sizes.',
+    icon: <Timer className="h-10 w-10 text-primary" />,
+    title: 'Quick Setup',
+    description: 'Our intuitive setup process means you can configure your production lines and invite your team in no time.',
   },
 ];
 
@@ -204,18 +204,6 @@ export default function HomePage() {
           </div>
         </section>
         
-        {/* Quick Setup Section */}
-        <section className="py-20 bg-background">
-          <div className="container">
-            <div className="text-center">
-              <h2 className="text-3xl md:text-4xl font-bold">Get Up and Running in Minutes</h2>
-              <p className="max-w-2xl mx-auto text-muted-foreground mt-4">
-                Our intuitive setup process means you can configure your production lines and invite your team in no time. Go from sign-up to a fully operational system in just a few clicks.
-              </p>
-            </div>
-          </div>
-        </section>
-
         {/* Call to Action Section */}
         <section className="py-20">
           <div className="container text-center">
