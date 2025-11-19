@@ -169,7 +169,7 @@ export default function HomePage() {
               Empower Your Production Line
             </h1>
             <p className="max-w-2xl mx-auto text-lg text-gray-200 mb-8">
-             AndonPro is the modern digital Andon system to monitor your workflow, support one-piece flow, and minimize downtime with powerful lean manufacturing insights.
+              AndonPro is the modern solution to monitor workflow, report issues instantly, and minimize downtime with powerful data exports.
             </p>
             <Link href="/pricing" className={cn(buttonVariants({ size: "lg" }))}>
               Get Started Free <ArrowRight className="ml-2 h-5 w-5" />
