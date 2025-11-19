@@ -280,16 +280,6 @@ export default function HomePage() {
             </div>
         </section>
         
-        {/* Testimonial Section */}
-        <section className="py-20 bg-background">
-            <div className="container max-w-3xl mx-auto text-center">
-                 <blockquote className="border-l-4 border-primary pl-6 italic text-muted-foreground">
-                    "AndonPro was designed to be powerful yet simple, putting real-time data directly into the hands of the people who need it most to keep production moving."
-                </blockquote>
-                <p className="mt-4 font-semibold">- Founder of AndonPro</p>
-            </div>
-        </section>
-
         {/* Call to Action Section */}
         <section className="py-20">
           <div className="container text-center">
