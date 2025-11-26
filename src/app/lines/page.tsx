@@ -16,7 +16,7 @@ import { getClientInstances } from "@/firebase/client";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
 
 const planLimits = {
-  starter: { lines: 1 },
+  starter: { lines: 2 },
   standard: { lines: 5 },
   pro: { lines: 10 },
   enterprise: { lines: 20 },
@@ -136,7 +136,3 @@ export default function LinesPage() {
     </main>
   );
 }
-
-    
-
-    

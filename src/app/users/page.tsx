@@ -13,7 +13,7 @@ import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { getClientInstances } from "@/firebase/client";
 
 const planLimits = {
-  starter: { users: 5 },
+  starter: { users: 10 },
   standard: { users: 80 },
   pro: { users: 150 },
   enterprise: { users: 400 },

@@ -54,9 +54,9 @@ const tiers = [
     pricePeriod: "",
     description: "For small teams getting started with issue tracking.",
     features: [
-      "Up to 5 users",
-      "1 Production Line",
-      "Up to 5 workstations",
+      "Up to 10 users",
+      "2 Production Lines",
+      "Up to 5 workstations per line",
       "Basic Issue Reporting",
       "Dashboard View",
     ],
