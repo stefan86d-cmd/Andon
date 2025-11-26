@@ -13,6 +13,7 @@ import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/s
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
+import Image from "next/image";
 
 const servicesMenuItems = [
     { title: "Production Monitoring", description: "Get a live overview of your entire production line.", badge: "", href: "/services/monitoring" },
@@ -149,7 +150,16 @@ export default function CustomerStoriesPage() {
         <section className="py-20 bg-muted">
             <div className="container text-center">
                 <div className="max-w-2xl mx-auto">
-                    <h2 className="text-2xl font-semibold mb-2">Be Our First Success Story!</h2>
+                    <h2 className="text-2xl font-semibold mb-6">Be Our First Success Story!</h2>
+                    <div className="flex justify-center mb-8">
+                        <Image 
+                        src="/Andonpro_Logo_Musta_Syvätty.png"
+                        alt="AndonPro Logo"
+                        width={300}
+                        height={72}
+                        className="rounded-lg"
+                        />
+                    </div>
                     <p className="text-muted-foreground mb-6">
                         We've just launched and are looking for our first partners to achieve amazing results with. As an early adopter, you have a unique opportunity to receive free testing of our software and help shape its future.
                     </p>
