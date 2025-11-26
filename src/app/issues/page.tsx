@@ -193,7 +193,7 @@ export default function IssuesPage() {
   };
 
   return (
-    <main ref={layoutRef} className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background">
+    <main ref={layoutRef} className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background overflow-y-auto">
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-lg font-semibold md:text-2xl">Issue Tracker</h1>
         <div className="flex items-center gap-2">
