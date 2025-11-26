@@ -138,7 +138,7 @@ const guarantees = [
         icon: Headset,
         title: "24/7 Support",
         description: "Our support team is available around the clock to help you with any issues.",
-        note: "Available on the Enterprise plan."
+        note: "*Available only on the Enterprise plan."
     },
     {
         icon: Shield,
