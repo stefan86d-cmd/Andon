@@ -11,12 +11,11 @@ import { useUser } from "@/contexts/user-context";
 import type { Issue, ProductionLine, StatCard } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { LayoutGrid, Rows, Expand, Shrink } from "lucide-react";
+import { LayoutGrid, Rows } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { IssuesGrid } from "@/components/dashboard/issues-grid";
 import { toast } from "@/hooks/use-toast";
 import { LoaderCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
 type Duration = {
   years?: number;
@@ -84,29 +83,6 @@ function DashboardPageContent() {
     const [productionLines, setProductionLines] = useState<ProductionLine[]>([]);
     const [loading, setLoading] = useState(true);
     const [view, setView] = useState<'list' | 'grid'>();
-    
-    const [isFullscreen, setIsFullscreen] = useState(false);
-    const layoutRef = useRef<HTMLDivElement>(null);
-
-    const handleFullscreenToggle = useCallback(() => {
-        if (!layoutRef.current) return;
-
-        if (document.fullscreenElement) {
-            document.exitFullscreen();
-        } else {
-            layoutRef.current.requestFullscreen().catch(err => {
-                console.error(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
-            });
-        }
-    }, []);
-    
-    useEffect(() => {
-        const handleFullscreenChange = () => {
-            setIsFullscreen(!!document.fullscreenElement);
-        };
-        document.addEventListener('fullscreenchange', handleFullscreenChange);
-        return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
-    }, []);
 
     useEffect(() => {
         const checkPaymentStatus = async () => {
@@ -310,12 +286,12 @@ function DashboardPageContent() {
     };
 
     return (
-        <main ref={layoutRef} className="flex flex-1 flex-col fullscreen:bg-background fullscreen:overflow-y-auto">
+        <main className="flex flex-1 flex-col">
             <div className="flex flex-col flex-1 gap-4 p-4 lg:gap-6 lg:p-6">
                 <div className="flex items-center justify-between">
                     <h1 className="text-lg font-semibold md:text-2xl">Dashboard</h1>
                     <div className="flex items-center gap-2">
-                        {view && !loading && (
+                        {view && !loading && !isMobile && (
                             <ToggleGroup type="single" value={view} onValueChange={(value) => value && setView(value as 'list' | 'grid')} aria-label="View mode">
                                 <ToggleGroupItem value="list" aria-label="List view">
                                     <Rows className="h-4 w-4" />
@@ -324,12 +300,6 @@ function DashboardPageContent() {
                                     <LayoutGrid className="h-4 w-4" />
                                 </ToggleGroupItem>
                             </ToggleGroup>
-                        )}
-                        {!isMobile && (
-                            <Button variant="outline" size="icon" onClick={handleFullscreenToggle}>
-                                {isFullscreen ? <Shrink className="h-4 w-4" /> : <Expand className="h-4 w-4" />}
-                                <span className="sr-only">Toggle fullscreen</span>
-                            </Button>
                         )}
                     </div>
                 </div>

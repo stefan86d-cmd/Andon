@@ -5,7 +5,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { IssuesDataTable } from "@/components/dashboard/issues-data-table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Issue, ProductionLine, IssueCategory } from "@/lib/types";
-import { ListFilter, LayoutGrid, Rows, Expand, Shrink } from "lucide-react";
+import { ListFilter, LayoutGrid, Rows } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -35,29 +35,6 @@ export default function IssuesPage() {
   const [tempSelectedLines, setTempSelectedLines] = useState<string[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [tempSelectedCategories, setTempSelectedCategories] = useState<string[]>([]);
-
-  const [isFullscreen, setIsFullscreen] = useState(false);
-  const layoutRef = useRef<HTMLDivElement>(null);
-
-  const handleFullscreenToggle = useCallback(() => {
-      if (!layoutRef.current) return;
-
-      if (document.fullscreenElement) {
-          document.exitFullscreen();
-      } else {
-          layoutRef.current.requestFullscreen().catch(err => {
-              console.error(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
-          });
-      }
-  }, []);
-  
-  useEffect(() => {
-      const handleFullscreenChange = () => {
-          setIsFullscreen(!!document.fullscreenElement);
-      };
-      document.addEventListener('fullscreenchange', handleFullscreenChange);
-      return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
-  }, []);
 
   useEffect(() => {
     if (isMobile) {
@@ -193,24 +170,20 @@ export default function IssuesPage() {
   };
 
   return (
-    <main ref={layoutRef} className="flex flex-1 flex-col fullscreen:bg-background fullscreen:overflow-y-auto">
+    <main className="flex flex-1 flex-col">
       <div className="flex flex-col flex-1 gap-4 p-4 lg:gap-6 lg:p-6">
         <div className="flex items-center justify-between mb-4">
           <h1 className="text-lg font-semibold md:text-2xl">Issue Tracker</h1>
           <div className="flex items-center gap-2">
-              {view && <ToggleGroup type="single" value={view} onValueChange={(value) => value && setView(value as 'list' | 'grid')} aria-label="View mode">
-                  <ToggleGroupItem value="list" aria-label="List view">
-                      <Rows className="h-4 w-4" />
-                  </ToggleGroupItem>
-                  <ToggleGroupItem value="grid" aria-label="Grid view">
-                      <LayoutGrid className="h-4 w-4" />
-                  </ToggleGroupItem>
-              </ToggleGroup>}
-              {!isMobile && (
-                  <Button variant="outline" size="icon" onClick={handleFullscreenToggle}>
-                      {isFullscreen ? <Shrink className="h-4 w-4" /> : <Expand className="h-4 w-4" />}
-                      <span className="sr-only">Toggle fullscreen</span>
-                  </Button>
+              {view && !isMobile && (
+                <ToggleGroup type="single" value={view} onValueChange={(value) => value && setView(value as 'list' | 'grid')} aria-label="View mode">
+                    <ToggleGroupItem value="list" aria-label="List view">
+                        <Rows className="h-4 w-4" />
+                    </ToggleGroupItem>
+                    <ToggleGroupItem value="grid" aria-label="Grid view">
+                        <LayoutGrid className="h-4 w-4" />
+                    </ToggleGroupItem>
+                </ToggleGroup>
               )}
           </div>
         </div>
