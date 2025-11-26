@@ -193,113 +193,115 @@ export default function IssuesPage() {
   };
 
   return (
-    <main ref={layoutRef} className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background overflow-y-auto">
-      <div className="flex items-center justify-between mb-4">
-        <h1 className="text-lg font-semibold md:text-2xl">Issue Tracker</h1>
-        <div className="flex items-center gap-2">
-            {view && <ToggleGroup type="single" value={view} onValueChange={(value) => value && setView(value as 'list' | 'grid')} aria-label="View mode">
-                <ToggleGroupItem value="list" aria-label="List view">
-                    <Rows className="h-4 w-4" />
-                </ToggleGroupItem>
-                <ToggleGroupItem value="grid" aria-label="Grid view">
-                    <LayoutGrid className="h-4 w-4" />
-                </ToggleGroupItem>
-            </ToggleGroup>}
-             {!isMobile && (
-                <Button variant="outline" size="icon" onClick={handleFullscreenToggle}>
-                    {isFullscreen ? <Shrink className="h-4 w-4" /> : <Expand className="h-4 w-4" />}
-                    <span className="sr-only">Toggle fullscreen</span>
-                </Button>
-            )}
-        </div>
-      </div>
-      
-      {currentUser?.role !== 'operator' && (
-        <>
-          <div className="flex justify-center mb-4">
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm" className="gap-1 w-full sm:w-auto">
-                      <ListFilter className="h-4 w-4" />
-                      <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                        Lines
-                      </span>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="center" className="w-56">
-                    <DropdownMenuLabel>Filter by production line</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    {(productionLines || []).map((line) => (
-                      <DropdownMenuCheckboxItem
-                        key={line.id}
-                        checked={tempSelectedLines.includes(line.id)}
-                        onCheckedChange={() => handleLineFilterChange(line.id)}
-                        onSelect={(e) => e.preventDefault()}
-                      >
-                        {line.name}
-                      </DropdownMenuCheckboxItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm" className="gap-1 w-full sm:w-auto">
-                      <ListFilter className="h-4 w-4" />
-                      <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                        Category
-                      </span>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="center" className="w-56">
-                    <DropdownMenuLabel>Filter by category</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    {allCategories.map((category) => (
-                      <DropdownMenuCheckboxItem
-                        key={category.id}
-                        checked={tempSelectedCategories.includes(category.id)}
-                        onCheckedChange={() => handleCategoryFilterChange(category.id)}
-                        onSelect={(e) => e.preventDefault()}
-                      >
-                        {category.label}
-                      </DropdownMenuCheckboxItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-
-                <div className="pl-0 sm:pl-2 flex gap-2">
-                    <Button variant="outline" size="sm" onClick={handleFilterReset}>Reset</Button>
-                    <Button size="sm" onClick={handleFilterConfirm}>Confirm</Button>
-                </div>
-              </div>
+    <main ref={layoutRef} className="flex flex-1 flex-col fullscreen:bg-background fullscreen:overflow-y-auto">
+      <div className="flex flex-col flex-1 gap-4 p-4 lg:gap-6 lg:p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h1 className="text-lg font-semibold md:text-2xl">Issue Tracker</h1>
+          <div className="flex items-center gap-2">
+              {view && <ToggleGroup type="single" value={view} onValueChange={(value) => value && setView(value as 'list' | 'grid')} aria-label="View mode">
+                  <ToggleGroupItem value="list" aria-label="List view">
+                      <Rows className="h-4 w-4" />
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="grid" aria-label="Grid view">
+                      <LayoutGrid className="h-4 w-4" />
+                  </ToggleGroupItem>
+              </ToggleGroup>}
+              {!isMobile && (
+                  <Button variant="outline" size="icon" onClick={handleFullscreenToggle}>
+                      {isFullscreen ? <Shrink className="h-4 w-4" /> : <Expand className="h-4 w-4" />}
+                      <span className="sr-only">Toggle fullscreen</span>
+                  </Button>
+              )}
           </div>
-          
-          <Tabs defaultValue="active">
+        </div>
+        
+        {currentUser?.role !== 'operator' && (
+          <>
             <div className="flex justify-center mb-4">
-              <TabsList className="grid w-full grid-cols-2 max-w-sm">
-                <TabsTrigger value="active">Active</TabsTrigger>
-                <TabsTrigger value="resolved">Resolved</TabsTrigger>
-              </TabsList>
-            </div>
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="sm" className="gap-1 w-full sm:w-auto">
+                        <ListFilter className="h-4 w-4" />
+                        <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                          Lines
+                        </span>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="center" className="w-56">
+                      <DropdownMenuLabel>Filter by production line</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      {(productionLines || []).map((line) => (
+                        <DropdownMenuCheckboxItem
+                          key={line.id}
+                          checked={tempSelectedLines.includes(line.id)}
+                          onCheckedChange={() => handleLineFilterChange(line.id)}
+                          onSelect={(e) => e.preventDefault()}
+                        >
+                          {line.name}
+                        </DropdownMenuCheckboxItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
 
-            <TabsContent value="active">
-              {renderContent(
-                activeIssues,
-                "Active Issues",
-                "A list of recently reported issues on the production line."
-              )}
-            </TabsContent>
-            <TabsContent value="resolved">
-              {renderContent(
-                resolvedIssues,
-                "Resolved Issues",
-                "A list of issues resolved in the last 24 hours."
-              )}
-            </TabsContent>
-          </Tabs>
-        </>
-      )}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="sm" className="gap-1 w-full sm:w-auto">
+                        <ListFilter className="h-4 w-4" />
+                        <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                          Category
+                        </span>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="center" className="w-56">
+                      <DropdownMenuLabel>Filter by category</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      {allCategories.map((category) => (
+                        <DropdownMenuCheckboxItem
+                          key={category.id}
+                          checked={tempSelectedCategories.includes(category.id)}
+                          onCheckedChange={() => handleCategoryFilterChange(category.id)}
+                          onSelect={(e) => e.preventDefault()}
+                        >
+                          {category.label}
+                        </DropdownMenuCheckboxItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+
+                  <div className="pl-0 sm:pl-2 flex gap-2">
+                      <Button variant="outline" size="sm" onClick={handleFilterReset}>Reset</Button>
+                      <Button size="sm" onClick={handleFilterConfirm}>Confirm</Button>
+                  </div>
+                </div>
+            </div>
+            
+            <Tabs defaultValue="active">
+              <div className="flex justify-center mb-4">
+                <TabsList className="grid w-full grid-cols-2 max-w-sm">
+                  <TabsTrigger value="active">Active</TabsTrigger>
+                  <TabsTrigger value="resolved">Resolved</TabsTrigger>
+                </TabsList>
+              </div>
+
+              <TabsContent value="active">
+                {renderContent(
+                  activeIssues,
+                  "Active Issues",
+                  "A list of recently reported issues on the production line."
+                )}
+              </TabsContent>
+              <TabsContent value="resolved">
+                {renderContent(
+                  resolvedIssues,
+                  "Resolved Issues",
+                  "A list of issues resolved in the last 24 hours."
+                )}
+              </TabsContent>
+            </Tabs>
+          </>
+        )}
+      </div>
     </main>
   );
 }

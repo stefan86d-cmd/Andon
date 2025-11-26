@@ -310,45 +310,47 @@ function DashboardPageContent() {
     };
 
     return (
-        <main ref={layoutRef} className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background overflow-y-auto">
-            <div className="flex items-center justify-between">
-                <h1 className="text-lg font-semibold md:text-2xl">Dashboard</h1>
-                <div className="flex items-center gap-2">
-                    {view && !loading && (
-                        <ToggleGroup type="single" value={view} onValueChange={(value) => value && setView(value as 'list' | 'grid')} aria-label="View mode">
-                            <ToggleGroupItem value="list" aria-label="List view">
-                                <Rows className="h-4 w-4" />
-                            </ToggleGroupItem>
-                            <ToggleGroupItem value="grid" aria-label="Grid view">
-                                <LayoutGrid className="h-4 w-4" />
-                            </ToggleGroupItem>
-                        </ToggleGroup>
-                    )}
-                    {!isMobile && (
-                        <Button variant="outline" size="icon" onClick={handleFullscreenToggle}>
-                            {isFullscreen ? <Shrink className="h-4 w-4" /> : <Expand className="h-4 w-4" />}
-                            <span className="sr-only">Toggle fullscreen</span>
-                        </Button>
-                    )}
+        <main ref={layoutRef} className="flex flex-1 flex-col fullscreen:bg-background fullscreen:overflow-y-auto">
+            <div className="flex flex-col flex-1 gap-4 p-4 lg:gap-6 lg:p-6">
+                <div className="flex items-center justify-between">
+                    <h1 className="text-lg font-semibold md:text-2xl">Dashboard</h1>
+                    <div className="flex items-center gap-2">
+                        {view && !loading && (
+                            <ToggleGroup type="single" value={view} onValueChange={(value) => value && setView(value as 'list' | 'grid')} aria-label="View mode">
+                                <ToggleGroupItem value="list" aria-label="List view">
+                                    <Rows className="h-4 w-4" />
+                                </ToggleGroupItem>
+                                <ToggleGroupItem value="grid" aria-label="Grid view">
+                                    <LayoutGrid className="h-4 w-4" />
+                                </ToggleGroupItem>
+                            </ToggleGroup>
+                        )}
+                        {!isMobile && (
+                            <Button variant="outline" size="icon" onClick={handleFullscreenToggle}>
+                                {isFullscreen ? <Shrink className="h-4 w-4" /> : <Expand className="h-4 w-4" />}
+                                <span className="sr-only">Toggle fullscreen</span>
+                            </Button>
+                        )}
+                    </div>
                 </div>
-            </div>
 
-            {loading ? (
-                <div className="space-y-6">
-                <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
-                    <Skeleton className="h-28" />
-                    <Skeleton className="h-28" />
-                    <Skeleton className="h-28" />
-                    <Skeleton className="h-28" />
-                </div>
-                <Skeleton className="h-96" />
-                </div>
-            ) : (
-                <>
-                <StatsCards stats={stats} />
-                {renderRecentIssues()}
-                </>
-            )}
+                {loading ? (
+                    <div className="space-y-6">
+                    <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
+                        <Skeleton className="h-28" />
+                        <Skeleton className="h-28" />
+                        <Skeleton className="h-28" />
+                        <Skeleton className="h-28" />
+                    </div>
+                    <Skeleton className="h-96" />
+                    </div>
+                ) : (
+                    <>
+                    <StatsCards stats={stats} />
+                    {renderRecentIssues()}
+                    </>
+                )}
+            </div>
         </main>
     );
 }
