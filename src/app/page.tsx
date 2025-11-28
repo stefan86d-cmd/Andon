@@ -264,7 +264,7 @@ export default function HomePage() {
                             <CardTitle>Supervisors</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <p className="text-muted-foreground">Monitor the factory floor, respond to issues in real-time, and analyze performance reports to drive efficiency.</p>
+                            <p className="text-muted-foreground">Monitor the factory floor, respond to issues in real time, and analyze performance reports to drive efficiency.</p>
                         </CardContent>
                     </Card>
                      <Card>
