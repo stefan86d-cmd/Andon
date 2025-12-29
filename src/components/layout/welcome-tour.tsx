@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious, type CarouselApi } from '@/components/ui/carousel';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -67,33 +67,30 @@ export function WelcomeTour({ isOpen, onClose }: WelcomeTourProps) {
 
     if (!isOpen) return null;
 
+    const currentStep = tourSteps[current];
+
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose(dontShowAgain)}>
-            <DialogContent className="sm:max-w-2xl p-0 border-0" hideCloseButton>
-                 <Carousel setApi={setApi} className="w-full">
+            <DialogContent className="sm:max-w-2xl" hideCloseButton>
+                <DialogHeader className="text-center">
+                    <DialogTitle className="text-2xl">{currentStep.title}</DialogTitle>
+                    <DialogDescription>{currentStep.description}</DialogDescription>
+                </DialogHeader>
+
+                <Carousel setApi={setApi} className="w-full">
                     <CarouselContent>
                         {tourSteps.map((step, index) => (
                             <CarouselItem key={index}>
-                                <div className="p-1">
-                                    <Card className="border-0 shadow-none">
-                                        <CardContent className="flex flex-col items-center justify-center p-6 space-y-4 text-center">
-                                            <DialogHeader>
-                                                <DialogTitle className="text-2xl">{step.title}</DialogTitle>
-                                            </DialogHeader>
-                                            {step.image && (
-                                                <div className="relative w-full h-64">
-                                                    <Image
-                                                        src={step.image.imageUrl}
-                                                        alt={step.image.description}
-                                                        fill
-                                                        className="rounded-lg object-contain"
-                                                    />
-                                                </div>
-                                            )}
-                                            <p className="text-muted-foreground">{step.description}</p>
-                                        </CardContent>
-                                    </Card>
-                                </div>
+                                {step.image && (
+                                    <div className="relative w-full h-64 my-4">
+                                        <Image
+                                            src={step.image.imageUrl}
+                                            alt={step.image.description}
+                                            fill
+                                            className="rounded-lg object-contain"
+                                        />
+                                    </div>
+                                )}
                             </CarouselItem>
                         ))}
                     </CarouselContent>
@@ -101,26 +98,27 @@ export function WelcomeTour({ isOpen, onClose }: WelcomeTourProps) {
                     <CarouselNext className="hidden sm:flex" />
                 </Carousel>
                 
-                <div className="flex justify-center space-x-2 pb-4">
-                    {tourSteps.map((_, i) => (
-                        <button
-                            key={i}
-                            onClick={() => api?.scrollTo(i)}
-                            className={cn(
-                                "h-2 w-2 rounded-full",
-                                current === i ? "bg-primary" : "bg-muted-foreground/50"
-                            )}
-                            aria-label={`Go to slide ${i + 1}`}
-                        />
-                    ))}
-                </div>
-
-                <DialogFooter className="flex-col sm:flex-row sm:justify-between items-center w-full px-6 pb-6">
+                <DialogFooter className="flex-col sm:flex-row sm:justify-between items-center w-full">
                     <div className="flex items-center space-x-2">
                         <Checkbox id="dont-show-again" checked={dontShowAgain} onCheckedChange={(checked) => setDontShowAgain(!!checked)} />
                         <Label htmlFor="dont-show-again" className="text-sm text-muted-foreground">Don't show this again</Label>
                     </div>
-                    <Button onClick={() => onClose(dontShowAgain)}>Close</Button>
+                     <div className="flex justify-center items-center gap-4">
+                        <div className="flex items-center justify-center space-x-2">
+                            {tourSteps.map((_, i) => (
+                                <button
+                                    key={i}
+                                    onClick={() => api?.scrollTo(i)}
+                                    className={cn(
+                                        "h-2 w-2 rounded-full",
+                                        current === i ? "bg-primary" : "bg-muted-foreground/50"
+                                    )}
+                                    aria-label={`Go to slide ${i + 1}`}
+                                />
+                            ))}
+                        </div>
+                        <Button onClick={() => onClose(dontShowAgain)}>Close</Button>
+                    </div>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
