@@ -69,7 +69,7 @@ export function WelcomeTour({ isOpen, onClose }: WelcomeTourProps) {
 
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose(dontShowAgain)}>
-            <DialogContent className="sm:max-w-2xl" hideCloseButton>
+            <DialogContent className="sm:max-w-2xl p-0 border-0" hideCloseButton>
                  <Carousel setApi={setApi} className="w-full">
                     <CarouselContent>
                         {tourSteps.map((step, index) => (
@@ -115,7 +115,7 @@ export function WelcomeTour({ isOpen, onClose }: WelcomeTourProps) {
                     ))}
                 </div>
 
-                <DialogFooter className="flex-col sm:flex-row sm:justify-between items-center w-full">
+                <DialogFooter className="flex-col sm:flex-row sm:justify-between items-center w-full px-6 pb-6">
                     <div className="flex items-center space-x-2">
                         <Checkbox id="dont-show-again" checked={dontShowAgain} onCheckedChange={(checked) => setDontShowAgain(!!checked)} />
                         <Label htmlFor="dont-show-again" className="text-sm text-muted-foreground">Don't show this again</Label>
