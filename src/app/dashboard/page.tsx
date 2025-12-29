@@ -84,14 +84,6 @@ function DashboardPageContent() {
     const [productionLines, setProductionLines] = useState<ProductionLine[]>([]);
     const [loading, setLoading] = useState(true);
     const [view, setView] = useState<'list' | 'grid'>();
-    const [showWelcomeTour, setShowWelcomeTour] = useState(false);
-
-    useEffect(() => {
-        if (currentUser && !currentUser.hasCompletedWelcomeTour) {
-            setShowWelcomeTour(true);
-        }
-    }, [currentUser]);
-
 
     useEffect(() => {
         const checkPaymentStatus = async () => {
@@ -293,20 +285,9 @@ function DashboardPageContent() {
             />
         );
     };
-    
-    const handleTourClose = async (dontShowAgain: boolean) => {
-        setShowWelcomeTour(false);
-        if (dontShowAgain) {
-            await updateCurrentUser({ hasCompletedWelcomeTour: true });
-        }
-    };
 
     return (
         <main className="flex flex-1 flex-col">
-            <WelcomeTour
-                isOpen={showWelcomeTour}
-                onClose={handleTourClose}
-            />
             <div className="flex flex-col flex-1 gap-4 p-4 lg:gap-6 lg:p-6">
                 <div className="flex items-center justify-between">
                     <h1 className="text-lg font-semibold md:text-2xl">Dashboard</h1>
@@ -358,4 +339,5 @@ export default function DashboardPage() {
   );
 }
 
+    
     

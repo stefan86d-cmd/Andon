@@ -1,20 +1,41 @@
 
 "use client";
 
-import React, { Suspense, useEffect } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import { Header } from "@/components/layout/header";
 import { useUser } from "@/contexts/user-context";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { LoaderCircle } from "lucide-react";
 import { ThemeProvider } from "./theme-provider";
 import { useTheme } from "next-themes";
+import { WelcomeTour } from "./welcome-tour";
 
 function AppLayoutContent({ children }: { children: React.ReactNode }) {
-  const { currentUser, loading } = useUser();
+  const { currentUser, loading, updateCurrentUser } = useUser();
   const { setTheme, theme } = useTheme();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+
+  const [showWelcomeTour, setShowWelcomeTour] = useState(false);
+
+  useEffect(() => {
+    // Show welcome tour if the user is new and lands on the dashboard
+    if (currentUser && !currentUser.hasCompletedWelcomeTour && pathname.startsWith('/dashboard')) {
+        setShowWelcomeTour(true);
+    }
+  }, [currentUser, pathname]);
+
+  const handleTourClose = async (dontShowAgain: boolean) => {
+      setShowWelcomeTour(false);
+      if (dontShowAgain && currentUser && !currentUser.hasCompletedWelcomeTour) {
+          try {
+            await updateCurrentUser({ hasCompletedWelcomeTour: true });
+          } catch (error) {
+            console.error("Failed to save welcome tour preference:", error);
+          }
+      }
+  };
   
   const authPages = ['/login', '/register', '/forgot-password', '/reset-password'];
   const isAuthPage = authPages.some(page => pathname.startsWith(page));
@@ -103,6 +124,10 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
           <Header />
           <div className="flex flex-col">
             {children}
+            <WelcomeTour
+                isOpen={showWelcomeTour}
+                onClose={handleTourClose}
+            />
           </div>
         </div>
     );
