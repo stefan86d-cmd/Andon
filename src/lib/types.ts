@@ -32,6 +32,7 @@ export type User = {
     muteSound: boolean;
   };
   theme: Theme;
+  hasCompletedWelcomeTour?: boolean;
 };
 
 // A simpler reference to a user, used within other documents.
@@ -113,3 +114,5 @@ export type IssueByDay = {
   date: string;
   issues: number;
 }
+
+    

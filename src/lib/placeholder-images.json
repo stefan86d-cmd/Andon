@@ -77,6 +77,36 @@
       "description": "A placeholder screenshot of the AndonPro dashboard",
       "imageUrl": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxEYXNoYm9hcmQlMjBBbmFseXRpY3N8ZW58MHx8fHwxNzU4NjA5MzUwfDA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "dashboard analytics"
+    },
+    {
+      "id": "welcome-tour-1",
+      "description": "Welcome tour page 1 graphic",
+      "imageUrl": "https://images.unsplash.com/photo-1764183298213-23b6c5bedf46?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHx3ZWxjb21lJTIwYWJzdHJhY3R8ZW58MHx8fHwxNzY3MDI1ODE3fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "welcome abstract"
+    },
+    {
+      "id": "welcome-tour-2",
+      "description": "Welcome tour page 2 graphic showing a dashboard",
+      "imageUrl": "https://images.unsplash.com/photo-1748439146117-31978164865d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxkYXNoYm9hcmQlMjBjaGFydHxlbnwwfHx8fDE3NjY5NDU3MjJ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "dashboard chart"
+    },
+    {
+      "id": "welcome-tour-3",
+      "description": "Welcome tour page 3 graphic showing factory configuration",
+      "imageUrl": "https://images.unsplash.com/photo-1759847527437-a548715aef7a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxmYWN0b3J5JTIwc2V0dGluZ3N8ZW58MHx8fHwxNzY3MDI1ODE3fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "factory settings"
+    },
+    {
+      "id": "welcome-tour-4",
+      "description": "Welcome tour page 4 graphic showing issue reporting",
+      "imageUrl": "https://images.unsplash.com/photo-1663660134340-ef69686ceb34?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxyZXBvcnQlMjBjaGVja2xpc3R8ZW58MHx8fHwxNzY3MDI1ODE3fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "report checklist"
+    },
+    {
+      "id": "welcome-tour-5",
+      "description": "Welcome tour page 5 graphic showing success",
+      "imageUrl": "https://images.unsplash.com/photo-1762290899574-7a628ca71587?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxzdWNjZXNzJTIwcm9ja2V0fGVufDB8fHx8MTc2NzAyNTgxN3ww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "success rocket"
     }
   ]
 }
