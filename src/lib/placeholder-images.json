@@ -98,9 +98,9 @@
     },
     {
       "id": "welcome-tour-4",
-      "description": "A screenshot of the AndonPro reports page.",
-      "imageUrl": "/Reports4.png",
-      "imageHint": "reports chart"
+      "description": "A screenshot of the AndonPro issue tracking page.",
+      "imageUrl": "/Issues.png",
+      "imageHint": "issue list"
     },
     {
       "id": "welcome-tour-5",
