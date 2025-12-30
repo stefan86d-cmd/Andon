@@ -25,8 +25,13 @@ const tourSteps = [
     },
     {
         title: "Configure Your Factory",
-        description: "Head to the 'Production Lines' and 'User Management' pages to set up your factory layout and invite your team members.",
+        description: "Head to the 'Production Lines' page to set up your factory layout.",
         image: PlaceHolderImages.find(p => p.id === 'welcome-tour-3'),
+    },
+    {
+        title: "Invite Your Team",
+        description: "Go to 'User Management' to invite supervisors and operators to your organization.",
+        image: PlaceHolderImages.find(p => p.id === 'welcome-tour-users'),
     },
     {
         title: "Report & Resolve Issues",
@@ -74,30 +79,30 @@ export function WelcomeTour({ isOpen, onClose }: WelcomeTourProps) {
             <DialogContent className="sm:max-w-2xl" hideCloseButton>
                 <DialogHeader className="text-center">
                     <DialogTitle className="text-2xl">{currentStep.title}</DialogTitle>
-                    <DialogDescription>{currentStep.description}</DialogDescription>
                 </DialogHeader>
-
-                <Carousel setApi={setApi} className="w-full">
-                    <CarouselContent>
-                        {tourSteps.map((step, index) => (
-                            <CarouselItem key={index}>
-                                {step.image && (
-                                    <div className="relative w-full h-64 my-4">
-                                        <Image
-                                            src={step.image.imageUrl}
-                                            alt={step.image.description}
-                                            fill
-                                            className="rounded-lg object-contain"
-                                        />
-                                    </div>
-                                )}
-                            </CarouselItem>
-                        ))}
-                    </CarouselContent>
-                    <CarouselPrevious className="hidden sm:flex" />
-                    <CarouselNext className="hidden sm:flex" />
-                </Carousel>
-                
+                <DialogContent>
+                    <p className="text-muted-foreground text-center mb-4">{currentStep.description}</p>
+                    <Carousel setApi={setApi} className="w-full">
+                        <CarouselContent>
+                            {tourSteps.map((step, index) => (
+                                <CarouselItem key={index}>
+                                    {step.image && (
+                                        <div className="relative w-full h-64 my-4">
+                                            <Image
+                                                src={step.image.imageUrl}
+                                                alt={step.image.description}
+                                                fill
+                                                className="rounded-lg object-contain"
+                                            />
+                                        </div>
+                                    )}
+                                </CarouselItem>
+                            ))}
+                        </CarouselContent>
+                        <CarouselPrevious className="hidden sm:flex" />
+                        <CarouselNext className="hidden sm:flex" />
+                    </Carousel>
+                </DialogContent>
                 <DialogFooter className="flex-col sm:flex-row sm:justify-between items-center w-full">
                     <div className="flex items-center space-x-2">
                         <Checkbox id="dont-show-again" checked={dontShowAgain} onCheckedChange={(checked) => setDontShowAgain(!!checked)} />
@@ -124,5 +129,3 @@ export function WelcomeTour({ isOpen, onClose }: WelcomeTourProps) {
         </Dialog>
     );
 }
-
-    
