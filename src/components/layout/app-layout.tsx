@@ -9,6 +9,7 @@ import { LoaderCircle } from "lucide-react";
 import { ThemeProvider } from "./theme-provider";
 import { useTheme } from "next-themes";
 import { WelcomeTour } from "./welcome-tour";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 function AppLayoutContent({ children }: { children: React.ReactNode }) {
   const { currentUser, loading, updateCurrentUser } = useUser();
@@ -16,15 +17,16 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const isMobile = useIsMobile();
 
   const [showWelcomeTour, setShowWelcomeTour] = useState(false);
 
   useEffect(() => {
-    // Show welcome tour if the user is new and lands on the dashboard
-    if (currentUser && !currentUser.hasCompletedWelcomeTour && pathname.startsWith('/dashboard')) {
+    // Show welcome tour if the user is new, on dashboard, and not on mobile
+    if (currentUser && !currentUser.hasCompletedWelcomeTour && pathname.startsWith('/dashboard') && !isMobile) {
         setShowWelcomeTour(true);
     }
-  }, [currentUser, pathname]);
+  }, [currentUser, pathname, isMobile]);
 
   const handleTourClose = async (dontShowAgain: boolean) => {
       setShowWelcomeTour(false);
