@@ -80,6 +80,21 @@ const faqs = [
         )
     },
     {
+        question: "How is security and customer data handled?",
+        answer: () => (
+            <>
+                <p>
+                    We take security and data privacy very seriously. Our application is built on Google's Firebase platform, which provides a robust and secure infrastructure.
+                </p>
+                <ul className='list-disc pl-5 space-y-2 mt-2'>
+                    <li><strong>Data Storage:</strong> All of your application data is stored in Firestore, a NoSQL database from Google, and is protected by Firebase Security Rules. These rules ensure that users can only access the data they are authorized to see, based on their role and organization.</li>
+                    <li><strong>Authentication:</strong> User authentication is handled by Firebase Authentication, which provides secure and easy-to-use login methods, including email/password and Google Sign-In.</li>
+                    <li><strong>Payment Information:</strong> We do not store any of your credit card information on our servers. All payments are processed by Stripe, a certified PCI Service Provider Level 1, which is the most stringent level of certification available in the payments industry.</li>
+                </ul>
+            </>
+        )
+    },
+    {
         question: "What pricing tiers are available?",
         answer: () => (
             <p>
