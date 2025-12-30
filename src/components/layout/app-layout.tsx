@@ -22,8 +22,8 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
   const [showWelcomeTour, setShowWelcomeTour] = useState(false);
 
   useEffect(() => {
-    // Show welcome tour if the user is new, on dashboard, and not on mobile
-    if (currentUser && !currentUser.hasCompletedWelcomeTour && pathname.startsWith('/dashboard') && !isMobile) {
+    // Show welcome tour if the user is a new admin, on dashboard, and not on mobile
+    if (currentUser && currentUser.role === 'admin' && !currentUser.hasCompletedWelcomeTour && pathname.startsWith('/dashboard') && !isMobile) {
         setShowWelcomeTour(true);
     }
   }, [currentUser, pathname, isMobile]);
