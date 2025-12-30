@@ -82,37 +82,37 @@
       "id": "welcome-tour-1",
       "description": "Welcome tour page 1 graphic",
       "imageUrl": "/Andonpro_Logo_Musta_Syvätty.png",
-      "imageHint": "welcome abstract"
+      "imageHint": ""
     },
     {
       "id": "welcome-tour-2",
       "description": "A screenshot of the AndonPro production monitoring dashboard.",
       "imageUrl": "/Production_monitoring.png",
-      "imageHint": "dashboard chart"
+      "imageHint": ""
     },
     {
       "id": "welcome-tour-3",
       "description": "A screenshot of the AndonPro line editing dialog.",
       "imageUrl": "/Edit_line.png",
-      "imageHint": "factory settings"
+      "imageHint": ""
     },
     {
       "id": "welcome-tour-4",
       "description": "A screenshot of the AndonPro issue tracking page.",
       "imageUrl": "/Issues.png",
-      "imageHint": "issue list"
+      "imageHint": ""
     },
     {
       "id": "welcome-tour-5",
       "description": "Welcome tour page 5 graphic showing success",
-      "imageUrl": "https://images.unsplash.com/photo-1762290899574-7a628ca71587?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxzdWNjZXNzJTIwcm9ja2V0fGVufDB8fHx8MTc2NzAyNTgxN3ww&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "success rocket"
+      "imageUrl": "/All_set.png",
+      "imageHint": ""
     },
     {
       "id": "welcome-tour-users",
       "description": "A graphic representing user management in AndonPro.",
       "imageUrl": "/Users.png",
-      "imageHint": "team collaboration"
+      "imageHint": ""
     }
   ]
 }
