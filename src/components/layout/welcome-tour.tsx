@@ -10,7 +10,6 @@ import { Label } from '@/components/ui/label';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
-import { Card, CardContent } from '../ui/card';
 
 const tourSteps = [
     {
@@ -79,30 +78,28 @@ export function WelcomeTour({ isOpen, onClose }: WelcomeTourProps) {
             <DialogContent className="sm:max-w-2xl" hideCloseButton>
                 <DialogHeader className="text-center">
                     <DialogTitle className="text-2xl">{currentStep.title}</DialogTitle>
+                    <DialogDescription>{currentStep.description}</DialogDescription>
                 </DialogHeader>
-                <DialogContent>
-                    <p className="text-muted-foreground text-center mb-4">{currentStep.description}</p>
-                    <Carousel setApi={setApi} className="w-full">
-                        <CarouselContent>
-                            {tourSteps.map((step, index) => (
-                                <CarouselItem key={index}>
-                                    {step.image && (
-                                        <div className="relative w-full h-64 my-4">
-                                            <Image
-                                                src={step.image.imageUrl}
-                                                alt={step.image.description}
-                                                fill
-                                                className="rounded-lg object-contain"
-                                            />
-                                        </div>
-                                    )}
-                                </CarouselItem>
-                            ))}
-                        </CarouselContent>
-                        <CarouselPrevious className="hidden sm:flex" />
-                        <CarouselNext className="hidden sm:flex" />
-                    </Carousel>
-                </DialogContent>
+                <Carousel setApi={setApi} className="w-full">
+                    <CarouselContent>
+                        {tourSteps.map((step, index) => (
+                            <CarouselItem key={index}>
+                                {step.image && (
+                                    <div className="relative w-full h-64 my-4">
+                                        <Image
+                                            src={step.image.imageUrl}
+                                            alt={step.image.description}
+                                            fill
+                                            className="rounded-lg object-contain"
+                                        />
+                                    </div>
+                                )}
+                            </CarouselItem>
+                        ))}
+                    </CarouselContent>
+                    <CarouselPrevious className="hidden sm:flex" />
+                    <CarouselNext className="hidden sm:flex" />
+                </Carousel>
                 <DialogFooter className="flex-col sm:flex-row sm:justify-between items-center w-full">
                     <div className="flex items-center space-x-2">
                         <Checkbox id="dont-show-again" checked={dontShowAgain} onCheckedChange={(checked) => setDontShowAgain(!!checked)} />
